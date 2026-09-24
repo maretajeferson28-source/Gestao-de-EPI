@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestão de EPI — Supabase</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-icon"><i data-lucide="shield-check" aria-hidden="true"></i></div>
+    <h1>GESTÃO DE <span>EPI</span></h1>
+    <p>Entre para acessar a base centralizada no Supabase.</p>
+    <form id="loginForm">
+      <div class="field"><label>E-mail</label><input id="authEmail" type="email" autocomplete="email" required></div>
+      <div class="field"><label>Senha</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div>
+      <div class="auth-actions">
+        <button class="btn primary" type="submit"><i data-lucide="log-in" aria-hidden="true"></i>Entrar</button>
+        <button class="btn" type="button" id="signupBtn"><i data-lucide="user-plus" aria-hidden="true"></i>Criar conta</button>
+      </div>
+      <div class="auth-separator"><span>ou</span></div>
+      <button class="btn google-btn" type="button" id="googleBtn" aria-label="Acessar com Google">
+        <svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.06H12v3.9h5.38a4.6 4.6 0 0 1-2 3.02v2.52h3.24c1.9-1.75 2.98-4.33 2.98-7.38Z"/>
+          <path fill="#34A853" d="M12 22c2.7 0 4.98-.9 6.64-2.43l-3.24-2.52c-.9.6-2.05.96-3.4.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.6A10 10 0 0 0 12 22Z"/>
+          <path fill="#FBBC05" d="M6.39 13.88A6.02 6.02 0 0 1 6.07 12c0-.65.11-1.29.32-1.88v-2.6H3.04A10 10 0 0 0 2 12c0 1.61.39 3.13 1.04 4.48l3.35-2.6Z"/>
+          <path fill="#EA4335" d="M12 5.99c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.63 9.63 0 0 0 12 2a10 10 0 0 0-8.96 5.52l3.35 2.6C7.18 7.75 9.39 5.99 12 5.99Z"/>
+        </svg>
+        Acessar com Google
+      </button>
+      <div class="msg" id="authMsg" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+<div class="app app-hidden" id="epiApp">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-badge"><div class="shield"><i data-lucide="shield-check" aria-hidden="true"></i></div><span>EPI</span></div><small>CONTROLE OPERACIONAL</small></div>
+    <nav class="nav">
+      <button class="active" data-page="dashboard"><span class="ico"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span><span class="text">Dashboard</span></button>
+      <button data-page="nova"><span class="ico"><i data-lucide="package-plus" aria-hidden="true"></i></span><span class="text">Nova saída</span></button>
+      <button data-page="movimentacoes"><span class="ico"><i data-lucide="arrow-right-left" aria-hidden="true"></i></span><span class="text">Movimentações</span></button>
+      <button data-page="colaboradores"><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
+      <button data-page="epis"><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
+      <button data-page="dados"><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
+    </nav>
+    <div class="side-foot">Base centralizada no Supabase.<br>V4 • banco PostgreSQL • atualização em tempo real.</div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="title"><h1>GESTÃO DE <span>EPI</span></h1><p>Controle de saída, consumo e rastreabilidade</p></div>
+      <div class="status"><span class="dot"></span><span id="statusText">Conectando...</span><span id="userEmail" class="user-email"></span><button class="btn compact" id="signOutBtn" type="button"><i data-lucide="log-out" aria-hidden="true"></i>Sair</button></div>
+    </header>
+    <div class="content">
+      <section class="page active" data-page-content="dashboard">
+        <div class="filters">
+          <div class="field"><label>De</label><input id="fDe" type="date"></div>
+          <div class="field"><label>Até</label><input id="fAte" type="date"></div>
+          <div class="field"><label>Colaborador</label><select id="fColab"></select></div>
+          <div class="field"><label>EPI / Item</label><select id="fEpi"></select></div>
+          <div class="field"><label>Responsável</label><select id="fResp"></select></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="label">Itens consumidos</div><div class="value" id="kTotal">0</div><div class="sub">soma das quantidades</div></div>
+          <div class="kpi"><div class="label">Movimentações</div><div class="value" id="kMov">0</div><div class="sub">registros filtrados</div></div>
+          <div class="kpi"><div class="label">Colaboradores</div><div class="value" id="kCol">0</div><div class="sub">identificados no período</div></div>
+          <div class="kpi"><div class="label">Média por saída</div><div class="value" id="kMedia">0</div><div class="sub">itens por movimentação</div></div>
+          <div class="kpi"><div class="label">EPI mais consumido</div><div class="value" id="kTop" style="font-size:18px;margin-top:16px">—</div><div class="sub" id="kTopQtd">0 itens</div></div>
+        </div>
+        <div class="grid2">
+          <div class="panel"><div class="panel-head"><h3>Consumo ao longo do tempo</h3><small>quantidade por dia</small></div><div class="chart-wrap"><canvas id="cTempo"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>Top EPIs consumidos</h3><small>por quantidade</small></div><div class="chart-wrap"><canvas id="cTop"></canvas></div></div>
+        </div>
+        <div class="grid3">
+          <div class="panel"><div class="panel-head"><h3>Top colaboradores</h3><small>somente identificados</small></div><div class="chart-wrap"><canvas id="cColab"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>Qualidade do registro</h3><small>identificação do colaborador</small></div><div class="chart-wrap"><canvas id="cQual"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><h3>Saídas por responsável</h3><small>quantidade entregue</small></div><div class="chart-wrap"><canvas id="cResp"></canvas></div></div>
+        </div>
+        <div class="panel" style="margin-top:12px">
+          <div class="panel-head"><h3>Últimas movimentações</h3><small id="latestCount"></small></div>
+          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Colaborador</th><th>EPI / Item</th><th>Qtd</th><th>C.A</th><th>Tamanho</th><th>Responsável</th></tr></thead><tbody id="latestBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="page" data-page-content="nova">
+        <div class="section-title"><div><h2>Nova saída</h2><p>Cadastre a movimentação diretamente no sistema.</p></div></div>
+        <div class="form-card">
+          <div class="notice">Os indicadores e gráficos são recalculados imediatamente depois de salvar.</div>
+          <form id="saidaForm">
+            <div class="form-grid">
+              <div class="field"><label>Data</label><input type="date" id="nData" required></div>
+              <div class="field"><label>Colaborador / Destino</label><input id="nColab" list="dlColab" placeholder="Nome ou Bolsa Reserva"></div>
+              <div class="field"><label>EPI / Item</label><input id="nEpi" list="dlEpi" required></div>
+              <div class="field"><label>Quantidade</label><input id="nQtd" type="number" min="1" step="1" value="1" required></div>
+              <div class="field"><label>C.A</label><input id="nCA" placeholder="N/A"></div>
+              <div class="field"><label>Tamanho</label><input id="nTam" placeholder="N/A"></div>
+              <div class="field"><label>Responsável</label><input id="nResp" list="dlResp" value="Jeferson" required></div>
+              <div class="field wide"><label>Observação</label><input id="nObs" placeholder="Opcional"></div>
+            </div>
+            <div class="form-actions"><button class="btn primary" type="submit"><i data-lucide="save" aria-hidden="true"></i>Salvar movimentação</button><button class="btn" type="reset"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button></div>
+            <div class="msg" id="saidaMsg" aria-live="polite"></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="page" data-page-content="movimentacoes">
+        <div class="section-title"><div><h2>Movimentações</h2><p>Histórico completo salvo no sistema.</p></div></div>
+        <div class="panel">
+          <div class="search-row"><input id="movSearch" placeholder="Pesquisar por colaborador, EPI, CA ou responsável..."><button class="btn" id="exportCsv"><i data-lucide="file-down" aria-hidden="true"></i>Exportar CSV</button><button class="btn" id="refreshData"><i data-lucide="refresh-cw" aria-hidden="true"></i>Atualizar</button></div>
+          <div class="table-wrap mov-table-wrap" style="max-height:600px"><table class="movement-table"><colgroup><col class="col-date"><col class="col-colab"><col class="col-epi"><col class="col-qtd"><col class="col-ca"><col class="col-tam"><col class="col-resp"><col class="col-action"></colgroup><thead><tr><th>Data</th><th>Colaborador</th><th>EPI</th><th>Qtd</th><th>C.A</th><th>Tam.</th><th>Responsável</th><th class="action-head">Ação</th></tr></thead><tbody id="movBody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="page" data-page-content="colaboradores">
+        <div class="section-title"><div><h2>Colaboradores</h2><p>83 colaboradores ativos carregados da relação atual. Cadastre novos nomes quando necessário.</p></div></div>
+        <div class="toolbar"><input id="newColabNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do colaborador"><input id="newColabCargo" class="btn" style="cursor:text;min-width:220px" placeholder="Cargo"><input id="newColabSetor" class="btn" style="cursor:text" placeholder="Setor"><button class="btn primary" id="addColab"><i data-lucide="user-plus" aria-hidden="true"></i>Adicionar</button></div>
+        <div class="cards-list" id="colabCards"></div>
+      </section>
+
+      <section class="page" data-page-content="epis">
+        <div class="section-title"><div><h2>EPIs / Itens</h2><p>Catálogo usado no lançamento e nos filtros.</p></div></div>
+        <div class="toolbar"><input id="newEpiNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do EPI / item"><input id="newEpiCat" class="btn" style="cursor:text" placeholder="Categoria"><button class="btn primary" id="addEpi"><i data-lucide="package-plus" aria-hidden="true"></i>Adicionar</button></div>
+        <div class="cards-list" id="epiCards"></div>
+      </section>
+
+      <section class="page" data-page-content="dados">
+        <div class="section-title"><div><h2>Dados e backup</h2><p>Exporte uma cópia ou restaure a carga inicial atualizada.</p></div></div>
+        <div class="form-card">
+          <div class="toolbar"><button class="btn primary" id="exportJson"><i data-lucide="download" aria-hidden="true"></i>Exportar backup JSON</button><button class="btn" id="refreshData2"><i data-lucide="refresh-cw" aria-hidden="true"></i>Atualizar do Supabase</button></div>
+          <p style="color:var(--muted);font-size:12px;line-height:1.7">Os dados agora ficam no <strong>Supabase/PostgreSQL</strong>. Novos lançamentos, colaboradores e EPIs são gravados no banco central. Alterações feitas por outro computador podem atualizar esta tela automaticamente via Realtime.</p>
+          <div class="notice" id="dbInfo">Projeto Supabase: Gestao-EPI • acesso protegido por autenticação.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <datalist id="dlColab"></datalist><datalist id="dlEpi"></datalist><datalist id="dlResp"></datalist>
+</div>
+
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
