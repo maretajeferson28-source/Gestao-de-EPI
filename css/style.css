@@ -209,3 +209,17 @@ tr:hover td{background:#151e27}
   .ca-data-card.wide,.ca-data-card.full{grid-column:auto}
   .ca-stage-footer{flex-direction:column}
 }
+
+
+/* CAEPI status integrado */
+.ca-status.loading{color:#d8c382;border-color:#5c4a16;background:#1b170b}
+.ca-status.loading .ca-status-dot{background:var(--gold);box-shadow:0 0 0 4px rgba(244,176,0,.12);animation:caPulse 1s infinite}
+.ca-status.valid{color:#70e0aa;border-color:#255c45;background:#0d1b16}
+.ca-status.valid .ca-status-dot{background:var(--green);box-shadow:0 0 0 4px rgba(53,201,139,.12)}
+.ca-status.invalid,.ca-status.error{color:#ff9b9b;border-color:#5f2c2c;background:#1d1012}
+.ca-status.invalid .ca-status-dot,.ca-status.error .ca-status-dot{background:var(--red);box-shadow:0 0 0 4px rgba(239,91,91,.12)}
+.ca-status.result{color:#d7dee5;border-color:#3b4855;background:#111820}
+.ca-status.result .ca-status-dot{background:#93a1af}
+.ca-validity strong{max-width:180px;display:inline-block;overflow-wrap:anywhere}
+.ca-input-row .btn:disabled{opacity:.6;cursor:wait}
+@keyframes caPulse{50%{opacity:.35}}
