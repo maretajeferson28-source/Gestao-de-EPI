@@ -36,5 +36,7 @@ jobs:
 
       - name: Sync CAEPI to Supabase
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: node scripts/sync-caepi-to-supabase.mjs
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          export SUPABASE_DB_URL="postgresql://postgres.aqnrjjllfzirrtwvjjbl:${SUPABASE_DB_PASSWORD}@aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require"
+          node scripts/sync-caepi-to-supabase.mjs
