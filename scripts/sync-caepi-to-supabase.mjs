@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import { once } from 'node:events';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { inflateRawSync } from 'node:zlib';
 
 const require = createRequire(import.meta.url);
 const ftp = require('basic-ftp');
@@ -147,7 +148,7 @@ async function extractRar(buffer) {
   return { fileName: target.name, buffer: Buffer.from(found.extraction) };
 }
 
-function extractZip(buffer) {
+function extractZipStandard(buffer) {
   return new Promise((resolve, reject) => {
     yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipfile) => {
       if (err) return reject(err);
@@ -179,6 +180,56 @@ function extractZip(buffer) {
       });
     });
   });
+}
+
+function extractZipWithoutCentralDirectory(buffer) {
+  // Alguns downloads do CAEPI chegam sem o índice central do ZIP,
+  // mas preservam o cabeçalho local e o fluxo DEFLATE do primeiro arquivo.
+  // Nessa situação, ainda é possível recuperar o TXT com segurança.
+  if (buffer.length < 30 || buffer.subarray(0, 4).toString('binary') !== 'PK\x03\x04') {
+    throw new Error('ZIP sem índice central e com cabeçalho local inválido.');
+  }
+
+  const flags = buffer.readUInt16LE(6);
+  const method = buffer.readUInt16LE(8);
+  const fileNameLength = buffer.readUInt16LE(26);
+  const extraLength = buffer.readUInt16LE(28);
+  const dataOffset = 30 + fileNameLength + extraLength;
+
+  if (dataOffset >= buffer.length) {
+    throw new Error('ZIP sem índice central com conteúdo inválido.');
+  }
+
+  const fileName = buffer.subarray(30, 30 + fileNameLength).toString('utf8') || 'tgg_export_caepi.txt';
+  if (method !== 8 && method !== 0) {
+    throw new Error(`Método de compressão ZIP não suportado: ${method}`);
+  }
+
+  let extracted;
+  if (method === 0) {
+    // Stored. Se o bit 3 estiver ativo, o tamanho pode não estar no cabeçalho;
+    // nesse caso não há como separar com segurança o descritor sem o índice central.
+    const compressedSize = buffer.readUInt32LE(18);
+    if (!compressedSize) throw new Error('ZIP armazenado sem tamanho disponível.');
+    extracted = buffer.subarray(dataOffset, dataOffset + compressedSize);
+  } else {
+    // inflateRawSync encerra no fim do primeiro fluxo DEFLATE e tolera bytes
+    // posteriores (descritor/índice central), exatamente o necessário aqui.
+    extracted = inflateRawSync(buffer.subarray(dataOffset));
+  }
+
+  if (!extracted?.length) throw new Error('Falha ao recuperar conteúdo do ZIP sem índice central.');
+  return { fileName, buffer: Buffer.from(extracted), flags };
+}
+
+async function extractZip(buffer) {
+  try {
+    return await extractZipStandard(buffer);
+  } catch (error) {
+    console.warn(`[CAEPI] ZIP sem índice central utilizável: ${error.message}`);
+    console.log('[CAEPI] tentando recuperação pelo cabeçalho local do ZIP...');
+    return extractZipWithoutCentralDirectory(buffer);
+  }
 }
 
 async function extractTxt(archiveBuffer) {
@@ -589,12 +640,10 @@ async function main() {
   try {
     let download;
     try {
-      console.log('[CAEPI] baixando base atual pela consulta pública oficial do CAEPI...');
-      download = await downloadPublicCaepi(archivePath);
-    } catch (publicError) {
-      // A publicação oficial mudou em 2026 para download pela página pública do CAEPI.
-      // Se ela estiver indisponível, abortamos e mantemos o dataset ativo anterior.
-      throw new Error(`download público oficial do CAEPI indisponível: ${publicError.message}`);
+      console.log('[CAEPI] baixando ZIP oficial via FTP...');
+      download = await downloadFtp(archivePath);
+    } catch (ftpError) {
+      throw new Error(`FTP oficial do CAEPI indisponível: ${ftpError.message}`);
     }
 
     const archiveBytes = download.buffer.length;
