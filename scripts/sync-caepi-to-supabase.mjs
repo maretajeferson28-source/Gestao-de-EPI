@@ -14,7 +14,7 @@ const yauzl = require('yauzl');
 
 const GOV_URL = 'https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalho/equipamentos-de-protecao-individual-epi/tgg_export_caepi.zip/@@download/file';
 const FTP_HOST = 'ftp.mtps.gov.br';
-const FTP_REMOTE = '/portal/fiscalizacao/seguranca-e-saude-no-trabalho/caepi/tgg_export_caepi.zip';
+const FTP_REMOTE = '/portal/fiscalizacao/seguranca-e-saude-no-trabalho/caepi/tgg_export_caepi.txt';
 
 const MIN_ARCHIVE_BYTES = 1 * 1024 * 1024;
 const MIN_TXT_BYTES = 50 * 1024 * 1024;
@@ -165,7 +165,7 @@ async function downloadGovBr(archivePath) {
 }
 
 async function downloadFtp(archivePath) {
-  const client = new ftp.Client(60000);
+  const client = new ftp.Client(180000);
   client.ftp.verbose = false;
 
   try {
@@ -188,7 +188,9 @@ async function downloadFtp(archivePath) {
   return {
     buffer,
     sourceUrl: `ftp://${FTP_HOST}${FTP_REMOTE}`,
-    sourceBase: 'ftp'
+    sourceBase: 'ftp',
+    directTxt: true,
+    fileName: 'tgg_export_caepi.txt'
   };
 }
 
@@ -382,7 +384,9 @@ async function main() {
     }
 
     const archiveBytes = download.buffer.length;
-    const extracted = await extractTxt(download.buffer);
+    const extracted = download.directTxt
+      ? { format: 'txt', fileName: download.fileName || 'tgg_export_caepi.txt', buffer: download.buffer }
+      : await extractTxt(download.buffer);
     const txtBytes = extracted.buffer.length;
 
     if (txtBytes < MIN_TXT_BYTES) {
@@ -419,7 +423,7 @@ async function main() {
     }
 
     const datasetId = crypto.randomUUID();
-    const sourceType = `${download.sourceBase}-${extracted.format}`;
+    const sourceType = download.directTxt ? 'ftp-txt' : `${download.sourceBase}-${extracted.format}`;
     const metadata = {
       archive_file: path.basename(archivePath),
       extracted_file: extracted.fileName,
