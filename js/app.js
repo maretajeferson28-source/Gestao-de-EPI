@@ -177,30 +177,129 @@ function nav(page){
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.page)));
 
-function previewCaStage(){
-  const input=$('caInput');
-  const number=$('caStageNumber');
-  const hint=$('caStageHint');
+function formatCaDate(value){
+  if(!value) return '—';
+  const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(value);
+}
+
+function formatCaDateTime(value){
+  if(!value) return '—';
+  const d=new Date(value);
+  return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleString('pt-BR');
+}
+
+function setCaValue(id,value,fallback='—'){
+  const el=$(id);
+  if(el) el.textContent=(value==null||String(value).trim()==='')?fallback:String(value);
+}
+
+function resetCaStage(ca=''){
+  setCaValue('caStageTitle','Informações do EPI');
+  setCaValue('caStageNumber',ca?`C.A. ${ca}`:'C.A. —');
+  setCaValue('caStageHint','Digite um número ao lado para consultar a base oficial.');
+  setCaValue('caSituation','—');
+  setCaValue('caEquipamento','—');
+  setCaValue('caFabricante','—');
+  setCaValue('caCnpj','—');
+  setCaValue('caMarca','—');
+  setCaValue('caReferencia','—');
+  setCaValue('caValidade','—');
+  setCaValue('caNorma','—');
+  setCaValue('caDescricao','Os dados oficiais do equipamento aparecerão aqui.');
+  setCaValue('caHistoryInfo','Histórico: —');
+  setCaValue('caSourceInfo','Base: —');
+}
+
+function setCaStatus(label,kind='waiting'){
   const status=$('caStageStatus');
-  if(!input||!number||!hint||!status) return;
+  if(!status) return;
+  status.className=`ca-status ${kind}`;
+  status.innerHTML=`<span class="ca-status-dot"></span>${esc(label)}`;
+}
+
+function renderCaSource(source){
+  if(!source){
+    setCaValue('caBaseSummary','Nenhum dataset ativo encontrado no Supabase.');
+    setCaValue('caSourceInfo','Base: indisponível');
+    return;
+  }
+
+  const summary=`${fmt(source.total_cas)} CAs • ${fmt(source.total_linhas)} registros • ${source.tipo_fonte||'fonte oficial'}`;
+  setCaValue('caBaseSummary',summary);
+  setCaValue('caSourceInfo',`Base: ${formatCaDateTime(source.importado_em)}`);
+}
+
+async function lookupCaepi(){
+  const input=$('caInput');
+  const button=$('caSearchBtn');
+  if(!input||!button) return;
 
   const ca=String(input.value||'').replace(/\D+/g,'').slice(0,8);
   input.value=ca;
 
   if(!ca){
-    number.textContent='C.A. —';
-    hint.textContent='Digite um número ao lado para preparar a consulta.';
-    status.classList.remove('preview');
-    status.innerHTML='<span class="ca-status-dot"></span>Aguardando consulta';
-    refreshIcons();
+    resetCaStage();
+    setCaStatus('Informe um C.A.','waiting');
     return;
   }
 
-  number.textContent=`C.A. ${ca}`;
-  hint.textContent='Stage preparado. A consulta oficial será conectada na próxima etapa.';
-  status.classList.add('preview');
-  status.innerHTML='<span class="ca-status-dot"></span>Prévia pronta';
-  refreshIcons();
+  resetCaStage(ca);
+  setCaStatus('Consultando...','loading');
+  setCaValue('caStageHint','Consultando a base CAEPI oficial...');
+  button.disabled=true;
+
+  try{
+    const response=await fetch(`/api/caepi?ca=${encodeURIComponent(ca)}`,{
+      method:'GET',
+      headers:{Accept:'application/json'}
+    });
+
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data?.error||`HTTP ${response.status}`);
+
+    renderCaSource(data.source);
+
+    if(!data.source){
+      setCaStatus('Base indisponível','error');
+      setCaValue('caStageHint','A base CAEPI ainda não possui um dataset ativo.');
+      return;
+    }
+
+    if(!data.found||!data.current){
+      setCaStatus('Não encontrado','error');
+      setCaValue('caStageHint','C.A. não encontrado no dataset oficial ativo.');
+      setCaValue('caHistoryInfo','Histórico: 0 registros');
+      return;
+    }
+
+    const current=data.current;
+    const situation=String(current.situacao||'').trim()||'—';
+    const upper=situation.toLocaleUpperCase('pt-BR');
+    const statusKind=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'result');
+
+    setCaValue('caStageTitle',current.equipamento||'Informações do EPI');
+    setCaValue('caStageNumber',`C.A. ${data.ca||ca}`);
+    setCaValue('caStageHint','Registro atual localizado na base oficial CAEPI.');
+    setCaValue('caSituation',situation);
+    setCaValue('caEquipamento',current.equipamento);
+    setCaValue('caFabricante',current.fabricante);
+    setCaValue('caCnpj',current.cnpj);
+    setCaValue('caMarca',current.marca);
+    setCaValue('caReferencia',current.referencia);
+    setCaValue('caValidade',formatCaDate(current.data_validade));
+    setCaValue('caNorma',current.norma);
+    setCaValue('caDescricao',current.descricao,'Descrição não informada na base oficial.');
+    setCaValue('caHistoryInfo',`Histórico: ${fmt(data.history?.length||0)} registro(s)`);
+    setCaStatus(situation,statusKind);
+  }catch(err){
+    console.error('[CAEPI]',err);
+    setCaStatus('Erro na consulta','error');
+    setCaValue('caStageHint','Não foi possível consultar a base CAEPI agora.');
+  }finally{
+    button.disabled=false;
+    refreshIcons();
+  }
 }
 
 if($('caInput')){
@@ -211,11 +310,11 @@ if($('caInput')){
   $('caInput').addEventListener('keydown',e=>{
     if(e.key==='Enter'){
       e.preventDefault();
-      previewCaStage();
+      lookupCaepi();
     }
   });
 }
-if($('caSearchBtn')) $('caSearchBtn').addEventListener('click',previewCaStage);
+if($('caSearchBtn')) $('caSearchBtn').addEventListener('click',lookupCaepi);
 
 
 async function ensureEpi(nome){
