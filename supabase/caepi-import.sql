@@ -1,5 +1,6 @@
 \set ON_ERROR_STOP on
 begin;
+set local statement_timeout = '15min';
 
 create temp table caepi_import_stage (
   record_hash text not null,
