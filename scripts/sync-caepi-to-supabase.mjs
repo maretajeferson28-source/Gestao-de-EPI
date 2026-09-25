@@ -325,12 +325,29 @@ function importDataset({
   csvPath, datasetId, sourceType, sourceUrl, sourceHash,
   ignoredRows, archiveBytes, txtBytes, metadata
 }) {
+  // psql não expande variáveis :name dentro do metacomando \\copy.
+  // Renderizamos um SQL temporário com o caminho real do CSV do runner,
+  // mantendo o \\copy no cliente para que o arquivo local seja acessível.
+  const templatePath = path.resolve('supabase/caepi-import.sql');
+  const renderedPath = path.join(path.dirname(csvPath), 'caepi-import-rendered.sql');
+  const escapedCsvPath = csvPath.replace(/'/g, "''");
+  const template = fs.readFileSync(templatePath, 'utf8');
+
+  if (!template.includes('__CSV_PATH__')) {
+    throw new Error('Placeholder __CSV_PATH__ ausente em supabase/caepi-import.sql');
+  }
+
+  fs.writeFileSync(
+    renderedPath,
+    template.replace('__CSV_PATH__', escapedCsvPath),
+    'utf8'
+  );
+
   execFileSync(
     'psql',
     [
       `--dbname=${DB_URL}`,
       '-v', 'ON_ERROR_STOP=1',
-      '-v', `csv_path=${csvPath}`,
       '-v', `dataset_id=${datasetId}`,
       '-v', `source_type=${sourceType}`,
       '-v', `source_url=${sourceUrl}`,
@@ -339,7 +356,7 @@ function importDataset({
       '-v', `archive_bytes=${archiveBytes}`,
       '-v', `txt_bytes=${txtBytes}`,
       '-v', `metadata=${JSON.stringify(metadata)}`,
-      '-f', 'supabase/caepi-import.sql'
+      '-f', renderedPath
     ],
     { stdio: 'inherit' }
   );
