@@ -52,6 +52,10 @@ function csvCell(value) {
   return `"${s.replace(/"/g, '""')}"`;
 }
 
+function csvCopyCell(value) {
+  return value == null || value === '' ? '' : csvCell(value);
+}
+
 function* parseDelimitedRecords(text, delimiter) {
   let row = [];
   let field = '';
@@ -424,7 +428,7 @@ function activeHash() {
   ).trim();
 }
 
-async function buildCsv(txtBuffer, csvPath) {
+async function buildCsv(txtBuffer, csvPath, datasetId) {
   const hasUtf8Bom = txtBuffer.subarray(0, 3).equals(Buffer.from([0xef, 0xbb, 0xbf]));
   const encoding = hasUtf8Bom ? 'utf-8' : 'windows-1252';
   const text = new TextDecoder(encoding).decode(txtBuffer).replace(/^\uFEFF+/, '');
@@ -448,7 +452,7 @@ async function buildCsv(txtBuffer, csvPath) {
 
   const stream = fs.createWriteStream(csvPath, { encoding: 'utf8' });
   stream.write([
-    'record_hash','ca','data_validade','situacao','fabricante','cnpj',
+    'dataset_id','record_hash','ca','data_validade','situacao','fabricante','cnpj',
     'equipamento','descricao','marca','referencia','norma','laudos','raw'
   ].map(csvCell).join(',') + '\n');
 
@@ -456,6 +460,7 @@ async function buildCsv(txtBuffer, csvPath) {
   let ignored = 0;
   const distinct = new Set();
   const recordHashes = [];
+  const seenRecordHashes = new Set();
   const validationSamples = new Map();
 
   for (const values of iterator) {
@@ -525,8 +530,14 @@ async function buildCsv(txtBuffer, csvPath) {
     }
 
     const recordHash = sha256(JSON.stringify(raw));
+    if (seenRecordHashes.has(recordHash)) {
+      ignored += 1;
+      continue;
+    }
+    seenRecordHashes.add(recordHash);
     recordHashes.push(recordHash);
     const line = [
+      datasetId,
       recordHash,
       ca,
       dataValidade,
@@ -539,8 +550,8 @@ async function buildCsv(txtBuffer, csvPath) {
       referencia,
       norma,
       JSON.stringify(laudos),
-      JSON.stringify(raw)
-    ].map(csvCell).join(',') + '\n';
+      '{}'
+    ].map(csvCopyCell).join(',') + '\n';
 
     if (!stream.write(line)) await once(stream, 'drain');
     prepared += 1;
@@ -628,7 +639,8 @@ async function main() {
     console.log(`[CAEPI] TXT: ${txtBytes} bytes`);
 
     console.log('[CAEPI] normalizando e gerando CSV UTF-8...');
-    const built = await buildCsv(extracted.buffer, csvPath);
+    const datasetId = crypto.randomUUID();
+    const built = await buildCsv(extracted.buffer, csvPath, datasetId);
     const sourceHash = built.contentHash;
 
     console.log(`[CAEPI] preparados: ${built.prepared}`);
@@ -658,12 +670,12 @@ async function main() {
       return;
     }
 
-    const datasetId = crypto.randomUUID();
     const sourceType = `${download.sourceBase}-${extracted.format}`;
     const metadata = {
       archive_file: path.basename(archivePath),
       extracted_file: extracted.fileName,
       header_columns: built.originalHeaders,
+      raw_storage: 'omitted; source_hash calculated from complete official rows',
       generated_at: new Date().toISOString()
     };
 
