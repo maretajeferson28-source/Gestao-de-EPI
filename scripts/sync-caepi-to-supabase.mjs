@@ -54,45 +54,15 @@ function csvCell(value) {
 }
 
 function* parsePipeRecords(text) {
-  let row = [];
-  let field = '';
-  let quoted = false;
+  // O TXT oficial do CAEPI possui aspas soltas/sem fechamento em diversos registros.
+  // Por isso as aspas não podem controlar multiline/quoting: cada linha física é um registro.
+  // Essa é a mesma estratégia indicada pelas implementações estáveis que tratam esse dataset.
+  const sanitized = text.replace(/"/g, '');
 
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-
-    if (quoted) {
-      if (ch === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i += 1;
-        } else {
-          quoted = false;
-        }
-      } else {
-        field += ch;
-      }
-      continue;
-    }
-
-    if (ch === '"') {
-      quoted = true;
-    } else if (ch === '|') {
-      row.push(field);
-      field = '';
-    } else if (ch === '\n') {
-      row.push(field.replace(/\r$/, ''));
-      field = '';
-      if (row.some((v) => v !== '')) yield row;
-      row = [];
-    } else {
-      field += ch;
-    }
-  }
-
-  if (field.length || row.length) {
-    row.push(field.replace(/\r$/, ''));
-    if (row.some((v) => v !== '')) yield row;
+  for (const physicalLine of sanitized.split(/\r?\n/)) {
+    const line = physicalLine.replace(/\r$/, '');
+    if (!line.trim()) continue;
+    yield line.split('|');
   }
 }
 
@@ -246,6 +216,8 @@ async function buildCsv(txtBuffer, csvPath) {
 
   const originalHeaders = first.value.map((h) => clean(h));
   const normalizedHeaders = originalHeaders.map(normalizeKey);
+  console.log('[CAEPI] cabeçalho oficial:', originalHeaders.join(' | '));
+  console.log('[CAEPI] cabeçalho normalizado:', normalizedHeaders.join(' | '));
 
   const stream = fs.createWriteStream(csvPath, { encoding: 'utf8' });
   stream.write([
@@ -270,7 +242,7 @@ async function buildCsv(txtBuffer, csvPath) {
     }
 
     const ca = onlyDigits(pick(row, [
-      'nr_registro_ca','numero_ca','n_do_ca','n_ca','ca','registro_ca','certificado_de_aprovacao'
+      'nrregistroca','nr_registro_ca','numero_ca','n_do_ca','n_ca','ca','registro_ca','certificado_de_aprovacao'
     ]));
 
     if (!ca) {
@@ -279,20 +251,20 @@ async function buildCsv(txtBuffer, csvPath) {
     }
 
     const dataValidade = toIsoDate(pick(row, [
-      'data_validade','data_de_validade','validade','validade_ca'
+      'datavalidade','data_validade','data_de_validade','validade','validade_ca'
     ]));
     const situacao = pick(row, ['situacao','situacao_ca','status','status_ca']);
     const fabricante = pick(row, [
-      'fabricante','razao_social','razao_social_fabricante','nome_fabricante','empresa'
+      'razaosocial','fabricante','razao_social','razao_social_fabricante','nome_fabricante','empresa'
     ]);
     const cnpj = pick(row, ['cnpj','cnpj_empresa','cnpj_fabricante']);
     const equipamento = pick(row, [
-      'equipamento','tipo_equipamento','natureza_equipamento','nome_equipamento'
+      'nomeequipamento','equipamento','tipo_equipamento','natureza','natureza_equipamento','nome_equipamento'
     ]);
     const descricao = pick(row, [
-      'descricao','descricao_equipamento','descricao_do_equipamento'
+      'descricaoequipamento','descricao','descricao_equipamento','descricao_do_equipamento'
     ]);
-    const marca = pick(row, ['marca','marca_ca','marca_equipamento']);
+    const marca = pick(row, ['marcaca','marca','marca_ca','marca_equipamento']);
     const referencia = pick(row, [
       'referencia','referencia_ca','referencia_equipamento','modelo'
     ]);
@@ -307,6 +279,7 @@ async function buildCsv(txtBuffer, csvPath) {
         (
           key.includes('laudo') ||
           key.includes('restricao') ||
+          key.includes('aprovadopara') ||
           key.includes('aprovado_para') ||
           key.includes('observacao')
         )
