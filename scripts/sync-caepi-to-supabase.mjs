@@ -403,12 +403,12 @@ async function main() {
   try {
     let download;
     try {
-      console.log('[CAEPI] baixando fonte principal FTP oficial...');
-      download = await downloadFtp(archivePath);
-    } catch (ftpError) {
-      console.warn(`[CAEPI] FTP oficial falhou: ${ftpError.message}`);
-      console.log('[CAEPI] tentando anexo do gov.br como fallback...');
+      console.log('[CAEPI] baixando fonte principal gov.br...');
       download = await downloadGovBr(archivePath);
+    } catch (govError) {
+      console.warn(`[CAEPI] gov.br falhou: ${govError.message}`);
+      console.log('[CAEPI] tentando FTP oficial como fallback...');
+      download = await downloadFtp(archivePath);
     }
 
     const archiveBytes = download.buffer.length;
