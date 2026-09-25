@@ -227,7 +227,24 @@ function curlBrowserArgs() {
   ];
 }
 
-async function downloadPublicCaepi(archivePath, tempDir) {
+async function validateDownloadedArchive(archivePath, sourceBase) {
+  const buffer = await fsp.readFile(archivePath);
+  if (buffer.length < MIN_ARCHIVE_BYTES) {
+    throw new Error(`download CAEPI abaixo de 1 MB (${buffer.length} bytes)`);
+  }
+  if (detectArchiveFormat(buffer) === 'unknown') {
+    const sample = buffer.subarray(0, 300).toString('latin1').replace(/\s+/g, ' ');
+    throw new Error(`download CAEPI não é GZIP/RAR/ZIP. Início: ${sample}`);
+  }
+
+  return {
+    buffer,
+    sourceUrl: CAEPI_PAGE_URL,
+    sourceBase
+  };
+}
+
+async function downloadPublicCaepiWithCurl(archivePath, tempDir) {
   const pagePath = path.join(tempDir, 'caepi-page.html');
   const cookiePath = path.join(tempDir, 'caepi-cookies.txt');
   const formPath = path.join(tempDir, 'caepi-form.txt');
@@ -264,20 +281,134 @@ async function downloadPublicCaepi(archivePath, tempDir) {
     CAEPI_PAGE_URL
   ], { stdio: 'inherit' });
 
-  const buffer = await fsp.readFile(archivePath);
-  if (buffer.length < MIN_ARCHIVE_BYTES) {
-    throw new Error(`download CAEPI abaixo de 1 MB (${buffer.length} bytes)`);
+  return validateDownloadedArchive(archivePath, 'caepi-public-curl');
+}
+
+async function findBrowserExecutable() {
+  const candidates = [
+    process.env.CAEPI_BROWSER_PATH,
+    process.env.CHROME_PATH,
+    process.env.CHROME_BIN,
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    try {
+      await fsp.access(candidate, fs.constants.X_OK);
+      return candidate;
+    } catch {}
   }
-  if (detectArchiveFormat(buffer) === 'unknown') {
-    const sample = buffer.subarray(0, 300).toString('latin1').replace(/\s+/g, ' ');
-    throw new Error(`download CAEPI não é GZIP/RAR/ZIP. Início: ${sample}`);
+  throw new Error('Google Chrome, Chromium ou Microsoft Edge não encontrado para o fallback.');
+}
+
+async function downloadPublicCaepiWithBrowser(archivePath) {
+  const { chromium } = await import('playwright-core');
+  const executablePath = await findBrowserExecutable();
+  console.log(`[CAEPI] fallback com navegador real: ${executablePath}`);
+
+  const browser = await chromium.launch({
+    executablePath,
+    // O portal CAEPI recusa navegadores headless. No GitHub Actions esta
+    // janela roda dentro do Xvfb, sem interface visível nem interação humana.
+    headless: process.env.CAEPI_BROWSER_HEADLESS === '1',
+    args: ['--no-sandbox', '--disable-dev-shm-usage']
+  });
+
+  try {
+    const context = await browser.newContext({
+      acceptDownloads: true,
+      locale: 'pt-BR',
+      timezoneId: 'America/Sao_Paulo'
+    });
+    const page = await context.newPage();
+    const response = await page.goto(CAEPI_PAGE_URL, {
+      waitUntil: 'domcontentloaded',
+      timeout: 120000
+    });
+
+    if (!response?.ok()) {
+      throw new Error(`portal CAEPI respondeu HTTP ${response?.status() || 'desconhecido'} no navegador`);
+    }
+
+    const link = page.locator('a').filter({ hasText: 'Base de dados do sistema CAEPI' }).first();
+    await link.waitFor({ state: 'visible', timeout: 30000 });
+    const output = await fsp.open(archivePath, 'w');
+    try {
+      await page.exposeFunction('__writeCaepiChunk', async (base64) => {
+        await output.write(Buffer.from(base64, 'base64'));
+      });
+
+      const result = await page.evaluate(async ({ eventTarget }) => {
+        const formElement = document.querySelector('form');
+        if (!formElement) throw new Error('Formulário ASP.NET não encontrado.');
+
+        const formData = new FormData(formElement);
+        formData.set('__EVENTTARGET', eventTarget);
+        formData.set('__EVENTARGUMENT', '');
+        const body = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+          if (typeof value === 'string') body.append(key, value);
+        }
+
+        const downloadResponse = await fetch(formElement.action || location.href, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString()
+        });
+        if (!downloadResponse.ok) {
+          return { status: downloadResponse.status, bytes: 0 };
+        }
+        if (!downloadResponse.body) throw new Error('Resposta CAEPI sem corpo.');
+
+        const reader = downloadResponse.body.getReader();
+        let bytes = 0;
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          bytes += value.byteLength;
+          let binary = '';
+          for (let offset = 0; offset < value.length; offset += 0x8000) {
+            binary += String.fromCharCode(...value.subarray(offset, offset + 0x8000));
+          }
+          await window.__writeCaepiChunk(btoa(binary));
+        }
+        return { status: downloadResponse.status, bytes };
+      }, { eventTarget: DOWNLOAD_EVENT_TARGET });
+
+      if (result.status < 200 || result.status >= 300) {
+        throw new Error(`download CAEPI respondeu HTTP ${result.status} no navegador`);
+      }
+      console.log(`[CAEPI] navegador recebeu ${result.bytes} bytes.`);
+    } finally {
+      await output.close();
+    }
+    await context.close();
+  } finally {
+    await browser.close();
   }
 
-  return {
-    buffer,
-    sourceUrl: CAEPI_PAGE_URL,
-    sourceBase: 'caepi-public'
-  };
+  return validateDownloadedArchive(archivePath, 'caepi-public-browser');
+}
+
+async function downloadPublicCaepi(archivePath, tempDir) {
+  const method = clean(process.env.CAEPI_DOWNLOAD_METHOD).toLowerCase();
+  if (method === 'browser') return downloadPublicCaepiWithBrowser(archivePath);
+  if (method === 'curl') return downloadPublicCaepiWithCurl(archivePath, tempDir);
+
+  try {
+    return await downloadPublicCaepiWithCurl(archivePath, tempDir);
+  } catch (curlError) {
+    console.warn(`[CAEPI] curl recusado: ${curlError.message}`);
+    console.log('[CAEPI] tentando a consulta oficial com navegador real...');
+    return downloadPublicCaepiWithBrowser(archivePath);
+  }
 }
 
 function activeHash() {

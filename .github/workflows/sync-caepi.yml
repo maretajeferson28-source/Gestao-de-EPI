@@ -32,11 +32,11 @@ jobs:
       - name: Install PostgreSQL client
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y postgresql-client xvfb
 
       - name: Sync CAEPI to Supabase
         env:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           export SUPABASE_DB_URL="postgresql://postgres.aqnrjjllfzirrtwvjjbl:${SUPABASE_DB_PASSWORD}@aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require"
-          node scripts/sync-caepi-to-supabase.mjs
+          xvfb-run --auto-servernum node scripts/sync-caepi-to-supabase.mjs

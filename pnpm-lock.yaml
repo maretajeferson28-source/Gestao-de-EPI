@@ -1,0 +1,64 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      basic-ftp:
+        specifier: 6.2.0
+        version: 6.2.0
+      node-unrar-js:
+        specifier: 2.0.2
+        version: 2.0.2
+      playwright-core:
+        specifier: 1.63.0
+        version: 1.63.0
+      yauzl:
+        specifier: 3.2.0
+        version: 3.2.0
+
+packages:
+
+  basic-ftp@6.2.0:
+    resolution: {integrity: sha512-H8eLjhoYPbOI717FLP8fGE7XInkMI7Ucj/ft0fp1avABtSiV5Bb2kYzScnOqlvJZs/KJZypr9Mp5zJmhaPFAEg==}
+    engines: {node: '>=10.0.0'}
+
+  buffer-crc32@0.2.13:
+    resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
+
+  node-unrar-js@2.0.2:
+    resolution: {integrity: sha512-hLNmoJzqaKJnod8yiTVGe9hnlNRHotUi0CreSv/8HtfRi/3JnRC8DvsmKfeGGguRjTEulhZK6zXX5PXoVuDZ2w==}
+    engines: {node: '>=10.0.0'}
+
+  pend@1.2.0:
+    resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
+
+  playwright-core@1.63.0:
+    resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  yauzl@3.2.0:
+    resolution: {integrity: sha512-Ow9nuGZE+qp1u4JIPvg+uCiUr7xGQWdff7JQSk5VGYTAZMDe2q8lxJ10ygv10qmSj031Ty/6FNJpLO4o1Sgc+w==}
+    engines: {node: '>=12'}
+
+snapshots:
+
+  basic-ftp@6.2.0: {}
+
+  buffer-crc32@0.2.13: {}
+
+  node-unrar-js@2.0.2: {}
+
+  pend@1.2.0: {}
+
+  playwright-core@1.63.0: {}
+
+  yauzl@3.2.0:
+    dependencies:
+      buffer-crc32: 0.2.13
+      pend: 1.2.0
