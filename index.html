@@ -48,6 +48,7 @@
       <button data-page="movimentacoes"><span class="ico"><i data-lucide="arrow-right-left" aria-hidden="true"></i></span><span class="text">Movimentações</span></button>
       <button data-page="colaboradores"><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
       <button data-page="epis"><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
+      <button data-page="caepi"><span class="ico"><i data-lucide="badge-check" aria-hidden="true"></i></span><span class="text">Consulta C.A.</span></button>
       <button data-page="dados"><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
     </nav>
     <div class="side-foot">Base centralizada no Supabase.<br>V4 • banco PostgreSQL • atualização em tempo real.</div>
@@ -127,6 +128,116 @@
         <div class="section-title"><div><h2>EPIs / Itens</h2><p>Catálogo usado no lançamento e nos filtros.</p></div></div>
         <div class="toolbar"><input id="newEpiNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do EPI / item"><input id="newEpiCat" class="btn" style="cursor:text" placeholder="Categoria"><button class="btn primary" id="addEpi"><i data-lucide="package-plus" aria-hidden="true"></i>Adicionar</button></div>
         <div class="cards-list" id="epiCards"></div>
+      </section>
+
+
+      <section class="page" data-page-content="caepi">
+        <div class="section-title ca-section-title">
+          <div>
+            <h2>Consulta de C.A.</h2>
+            <p>Área preparada para exibir os dados oficiais do EPI antes da integração CAEPI.</p>
+          </div>
+          <span class="ca-visual-badge"><i data-lucide="sparkles" aria-hidden="true"></i> Prévia visual</span>
+        </div>
+
+        <div class="ca-layout">
+          <aside class="ca-search-panel">
+            <div class="ca-search-head">
+              <div class="ca-search-icon"><i data-lucide="search-check" aria-hidden="true"></i></div>
+              <div>
+                <h3>Consultar certificado</h3>
+                <p>Digite o número do C.A. para abrir a ficha do equipamento.</p>
+              </div>
+            </div>
+
+            <div class="field ca-field">
+              <label>Número do C.A.</label>
+              <div class="ca-input-row">
+                <input id="caInput" inputmode="numeric" autocomplete="off" placeholder="Ex.: 43840" maxlength="8">
+                <button class="btn primary" id="caSearchBtn" type="button"><i data-lucide="search" aria-hidden="true"></i>Consultar</button>
+              </div>
+            </div>
+
+            <div class="ca-search-note">
+              <i data-lucide="database" aria-hidden="true"></i>
+              <div>
+                <strong>Integração CAEPI ainda não conectada</strong>
+                <span>Hoje esta tela é apenas visual. A próxima etapa ligará a consulta à base oficial no Supabase.</span>
+              </div>
+            </div>
+
+            <div class="ca-mini-flow">
+              <div><span>1</span><small>Digite o C.A.</small></div>
+              <i data-lucide="chevron-right" aria-hidden="true"></i>
+              <div><span>2</span><small>Consulta oficial</small></div>
+              <i data-lucide="chevron-right" aria-hidden="true"></i>
+              <div><span>3</span><small>Ficha completa</small></div>
+            </div>
+          </aside>
+
+          <section class="ca-stage" id="caStage">
+            <div class="ca-stage-top">
+              <div>
+                <span class="ca-eyebrow">FICHA DO EQUIPAMENTO</span>
+                <h3 id="caStageTitle">Informações do EPI</h3>
+              </div>
+              <span class="ca-status waiting" id="caStageStatus"><span class="ca-status-dot"></span>Aguardando consulta</span>
+            </div>
+
+            <div class="ca-hero">
+              <div class="ca-hero-icon"><i data-lucide="hard-hat" aria-hidden="true"></i></div>
+              <div class="ca-hero-copy">
+                <small>Certificado de Aprovação</small>
+                <strong id="caStageNumber">C.A. —</strong>
+                <span id="caStageHint">Digite um número ao lado para preparar a consulta.</span>
+              </div>
+              <div class="ca-validity">
+                <small>Situação</small>
+                <strong>—</strong>
+              </div>
+            </div>
+
+            <div class="ca-data-grid">
+              <article class="ca-data-card wide">
+                <span>Equipamento</span>
+                <strong>—</strong>
+              </article>
+              <article class="ca-data-card">
+                <span>Fabricante</span>
+                <strong>—</strong>
+              </article>
+              <article class="ca-data-card">
+                <span>CNPJ</span>
+                <strong>—</strong>
+              </article>
+              <article class="ca-data-card">
+                <span>Marca</span>
+                <strong>—</strong>
+              </article>
+              <article class="ca-data-card">
+                <span>Referência</span>
+                <strong>—</strong>
+              </article>
+              <article class="ca-data-card">
+                <span>Validade</span>
+                <strong>—</strong>
+              </article>
+              <article class="ca-data-card">
+                <span>Norma</span>
+                <strong>—</strong>
+              </article>
+              <article class="ca-data-card full">
+                <span>Descrição</span>
+                <strong>Os dados oficiais do equipamento aparecerão aqui após a integração da base CAEPI.</strong>
+              </article>
+            </div>
+
+            <div class="ca-stage-footer">
+              <span><i data-lucide="shield-check" aria-hidden="true"></i> Fonte oficial CAEPI</span>
+              <span><i data-lucide="clock-3" aria-hidden="true"></i> Base sincronizada automaticamente</span>
+            </div>
+          </section>
+        </div>
       </section>
 
       <section class="page" data-page-content="dados">
