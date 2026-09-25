@@ -135,9 +135,9 @@
         <div class="section-title ca-section-title">
           <div>
             <h2>Consulta de C.A.</h2>
-            <p>Área preparada para exibir os dados oficiais do EPI antes da integração CAEPI.</p>
+            <p>Consulta rápida na base oficial CAEPI sincronizada com o Supabase.</p>
           </div>
-          <span class="ca-visual-badge"><i data-lucide="sparkles" aria-hidden="true"></i> Prévia visual</span>
+          <span class="ca-visual-badge"><i data-lucide="shield-check" aria-hidden="true"></i> Base oficial</span>
         </div>
 
         <div class="ca-layout">
@@ -146,7 +146,7 @@
               <div class="ca-search-icon"><i data-lucide="search-check" aria-hidden="true"></i></div>
               <div>
                 <h3>Consultar certificado</h3>
-                <p>Digite o número do C.A. para abrir a ficha do equipamento.</p>
+                <p>Digite o número do C.A. para abrir a ficha oficial do equipamento.</p>
               </div>
             </div>
 
@@ -158,11 +158,11 @@
               </div>
             </div>
 
-            <div class="ca-search-note">
+            <div class="ca-search-note" id="caBaseInfo">
               <i data-lucide="database" aria-hidden="true"></i>
               <div>
-                <strong>Integração CAEPI ainda não conectada</strong>
-                <span>Hoje esta tela é apenas visual. A próxima etapa ligará a consulta à base oficial no Supabase.</span>
+                <strong>Base CAEPI oficial</strong>
+                <span id="caBaseSummary">Aguardando a primeira consulta para ler o dataset ativo.</span>
               </div>
             </div>
 
@@ -189,52 +189,52 @@
               <div class="ca-hero-copy">
                 <small>Certificado de Aprovação</small>
                 <strong id="caStageNumber">C.A. —</strong>
-                <span id="caStageHint">Digite um número ao lado para preparar a consulta.</span>
+                <span id="caStageHint">Digite um número ao lado para consultar a base oficial.</span>
               </div>
               <div class="ca-validity">
                 <small>Situação</small>
-                <strong>—</strong>
+                <strong id="caSituation">—</strong>
               </div>
             </div>
 
             <div class="ca-data-grid">
               <article class="ca-data-card wide">
                 <span>Equipamento</span>
-                <strong>—</strong>
+                <strong id="caEquipamento">—</strong>
               </article>
               <article class="ca-data-card">
                 <span>Fabricante</span>
-                <strong>—</strong>
+                <strong id="caFabricante">—</strong>
               </article>
               <article class="ca-data-card">
                 <span>CNPJ</span>
-                <strong>—</strong>
+                <strong id="caCnpj">—</strong>
               </article>
               <article class="ca-data-card">
                 <span>Marca</span>
-                <strong>—</strong>
+                <strong id="caMarca">—</strong>
               </article>
               <article class="ca-data-card">
                 <span>Referência</span>
-                <strong>—</strong>
+                <strong id="caReferencia">—</strong>
               </article>
               <article class="ca-data-card">
                 <span>Validade</span>
-                <strong>—</strong>
+                <strong id="caValidade">—</strong>
               </article>
               <article class="ca-data-card">
                 <span>Norma</span>
-                <strong>—</strong>
+                <strong id="caNorma">—</strong>
               </article>
               <article class="ca-data-card full">
                 <span>Descrição</span>
-                <strong>Os dados oficiais do equipamento aparecerão aqui após a integração da base CAEPI.</strong>
+                <strong id="caDescricao">Os dados oficiais do equipamento aparecerão aqui.</strong>
               </article>
             </div>
 
             <div class="ca-stage-footer">
-              <span><i data-lucide="shield-check" aria-hidden="true"></i> Fonte oficial CAEPI</span>
-              <span><i data-lucide="clock-3" aria-hidden="true"></i> Base sincronizada automaticamente</span>
+              <span id="caHistoryInfo"><i data-lucide="layers-3" aria-hidden="true"></i> Histórico: —</span>
+              <span id="caSourceInfo"><i data-lucide="clock-3" aria-hidden="true"></i> Base: —</span>
             </div>
           </section>
         </div>
