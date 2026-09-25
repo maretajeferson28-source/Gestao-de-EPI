@@ -17,7 +17,7 @@ create temp table caepi_import_stage (
   raw jsonb not null
 ) on commit drop;
 
-\copy caepi_import_stage (record_hash,ca,data_validade,situacao,fabricante,cnpj,equipamento,descricao,marca,referencia,norma,laudos,raw) from :'csv_path' with (format csv, header true, encoding 'UTF8');
+\copy caepi_import_stage (record_hash,ca,data_validade,situacao,fabricante,cnpj,equipamento,descricao,marca,referencia,norma,laudos,raw) from '__CSV_PATH__' with (format csv, header true, encoding 'UTF8');
 
 insert into public.caepi_datasets (
   id, source_type, source_url, source_hash, status,
