@@ -177,6 +177,47 @@ function nav(page){
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.page)));
 
+function previewCaStage(){
+  const input=$('caInput');
+  const number=$('caStageNumber');
+  const hint=$('caStageHint');
+  const status=$('caStageStatus');
+  if(!input||!number||!hint||!status) return;
+
+  const ca=String(input.value||'').replace(/\D+/g,'').slice(0,8);
+  input.value=ca;
+
+  if(!ca){
+    number.textContent='C.A. —';
+    hint.textContent='Digite um número ao lado para preparar a consulta.';
+    status.classList.remove('preview');
+    status.innerHTML='<span class="ca-status-dot"></span>Aguardando consulta';
+    refreshIcons();
+    return;
+  }
+
+  number.textContent=`C.A. ${ca}`;
+  hint.textContent='Stage preparado. A consulta oficial será conectada na próxima etapa.';
+  status.classList.add('preview');
+  status.innerHTML='<span class="ca-status-dot"></span>Prévia pronta';
+  refreshIcons();
+}
+
+if($('caInput')){
+  $('caInput').addEventListener('input',()=>{
+    const cleaned=$('caInput').value.replace(/\D+/g,'').slice(0,8);
+    if($('caInput').value!==cleaned) $('caInput').value=cleaned;
+  });
+  $('caInput').addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      previewCaStage();
+    }
+  });
+}
+if($('caSearchBtn')) $('caSearchBtn').addEventListener('click',previewCaStage);
+
+
 async function ensureEpi(nome){
   let epi=epiCatalog.find(x=>normalize(x.nome)===normalize(nome));
   if(epi) return epi;
