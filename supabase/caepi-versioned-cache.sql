@@ -112,7 +112,7 @@ begin
 end;
 $$;
 
-revoke all on function public.caepi_activate_dataset(uuid) from public;
-revoke all on function public.caepi_fail_dataset(uuid, text) from public;
+revoke execute on function public.caepi_activate_dataset(uuid) from public, anon, authenticated;
+revoke execute on function public.caepi_fail_dataset(uuid, text) from public, anon, authenticated;
 grant execute on function public.caepi_activate_dataset(uuid) to service_role;
 grant execute on function public.caepi_fail_dataset(uuid, text) to service_role;
