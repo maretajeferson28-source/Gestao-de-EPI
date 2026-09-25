@@ -23,10 +23,7 @@ insert into public.caepi_datasets (
 
 -- Copia diretamente para a tabela final. A versão anterior continua ativa
 -- durante a carga e a transação inteira é revertida se o COPY falhar.
-\copy public.caepi_records (
-  dataset_id, record_hash, ca, data_validade, situacao, fabricante, cnpj,
-  equipamento, descricao, marca, referencia, norma, laudos, raw
-) from '__CSV_PATH__' with (format csv, header true, encoding 'UTF8');
+\copy public.caepi_records (dataset_id, record_hash, ca, data_validade, situacao, fabricante, cnpj, equipamento, descricao, marca, referencia, norma, laudos, raw) from '__CSV_PATH__' with (format csv, header true, encoding 'UTF8');
 
 select public.caepi_activate_dataset(:'dataset_id'::uuid);
 
