@@ -6,7 +6,6 @@ import crypto from 'node:crypto';
 import { once } from 'node:events';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { inflateRawSync } from 'node:zlib';
 
 const require = createRequire(import.meta.url);
 const ftp = require('basic-ftp');
@@ -14,10 +13,6 @@ const unrar = require('node-unrar-js');
 const yauzl = require('yauzl');
 
 const GOV_URL = 'https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalho/equipamentos-de-protecao-individual-epi/tgg_export_caepi.zip/@@download/file';
-const PUBLIC_CA_URLS = [
-  'https://caepi.trabalho.gov.br/internet/ConsultaCAInternet.aspx',
-  'https://caepi.mte.gov.br/internet/ConsultaCAInternet.aspx'
-];
 const FTP_HOST = 'ftp.mtps.gov.br';
 const FTP_REMOTE = '/portal/fiscalizacao/seguranca-e-saude-no-trabalho/caepi/tgg_export_caepi.zip';
 
@@ -59,19 +54,6 @@ function csvCell(value) {
 }
 
 function* parsePipeRecords(text) {
-  // O TXT oficial do CAEPI possui aspas soltas/sem fechamento em diversos registros.
-  // Por isso as aspas não podem controlar multiline/quoting: cada linha física é um registro.
-  // Essa é a mesma estratégia indicada pelas implementações estáveis que tratam esse dataset.
-  const sanitized = text.replace(/"/g, '');
-
-  for (const physicalLine of sanitized.split(/\r?\n/)) {
-    const line = physicalLine.replace(/\r$/, '');
-    if (!line.trim()) continue;
-    yield line.split('|');
-  }
-}
-
-function* parseDelimitedRecords(text, delimiter) {
   let row = [];
   let field = '';
   let quoted = false;
@@ -95,7 +77,7 @@ function* parseDelimitedRecords(text, delimiter) {
 
     if (ch === '"') {
       quoted = true;
-    } else if (ch === delimiter) {
+    } else if (ch === '|') {
       row.push(field);
       field = '';
     } else if (ch === '\n') {
@@ -134,7 +116,7 @@ async function extractRar(buffer) {
   const extractor = await unrar.createExtractorFromData({ data });
   const list = extractor.getFileList();
   const headers = [...list.fileHeaders]
-    .filter((h) => !h.flags?.directory && /\.(txt|csv)$/i.test(h.name || ''))
+    .filter((h) => !h.flags?.directory && /\.txt$/i.test(h.name || ''))
     .sort((a, b) => Number(b.unpSize || 0) - Number(a.unpSize || 0));
 
   if (!headers.length) throw new Error('Nenhum TXT encontrado no RAR.');
@@ -148,7 +130,7 @@ async function extractRar(buffer) {
   return { fileName: target.name, buffer: Buffer.from(found.extraction) };
 }
 
-function extractZipStandard(buffer) {
+function extractZip(buffer) {
   return new Promise((resolve, reject) => {
     yauzl.fromBuffer(buffer, { lazyEntries: true }, (err, zipfile) => {
       if (err) return reject(err);
@@ -161,7 +143,7 @@ function extractZipStandard(buffer) {
 
       zipfile.readEntry();
       zipfile.on('entry', (entry) => {
-        if (/\/$/.test(entry.fileName) || !/\.(txt|csv)$/i.test(entry.fileName)) {
+        if (/\/$/.test(entry.fileName) || !/\.txt$/i.test(entry.fileName)) {
           zipfile.readEntry();
           return;
         }
@@ -182,221 +164,11 @@ function extractZipStandard(buffer) {
   });
 }
 
-function extractZipWithoutCentralDirectory(buffer) {
-  // Alguns downloads do CAEPI chegam sem o índice central do ZIP,
-  // mas preservam o cabeçalho local e o fluxo DEFLATE do primeiro arquivo.
-  // Nessa situação, ainda é possível recuperar o TXT com segurança.
-  if (buffer.length < 30 || buffer.subarray(0, 4).toString('binary') !== 'PK\x03\x04') {
-    throw new Error('ZIP sem índice central e com cabeçalho local inválido.');
-  }
-
-  const flags = buffer.readUInt16LE(6);
-  const method = buffer.readUInt16LE(8);
-  const fileNameLength = buffer.readUInt16LE(26);
-  const extraLength = buffer.readUInt16LE(28);
-  const dataOffset = 30 + fileNameLength + extraLength;
-
-  if (dataOffset >= buffer.length) {
-    throw new Error('ZIP sem índice central com conteúdo inválido.');
-  }
-
-  const fileName = buffer.subarray(30, 30 + fileNameLength).toString('utf8') || 'tgg_export_caepi.txt';
-  if (method !== 8 && method !== 0) {
-    throw new Error(`Método de compressão ZIP não suportado: ${method}`);
-  }
-
-  let extracted;
-  if (method === 0) {
-    // Stored. Se o bit 3 estiver ativo, o tamanho pode não estar no cabeçalho;
-    // nesse caso não há como separar com segurança o descritor sem o índice central.
-    const compressedSize = buffer.readUInt32LE(18);
-    if (!compressedSize) throw new Error('ZIP armazenado sem tamanho disponível.');
-    extracted = buffer.subarray(dataOffset, dataOffset + compressedSize);
-  } else {
-    // inflateRawSync encerra no fim do primeiro fluxo DEFLATE e tolera bytes
-    // posteriores (descritor/índice central), exatamente o necessário aqui.
-    extracted = inflateRawSync(buffer.subarray(dataOffset));
-  }
-
-  if (!extracted?.length) throw new Error('Falha ao recuperar conteúdo do ZIP sem índice central.');
-  return { fileName, buffer: Buffer.from(extracted), flags };
-}
-
-async function extractZip(buffer) {
-  try {
-    return await extractZipStandard(buffer);
-  } catch (error) {
-    console.warn(`[CAEPI] ZIP sem índice central utilizável: ${error.message}`);
-    console.log('[CAEPI] tentando recuperação pelo cabeçalho local do ZIP...');
-    return extractZipWithoutCentralDirectory(buffer);
-  }
-}
-
 async function extractTxt(archiveBuffer) {
   const format = detectArchiveFormat(archiveBuffer);
   if (format === 'rar') return { format, ...(await extractRar(archiveBuffer)) };
   if (format === 'zip') return { format, ...(await extractZip(archiveBuffer)) };
   throw new Error('Formato compactado desconhecido; atualização interrompida.');
-}
-
-function htmlDecode(value) {
-  return String(value || '')
-    .replace(/&amp;/gi, '&')
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/gi, '"');
-}
-
-function responseCookies(response) {
-  const values = typeof response.headers.getSetCookie === 'function'
-    ? response.headers.getSetCookie()
-    : [];
-  return values.map((v) => v.split(';')[0]).join('; ');
-}
-
-function hiddenAspNetFields(html) {
-  const params = new URLSearchParams();
-  for (const match of html.matchAll(/<input\b[^>]*type=["']hidden["'][^>]*>/gi)) {
-    const tag = match[0];
-    const name = tag.match(/\bname=["']([^"']+)["']/i)?.[1];
-    const value = tag.match(/\bvalue=["']([^"']*)["']/i)?.[1] || '';
-    if (name) params.set(htmlDecode(name), htmlDecode(value));
-  }
-  return params;
-}
-
-function findDownloadAction(html) {
-  for (const match of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
-    const href = htmlDecode(match[1]);
-    const text = match[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (/base de dados.*caepi|download/i.test(text) || /\.zip(?:$|\?)/i.test(href)) {
-      const postback = href.match(/__doPostBack\(['"]([^'"]+)['"],['"]([^'"]*)['"]\)/i);
-      if (postback) return { type: 'postback', target: postback[1], argument: postback[2] || '' };
-      if (!/^javascript:/i.test(href)) return { type: 'href', href };
-    }
-  }
-
-  for (const match of html.matchAll(/<input\b[^>]*>/gi)) {
-    const tag = match[0];
-    const value = htmlDecode(tag.match(/\bvalue=["']([^"']*)["']/i)?.[1] || '');
-    const name = htmlDecode(tag.match(/\bname=["']([^"']+)["']/i)?.[1] || '');
-    if (name && /base de dados.*caepi|download/i.test(value)) {
-      return { type: 'submit', name, value };
-    }
-  }
-
-  for (const match of html.matchAll(/<(?:button|input)\b[^>]*(?:onclick|href)=["']([^"']+)["'][^>]*>/gi)) {
-    const js = htmlDecode(match[1]);
-    if (!/download|base.*caepi|__doPostBack/i.test(js)) continue;
-    const postback = js.match(/__doPostBack\(['"]([^'"]+)['"],['"]([^'"]*)['"]\)/i);
-    if (postback) return { type: 'postback', target: postback[1], argument: postback[2] || '' };
-    const url = js.match(/(?:window\.open|location(?:\.href)?\s*=)\s*\(?['"]([^'"]+)['"]/i)?.[1];
-    if (url) return { type: 'href', href: htmlDecode(url) };
-  }
-
-  return null;
-}
-
-async function readDownloadResponse(response, archivePath, sourceUrl) {
-  if (!response.ok) throw new Error(`download respondeu HTTP ${response.status}`);
-  const buffer = Buffer.from(await response.arrayBuffer());
-  const type = String(response.headers.get('content-type') || '').toLowerCase();
-  const disposition = String(response.headers.get('content-disposition') || '');
-
-  if (buffer.length < MIN_ARCHIVE_BYTES) {
-    const sample = buffer.subarray(0, 400).toString('latin1').replace(/\s+/g, ' ');
-    throw new Error(`download abaixo de 1 MB (${buffer.length} bytes). content-type=${type}. início=${sample}`);
-  }
-
-  const format = detectArchiveFormat(buffer);
-  if (format === 'unknown' && !/zip|octet-stream/i.test(type + disposition)) {
-    const sample = buffer.subarray(0, 400).toString('latin1').replace(/\s+/g, ' ');
-    throw new Error(`resposta não parece arquivo compactado. content-type=${type}. início=${sample}`);
-  }
-
-  await fsp.writeFile(archivePath, buffer);
-  return {
-    buffer,
-    sourceUrl: response.url || sourceUrl,
-    sourceBase: 'caepi-public'
-  };
-}
-
-async function downloadPublicCaepi(archivePath) {
-  const browserHeaders = {
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153 Safari/537.36',
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'accept-language': 'pt-BR,pt;q=0.9,en;q=0.7'
-  };
-
-  let lastError;
-
-  for (const pageUrl of PUBLIC_CA_URLS) {
-    try {
-      const page = await fetch(pageUrl, { headers: browserHeaders, redirect: 'follow' });
-      if (!page.ok) throw new Error(`página pública respondeu HTTP ${page.status}`);
-
-      const cookies = responseCookies(page);
-      const html = await page.text();
-      const action = findDownloadAction(html);
-
-      if (!action) {
-        throw new Error('controle de download não encontrado na página pública');
-      }
-
-      const commonHeaders = {
-        ...browserHeaders,
-        'referer': page.url || pageUrl,
-        ...(cookies ? { cookie: cookies } : {})
-      };
-
-      if (action.type === 'href') {
-        const url = new URL(action.href, page.url || pageUrl).href;
-        const response = await fetch(url, { headers: commonHeaders, redirect: 'follow' });
-        return await readDownloadResponse(response, archivePath, url);
-      }
-
-      const body = hiddenAspNetFields(html);
-      if (action.type === 'postback') {
-        body.set('__EVENTTARGET', action.target);
-        body.set('__EVENTARGUMENT', action.argument || '');
-      } else {
-        body.set(action.name, action.value);
-      }
-
-      const response = await fetch(page.url || pageUrl, {
-        method: 'POST',
-        headers: {
-          ...commonHeaders,
-          'content-type': 'application/x-www-form-urlencoded',
-          'origin': new URL(page.url || pageUrl).origin
-        },
-        body: body.toString(),
-        redirect: 'follow'
-      });
-
-      const type = String(response.headers.get('content-type') || '').toLowerCase();
-      const disposition = String(response.headers.get('content-disposition') || '').toLowerCase();
-
-      if (/zip|octet-stream/.test(type) || /attachment/.test(disposition)) {
-        return await readDownloadResponse(response, archivePath, response.url || pageUrl);
-      }
-
-      const html2 = await response.text();
-      const action2 = findDownloadAction(html2);
-      if (action2?.type === 'href') {
-        const url = new URL(action2.href, response.url || pageUrl).href;
-        const fileResponse = await fetch(url, { headers: commonHeaders, redirect: 'follow' });
-        return await readDownloadResponse(fileResponse, archivePath, url);
-      }
-
-      throw new Error(`clique de download retornou HTML sem arquivo (HTTP ${response.status})`);
-    } catch (error) {
-      lastError = error;
-      console.warn(`[CAEPI] página ${pageUrl} falhou: ${error.message}`);
-    }
-  }
-
-  throw lastError || new Error('Não foi possível baixar a base pública atual do CAEPI.');
 }
 
 async function downloadGovBr(archivePath) {
@@ -446,9 +218,7 @@ async function downloadFtp(archivePath) {
   return {
     buffer,
     sourceUrl: `ftp://${FTP_HOST}${FTP_REMOTE}`,
-    sourceBase: 'ftp',
-    directTxt: true,
-    fileName: 'tgg_export_caepi.txt'
+    sourceBase: 'ftp'
   };
 }
 
@@ -466,15 +236,8 @@ function activeHash() {
 }
 
 async function buildCsv(txtBuffer, csvPath) {
-  const text = new TextDecoder('windows-1252').decode(txtBuffer);
-  const firstLine = text.split(/\r?\n/, 1)[0] || '';
-  const semicolons = (firstLine.match(/;/g) || []).length;
-  const pipes = (firstLine.match(/\|/g) || []).length;
-  const delimiter = semicolons > pipes ? ';' : '|';
-  console.log(`[CAEPI] delimitador detectado: ${delimiter === ';' ? 'ponto e vírgula' : 'pipe'}`);
-  const iterator = delimiter === ';'
-    ? parseDelimitedRecords(text, ';')
-    : parsePipeRecords(text);
+  const text = txtBuffer.toString('latin1');
+  const iterator = parsePipeRecords(text);
   const first = iterator.next();
 
   if (first.done || !first.value?.length) {
@@ -640,10 +403,12 @@ async function main() {
   try {
     let download;
     try {
-      console.log('[CAEPI] baixando ZIP oficial via FTP...');
+      console.log('[CAEPI] baixando fonte principal gov.br...');
+      download = await downloadGovBr(archivePath);
+    } catch (govError) {
+      console.warn(`[CAEPI] gov.br falhou: ${govError.message}`);
+      console.log('[CAEPI] tentando FTP oficial...');
       download = await downloadFtp(archivePath);
-    } catch (ftpError) {
-      throw new Error(`FTP oficial do CAEPI indisponível: ${ftpError.message}`);
     }
 
     const archiveBytes = download.buffer.length;
