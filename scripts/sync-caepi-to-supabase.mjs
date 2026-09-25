@@ -373,12 +373,12 @@ async function main() {
   try {
     let download;
     try {
-      console.log('[CAEPI] baixando fonte principal gov.br...');
-      download = await downloadGovBr(archivePath);
-    } catch (govError) {
-      console.warn(`[CAEPI] gov.br falhou: ${govError.message}`);
-      console.log('[CAEPI] tentando FTP oficial...');
+      console.log('[CAEPI] baixando base diária oficial via FTP...');
       download = await downloadFtp(archivePath);
+    } catch (ftpError) {
+      // Não usamos o espelho estático do gov.br como fallback porque ele pode estar defasado.
+      // Se a fonte diária oficial falhar, abortamos e preservamos o dataset ativo anterior.
+      throw new Error(`FTP oficial do CAEPI indisponível: ${ftpError.message}`);
     }
 
     const archiveBytes = download.buffer.length;
