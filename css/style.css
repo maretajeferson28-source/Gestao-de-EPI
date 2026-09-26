@@ -70,12 +70,13 @@ tr:hover td{background:#151e27}
 .movement-table .col-ca{width:90px}
 .movement-table .col-tam{width:90px}
 .movement-table .col-resp{width:130px}
-.movement-table .col-action{width:100px}
+.movement-table .col-action{width:64px}
 .movement-table th,.movement-table td{height:54px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .movement-table th{height:40px}
 .movement-table td:nth-child(4),.movement-table th:nth-child(4){text-align:center}
 .movement-table .action-head,.movement-table .action-cell{text-align:center;overflow:visible}
-.movement-table .action-cell .btn{width:84px;padding:8px 10px;justify-content:center}
+.movement-table .action-cell .btn{justify-content:center}
+.movement-table .action-cell .delete-icon-btn{width:36px;height:36px;padding:0;gap:0;border-radius:9px}
 .movement-table .action-placeholder{color:#56616d}
 
 .pill{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:10px;background:#202b36;color:#ccd5de}
