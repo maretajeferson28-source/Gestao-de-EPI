@@ -60,19 +60,19 @@ th{position:sticky;top:0;background:#18212b;color:#b7c1cc;text-align:left;paddin
 td{padding:9px 10px;border-bottom:1px solid #202a34;color:#dce2e8}
 tr:hover td{background:#151e27}
 
-/* Movimentações: colunas travadas para novos registros não alterarem o layout */
+/* Movimentações: layout compacto para aproximar as colunas */
 .mov-table-wrap{overflow:auto;scrollbar-gutter:stable}
-.movement-table{table-layout:fixed;min-width:1040px;width:100%}
-.movement-table .col-date{width:112px}
-.movement-table .col-colab{width:24%}
-.movement-table .col-epi{width:22%}
-.movement-table .col-qtd{width:70px}
-.movement-table .col-ca{width:90px}
-.movement-table .col-tam{width:90px}
-.movement-table .col-resp{width:130px}
-.movement-table .col-action{width:64px}
-.movement-table th,.movement-table td{height:54px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.movement-table th{height:40px}
+.movement-table{table-layout:fixed;min-width:900px;width:100%}
+.movement-table .col-date{width:92px}
+.movement-table .col-colab{width:20%}
+.movement-table .col-epi{width:20%}
+.movement-table .col-qtd{width:50px}
+.movement-table .col-ca{width:70px}
+.movement-table .col-tam{width:64px}
+.movement-table .col-resp{width:105px}
+.movement-table .col-action{width:52px}
+.movement-table th,.movement-table td{height:46px;padding-left:6px;padding-right:6px;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.movement-table th{height:36px}
 .movement-table td:nth-child(4),.movement-table th:nth-child(4){text-align:center}
 .movement-table .action-head,.movement-table .action-cell{text-align:center;overflow:visible}
 .movement-table .action-cell .btn{justify-content:center}
