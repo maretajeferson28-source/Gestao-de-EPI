@@ -147,19 +147,19 @@ function renderDashboard(){
 
   const byDate=new Map(); arr.forEach(x=>byDate.set(x.data,(byDate.get(x.data)||0)+(Number(x.quantidade)||0)));
   const dates=[...byDate.entries()].sort((a,b)=>parseBR(a[0])-parseBR(b[0]));
-  makeChart('cTempo','line',{labels:dates.map(x=>x[0].slice(0,5)),datasets:[{label:'Qtd',data:dates.map(x=>x[1]),borderColor:'#f4b000',backgroundColor:'rgba(244,176,0,.12)',fill:true,tension:.32,pointRadius:3,pointBackgroundColor:'#f4b000'}]},{plugins:{legend:{display:false}}});
+  makeChart('cTempo','line',{labels:dates.map(x=>x[0].slice(0,5)),datasets:[{label:'Qtd',data:dates.map(x=>x[1]),borderColor:'#ff6600',backgroundColor:'rgba(255,102,0,.14)',fill:true,tension:.32,pointRadius:3,pointBackgroundColor:'#ffae00'}]},{plugins:{legend:{display:false}}});
 
   const topE=aggregate(arr,'epi').slice(0,10).reverse();
-  makeChart('cTop','bar',{labels:topE.map(x=>x[0]),datasets:[{label:'Qtd',data:topE.map(x=>x[1]),backgroundColor:'#f4b000',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
+  makeChart('cTop','bar',{labels:topE.map(x=>x[0]),datasets:[{label:'Qtd',data:topE.map(x=>x[1]),backgroundColor:'#ff6600',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
 
   const topC=aggregate(arr.filter(x=>x.colaborador&&x.colaborador!=='Bolsa Reserva'),'colaborador').slice(0,8).reverse();
-  makeChart('cColab','bar',{labels:topC.map(x=>x[0]),datasets:[{label:'Qtd',data:topC.map(x=>x[1]),backgroundColor:'#38bdf8',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
+  makeChart('cColab','bar',{labels:topC.map(x=>x[0]),datasets:[{label:'Qtd',data:topC.map(x=>x[1]),backgroundColor:'#ff8800',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
 
   const withC=arr.filter(x=>x.colaborador&&x.colaborador!=='Bolsa Reserva').length, without=arr.length-withC;
-  makeChart('cQual','doughnut',{labels:['Com colaborador/destino','Sem colaborador'],datasets:[{data:[withC,without],backgroundColor:['#35c98b','#f4b000'],borderColor:'#121820',borderWidth:4}]},{cutout:'68%',scales:{}});
+  makeChart('cQual','doughnut',{labels:['Com colaborador/destino','Sem colaborador'],datasets:[{data:[withC,without],backgroundColor:['#ff6600','#ffae00'],borderColor:'#121820',borderWidth:4}]},{cutout:'68%',scales:{}});
 
   const topR=aggregate(arr,'responsavel');
-  makeChart('cResp','bar',{labels:topR.map(x=>x[0]),datasets:[{label:'Qtd',data:topR.map(x=>x[1]),backgroundColor:'#d59400',borderRadius:4}]},{plugins:{legend:{display:false}}});
+  makeChart('cResp','bar',{labels:topR.map(x=>x[0]),datasets:[{label:'Qtd',data:topR.map(x=>x[1]),backgroundColor:'#ff5500',borderRadius:4}]},{plugins:{legend:{display:false}}});
 
   const last=[...arr].sort((a,b)=>parseBR(b.data)-parseBR(a.data)||String(b.id).localeCompare(String(a.id))).slice(0,15);
   $('latestCount').textContent=`${arr.length} registros filtrados`;
