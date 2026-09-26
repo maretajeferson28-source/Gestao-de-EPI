@@ -71,3 +71,23 @@ export async function queryCaepi(caInput) {
     }
   };
 }
+
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Método não permitido.' });
+  }
+
+  try {
+    const ca = Array.isArray(req.query?.ca) ? req.query.ca[0] : req.query?.ca;
+    const result = await queryCaepi(ca);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('[CAEPI API]', error);
+    return res.status(500).json({
+      error: 'Não foi possível consultar a base CAEPI.',
+      detail: error?.message || String(error)
+    });
+  }
+}
