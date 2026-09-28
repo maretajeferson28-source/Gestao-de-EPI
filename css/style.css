@@ -1,8 +1,8 @@
 
 :root{
   --bg:#0d0d0d; --panel:#1a1a1a; --panel2:#222222; --line:#303030;
-  --gold:#e86f18; --gold2:#c95712; --text:#ffffff; --muted:#aaaaaa;
-  --cyan:#df8528; --green:#35c98b; --red:#ef5b5b; --white:#fff;
+  --gold:#ff6600; --gold2:#ff5500; --text:#ffffff; --muted:#aaaaaa;
+  --cyan:#ff8800; --green:#35c98b; --red:#ef5b5b; --white:#fff;
   --shadow:0 18px 50px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
@@ -83,7 +83,7 @@ tr:hover td{background:#202020}
 .good{color:var(--green)}.warn{color:var(--gold)}.bad{color:var(--red)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .btn{border:1px solid #3a3a3a;background:#1a1a1a;color:#ffffff;border-radius:9px;padding:9px 12px}
-.btn.primary{background:linear-gradient(90deg,#e89a2d,#d65a12);border-color:#e86f18;color:#ffffff;font-weight:800;box-shadow:0 0 8px rgba(232,111,24,.18)}
+.btn.primary{background:linear-gradient(90deg,#ff9a00,#ff5500);border-color:#ff6600;color:#ffffff;font-weight:800;box-shadow:0 0 8px rgba(232,111,24,.18)}
 .btn.danger{border-color:#6a2f2f;color:#ff9b9b;background:#1a1111}
 .section-title{display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 14px}
 .section-title h2{margin:0;font-size:18px}.section-title p{margin:0;color:var(--muted);font-size:11px}
@@ -91,7 +91,7 @@ tr:hover td{background:#202020}
 .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
 .form-grid .wide{grid-column:span 2}
 .form-actions{display:flex;gap:8px;margin-top:16px}
-.notice{padding:10px 12px;border:1px solid rgba(232,111,24,.22);background:#1a130d;color:#e89a2d;border-radius:9px;font-size:11px;margin-bottom:12px}
+.notice{padding:10px 12px;border:1px solid rgba(232,111,24,.22);background:#1a130d;color:#ff9a00;border-radius:9px;font-size:11px;margin-bottom:12px}
 .search-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:12px}
 .search-row input{height:40px;background:#262626;border:1px solid rgba(232,111,24,.18);color:#fff;border-radius:9px;padding:0 12px}
 .empty{padding:40px;text-align:center;color:#8f8f8f}
@@ -140,7 +140,7 @@ tr:hover td{background:#202020}
 
 /* Consulta CAEPI - stage visual */
 .ca-section-title{align-items:center}
-.ca-visual-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(232,111,24,.26);background:#1a130d;color:#e89a2d;border-radius:999px;font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.ca-visual-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(232,111,24,.26);background:#1a130d;color:#ff9a00;border-radius:999px;font-size:10px;text-transform:uppercase;letter-spacing:.08em}
 .ca-visual-badge svg{width:14px;height:14px}
 .ca-layout{display:grid;grid-template-columns:minmax(290px,360px) minmax(0,1fr);gap:14px;align-items:stretch}
 .ca-search-panel,.ca-stage{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
@@ -173,7 +173,7 @@ tr:hover td{background:#202020}
 .ca-stage-top h3{margin:0;font-size:18px}
 .ca-status{display:inline-flex;align-items:center;gap:7px;border:1px solid #3a3a3a;background:#171717;padding:7px 10px;border-radius:999px;color:#a6b0ba;font-size:10px;white-space:nowrap}
 .ca-status-dot{width:7px;height:7px;border-radius:50%;background:#66727f;box-shadow:0 0 0 4px rgba(102,114,127,.12)}
-.ca-status.preview{color:#e89a2d;border-color:rgba(232,111,24,.28);background:#1a130d}
+.ca-status.preview{color:#ff9a00;border-color:rgba(232,111,24,.28);background:#1a130d}
 .ca-status.preview .ca-status-dot{background:var(--gold);box-shadow:0 0 0 4px rgba(232,111,24,.09)}
 .ca-hero{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:15px;padding:20px 0;position:relative;z-index:1}
 .ca-hero-icon{width:64px;height:64px;border-radius:16px;background:#1a130d;border:1px solid rgba(232,111,24,.30);display:grid;place-items:center;color:var(--gold)}
@@ -213,7 +213,7 @@ tr:hover td{background:#202020}
 
 
 /* CAEPI status integrado */
-.ca-status.loading{color:#e89a2d;border-color:rgba(232,111,24,.28);background:#1a130d}
+.ca-status.loading{color:#ff9a00;border-color:rgba(232,111,24,.28);background:#1a130d}
 .ca-status.loading .ca-status-dot{background:var(--gold);box-shadow:0 0 0 4px rgba(232,111,24,.09);animation:caPulse 1s infinite}
 .ca-status.valid{color:#70e0aa;border-color:#255c45;background:#0d1b16}
 .ca-status.valid .ca-status-dot{background:var(--green);box-shadow:0 0 0 4px rgba(53,201,139,.12)}
@@ -226,7 +226,7 @@ tr:hover td{background:#202020}
 @keyframes caPulse{50%{opacity:.35}}
 
 /* Tema visual inspirado no V.I.D.A.S antigo: dark + orange, sem alterar layout */
-.title h1 span,.auth-card h1 span{color:#e86f18}
+.title h1 span,.auth-card h1 span{color:#ff6600}
 .shield,.nav .ico,.ca-search-icon,.ca-search-note>svg,.ca-hero-icon{filter:drop-shadow(0 0 5px rgba(232,111,24,.16))}
 .btn.primary:hover{box-shadow:0 0 14px rgba(232,132,36,.26)}
 
