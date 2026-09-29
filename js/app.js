@@ -172,7 +172,7 @@ function renderDashboard(){
 }
 
 function nav(page){
-  if(page==='autorizacoes' && !currentIsAdmin) return;
+  if(!currentIsAdmin && ['nova','colaboradores','epis','autorizacoes','dados'].includes(page)) return;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.pageContent===page));
   if(page==='dashboard') renderDashboard();
@@ -338,6 +338,7 @@ function findCollaborator(nome){
 
 $('saidaForm').addEventListener('submit',async e=>{
   e.preventDefault();
+  if(!currentIsAdmin) return;
   $('saidaMsg').textContent='';
   const epiNome=$('nEpi').value.trim(), resp=$('nResp').value.trim(), qtd=Number($('nQtd').value), colNome=$('nColab').value.trim();
   if(!epiNome||!resp||!Number.isInteger(qtd)||qtd<1){$('saidaMsg').textContent='Confira EPI, quantidade e responsável.';return}
@@ -373,7 +374,7 @@ $('saidaForm').addEventListener('submit',async e=>{
 function renderMovs(){
   const q=$('movSearch').value.trim().toLowerCase();
   const arr=[...movements].sort((a,b)=>parseBR(b.data)-parseBR(a.data)||String(b.id).localeCompare(String(a.id))).filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)));
-  $('movBody').innerHTML=arr.map(x=>`<tr><td title="${esc(x.data)}">${esc(x.data)}</td><td title="${esc(x.colaborador||'—')}">${esc(x.colaborador||'—')}</td><td title="${esc(x.epi)}">${esc(x.epi)}</td><td>${esc(x.quantidade??'—')}</td><td title="${esc(x.ca||'N/A')}">${esc(x.ca||'N/A')}</td><td title="${esc(x.tamanho||'N/A')}">${esc(x.tamanho||'N/A')}</td><td title="${esc(x.responsavel)}">${esc(x.responsavel)}</td><td class="action-cell">${x.custom?`<button class="btn danger delete-icon-btn" data-del="${esc(x.id)}" title="Excluir" aria-label="Excluir"><i data-lucide="trash-2" aria-hidden="true"></i></button>`:'<span class="action-placeholder">—</span>'}</td></tr>`).join('');
+  $('movBody').innerHTML=arr.map(x=>`<tr><td title="${esc(x.data)}">${esc(x.data)}</td><td title="${esc(x.colaborador||'—')}">${esc(x.colaborador||'—')}</td><td title="${esc(x.epi)}">${esc(x.epi)}</td><td>${esc(x.quantidade??'—')}</td><td title="${esc(x.ca||'N/A')}">${esc(x.ca||'N/A')}</td><td title="${esc(x.tamanho||'N/A')}">${esc(x.tamanho||'N/A')}</td><td title="${esc(x.responsavel)}">${esc(x.responsavel)}</td><td class="action-cell">${currentIsAdmin&&x.custom?`<button class="btn danger delete-icon-btn" data-del="${esc(x.id)}" title="Excluir" aria-label="Excluir"><i data-lucide="trash-2" aria-hidden="true"></i></button>`:'<span class="action-placeholder">—</span>'}</td></tr>`).join('');
   document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
     if(!confirm('Excluir esta movimentação criada pelo site?')) return;
     const {error}=await sb.from('movimentacoes_epi').delete().eq('id',b.dataset.del).eq('origem','Site Gestão EPI');
@@ -388,6 +389,7 @@ function renderColabs(){
   $('colabCards').innerHTML=collaborators.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>`<div class="mini-card"><strong>${esc(c.nome)}</strong><span>${esc(c.cargo||'Cargo não informado')}</span><span>${esc(c.setor||'Setor não informado')}</span></div>`).join('')||'<div class="empty">Nenhum colaborador.</div>';
 }
 $('addColab').addEventListener('click',async()=>{
+  if(!currentIsAdmin) return;
   const nome=$('newColabNome').value.trim(),cargo=$('newColabCargo').value.trim(),setor=$('newColabSetor').value.trim();
   if(!nome) return;
   if(collaborators.some(x=>normalize(x.nome)===normalize(nome))){alert('Esse colaborador já está cadastrado.');return}
@@ -401,6 +403,7 @@ function renderEpis(){
   $('epiCards').innerHTML=epiCatalog.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>`<div class="mini-card"><strong>${esc(c.nome)}</strong><span>${esc(c.categoria||'Categoria não informada')}</span></div>`).join('')||'<div class="empty">Nenhum EPI.</div>';
 }
 $('addEpi').addEventListener('click',async()=>{
+  if(!currentIsAdmin) return;
   const nome=$('newEpiNome').value.trim(),categoria=$('newEpiCat').value.trim();
   if(!nome) return;
   if(epiCatalog.some(x=>normalize(x.nome)===normalize(nome))){alert('Esse EPI/item já está cadastrado.');return}
@@ -411,13 +414,18 @@ $('addEpi').addEventListener('click',async()=>{
 });
 
 async function loadAdminAccess(){
-  const navBtn=$('authzNavBtn');
   const {data,error}=await sb.rpc('epi_admin_is_admin');
   currentIsAdmin=!error && data===true;
-  if(navBtn) navBtn.hidden=!currentIsAdmin;
-  if(!currentIsAdmin && document.querySelector('.page.active')?.dataset?.pageContent==='autorizacoes'){
+
+  document.querySelectorAll('[data-admin-only]').forEach(el=>{
+    el.hidden=!currentIsAdmin;
+  });
+
+  const currentPage=document.querySelector('.page.active')?.dataset?.pageContent;
+  if(!currentIsAdmin && ['nova','colaboradores','epis','autorizacoes','dados'].includes(currentPage)){
     nav('dashboard');
   }
+
   refreshIcons();
   return currentIsAdmin;
 }
@@ -653,7 +661,7 @@ function showAuth(message=''){
   waitingSession=null;
   currentIsAdmin=false;
   authorizedUsers=[];
-  if($('authzNavBtn')) $('authzNavBtn').hidden=true;
+  document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=true});
   $('epiApp').classList.add('app-hidden');
   $('accessWaitScreen').classList.add('hidden');
   $('authScreen').classList.remove('hidden');
