@@ -281,6 +281,7 @@ tr:hover td{background:#202020}
 .authz-note{display:flex;align-items:center;gap:7px;margin-top:10px;color:#888;font-size:10px}
 .authz-note svg{width:13px;height:13px;color:#999}
 #authzNavBtn[hidden]{display:none!important}
+.nav button[data-admin-only][hidden]{display:none!important}
 @media(max-width:980px){
   .authz-grid{grid-template-columns:1fr}
 }
