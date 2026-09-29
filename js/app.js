@@ -220,6 +220,15 @@ function resetCaStage(ca=''){
 
 function setCaStatus(label,kind='waiting'){
   const status=$('caStageStatus');
+  const stage=$('caStage');
+
+  if(stage){
+    stage.classList.remove('ca-result-valid','ca-result-invalid','ca-result-error');
+    if(kind==='valid') stage.classList.add('ca-result-valid');
+    if(kind==='invalid') stage.classList.add('ca-result-invalid');
+    if(kind==='error') stage.classList.add('ca-result-error');
+  }
+
   if(!status) return;
   status.className=`ca-status ${kind}`;
   status.innerHTML=`<span class="ca-status-dot"></span>${esc(label)}`;
