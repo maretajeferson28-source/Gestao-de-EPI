@@ -202,6 +202,68 @@
         <div class="cards-list" id="epiCards"></div>
       </section>
 
+      <div class="epi-detail-modal hidden" id="epiDetailModal" role="dialog" aria-modal="true" aria-labelledby="epiDetailTitle">
+        <div class="epi-detail-card">
+          <button class="epi-detail-close" id="epiDetailClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+
+          <div class="epi-detail-head">
+            <div class="epi-detail-icon"><i data-lucide="hard-hat" aria-hidden="true"></i></div>
+            <div class="epi-detail-head-copy">
+              <span class="epi-detail-kicker">CADASTRO TÉCNICO DO ITEM</span>
+              <h2 id="epiDetailTitle">EPI</h2>
+              <p id="epiDetailCategory">Categoria não informada</p>
+            </div>
+            <div class="epi-detail-count" id="epiDetailCount">0 C.A.s vinculados</div>
+          </div>
+
+          <div class="epi-detail-layout">
+            <section class="epi-variants-panel">
+              <div class="epi-detail-section-head">
+                <div><h3>C.A.s e especificações</h3><p>Um mesmo item pode possuir vários certificados, fabricantes e características.</p></div>
+              </div>
+              <div class="epi-variant-list" id="epiVariantList"></div>
+            </section>
+
+            <aside class="epi-variant-editor" id="epiVariantEditor">
+              <div class="epi-detail-section-head">
+                <div><h3 id="epiVariantEditorTitle">Adicionar C.A.</h3><p>Consulte a base CAEPI e complemente com os dados comerciais.</p></div>
+                <button class="btn compact hidden" id="epiVariantCancelEdit" type="button">Cancelar edição</button>
+              </div>
+
+              <div class="epi-ca-lookup-row">
+                <div class="field">
+                  <label>C.A.</label>
+                  <input id="epiVarCa" inputmode="numeric" maxlength="8" placeholder="Ex.: 39707">
+                </div>
+                <button class="btn" id="epiVarLookup" type="button"><i data-lucide="search-check" aria-hidden="true"></i>Buscar CAEPI</button>
+              </div>
+              <div class="epi-var-lookup-status" id="epiVarLookupStatus">Digite um C.A. para buscar os dados oficiais.</div>
+
+              <div class="epi-var-grid">
+                <div class="field wide"><label>Fabricante</label><input id="epiVarFabricante" placeholder="Fabricante"></div>
+                <div class="field"><label>CNPJ</label><input id="epiVarCnpj" placeholder="CNPJ"></div>
+                <div class="field"><label>Marca</label><input id="epiVarMarca" placeholder="Marca"></div>
+                <div class="field"><label>Referência / Modelo</label><input id="epiVarReferencia" placeholder="Referência"></div>
+                <div class="field"><label>Validade do C.A.</label><input id="epiVarValidade" type="date"></div>
+                <div class="field"><label>Situação</label><input id="epiVarSituacao" placeholder="Válido / Vencido"></div>
+                <div class="field wide"><label>Norma</label><input id="epiVarNorma" placeholder="Norma aplicável"></div>
+                <div class="field full"><label>Descrição oficial</label><textarea id="epiVarDescricao" rows="3" placeholder="Descrição do registro CAEPI"></textarea></div>
+                <div class="field full"><label>Características / especificação interna</label><textarea id="epiVarCaracteristicas" rows="3" placeholder="Material, cor, tamanho, proteção, aplicação, diferenciais..."></textarea></div>
+                <div class="field"><label>Preço unitário (R$)</label><input id="epiVarPreco" type="number" min="0" step="0.01" placeholder="0,00"></div>
+                <div class="field"><label>Unidade</label><input id="epiVarUnidade" value="un" placeholder="un / par / cx"></div>
+                <div class="field wide"><label>Fornecedor</label><input id="epiVarFornecedor" placeholder="Fornecedor / distribuidor"></div>
+                <div class="field full"><label>Observações</label><textarea id="epiVarObservacao" rows="2" placeholder="Observações de compra, uso ou substituição"></textarea></div>
+              </div>
+
+              <div class="epi-var-actions">
+                <button class="btn primary" id="epiVariantSave" type="button"><i data-lucide="save" aria-hidden="true"></i>Salvar C.A.</button>
+              </div>
+              <div class="msg" id="epiVariantMsg"></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
 
       <section class="page" data-page-content="caepi">
         <div class="section-title ca-section-title">
