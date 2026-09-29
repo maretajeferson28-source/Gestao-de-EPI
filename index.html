@@ -49,6 +49,7 @@
       <button data-page="colaboradores"><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
       <button data-page="epis"><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
       <button data-page="caepi"><span class="ico"><i data-lucide="badge-check" aria-hidden="true"></i></span><span class="text">Consulta C.A.</span></button>
+      <button data-page="autorizacoes" id="authzNavBtn" hidden><span class="ico"><i data-lucide="user-round-cog" aria-hidden="true"></i></span><span class="text">Autorizações</span></button>
       <button data-page="dados"><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
     </nav>
     <div class="side-foot">Base centralizada no Supabase.<br>V4 • banco PostgreSQL • atualização em tempo real.</div>
@@ -237,6 +238,68 @@
               <span id="caSourceInfo"><i data-lucide="clock-3" aria-hidden="true"></i> Base: —</span>
             </div>
           </section>
+        </div>
+      </section>
+
+      <section class="page" data-page-content="autorizacoes">
+        <div class="section-title">
+          <div>
+            <h2>Autorizações</h2>
+            <p>Gerencie quem pode acessar os dados operacionais do Gestão de EPI.</p>
+          </div>
+          <span class="authz-admin-badge"><i data-lucide="shield-check" aria-hidden="true"></i> Administrador</span>
+        </div>
+
+        <div class="authz-grid">
+          <div class="form-card authz-form-card">
+            <div class="authz-card-head">
+              <div class="authz-card-icon"><i data-lucide="user-plus" aria-hidden="true"></i></div>
+              <div>
+                <h3>Autorizar usuário</h3>
+                <p>Cadastre o e-mail que a pessoa usará para entrar no sistema.</p>
+              </div>
+            </div>
+
+            <form id="authzForm">
+              <div class="field">
+                <label>Nome</label>
+                <input id="authzName" autocomplete="off" placeholder="Nome do usuário">
+              </div>
+              <div class="field">
+                <label>E-mail</label>
+                <input id="authzEmail" type="email" autocomplete="off" placeholder="usuario@empresa.com" required>
+              </div>
+              <div class="form-actions">
+                <button class="btn primary" type="submit"><i data-lucide="shield-plus" aria-hidden="true"></i>Autorizar acesso</button>
+              </div>
+              <div class="msg" id="authzMsg" aria-live="polite"></div>
+            </form>
+          </div>
+
+          <div class="panel authz-list-panel">
+            <div class="panel-head">
+              <div>
+                <h3>Usuários autorizados</h3>
+                <small id="authzCount">Carregando...</small>
+              </div>
+              <button class="btn compact" id="authzRefresh" type="button"><i data-lucide="refresh-cw" aria-hidden="true"></i>Atualizar</button>
+            </div>
+
+            <div class="table-wrap authz-table-wrap">
+              <table class="authz-table">
+                <thead>
+                  <tr>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="authzBody"></tbody>
+              </table>
+            </div>
+            <div class="authz-note"><i data-lucide="info" aria-hidden="true"></i> Contas administrativas ficam protegidas contra exclusão e desativação por esta tela.</div>
+          </div>
         </div>
       </section>
 
