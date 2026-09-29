@@ -407,16 +407,6 @@ $('addEpi').addEventListener('click',async()=>{
   await loadAll();
 });
 
-async function registerCurrentUserAccess(){
-  const {data,error}=await sb.rpc('epi_register_access_request');
-  if(error){
-    console.error('[AUTORIZAÇÕES] Falha ao registrar solicitação de acesso:',error);
-    return null;
-  }
-  const row=Array.isArray(data)?data[0]:data;
-  return row||null;
-}
-
 async function loadAdminAccess(){
   const navBtn=$('authzNavBtn');
   const {data,error}=await sb.rpc('epi_admin_is_admin');
@@ -568,10 +558,14 @@ async function showApp(session){
   $('userEmail').textContent=session?.user?.email || '';
   refreshIcons();
 
-  const access=await registerCurrentUserAccess();
   await loadAdminAccess();
 
-  if(access && access.ativo===false){
+  const {data:authorized,error:accessError}=await sb.rpc('epi_user_is_authorized');
+  if(accessError){
+    console.error('[AUTORIZAÇÕES] Falha ao verificar acesso:',accessError);
+  }
+
+  if(!authorized){
     movements=[];
     collaborators=[];
     epiCatalog=[];
@@ -580,7 +574,7 @@ async function showApp(session){
     renderMovs();
     renderColabs();
     renderEpis();
-    setStatus('Cadastro recebido • aguardando autorização', false);
+    setStatus('Acesso não autorizado', false);
     return;
   }
 
