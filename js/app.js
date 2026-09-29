@@ -407,6 +407,16 @@ $('addEpi').addEventListener('click',async()=>{
   await loadAll();
 });
 
+async function registerCurrentUserAccess(){
+  const {data,error}=await sb.rpc('epi_register_access_request');
+  if(error){
+    console.error('[AUTORIZAÇÕES] Falha ao registrar solicitação de acesso:',error);
+    return null;
+  }
+  const row=Array.isArray(data)?data[0]:data;
+  return row||null;
+}
+
 async function loadAdminAccess(){
   const navBtn=$('authzNavBtn');
   const {data,error}=await sb.rpc('epi_admin_is_admin');
@@ -557,7 +567,23 @@ async function showApp(session){
   $('epiApp').classList.remove('app-hidden');
   $('userEmail').textContent=session?.user?.email || '';
   refreshIcons();
+
+  const access=await registerCurrentUserAccess();
   await loadAdminAccess();
+
+  if(access && access.ativo===false){
+    movements=[];
+    collaborators=[];
+    epiCatalog=[];
+    rebuildLists();
+    renderDashboard();
+    renderMovs();
+    renderColabs();
+    renderEpis();
+    setStatus('Cadastro recebido • aguardando autorização', false);
+    return;
+  }
+
   await loadAll();
   startRealtime();
 }
