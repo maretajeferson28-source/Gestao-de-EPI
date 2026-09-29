@@ -542,3 +542,30 @@ tr:hover td{background:#202020}
 
 /* Base CAEPI no rodapé do painel de consulta */
 .ca-base-bottom{margin-top:auto;padding-top:12px}
+
+
+/* Teste verde no stage da Consulta C.A. */
+.ca-stage{
+  background:
+    radial-gradient(circle at 80% 0%,rgba(47,143,104,.06),transparent 30%),
+    linear-gradient(180deg,#1a1a1a,#121212);
+}
+.ca-stage:after{
+  border-color:rgba(47,143,104,.05);
+  box-shadow:0 0 0 38px rgba(47,143,104,.022),0 0 0 76px rgba(47,143,104,.014);
+}
+.ca-stage .ca-hero-icon{
+  border-color:rgba(47,143,104,.42);
+  color:#2f8f68;
+}
+.ca-stage .ca-status.preview,
+.ca-stage .ca-status.loading{
+  color:#58b58a;
+  border-color:rgba(47,143,104,.32);
+  background:#101a16;
+}
+.ca-stage .ca-status.preview .ca-status-dot,
+.ca-stage .ca-status.loading .ca-status-dot{
+  background:#2f8f68;
+  box-shadow:0 0 0 4px rgba(47,143,104,.10);
+}
