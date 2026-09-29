@@ -251,33 +251,29 @@
         </div>
 
         <div class="authz-grid">
-          <div class="form-card authz-form-card authz-flow-card">
+          <div class="form-card authz-form-card">
             <div class="authz-card-head">
-              <div class="authz-card-icon"><i data-lucide="shield-check" aria-hidden="true"></i></div>
+              <div class="authz-card-icon"><i data-lucide="user-plus" aria-hidden="true"></i></div>
               <div>
-                <h3>Controle de acesso</h3>
-                <p>Novos logins chegam automaticamente aqui para sua aprovação.</p>
+                <h3>Autorizar usuário</h3>
+                <p>Cadastre diretamente o e-mail que poderá acessar o sistema.</p>
               </div>
             </div>
 
-            <div class="authz-flow">
-              <div class="authz-flow-step">
-                <span>1</span>
-                <div><strong>Usuário entra</strong><small>Google ou e-mail e senha</small></div>
+            <form id="authzForm">
+              <div class="field">
+                <label>Nome</label>
+                <input id="authzName" autocomplete="off" placeholder="Nome do usuário">
               </div>
-              <i data-lucide="chevron-down" aria-hidden="true"></i>
-              <div class="authz-flow-step">
-                <span>2</span>
-                <div><strong>Fica pendente</strong><small>Sem acesso aos dados</small></div>
+              <div class="field">
+                <label>E-mail</label>
+                <input id="authzEmail" type="email" autocomplete="off" placeholder="usuario@empresa.com" required>
               </div>
-              <i data-lucide="chevron-down" aria-hidden="true"></i>
-              <div class="authz-flow-step">
-                <span>3</span>
-                <div><strong>Você decide</strong><small>Ativa, bloqueia ou remove</small></div>
+              <div class="form-actions">
+                <button class="btn primary" type="submit"><i data-lucide="shield-plus" aria-hidden="true"></i>Autorizar acesso</button>
               </div>
-            </div>
-
-            <div class="authz-flow-note"><i data-lucide="lock-keyhole" aria-hidden="true"></i> Suas contas administrativas permanecem protegidas.</div>
+              <div class="msg" id="authzMsg" aria-live="polite"></div>
+            </form>
           </div>
 
           <div class="panel authz-list-panel">
