@@ -64,6 +64,48 @@
   </div>
 </div>
 
+<div class="profile-modal hidden" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+  <div class="profile-modal-card">
+    <button class="profile-modal-close" id="profileModalClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+
+    <div class="profile-modal-head">
+      <div class="profile-preview" id="profilePreviewWrap">
+        <img id="profilePreviewImg" alt="" hidden>
+        <span id="profilePreviewInitial">U</span>
+      </div>
+      <div>
+        <span class="profile-modal-kicker">MEU PERFIL</span>
+        <h2 id="profileModalTitle">Foto e nome</h2>
+        <p>Essas informações aparecem somente no canto inferior da barra lateral.</p>
+      </div>
+    </div>
+
+    <form id="profileForm">
+      <div class="field">
+        <label>Nome exibido</label>
+        <input id="profileNameInput" maxlength="50" autocomplete="name" placeholder="Seu nome">
+      </div>
+
+      <div class="field profile-photo-field">
+        <label>Foto do perfil</label>
+        <label class="profile-upload-box" for="profilePhotoInput">
+          <i data-lucide="image-plus" aria-hidden="true"></i>
+          <span>Escolher imagem</span>
+          <small>JPG, PNG ou WEBP • até 2 MB</small>
+        </label>
+        <input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+        <div class="profile-file-name" id="profileFileName">Nenhuma nova imagem selecionada.</div>
+      </div>
+
+      <div class="profile-modal-actions">
+        <button class="btn primary" type="submit"><i data-lucide="save" aria-hidden="true"></i>Salvar perfil</button>
+        <button class="btn" id="profileCancelBtn" type="button">Cancelar</button>
+      </div>
+      <div class="msg" id="profileMsg" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
 <div class="app app-hidden" id="epiApp">
   <aside class="sidebar">
     <div class="brand"><div class="brand-badge"><div class="shield"><i data-lucide="shield-check" aria-hidden="true"></i></div><span>EPI</span></div><small>CONTROLE OPERACIONAL</small></div>
@@ -77,13 +119,17 @@
       <button data-page="autorizacoes" id="authzNavBtn" data-admin-only hidden><span class="ico"><i data-lucide="user-round-cog" aria-hidden="true"></i></span><span class="text">Autorizações</span></button>
       <button data-page="dados" data-admin-only hidden><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
     </nav>
-    <div class="side-foot user-side-profile" id="sideUserProfile">
+    <button class="side-foot user-side-profile" id="sideUserProfile" type="button" title="Editar perfil">
       <div class="side-user-avatar" id="sideUserAvatarWrap">
         <img id="sideUserAvatar" alt="" hidden>
         <span id="sideUserInitial">U</span>
+        <span class="side-user-camera"><i data-lucide="camera" aria-hidden="true"></i></span>
       </div>
-      <strong id="sideUserName">Usuário</strong>
-    </div>
+      <div class="side-user-copy">
+        <strong id="sideUserName">Usuário</strong>
+        <small>Editar perfil</small>
+      </div>
+    </button>
   </aside>
   <main class="main">
     <header class="topbar">
