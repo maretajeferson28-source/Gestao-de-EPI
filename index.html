@@ -39,6 +39,30 @@
     </form>
   </div>
 </div>
+<div class="access-wait-screen hidden" id="accessWaitScreen">
+  <div class="access-wait-card">
+    <div class="access-wait-icon"><i data-lucide="clock-3" aria-hidden="true"></i></div>
+    <span class="access-wait-kicker">ACESSO PENDENTE</span>
+    <h1>Aguardando autorização do administrador</h1>
+    <p>Seu login foi reconhecido, mas este e-mail ainda não está liberado para acessar os dados do Gestão de EPI.</p>
+
+    <div class="access-wait-account">
+      <span>Conta conectada</span>
+      <strong id="accessWaitEmail">—</strong>
+    </div>
+
+    <div class="access-wait-status">
+      <span class="access-wait-dot"></span>
+      <span>Verificando autorização automaticamente...</span>
+    </div>
+
+    <div class="access-wait-actions">
+      <button class="btn primary" id="accessWaitCheckBtn" type="button"><i data-lucide="refresh-cw" aria-hidden="true"></i>Verificar agora</button>
+      <button class="btn" id="accessWaitSignOutBtn" type="button"><i data-lucide="log-out" aria-hidden="true"></i>Sair</button>
+    </div>
+  </div>
+</div>
+
 <div class="app app-hidden" id="epiApp">
   <aside class="sidebar">
     <div class="brand"><div class="brand-badge"><div class="shield"><i data-lucide="shield-check" aria-hidden="true"></i></div><span>EPI</span></div><small>CONTROLE OPERACIONAL</small></div>
