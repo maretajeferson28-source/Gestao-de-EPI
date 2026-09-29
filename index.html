@@ -117,7 +117,6 @@
       <button data-page="epis" data-admin-only hidden><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
       <button data-page="caepi"><span class="ico"><i data-lucide="badge-check" aria-hidden="true"></i></span><span class="text">Consulta C.A.</span></button>
       <button data-page="autorizacoes" id="authzNavBtn" data-admin-only hidden><span class="ico"><i data-lucide="user-round-cog" aria-hidden="true"></i></span><span class="text">Autorizações</span></button>
-      <button data-page="dados" data-admin-only hidden><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
     </nav>
     <button class="side-foot user-side-profile" id="sideUserProfile" type="button" title="Editar perfil">
       <div class="side-user-avatar" id="sideUserAvatarWrap">
@@ -239,12 +238,11 @@
               </div>
             </div>
 
-            <div class="ca-mini-flow">
-              <div><span>1</span><small>Digite o C.A.</small></div>
-              <i data-lucide="chevron-right" aria-hidden="true"></i>
-              <div><span>2</span><small>Consulta oficial</small></div>
-              <i data-lucide="chevron-right" aria-hidden="true"></i>
-              <div><span>3</span><small>Ficha completa</small></div>
+            <div class="ca-panel-actions">
+              <button class="btn ca-data-button" id="caDataBtn" type="button" data-admin-only hidden>
+                <i data-lucide="database" aria-hidden="true"></i>
+                <span>Dados</span>
+              </button>
             </div>
           </aside>
 
