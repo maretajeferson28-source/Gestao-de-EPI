@@ -68,13 +68,13 @@
     <div class="brand"><div class="brand-badge"><div class="shield"><i data-lucide="shield-check" aria-hidden="true"></i></div><span>EPI</span></div><small>CONTROLE OPERACIONAL</small></div>
     <nav class="nav">
       <button class="active" data-page="dashboard"><span class="ico"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span><span class="text">Dashboard</span></button>
-      <button data-page="nova"><span class="ico"><i data-lucide="package-plus" aria-hidden="true"></i></span><span class="text">Nova saída</span></button>
+      <button data-page="nova" data-admin-only hidden><span class="ico"><i data-lucide="package-plus" aria-hidden="true"></i></span><span class="text">Nova saída</span></button>
       <button data-page="movimentacoes"><span class="ico"><i data-lucide="arrow-right-left" aria-hidden="true"></i></span><span class="text">Movimentações</span></button>
-      <button data-page="colaboradores"><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
-      <button data-page="epis"><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
+      <button data-page="colaboradores" data-admin-only hidden><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
+      <button data-page="epis" data-admin-only hidden><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
       <button data-page="caepi"><span class="ico"><i data-lucide="badge-check" aria-hidden="true"></i></span><span class="text">Consulta C.A.</span></button>
-      <button data-page="autorizacoes" id="authzNavBtn" hidden><span class="ico"><i data-lucide="user-round-cog" aria-hidden="true"></i></span><span class="text">Autorizações</span></button>
-      <button data-page="dados"><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
+      <button data-page="autorizacoes" id="authzNavBtn" data-admin-only hidden><span class="ico"><i data-lucide="user-round-cog" aria-hidden="true"></i></span><span class="text">Autorizações</span></button>
+      <button data-page="dados" data-admin-only hidden><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
     </nav>
     <div class="side-foot">Base centralizada no Supabase.<br>V4 • banco PostgreSQL • atualização em tempo real.</div>
   </aside>
