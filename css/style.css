@@ -703,12 +703,12 @@ tr:hover td{background:#202020}
   min-width:0;
 }
 .epi-variant-meta svg{
-  width:15px;
-  height:15px;
+  width:16px;
+  height:16px;
   color:#8f8f8f;
 }
 .epi-variant-meta b{
-  font-size:9px;
+  font-size:10px;
   line-height:1;
   color:#858585;
   font-weight:650;
@@ -720,7 +720,7 @@ tr:hover td{background:#202020}
   text-overflow:ellipsis;
   white-space:nowrap;
   color:#f0f0f0;
-  font-size:11px;
+  font-size:12px;
   line-height:1;
   font-weight:750;
 }
