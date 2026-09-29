@@ -283,6 +283,33 @@
                 <div class="field"><label>Unidade</label><input id="epiVarUnidade" value="un" placeholder="un / par / cx"></div>
                 <div class="field wide"><label>Fornecedor</label><input id="epiVarFornecedor" placeholder="Fornecedor / distribuidor"></div>
                 <div class="field full"><label>Observações</label><textarea id="epiVarObservacao" rows="2" placeholder="Observações de compra, uso ou substituição"></textarea></div>
+
+                <div class="field full">
+                  <label>Imagem do modelo / C.A.</label>
+                  <div class="epi-variant-image-editor">
+                    <div class="epi-variant-image-preview">
+                      <img id="epiVariantImagePreview" alt="Imagem do modelo do C.A." hidden>
+                      <div class="epi-variant-image-empty" id="epiVariantImageEmpty">
+                        <i data-lucide="image-plus" aria-hidden="true"></i>
+                        <strong>Sem imagem do modelo</strong>
+                        <span>Anexe uma foto específica deste C.A.</span>
+                      </div>
+                    </div>
+
+                    <div class="epi-variant-image-controls">
+                      <div class="epi-variant-image-file">
+                        <strong id="epiVariantImageName">Nenhuma imagem selecionada.</strong>
+                        <span>JPG, PNG ou WEBP • até 5 MB</span>
+                      </div>
+                      <div class="epi-variant-image-buttons">
+                        <button class="btn compact" id="epiVariantImageSelect" type="button"><i data-lucide="upload" aria-hidden="true"></i>Selecionar</button>
+                        <button class="btn compact" id="epiVariantImageChange" type="button"><i data-lucide="image-plus" aria-hidden="true"></i>Trocar</button>
+                        <button class="btn compact danger" id="epiVariantImageRemove" type="button" hidden><i data-lucide="trash-2" aria-hidden="true"></i>Remover</button>
+                      </div>
+                    </div>
+                    <input id="epiVariantImageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+                  </div>
+                </div>
               </div>
 
               <div class="epi-var-actions">
