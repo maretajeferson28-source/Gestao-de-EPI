@@ -50,86 +50,116 @@ jobs:
           cat > /tmp/make_pdf.py <<'PY'
           from pathlib import Path
           from reportlab.pdfgen import canvas
-          from reportlab.lib.pagesizes import A4
+          from reportlab.lib.pagesizes import A4, landscape
           from reportlab.pdfbase import pdfmetrics
           from reportlab.pdfbase.ttfonts import TTFont
           from reportlab.lib.colors import HexColor
 
           names=[x.strip() for x in Path("manufacturers.txt").read_text(encoding="utf-8").splitlines() if x.strip()]
           out="fabricantes_caepi.pdf"
-          W,H=A4
+          W,H=landscape(A4)
           margin=34
-          header_h=52
-          footer_h=24
-          gap=18
+          header_h=48
+          footer_h=22
+          gap=22
           col_w=(W-2*margin-gap)/2
-          line_h=11.2
+          font_size=7.2
+          leading=9.0
+          item_gap=2.6
           font_path="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
           bold_path="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
           pdfmetrics.registerFont(TTFont("DV",font_path))
           pdfmetrics.registerFont(TTFont("DVB",bold_path))
 
-          c=canvas.Canvas(out,pagesize=A4)
+          c=canvas.Canvas(out,pagesize=landscape(A4))
           c.setTitle("Fabricantes CAEPI")
           orange=HexColor("#ff6600")
           dark=HexColor("#151515")
           gray=HexColor("#707070")
+          textc=HexColor("#222222")
+          linec=HexColor("#e2e2e2")
 
           def header(page_no):
               c.setFillColor(dark)
               c.rect(0,H-header_h,W,header_h,fill=1,stroke=0)
               c.setFillColor(orange)
               c.setFont("DVB",14)
-              c.drawString(margin,H-25,"FABRICANTES CAEPI")
+              c.drawString(margin,H-23,"FABRICANTES CAEPI")
               c.setFillColor(HexColor("#d0d0d0"))
               c.setFont("DV",7.5)
-              c.drawRightString(W-margin,H-24,f"{len(names):,}".replace(",", ".")+" fabricantes distintos")
+              c.drawRightString(W-margin,H-22,f"{len(names):,}".replace(",", ".")+" fabricantes distintos")
               c.setStrokeColor(orange)
               c.setLineWidth(1.2)
-              c.line(margin,H-header_h+7,W-margin,H-header_h+7)
+              c.line(margin,H-header_h+6,W-margin,H-header_h+6)
               c.setFillColor(gray)
               c.setFont("DV",6.5)
-              c.drawCentredString(W/2,11,f"Base CAEPI ativa - lista alfabetica - pagina {page_no}")
+              c.drawCentredString(W/2,9,f"Base CAEPI ativa - lista alfabetica - pagina {page_no}")
 
-          def fit_text(text,max_width,font="DV",size=7.0):
-              if pdfmetrics.stringWidth(text,font,size)<=max_width:
-                  return text
-              ell="..."
-              while text and pdfmetrics.stringWidth(text+ell,font,size)>max_width:
-                  text=text[:-1]
-              return text+ell
+          def split_long_word(word,max_width):
+              parts=[]
+              cur=""
+              for ch in word:
+                  test=cur+ch
+                  if cur and pdfmetrics.stringWidth(test,"DV",font_size)>max_width:
+                      parts.append(cur)
+                      cur=ch
+                  else:
+                      cur=test
+              if cur: parts.append(cur)
+              return parts
 
-          y=H-header_h-11
-          x=margin
-          col=0
+          def wrap(text,max_width):
+              words=text.split()
+              lines=[]
+              cur=""
+              for word in words:
+                  if pdfmetrics.stringWidth(word,"DV",font_size)>max_width:
+                      pieces=split_long_word(word,max_width)
+                  else:
+                      pieces=[word]
+                  for piece in pieces:
+                      test=piece if not cur else cur+" "+piece
+                      if cur and pdfmetrics.stringWidth(test,"DV",font_size)>max_width:
+                          lines.append(cur)
+                          cur=piece
+                      else:
+                          cur=test
+              if cur: lines.append(cur)
+              return lines or [""]
+
           page=1
           header(page)
-          c.setFont("DV",7.0)
-          c.setFillColor(HexColor("#222222"))
+          col=0
+          x=margin
+          y=H-header_h-10
+          c.setFont("DV",font_size)
 
           for name in names:
-              if y < footer_h+12:
+              lines=wrap(name,col_w)
+              item_h=len(lines)*leading+item_gap+1.5
+
+              if y-item_h < footer_h+8:
                   if col==0:
                       col=1
                       x=margin+col_w+gap
-                      y=H-header_h-11
+                      y=H-header_h-10
                   else:
                       c.showPage()
                       page+=1
                       header(page)
-                      c.setFont("DV",7.0)
-                      c.setFillColor(HexColor("#222222"))
+                      c.setFont("DV",font_size)
                       col=0
                       x=margin
-                      y=H-header_h-11
+                      y=H-header_h-10
 
-              # subtle separator line and manufacturer name only
-              c.setStrokeColor(HexColor("#e6e6e6"))
+              c.setFillColor(textc)
+              for line in lines:
+                  c.drawString(x,y,line)
+                  y-=leading
+              c.setStrokeColor(linec)
               c.setLineWidth(0.25)
-              c.line(x,y-2,x+col_w,y-2)
-              c.setFillColor(HexColor("#222222"))
-              c.drawString(x,y,fit_text(name,col_w, "DV", 7.0))
-              y-=line_h
+              c.line(x,y+1,x+col_w,y+1)
+              y-=item_gap
 
           c.save()
           print(f"generated {out}: {len(names)} manufacturers, {page} pages")
