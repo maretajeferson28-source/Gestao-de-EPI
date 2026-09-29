@@ -635,35 +635,170 @@ async function checkWaitingAccessNow(){
   }
 }
 
-function renderSideUserProfile(session){
+function profileData(session){
   const user=session?.user;
   const meta=user?.user_metadata||{};
   const email=user?.email||'';
-  const name=String(meta.full_name||meta.name||meta.display_name||email.split('@')[0]||'Usuário').trim();
-  const avatar=meta.avatar_url||meta.picture||'';
+  return {
+    name:String(meta.epi_display_name||email.split('@')[0]||'Usuário').trim(),
+    avatar:String(meta.epi_avatar_url||'').trim()
+  };
+}
 
-  if($('sideUserName')) $('sideUserName').textContent=name;
-  if($('sideUserInitial')) $('sideUserInitial').textContent=(name.charAt(0)||'U').toLocaleUpperCase('pt-BR');
+function setProfileImage(img,initial,name,avatar){
+  if(!img||!initial) return;
+  initial.textContent=(name.charAt(0)||'U').toLocaleUpperCase('pt-BR');
 
-  const img=$('sideUserAvatar');
-  const initial=$('sideUserInitial');
-  if(img){
-    if(avatar){
-      img.src=avatar;
-      img.alt=`Foto de ${name}`;
-      img.hidden=false;
-      if(initial) initial.hidden=true;
-      img.onerror=()=>{
-        img.hidden=true;
-        if(initial) initial.hidden=false;
-      };
-    }else{
-      img.removeAttribute('src');
+  if(avatar){
+    img.src=avatar;
+    img.alt=`Foto de ${name}`;
+    img.hidden=false;
+    initial.hidden=true;
+    img.onerror=()=>{
       img.hidden=true;
-      if(initial) initial.hidden=false;
-    }
+      initial.hidden=false;
+    };
+  }else{
+    img.removeAttribute('src');
+    img.hidden=true;
+    initial.hidden=false;
   }
 }
+
+function renderSideUserProfile(session){
+  const {name,avatar}=profileData(session);
+  if($('sideUserName')) $('sideUserName').textContent=name;
+  setProfileImage($('sideUserAvatar'),$('sideUserInitial'),name,avatar);
+}
+
+let profilePreviewObjectUrl='';
+
+function closeProfileEditor(){
+  if(profilePreviewObjectUrl){
+    URL.revokeObjectURL(profilePreviewObjectUrl);
+    profilePreviewObjectUrl='';
+  }
+  if($('profileModal')) $('profileModal').classList.add('hidden');
+  if($('profilePhotoInput')) $('profilePhotoInput').value='';
+  if($('profileFileName')) $('profileFileName').textContent='Nenhuma nova imagem selecionada.';
+  if($('profileMsg')) $('profileMsg').textContent='';
+}
+
+async function openProfileEditor(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session) return;
+
+  const {name,avatar}=profileData(session);
+  $('profileNameInput').value=name;
+  $('profileFileName').textContent='Nenhuma nova imagem selecionada.';
+  $('profileMsg').textContent='';
+  setProfileImage($('profilePreviewImg'),$('profilePreviewInitial'),name,avatar);
+  $('profileModal').classList.remove('hidden');
+  refreshIcons();
+}
+
+if($('sideUserProfile')) $('sideUserProfile').addEventListener('click',openProfileEditor);
+if($('profileModalClose')) $('profileModalClose').addEventListener('click',closeProfileEditor);
+if($('profileCancelBtn')) $('profileCancelBtn').addEventListener('click',closeProfileEditor);
+
+if($('profileModal')) $('profileModal').addEventListener('click',e=>{
+  if(e.target===$('profileModal')) closeProfileEditor();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && $('profileModal') && !$('profileModal').classList.contains('hidden')){
+    closeProfileEditor();
+  }
+});
+
+if($('profilePhotoInput')) $('profilePhotoInput').addEventListener('change',async e=>{
+  const file=e.target.files?.[0];
+  if(!file) return;
+
+  const allowed=['image/jpeg','image/png','image/webp'];
+  if(!allowed.includes(file.type)){
+    e.target.value='';
+    $('profileFileName').textContent='Formato inválido. Use JPG, PNG ou WEBP.';
+    return;
+  }
+  if(file.size>2*1024*1024){
+    e.target.value='';
+    $('profileFileName').textContent='A imagem ultrapassa 2 MB.';
+    return;
+  }
+
+  if(profilePreviewObjectUrl) URL.revokeObjectURL(profilePreviewObjectUrl);
+  profilePreviewObjectUrl=URL.createObjectURL(file);
+  $('profileFileName').textContent=file.name;
+
+  const name=$('profileNameInput').value.trim()||'Usuário';
+  setProfileImage($('profilePreviewImg'),$('profilePreviewInitial'),name,profilePreviewObjectUrl);
+});
+
+if($('profileNameInput')) $('profileNameInput').addEventListener('input',()=>{
+  const name=$('profileNameInput').value.trim()||'Usuário';
+  const initial=$('profilePreviewInitial');
+  if(initial) initial.textContent=(name.charAt(0)||'U').toLocaleUpperCase('pt-BR');
+});
+
+if($('profileForm')) $('profileForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const msg=$('profileMsg');
+  const name=$('profileNameInput').value.trim();
+  const file=$('profilePhotoInput').files?.[0]||null;
+
+  if(!name){
+    msg.textContent='Informe o nome que deseja exibir.';
+    return;
+  }
+
+  msg.textContent='Salvando perfil...';
+
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const user=session?.user;
+    if(!user) throw new Error('Sessão não encontrada.');
+
+    const meta=user.user_metadata||{};
+    let avatarUrl=String(meta.epi_avatar_url||'');
+
+    if(file){
+      const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+      const path=`${user.id}/avatar-${Date.now()}.${ext||'jpg'}`;
+
+      const {error:uploadError}=await sb.storage
+        .from('profile-avatars')
+        .upload(path,file,{
+          cacheControl:'3600',
+          upsert:false,
+          contentType:file.type
+        });
+
+      if(uploadError) throw uploadError;
+
+      const {data:publicData}=sb.storage.from('profile-avatars').getPublicUrl(path);
+      avatarUrl=publicData?.publicUrl||'';
+    }
+
+    const {error:updateError}=await sb.auth.updateUser({
+      data:{
+        epi_display_name:name,
+        epi_avatar_url:avatarUrl
+      }
+    });
+    if(updateError) throw updateError;
+
+    const {data:{session:updatedSession}}=await sb.auth.getSession();
+    renderSideUserProfile(updatedSession);
+    msg.textContent='Perfil atualizado.';
+
+    setTimeout(()=>closeProfileEditor(),550);
+  }catch(err){
+    console.error('[PERFIL]',err);
+    msg.textContent=`Erro: ${err.message||err}`;
+  }
+});
 
 async function showApp(session){
   await registerCurrentUserAccess();
