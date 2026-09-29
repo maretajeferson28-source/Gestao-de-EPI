@@ -546,29 +546,29 @@ tr:hover td{background:#202020}
 
 /* Estados visuais da Consulta C.A.: laranja / verde / vermelho */
 .ca-stage .ca-data-card{
-  border-color:rgba(255,102,0,.34);
+  border-color:rgba(255,102,0,.52);
 }
 .ca-stage .ca-hero-icon{
-  border-color:rgba(255,102,0,.42);
-  color:var(--gold);
+  border-color:rgba(255,102,0,.62);
+  color:#ff6a00;
 }
 
 /* C.A. válido */
 .ca-stage.ca-result-valid .ca-data-card{
-  border-color:rgba(47,143,104,.42);
+  border-color:rgba(56,180,123,.62);
 }
 .ca-stage.ca-result-valid .ca-hero-icon{
-  border-color:rgba(47,143,104,.42);
-  color:#2f8f68;
+  border-color:rgba(56,180,123,.68);
+  color:#38b47b;
 }
 
 /* C.A. vencido / inválido / erro */
 .ca-stage.ca-result-invalid .ca-data-card,
 .ca-stage.ca-result-error .ca-data-card{
-  border-color:rgba(239,91,91,.44);
+  border-color:rgba(255,92,92,.64);
 }
 .ca-stage.ca-result-invalid .ca-hero-icon,
 .ca-stage.ca-result-error .ca-hero-icon{
-  border-color:rgba(239,91,91,.44);
-  color:#ef5b5b;
+  border-color:rgba(255,92,92,.72);
+  color:#ff5c5c;
 }
