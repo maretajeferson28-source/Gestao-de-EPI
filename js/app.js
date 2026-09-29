@@ -227,13 +227,15 @@ function setCaStatus(label,kind='waiting'){
 
 function renderCaSource(source){
   if(!source){
-    setCaValue('caBaseSummary','Nenhum dataset ativo encontrado no Supabase.');
+    setCaValue('caBaseSummary','Base indisponível no momento.');
     setCaValue('caSourceInfo','Base: indisponível');
     return;
   }
 
-  const summary=`${fmt(source.total_cas)} CAs • ${fmt(source.total_linhas)} registros • ${source.tipo_fonte||'fonte oficial'}`;
-  setCaValue('caBaseSummary',summary);
+  const now=new Date();
+  const date=now.toLocaleDateString('pt-BR');
+  const time=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  setCaValue('caBaseSummary',`Base carregada ${date} às ${time}`);
   setCaValue('caSourceInfo',`Base: ${formatCaDateTime(source.importado_em)}`);
 }
 
