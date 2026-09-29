@@ -7,6 +7,9 @@ const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHAB
 let movements = [];
 let collaborators = [];
 let epiCatalog = [];
+let epiVariants = [];
+let selectedEpi = null;
+let editingVariantId = null;
 let charts = {};
 let realtimeChannel = null;
 let reloadTimer = null;
@@ -70,9 +73,12 @@ async function loadAll(showBusy=true){
   if(showBusy) setBusy(true);
   setStatus('Atualizando dados...');
   try{
-    const [cRes,eRes,mRes] = await Promise.all([
+    const [cRes,eRes,vRes,mRes] = await Promise.all([
       sb.from('colaboradores').select('id,nome,cargo,setor,ativo').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo').order('nome'),
+      sb.from('epi_variantes')
+        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,fornecedor,unidade,observacao,ativo,origem,created_at,updated_at')
+        .order('created_at',{ascending:true}),
       sb.from('movimentacoes_epi')
         .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,colaboradores(nome),epis(nome)')
         .order('data',{ascending:true})
@@ -80,10 +86,12 @@ async function loadAll(showBusy=true){
     ]);
     if(cRes.error) throw cRes.error;
     if(eRes.error) throw eRes.error;
+    if(vRes.error) throw vRes.error;
     if(mRes.error) throw mRes.error;
 
     collaborators = cRes.data || [];
     epiCatalog = eRes.data || [];
+    epiVariants = vRes.data || [];
     movements = (mRes.data || []).map((r,idx)=>({
       id:r.id,
       data:isoToBR(r.data),
@@ -425,9 +433,223 @@ function renderColabs(){
   await loadAll();
 });
 
-function renderEpis(){
-  $('epiCards').innerHTML=epiCatalog.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>`<div class="mini-card"><strong>${esc(c.nome)}</strong><span>${esc(c.categoria||'Categoria não informada')}</span></div>`).join('')||'<div class="empty">Nenhum EPI.</div>';
+function epiVariantCount(epiId){
+  return epiVariants.filter(v=>v.epi_id===epiId && v.ativo!==false).length;
 }
+function renderEpis(){
+  $('epiCards').innerHTML=epiCatalog.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>{
+    const count=epiVariantCount(c.id);
+    return `<button class="mini-card epi-card" type="button" data-epi-id="${esc(c.id)}">
+      <div class="epi-card-main"><strong>${esc(c.nome)}</strong><span>${esc(c.categoria||'Categoria não informada')}</span></div>
+      <span class="epi-card-ca-count">${count} ${count===1?'C.A.':'C.A.s'}</span>
+      <i data-lucide="chevron-right" aria-hidden="true"></i>
+    </button>`;
+  }).join('')||'<div class="empty">Nenhum EPI.</div>';
+  refreshIcons();
+}
+
+function moneyBR(v){
+  if(v===null||v===undefined||v==='') return '—';
+  return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function dateBR(v){
+  if(!v) return '—';
+  return isoToBR(String(v).slice(0,10));
+}
+function clearEpiVariantForm(){
+  editingVariantId=null;
+  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
+  if($('epiVarUnidade')) $('epiVarUnidade').value='un';
+  if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
+  if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. para buscar os dados oficiais.';
+  if($('epiVariantEditorTitle')) $('epiVariantEditorTitle').textContent='Adicionar C.A.';
+  if($('epiVariantSave')) $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar C.A.';
+  if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').classList.add('hidden');
+  refreshIcons();
+}
+function renderEpiVariantList(){
+  const list=$('epiVariantList');
+  if(!list||!selectedEpi) return;
+  const rows=epiVariants.filter(v=>v.epi_id===selectedEpi.id && v.ativo!==false)
+    .sort((a,b)=>String(a.ca||'').localeCompare(String(b.ca||''),'pt-BR',{numeric:true}));
+  $('epiDetailCount').textContent=`${rows.length} ${rows.length===1?'C.A. vinculado':'C.A.s vinculados'}`;
+  if(!rows.length){
+    list.innerHTML='<div class="epi-variant-empty"><i data-lucide="badge-plus" aria-hidden="true"></i><strong>Nenhum C.A. vinculado</strong><span>Use o formulário ao lado para cadastrar a primeira opção deste item.</span></div>';
+    refreshIcons();
+    return;
+  }
+  list.innerHTML=rows.map(v=>{
+    const situacao=String(v.situacao||'').trim();
+    const upper=situacao.toLocaleUpperCase('pt-BR');
+    const state=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'neutral');
+    return `<article class="epi-variant-card ${state}">
+      <div class="epi-variant-top">
+        <div>
+          <span class="epi-variant-ca">C.A. ${esc(v.ca||'—')}</span>
+          <strong>${esc(v.fabricante||'Fabricante não informado')}</strong>
+          <small>${esc([v.marca,v.referencia].filter(Boolean).join(' • ')||'Marca / referência não informada')}</small>
+        </div>
+        <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
+      </div>
+      <div class="epi-variant-meta">
+        <span><i data-lucide="calendar-days"></i><b>Validade</b>${esc(dateBR(v.data_validade))}</span>
+        <span><i data-lucide="badge-dollar-sign"></i><b>Preço</b>${esc(moneyBR(v.preco))}</span>
+        <span><i data-lucide="truck"></i><b>Fornecedor</b>${esc(v.fornecedor||'—')}</span>
+      </div>
+      ${v.caracteristicas?`<p class="epi-variant-features">${esc(v.caracteristicas)}</p>`:''}
+      <div class="epi-variant-actions">
+        <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
+        <button class="btn compact danger" type="button" data-variant-delete="${esc(v.id)}"><i data-lucide="trash-2"></i>Excluir</button>
+      </div>
+    </article>`;
+  }).join('');
+  refreshIcons();
+}
+function openEpiDetail(epiId){
+  selectedEpi=epiCatalog.find(x=>x.id===epiId)||null;
+  if(!selectedEpi) return;
+  $('epiDetailTitle').textContent=selectedEpi.nome;
+  $('epiDetailCategory').textContent=selectedEpi.categoria||'Categoria não informada';
+  $('epiVariantEditor').hidden=!currentIsAdmin;
+  clearEpiVariantForm();
+  renderEpiVariantList();
+  $('epiDetailModal').classList.remove('hidden');
+  refreshIcons();
+}
+function closeEpiDetail(){
+  if($('epiDetailModal')) $('epiDetailModal').classList.add('hidden');
+  selectedEpi=null;
+  clearEpiVariantForm();
+}
+function fillEpiVariantForm(v){
+  editingVariantId=v.id;
+  $('epiVarCa').value=v.ca||'';
+  $('epiVarFabricante').value=v.fabricante||'';
+  $('epiVarCnpj').value=v.cnpj||'';
+  $('epiVarMarca').value=v.marca||'';
+  $('epiVarReferencia').value=v.referencia||'';
+  $('epiVarValidade').value=v.data_validade?String(v.data_validade).slice(0,10):'';
+  $('epiVarSituacao').value=v.situacao||'';
+  $('epiVarNorma').value=v.norma||'';
+  $('epiVarDescricao').value=v.descricao||'';
+  $('epiVarCaracteristicas').value=v.caracteristicas||'';
+  $('epiVarPreco').value=v.preco??'';
+  $('epiVarFornecedor').value=v.fornecedor||'';
+  $('epiVarUnidade').value=v.unidade||'un';
+  $('epiVarObservacao').value=v.observacao||'';
+  $('epiVariantEditorTitle').textContent='Editar C.A.';
+  $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar alterações';
+  $('epiVariantCancelEdit').classList.remove('hidden');
+  $('epiVarLookupStatus').textContent='Registro carregado para edição.';
+  refreshIcons();
+}
+async function lookupEpiVariantCa(){
+  const ca=String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
+  $('epiVarCa').value=ca;
+  if(!ca){$('epiVarLookupStatus').textContent='Informe o número do C.A.';return}
+  const btn=$('epiVarLookup');
+  btn.disabled=true;
+  $('epiVarLookupStatus').textContent='Consultando a base CAEPI...';
+  try{
+    const response=await fetch(`/api/caepi?ca=${encodeURIComponent(ca)}`,{headers:{Accept:'application/json'}});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data?.error||`HTTP ${response.status}`);
+    if(!data.found||!data.current){
+      $('epiVarLookupStatus').textContent='C.A. não encontrado no dataset ativo.';
+      return;
+    }
+    const c=data.current;
+    $('epiVarFabricante').value=c.fabricante||'';
+    $('epiVarCnpj').value=c.cnpj||'';
+    $('epiVarMarca').value=c.marca||'';
+    $('epiVarReferencia').value=c.referencia||'';
+    $('epiVarValidade').value=c.data_validade?String(c.data_validade).slice(0,10):'';
+    $('epiVarSituacao').value=c.situacao||'';
+    $('epiVarNorma').value=c.norma||'';
+    $('epiVarDescricao').value=c.descricao||'';
+    $('epiVarLookupStatus').textContent='Dados oficiais carregados da base CAEPI.';
+  }catch(err){
+    console.error('[EPI CAEPI]',err);
+    $('epiVarLookupStatus').textContent='Falha ao consultar o CAEPI. Tente novamente.';
+  }finally{
+    btn.disabled=false;
+  }
+}
+async function saveEpiVariant(){
+  if(!currentIsAdmin||!selectedEpi) return;
+  const ca=String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
+  if(!ca){$('epiVariantMsg').textContent='Informe o C.A.';return}
+  const payload={
+    epi_id:selectedEpi.id,
+    ca,
+    fabricante:$('epiVarFabricante').value.trim()||null,
+    cnpj:$('epiVarCnpj').value.trim()||null,
+    marca:$('epiVarMarca').value.trim()||null,
+    referencia:$('epiVarReferencia').value.trim()||null,
+    descricao:$('epiVarDescricao').value.trim()||null,
+    data_validade:$('epiVarValidade').value||null,
+    situacao:$('epiVarSituacao').value.trim()||null,
+    norma:$('epiVarNorma').value.trim()||null,
+    caracteristicas:$('epiVarCaracteristicas').value.trim()||null,
+    preco:$('epiVarPreco').value===''?null:Number($('epiVarPreco').value),
+    fornecedor:$('epiVarFornecedor').value.trim()||null,
+    unidade:$('epiVarUnidade').value.trim()||'un',
+    observacao:$('epiVarObservacao').value.trim()||null,
+    ativo:true,
+    origem:'Site Gestão EPI',
+    updated_at:new Date().toISOString()
+  };
+  $('epiVariantMsg').textContent='Salvando...';
+  let result;
+  if(editingVariantId){
+    result=await sb.from('epi_variantes').update(payload).eq('id',editingVariantId).select().single();
+  }else{
+    result=await sb.from('epi_variantes').insert(payload).select().single();
+  }
+  if(result.error){
+    $('epiVariantMsg').textContent=result.error.code==='23505'?'Este C.A. já está vinculado a este item.':result.error.message;
+    return;
+  }
+  const saved=result.data;
+  const idx=epiVariants.findIndex(v=>v.id===saved.id);
+  if(idx>=0) epiVariants[idx]=saved; else epiVariants.push(saved);
+  $('epiVariantMsg').textContent='C.A. salvo.';
+  clearEpiVariantForm();
+  renderEpiVariantList();
+  renderEpis();
+}
+async function deleteEpiVariant(id){
+  if(!currentIsAdmin) return;
+  const row=epiVariants.find(v=>v.id===id);
+  if(!row) return;
+  if(!confirm(`Excluir o C.A. ${row.ca} deste item?`)) return;
+  const {error}=await sb.from('epi_variantes').delete().eq('id',id);
+  if(error){alert(error.message);return}
+  epiVariants=epiVariants.filter(v=>v.id!==id);
+  renderEpiVariantList();
+  renderEpis();
+}
+if($('epiCards')) $('epiCards').addEventListener('click',e=>{
+  const card=e.target.closest('[data-epi-id]');
+  if(card) openEpiDetail(card.dataset.epiId);
+});
+if($('epiDetailClose')) $('epiDetailClose').addEventListener('click',closeEpiDetail);
+if($('epiDetailModal')) $('epiDetailModal').addEventListener('click',e=>{if(e.target===$('epiDetailModal')) closeEpiDetail();});
+if($('epiVarLookup')) $('epiVarLookup').addEventListener('click',lookupEpiVariantCa);
+if($('epiVarCa')) $('epiVarCa').addEventListener('input',()=>{$('epiVarCa').value=$('epiVarCa').value.replace(/\D+/g,'').slice(0,8);});
+if($('epiVariantSave')) $('epiVariantSave').addEventListener('click',saveEpiVariant);
+if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').addEventListener('click',clearEpiVariantForm);
+if($('epiVariantList')) $('epiVariantList').addEventListener('click',e=>{
+  const edit=e.target.closest('[data-variant-edit]');
+  if(edit){
+    const row=epiVariants.find(v=>v.id===edit.dataset.variantEdit);
+    if(row) fillEpiVariantForm(row);
+    return;
+  }
+  const del=e.target.closest('[data-variant-delete]');
+  if(del) deleteEpiVariant(del.dataset.variantDelete);
+});
+
 $('addEpi').addEventListener('click',async()=>{
   if(!currentIsAdmin) return;
   const nome=$('newEpiNome').value.trim(),categoria=$('newEpiCat').value.trim();
