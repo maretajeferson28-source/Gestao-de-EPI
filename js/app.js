@@ -10,6 +10,8 @@ let epiCatalog = [];
 let charts = {};
 let realtimeChannel = null;
 let reloadTimer = null;
+let currentIsAdmin = false;
+let authorizedUsers = [];
 
 const $ = (id) => document.getElementById(id);
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -167,12 +169,14 @@ function renderDashboard(){
 }
 
 function nav(page){
+  if(page==='autorizacoes' && !currentIsAdmin) return;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.pageContent===page));
   if(page==='dashboard') renderDashboard();
   if(page==='movimentacoes') renderMovs();
   if(page==='colaboradores') renderColabs();
   if(page==='epis') renderEpis();
+  if(page==='autorizacoes') loadAuthorizedUsers();
   refreshIcons();
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.page)));
@@ -403,6 +407,121 @@ $('addEpi').addEventListener('click',async()=>{
   await loadAll();
 });
 
+async function loadAdminAccess(){
+  const navBtn=$('authzNavBtn');
+  const {data,error}=await sb.rpc('epi_admin_is_admin');
+  currentIsAdmin=!error && data===true;
+  if(navBtn) navBtn.hidden=!currentIsAdmin;
+  if(!currentIsAdmin && document.querySelector('.page.active')?.dataset?.pageContent==='autorizacoes'){
+    nav('dashboard');
+  }
+  refreshIcons();
+  return currentIsAdmin;
+}
+
+function renderAuthorizedUsers(){
+  const body=$('authzBody');
+  const count=$('authzCount');
+  if(!body||!count) return;
+
+  count.textContent=`${authorizedUsers.length} usuário(s) cadastrado(s)`;
+
+  body.innerHTML=authorizedUsers.map(u=>{
+    const statusClass=u.ativo?'authz-status active':'authz-status inactive';
+    const statusLabel=u.ativo?'Ativo':'Inativo';
+    const role=u.admin?'<span class="authz-role"><i data-lucide="shield-check" aria-hidden="true"></i>Administrador</span>':'';
+    const actions=u.admin
+      ? '<span class="authz-protected" title="Conta administrativa protegida"><i data-lucide="lock-keyhole" aria-hidden="true"></i></span>'
+      : `<div class="authz-actions">
+          <button class="btn compact authz-toggle" type="button" data-authz-toggle="${esc(u.email)}" data-active="${u.ativo?'1':'0'}" title="${u.ativo?'Desativar':'Ativar'}" aria-label="${u.ativo?'Desativar':'Ativar'}">
+            <i data-lucide="${u.ativo?'user-x':'user-check'}" aria-hidden="true"></i>
+          </button>
+          <button class="btn compact danger authz-delete" type="button" data-authz-delete="${esc(u.email)}" title="Remover" aria-label="Remover">
+            <i data-lucide="trash-2" aria-hidden="true"></i>
+          </button>
+        </div>`;
+
+    return `<tr>
+      <td><div class="authz-user"><strong>${esc(u.nome||'Sem nome')}</strong>${role}</div></td>
+      <td title="${esc(u.email)}">${esc(u.email)}</td>
+      <td><span class="${statusClass}"><span></span>${statusLabel}</span></td>
+      <td class="authz-action-cell">${actions}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" class="empty">Nenhum usuário autorizado.</td></tr>';
+
+  document.querySelectorAll('[data-authz-toggle]').forEach(btn=>btn.addEventListener('click',async()=>{
+    const email=btn.dataset.authzToggle;
+    const nextActive=btn.dataset.active!=='1';
+    btn.disabled=true;
+    const {error}=await sb.rpc('epi_admin_set_active',{p_email:email,p_ativo:nextActive});
+    if(error){alert(error.message);btn.disabled=false;return}
+    await loadAuthorizedUsers();
+  }));
+
+  document.querySelectorAll('[data-authz-delete]').forEach(btn=>btn.addEventListener('click',async()=>{
+    const email=btn.dataset.authzDelete;
+    if(!confirm(`Remover a autorização de ${email}?`)) return;
+    btn.disabled=true;
+    const {error}=await sb.rpc('epi_admin_delete_user',{p_email:email});
+    if(error){alert(error.message);btn.disabled=false;return}
+    await loadAuthorizedUsers();
+  }));
+
+  refreshIcons();
+}
+
+async function loadAuthorizedUsers(){
+  if(!currentIsAdmin) return;
+  const body=$('authzBody');
+  const count=$('authzCount');
+  if(body) body.innerHTML='<tr><td colspan="4" class="empty">Carregando autorizações...</td></tr>';
+  if(count) count.textContent='Carregando...';
+
+  const {data,error}=await sb.rpc('epi_admin_list_users');
+  if(error){
+    console.error('[AUTORIZAÇÕES]',error);
+    if(body) body.innerHTML='<tr><td colspan="4" class="empty">Não foi possível carregar as autorizações.</td></tr>';
+    if(count) count.textContent='Erro ao carregar';
+    return;
+  }
+
+  authorizedUsers=data||[];
+  renderAuthorizedUsers();
+}
+
+if($('authzForm')) $('authzForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!currentIsAdmin) return;
+
+  const email=$('authzEmail').value.trim().toLowerCase();
+  const nome=$('authzName').value.trim();
+  const msg=$('authzMsg');
+
+  if(!email){
+    msg.textContent='Informe o e-mail do usuário.';
+    return;
+  }
+
+  msg.textContent='Salvando autorização...';
+  const {error}=await sb.rpc('epi_admin_save_user',{
+    p_email:email,
+    p_nome:nome||null,
+    p_ativo:true
+  });
+
+  if(error){
+    console.error('[AUTORIZAÇÕES]',error);
+    msg.textContent=`Erro: ${error.message||error}`;
+    return;
+  }
+
+  e.target.reset();
+  msg.textContent='Usuário autorizado com sucesso.';
+  await loadAuthorizedUsers();
+});
+
+if($('authzRefresh')) $('authzRefresh').addEventListener('click',loadAuthorizedUsers);
+
 function dl(name,content,type='application/octet-stream'){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([content],{type}));
@@ -438,10 +557,14 @@ async function showApp(session){
   $('epiApp').classList.remove('app-hidden');
   $('userEmail').textContent=session?.user?.email || '';
   refreshIcons();
+  await loadAdminAccess();
   await loadAll();
   startRealtime();
 }
 function showAuth(message=''){
+  currentIsAdmin=false;
+  authorizedUsers=[];
+  if($('authzNavBtn')) $('authzNavBtn').hidden=true;
   $('epiApp').classList.add('app-hidden');
   $('authScreen').classList.remove('hidden');
   $('authMsg').textContent=message;
