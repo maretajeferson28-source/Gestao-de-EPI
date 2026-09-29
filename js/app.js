@@ -635,6 +635,36 @@ async function checkWaitingAccessNow(){
   }
 }
 
+function renderSideUserProfile(session){
+  const user=session?.user;
+  const meta=user?.user_metadata||{};
+  const email=user?.email||'';
+  const name=String(meta.full_name||meta.name||meta.display_name||email.split('@')[0]||'Usuário').trim();
+  const avatar=meta.avatar_url||meta.picture||'';
+
+  if($('sideUserName')) $('sideUserName').textContent=name;
+  if($('sideUserInitial')) $('sideUserInitial').textContent=(name.charAt(0)||'U').toLocaleUpperCase('pt-BR');
+
+  const img=$('sideUserAvatar');
+  const initial=$('sideUserInitial');
+  if(img){
+    if(avatar){
+      img.src=avatar;
+      img.alt=`Foto de ${name}`;
+      img.hidden=false;
+      if(initial) initial.hidden=true;
+      img.onerror=()=>{
+        img.hidden=true;
+        if(initial) initial.hidden=false;
+      };
+    }else{
+      img.removeAttribute('src');
+      img.hidden=true;
+      if(initial) initial.hidden=false;
+    }
+  }
+}
+
 async function showApp(session){
   await registerCurrentUserAccess();
   const authorized=await userIsAuthorized();
@@ -650,6 +680,7 @@ async function showApp(session){
   $('authScreen').classList.add('hidden');
   $('epiApp').classList.remove('app-hidden');
   $('userEmail').textContent=session?.user?.email || '';
+  renderSideUserProfile(session);
   refreshIcons();
 
   await loadAdminAccess();
