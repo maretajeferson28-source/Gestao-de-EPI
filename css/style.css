@@ -257,12 +257,13 @@ tr:hover td{background:#202020}
 .authz-form-card .field+.field{margin-top:12px}
 .authz-list-panel{padding-bottom:12px}
 .authz-list-panel .panel-head{align-items:center}
-.authz-table-wrap{max-height:560px}
-.authz-table{table-layout:fixed}
-.authz-table th:nth-child(1){width:25%}
-.authz-table th:nth-child(2){width:42%}
-.authz-table th:nth-child(3){width:18%}
-.authz-table th:nth-child(4){width:92px;text-align:center}
+.authz-table-wrap{max-height:560px;overflow-x:hidden}
+.authz-table{table-layout:fixed;width:100%;min-width:0}
+.authz-table th:nth-child(1){width:24%}
+.authz-table th:nth-child(2){width:40%}
+.authz-table th:nth-child(3){width:17%}
+.authz-table th:nth-child(4){width:86px;text-align:center}
+.authz-table td:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .authz-table td:nth-child(4){text-align:center;overflow:visible}
 .authz-user{display:flex;align-items:center;gap:8px;min-width:0}
 .authz-user strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -286,7 +287,7 @@ tr:hover td{background:#202020}
   .authz-grid{grid-template-columns:1fr}
 }
 @media(max-width:720px){
-  .authz-table{min-width:720px}
+  .authz-table{min-width:0}
   .authz-admin-badge{display:none}
 }
 
