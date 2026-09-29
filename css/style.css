@@ -331,12 +331,40 @@ tr:hover td{background:#202020}
 
 
 /* Perfil do usuário na sidebar */
-.user-side-profile{display:flex;align-items:center;gap:10px;min-width:0}
-.side-user-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#1a130d;border:1px solid rgba(255,102,0,.38);color:var(--gold);font-size:11px;font-weight:800}
+.user-side-profile{display:flex;align-items:center;gap:10px;min-width:0;width:100%;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.user-side-profile:hover{background:#171717}
+.side-user-avatar{position:relative;width:38px;height:38px;flex:0 0 38px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#1a130d;border:1px solid rgba(255,102,0,.38);color:var(--gold);font-size:11px;font-weight:800}
 .side-user-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.side-user-avatar span{line-height:1}
+.side-user-avatar>span:not(.side-user-camera){line-height:1}
+.side-user-camera{position:absolute;right:-1px;bottom:-1px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;background:#ff6600;color:#fff;border:2px solid #111}
+.side-user-camera svg{width:9px;height:9px;stroke-width:2.3}
+.side-user-copy{display:grid;min-width:0;gap:2px}
 .user-side-profile strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f3f3f3;font-size:11px;font-weight:700}
+.user-side-profile small{color:#858585;font-size:9px}
 @media(max-width:1100px){
   .user-side-profile{justify-content:center;padding-left:0;padding-right:0}
-  .user-side-profile strong{display:none}
+  .side-user-copy{display:none}
 }
+
+
+/* Editor de perfil */
+.profile-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.72);backdrop-filter:blur(5px)}
+.profile-modal.hidden{display:none}
+.profile-modal-card{position:relative;width:min(480px,100%);background:#181818;border:1px solid #333;border-radius:18px;padding:24px;box-shadow:0 28px 90px rgba(0,0,0,.58)}
+.profile-modal-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:9px;border:1px solid #343434;background:#161616;color:#aaa;display:grid;place-items:center}
+.profile-modal-close:hover{color:#fff;border-color:#4a4a4a}
+.profile-modal-close svg{width:16px;height:16px}
+.profile-modal-head{display:flex;align-items:center;gap:14px;padding-right:42px;margin-bottom:20px}
+.profile-preview{width:70px;height:70px;flex:0 0 70px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#1a130d;border:1px solid rgba(255,102,0,.42);color:var(--gold);font-size:20px;font-weight:800}
+.profile-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-modal-kicker{display:block;color:#ff8500;font-size:9px;font-weight:800;letter-spacing:.14em;margin-bottom:5px}
+.profile-modal-head h2{margin:0 0 5px;font-size:19px}
+.profile-modal-head p{margin:0;color:#8d8d8d;font-size:10px;line-height:1.5}
+.profile-photo-field{margin-top:14px}
+.profile-upload-box{min-height:92px;border:1px dashed #494949;border-radius:12px;background:#141414;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#eee;cursor:pointer;transition:.18s}
+.profile-upload-box:hover{border-color:rgba(255,102,0,.55);background:#18140f}
+.profile-upload-box svg{width:22px;height:22px;color:var(--gold);margin-bottom:2px}
+.profile-upload-box span{font-size:11px;font-weight:700}
+.profile-upload-box small{font-size:9px;color:#7f7f7f}
+.profile-file-name{margin-top:7px;color:#7f7f7f;font-size:9px}
+.profile-modal-actions{display:flex;gap:8px;margin-top:18px}
