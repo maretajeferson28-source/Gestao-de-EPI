@@ -388,7 +388,28 @@ function renderMovs(){
 $('movSearch').addEventListener('input',renderMovs);
 
 function renderColabs(){
-  $('colabCards').innerHTML=collaborators.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>`<div class="mini-card"><strong>${esc(c.nome)}</strong><span>${esc(c.cargo||'Cargo não informado')}</span><span>${esc(c.setor||'Setor não informado')}</span></div>`).join('')||'<div class="empty">Nenhum colaborador.</div>';
+  const arr=collaborators.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  $('colabCards').innerHTML=arr.map(c=>{
+    const nome=String(c.nome||'Colaborador').trim();
+    const parts=nome.split(/\s+/).filter(Boolean);
+    const initials=((parts[0]?.[0]||'')+(parts.length>1?(parts[parts.length-1]?.[0]||''):'')).toLocaleUpperCase('pt-BR')||'C';
+    const ativo=c.ativo!==false;
+
+    return `<article class="collab-card">
+      <div class="collab-card-top">
+        <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
+        <div class="collab-heading">
+          <strong title="${esc(nome)}">${esc(nome)}</strong>
+          <span class="collab-status ${ativo?'active':'inactive'}"><i data-lucide="${ativo?'circle-check':'circle-minus'}" aria-hidden="true"></i>${ativo?'Ativo':'Inativo'}</span>
+        </div>
+      </div>
+      <div class="collab-meta">
+        <div><i data-lucide="briefcase-business" aria-hidden="true"></i><span><small>Cargo</small><b title="${esc(c.cargo||'Não informado')}">${esc(c.cargo||'Não informado')}</b></span></div>
+        <div><i data-lucide="building-2" aria-hidden="true"></i><span><small>Setor</small><b title="${esc(c.setor||'Não informado')}">${esc(c.setor||'Não informado')}</b></span></div>
+      </div>
+    </article>`;
+  }).join('')||'<div class="empty">Nenhum colaborador.</div>';
+  refreshIcons();
 }
 $('addColab').addEventListener('click',async()=>{
   if(!currentIsAdmin) return;
