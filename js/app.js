@@ -12,6 +12,9 @@ let realtimeChannel = null;
 let reloadTimer = null;
 let currentIsAdmin = false;
 let authorizedUsers = [];
+let authorizationWatchTimer = null;
+let authorizationCheckBusy = false;
+let waitingSession = null;
 
 const $ = (id) => document.getElementById(id);
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -552,40 +555,96 @@ function startRealtime(){
     });
 }
 
+function clearAuthorizationWatch(){
+  if(authorizationWatchTimer){
+    clearInterval(authorizationWatchTimer);
+    authorizationWatchTimer=null;
+  }
+  authorizationCheckBusy=false;
+}
+
+async function userIsAuthorized(){
+  const {data,error}=await sb.rpc('epi_user_is_authorized');
+  if(error){
+    console.error('[AUTORIZAÇÕES] Falha ao verificar acesso:',error);
+    return false;
+  }
+  return data===true;
+}
+
+function showWaitingAccess(session){
+  waitingSession=session||null;
+  currentIsAdmin=false;
+  authorizedUsers=[];
+  if($('authzNavBtn')) $('authzNavBtn').hidden=true;
+
+  $('authScreen').classList.add('hidden');
+  $('epiApp').classList.add('app-hidden');
+  $('accessWaitScreen').classList.remove('hidden');
+  $('accessWaitEmail').textContent=session?.user?.email || 'Conta autenticada';
+  refreshIcons();
+
+  clearAuthorizationWatch();
+  authorizationWatchTimer=setInterval(async()=>{
+    if(authorizationCheckBusy) return;
+    authorizationCheckBusy=true;
+    try{
+      if(await userIsAuthorized()){
+        const current=waitingSession;
+        clearAuthorizationWatch();
+        await showApp(current);
+      }
+    }finally{
+      authorizationCheckBusy=false;
+    }
+  },3000);
+}
+
+async function checkWaitingAccessNow(){
+  if(authorizationCheckBusy) return;
+  authorizationCheckBusy=true;
+  const button=$('accessWaitCheckBtn');
+  if(button) button.disabled=true;
+  try{
+    if(await userIsAuthorized()){
+      const current=waitingSession;
+      clearAuthorizationWatch();
+      await showApp(current);
+    }
+  }finally{
+    authorizationCheckBusy=false;
+    if(button) button.disabled=false;
+  }
+}
+
 async function showApp(session){
+  const authorized=await userIsAuthorized();
+
+  if(!authorized){
+    showWaitingAccess(session);
+    return;
+  }
+
+  clearAuthorizationWatch();
+  waitingSession=null;
+  $('accessWaitScreen').classList.add('hidden');
   $('authScreen').classList.add('hidden');
   $('epiApp').classList.remove('app-hidden');
   $('userEmail').textContent=session?.user?.email || '';
   refreshIcons();
 
   await loadAdminAccess();
-
-  const {data:authorized,error:accessError}=await sb.rpc('epi_user_is_authorized');
-  if(accessError){
-    console.error('[AUTORIZAÇÕES] Falha ao verificar acesso:',accessError);
-  }
-
-  if(!authorized){
-    movements=[];
-    collaborators=[];
-    epiCatalog=[];
-    rebuildLists();
-    renderDashboard();
-    renderMovs();
-    renderColabs();
-    renderEpis();
-    setStatus('Acesso não autorizado', false);
-    return;
-  }
-
   await loadAll();
   startRealtime();
 }
 function showAuth(message=''){
+  clearAuthorizationWatch();
+  waitingSession=null;
   currentIsAdmin=false;
   authorizedUsers=[];
   if($('authzNavBtn')) $('authzNavBtn').hidden=true;
   $('epiApp').classList.add('app-hidden');
+  $('accessWaitScreen').classList.add('hidden');
   $('authScreen').classList.remove('hidden');
   $('authMsg').textContent=message;
   if(realtimeChannel){sb.removeChannel(realtimeChannel);realtimeChannel=null}
@@ -617,10 +676,14 @@ $('googleBtn').addEventListener('click',async()=>{
   });
   if(error) $('authMsg').textContent=error.message;
 });
-$('signOutBtn').addEventListener('click',async()=>{
+async function signOutCurrentSession(){
+  clearAuthorizationWatch();
   await sb.auth.signOut();
   showAuth('Sessão encerrada.');
-});
+}
+$('signOutBtn').addEventListener('click',signOutCurrentSession);
+if($('accessWaitSignOutBtn')) $('accessWaitSignOutBtn').addEventListener('click',signOutCurrentSession);
+if($('accessWaitCheckBtn')) $('accessWaitCheckBtn').addEventListener('click',checkWaitingAccessNow);
 
 sb.auth.onAuthStateChange((event,session)=>{
   if(event==='SIGNED_OUT') showAuth();
