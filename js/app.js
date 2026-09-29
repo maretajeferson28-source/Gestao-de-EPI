@@ -393,25 +393,19 @@ function renderColabs(){
     const nome=String(c.nome||'Colaborador').trim();
     const parts=nome.split(/\s+/).filter(Boolean);
     const initials=((parts[0]?.[0]||'')+(parts.length>1?(parts[parts.length-1]?.[0]||''):'')).toLocaleUpperCase('pt-BR')||'C';
+    const detalhe=[c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
     const ativo=c.ativo!==false;
 
     return `<article class="collab-card">
-      <div class="collab-card-top">
-        <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
-        <div class="collab-heading">
-          <strong title="${esc(nome)}">${esc(nome)}</strong>
-          <span class="collab-status ${ativo?'active':'inactive'}"><i data-lucide="${ativo?'circle-check':'circle-minus'}" aria-hidden="true"></i>${ativo?'Ativo':'Inativo'}</span>
-        </div>
+      <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
+      <div class="collab-info">
+        <strong title="${esc(nome)}">${esc(nome)}</strong>
+        <span title="${esc(detalhe)}">${esc(detalhe)}</span>
       </div>
-      <div class="collab-meta">
-        <div><i data-lucide="briefcase-business" aria-hidden="true"></i><span><small>Cargo</small><b title="${esc(c.cargo||'Não informado')}">${esc(c.cargo||'Não informado')}</b></span></div>
-        <div><i data-lucide="building-2" aria-hidden="true"></i><span><small>Setor</small><b title="${esc(c.setor||'Não informado')}">${esc(c.setor||'Não informado')}</b></span></div>
-      </div>
+      <span class="collab-dot ${ativo?'active':'inactive'}" title="${ativo?'Ativo':'Inativo'}"></span>
     </article>`;
   }).join('')||'<div class="empty">Nenhum colaborador.</div>';
-  refreshIcons();
-}
-$('addColab').addEventListener('click',async()=>{
+}$('addColab').addEventListener('click',async()=>{
   if(!currentIsAdmin) return;
   const nome=$('newColabNome').value.trim(),cargo=$('newColabCargo').value.trim(),setor=$('newColabSetor').value.trim();
   if(!nome) return;
