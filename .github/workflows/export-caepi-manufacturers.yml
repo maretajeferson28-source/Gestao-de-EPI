@@ -33,12 +33,16 @@ jobs:
               where status='active'
               order by completed_at desc nulls last
               limit 1
+            ),
+            manufacturers as (
+              select distinct trim(r.fabricante) as fabricante
+              from public.caepi_records r
+              join active a on a.id=r.dataset_id
+              where nullif(trim(r.fabricante),'') is not null
             )
-            select distinct trim(r.fabricante)
-            from public.caepi_records r
-            join active a on a.id=r.dataset_id
-            where nullif(trim(r.fabricante),'') is not null
-            order by 1 collate \"C\";
+            select fabricante
+            from manufacturers
+            order by fabricante collate \"C\";
           " > manufacturers.txt
 
       - name: Generate PDF
