@@ -1134,3 +1134,128 @@ tr:hover td{background:#202020}
   #epiCards.cards-list{grid-template-columns:1fr}
   .epi-card{min-height:106px}
 }
+
+
+/* Imagem específica por C.A. / modelo */
+.epi-variant-card-layout{
+  display:grid;
+  grid-template-columns:92px minmax(0,1fr);
+  gap:12px;
+  align-items:stretch;
+}
+.epi-variant-card-content{min-width:0}
+.epi-variant-thumb{
+  min-height:118px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid #2d2d2d;
+  border-radius:10px;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(255,102,0,.045),transparent 45%),
+    #131313;
+}
+.epi-variant-thumb img{
+  width:100%;
+  height:100%;
+  min-height:118px;
+  max-height:150px;
+  object-fit:contain;
+  padding:8px;
+}
+.epi-variant-thumb>span{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  color:#5e5e5e;
+}
+.epi-variant-thumb>span[hidden]{display:none!important}
+.epi-variant-thumb>span svg{width:22px;height:22px}
+.epi-variant-thumb>span small{font-size:8px;text-transform:uppercase;letter-spacing:.07em}
+.epi-variant-card.valid .epi-variant-thumb.has-image{border-color:rgba(56,180,123,.25)}
+.epi-variant-card.invalid .epi-variant-thumb.has-image{border-color:rgba(255,92,92,.28)}
+
+.epi-variant-image-editor{
+  overflow:hidden;
+  border:1px solid #353535;
+  border-radius:11px;
+  background:#121212;
+}
+.epi-variant-image-preview{
+  min-height:150px;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at center,rgba(255,102,0,.05),transparent 42%),
+    #101010;
+  border-bottom:1px solid #2b2b2b;
+}
+.epi-variant-image-preview img{
+  width:100%;
+  height:170px;
+  object-fit:contain;
+  padding:10px;
+}
+.epi-variant-image-empty{
+  min-height:150px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  color:#777;
+  text-align:center;
+  padding:20px;
+}
+.epi-variant-image-empty[hidden]{display:none!important}
+.epi-variant-image-empty svg{
+  width:28px;
+  height:28px;
+  color:#ff7600;
+  margin-bottom:3px;
+}
+.epi-variant-image-empty strong{font-size:10px;color:#d3d3d3}
+.epi-variant-image-empty span{font-size:8px;color:#747474}
+.epi-variant-image-controls{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 10px;
+}
+.epi-variant-image-file{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.epi-variant-image-file strong{
+  display:block;
+  max-width:210px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#cfcfcf;
+  font-size:9px;
+}
+.epi-variant-image-file span{font-size:8px;color:#6f6f6f}
+.epi-variant-image-buttons{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+#epiVarCa[readonly]{
+  color:#ff9a3f;
+  border-color:rgba(255,102,0,.26);
+  background:#19130e;
+  cursor:not-allowed;
+}
+
+@media(max-width:620px){
+  .epi-variant-card-layout{grid-template-columns:72px minmax(0,1fr);gap:9px}
+  .epi-variant-thumb,.epi-variant-thumb img{min-height:100px}
+  .epi-variant-image-controls{align-items:flex-start;flex-direction:column}
+  .epi-variant-image-buttons{justify-content:flex-start}
+}
