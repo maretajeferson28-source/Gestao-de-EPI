@@ -300,3 +300,23 @@ tr:hover td{background:#202020}
 .authz-flow-step small{display:block;font-size:9px;color:#8e8e8e}
 .authz-flow-note{display:flex;align-items:center;gap:7px;margin-top:16px;padding-top:13px;border-top:1px solid #2a2a2a;color:#888;font-size:10px}
 .authz-flow-note svg{width:13px;height:13px;color:#999}
+
+
+/* Espera por autorização do administrador */
+.access-wait-screen{min-height:100vh;display:grid;place-items:center;padding:24px;background:
+ radial-gradient(circle at 50% 15%,rgba(255,102,0,.08),transparent 30%),
+ linear-gradient(180deg,#0d0d0d,#080808)}
+.access-wait-screen.hidden{display:none}
+.access-wait-card{width:min(510px,100%);background:#181818;border:1px solid #303030;border-radius:18px;padding:30px;box-shadow:0 28px 80px rgba(0,0,0,.48);text-align:center}
+.access-wait-icon{width:58px;height:58px;margin:0 auto 14px;border-radius:16px;display:grid;place-items:center;background:#1a130d;border:1px solid rgba(255,102,0,.38);color:var(--gold)}
+.access-wait-icon svg{width:29px;height:29px}
+.access-wait-kicker{display:block;color:#ff8500;font-size:9px;font-weight:800;letter-spacing:.16em;margin-bottom:8px}
+.access-wait-card h1{margin:0 auto 10px;max-width:410px;font-size:24px;line-height:1.2}
+.access-wait-card>p{margin:0 auto;color:var(--muted);font-size:12px;line-height:1.65;max-width:430px}
+.access-wait-account{margin:22px 0 12px;padding:13px 14px;border:1px solid #303030;background:#131313;border-radius:11px;text-align:left}
+.access-wait-account span{display:block;color:#858585;font-size:9px;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px}
+.access-wait-account strong{display:block;color:#f2f2f2;font-size:12px;overflow-wrap:anywhere}
+.access-wait-status{display:flex;align-items:center;justify-content:center;gap:8px;color:#979797;font-size:10px;padding:8px}
+.access-wait-dot{width:7px;height:7px;border-radius:50%;background:#ff6600;box-shadow:0 0 0 4px rgba(255,102,0,.10);animation:accessWaitPulse 1.25s infinite}
+.access-wait-actions{display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+@keyframes accessWaitPulse{50%{opacity:.3}}
