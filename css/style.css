@@ -207,7 +207,7 @@ tr:hover td{background:#202020}
 .ca-search-head{display:flex;gap:12px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid #2a2a2a}
 .ca-search-head h3{margin:1px 0 5px;font-size:14px}
 .ca-search-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
-.ca-search-icon{width:42px;height:42px;border-radius:12px;background:#242424;border:1px solid rgba(255,102,0,.42);color:var(--gold);display:grid;place-items:center;flex:0 0 42px;box-shadow:none;filter:none}
+.ca-search-icon{width:42px;height:42px;border-radius:12px;background:#202020;border:1px solid rgba(255,102,0,.42);color:var(--gold);display:grid;place-items:center;flex:0 0 42px;box-shadow:none;filter:none}
 .ca-search-icon svg{width:22px;height:22px}
 .ca-field{margin-top:18px}
 .ca-input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
@@ -235,7 +235,7 @@ tr:hover td{background:#202020}
 .ca-status.preview{color:#ff9a00;border-color:rgba(232,111,24,.28);background:#1a130d}
 .ca-status.preview .ca-status-dot{background:var(--gold);box-shadow:0 0 0 4px rgba(232,111,24,.09)}
 .ca-hero{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:15px;padding:20px 0;position:relative;z-index:1}
-.ca-hero-icon{width:64px;height:64px;border-radius:16px;background:#242424;border:1px solid rgba(255,102,0,.42);display:grid;place-items:center;color:var(--gold);box-shadow:none;filter:none}
+.ca-hero-icon{width:64px;height:64px;border-radius:16px;background:#202020;border:1px solid rgba(255,102,0,.42);display:grid;place-items:center;color:var(--gold);box-shadow:none;filter:none}
 .ca-hero-icon svg{width:32px;height:32px}
 .ca-hero-copy small,.ca-validity small{display:block;color:#909090;font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
 .ca-hero-copy strong{display:block;font-size:25px;letter-spacing:.02em}
@@ -311,7 +311,7 @@ tr:hover td{background:#202020}
 .authz-card-head{display:flex;gap:12px;align-items:flex-start;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid #2a2a2a}
 .authz-card-head h3{margin:0 0 4px;font-size:14px}
 .authz-card-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
-.authz-card-icon{width:42px;height:42px;border-radius:12px;background:#242424;border:1px solid rgba(255,102,0,.42);color:var(--gold);display:grid;place-items:center;flex:0 0 42px;box-shadow:none;filter:none}
+.authz-card-icon{width:42px;height:42px;border-radius:12px;background:#202020;border:1px solid rgba(255,102,0,.42);color:var(--gold);display:grid;place-items:center;flex:0 0 42px;box-shadow:none;filter:none}
 .authz-card-icon svg{width:21px;height:21px}
 .authz-form-card .field+.field{margin-top:12px}
 .authz-list-panel{padding-bottom:12px}
