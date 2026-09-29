@@ -436,13 +436,74 @@ function renderColabs(){
 function epiVariantCount(epiId){
   return epiVariants.filter(v=>v.epi_id===epiId && v.ativo!==false).length;
 }
+function epiCardIcon(epi){
+  const text=normalize(`${epi?.nome||''} ${epi?.categoria||''}`);
+  if(/capacete|cabeça|cabeca/.test(text)) return 'hard-hat';
+  if(/luva|mão|mao/.test(text)) return 'hand';
+  if(/óculos|oculos|viseira|visual/.test(text)) return 'glasses';
+  if(/protetor auditivo|auricular|ouvido/.test(text)) return 'ear';
+  if(/bota|calçado|calcado|sapato/.test(text)) return 'footprints';
+  if(/máscara|mascara|respirador|filtro/.test(text)) return 'shield-plus';
+  if(/cinto|talabarte|trava queda|trava-quedas|altura/.test(text)) return 'shield-check';
+  if(/capa|chuva|impermeável|impermeavel/.test(text)) return 'cloud-rain';
+  if(/macacão|macacao|uniforme|vestimenta|colete/.test(text)) return 'shirt';
+  if(/cone|fita zebrada|sinalização|sinalizacao/.test(text)) return 'triangle-alert';
+  if(/creme|protetor solar/.test(text)) return 'sparkles';
+  if(/lanterna|pilha/.test(text)) return 'flashlight';
+  return 'package-check';
+}
+function epiCardManufacturers(epiId){
+  const names=unique(
+    epiVariants
+      .filter(v=>v.epi_id===epiId && v.ativo!==false)
+      .map(v=>String(v.fabricante||'').trim())
+      .filter(Boolean)
+  );
+  if(!names.length) return '';
+  return names.length===1 ? names[0] : `${names[0]} +${names.length-1}`;
+}
+function epiCardHasValidCa(epiId){
+  return epiVariants.some(v=>{
+    if(v.epi_id!==epiId||v.ativo===false) return false;
+    return String(v.situacao||'').toLocaleUpperCase('pt-BR').includes('VÁLID');
+  });
+}
 function renderEpis(){
   $('epiCards').innerHTML=epiCatalog.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>{
     const count=epiVariantCount(c.id);
-    return `<button class="mini-card epi-card" type="button" data-epi-id="${esc(c.id)}">
-      <div class="epi-card-main"><strong>${esc(c.nome)}</strong><span>${esc(c.categoria||'Categoria não informada')}</span></div>
-      <span class="epi-card-ca-count">${count} ${count===1?'C.A.':'C.A.s'}</span>
-      <i data-lucide="chevron-right" aria-hidden="true"></i>
+    const fabricante=epiCardManufacturers(c.id);
+    const hasValid=epiCardHasValidCa(c.id);
+    const icon=epiCardIcon(c);
+    const stateClass=hasValid?'has-valid':(count?'has-ca':'no-ca');
+    const caLabel=`${count} ${count===1?'C.A.':'C.A.s'}`;
+
+    return `<button class="mini-card epi-card ${stateClass}" type="button" data-epi-id="${esc(c.id)}">
+      <span class="epi-card-accent" aria-hidden="true"></span>
+
+      <div class="epi-card-topline">
+        <div class="epi-card-icon" aria-hidden="true"><i data-lucide="${icon}"></i></div>
+
+        <div class="epi-card-copy">
+          <strong title="${esc(c.nome)}">${esc(c.nome)}</strong>
+          <span class="epi-card-category">${esc(c.categoria||'Categoria não informada')}</span>
+        </div>
+
+        <span class="epi-card-ca-count">
+          ${hasValid?'<span class="epi-card-status-dot" aria-hidden="true"></span>':''}
+          ${esc(caLabel)}
+        </span>
+      </div>
+
+      <div class="epi-card-meta">
+        <span class="epi-card-maker" title="${esc(fabricante||'Nenhum fabricante vinculado')}">
+          <i data-lucide="building-2" aria-hidden="true"></i>
+          ${esc(fabricante||'Nenhum fabricante vinculado')}
+        </span>
+        <span class="epi-card-open">
+          Abrir ficha
+          <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+        </span>
+      </div>
     </button>`;
   }).join('')||'<div class="empty">Nenhum EPI.</div>';
   refreshIcons();
