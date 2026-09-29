@@ -563,6 +563,16 @@ function clearAuthorizationWatch(){
   authorizationCheckBusy=false;
 }
 
+async function registerCurrentUserAccess(){
+  const {data,error}=await sb.rpc('epi_register_access_request');
+  if(error){
+    console.error('[AUTORIZAÇÕES] Falha ao registrar solicitação de acesso:',error);
+    return null;
+  }
+  const row=Array.isArray(data)?data[0]:data;
+  return row||null;
+}
+
 async function userIsAuthorized(){
   const {data,error}=await sb.rpc('epi_user_is_authorized');
   if(error){
@@ -618,6 +628,7 @@ async function checkWaitingAccessNow(){
 }
 
 async function showApp(session){
+  await registerCurrentUserAccess();
   const authorized=await userIsAuthorized();
 
   if(!authorized){
