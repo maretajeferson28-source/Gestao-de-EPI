@@ -274,7 +274,7 @@ tr:hover td{background:#202020}
 .authz-status.active>span{background:var(--green)}
 .authz-status.inactive{color:#a9a9a9}
 .authz-status.inactive>span{background:#707070}
-.authz-actions{display:grid;grid-template-columns:34px 34px;align-items:center;justify-content:center;gap:6px}
+.authz-actions{display:grid;grid-template-columns:34px 34px;align-items:center;justify-content:start;gap:6px;width:max-content;margin-left:calc(50% - 17px)}
 .authz-actions .btn{width:34px;height:34px;padding:0}
 .authz-protected{display:grid;place-items:center;width:34px;height:34px;margin:0 auto;color:#7f7f7f;border:1px solid #333;border-radius:9px;background:#171717}
 .authz-protected svg{width:15px;height:15px}
