@@ -10,6 +10,9 @@ let epiCatalog = [];
 let epiVariants = [];
 let selectedEpi = null;
 let editingVariantId = null;
+let pendingVariantImageFile = null;
+let pendingVariantImagePreviewUrl = '';
+let removeVariantImageOnSave = false;
 let charts = {};
 let realtimeChannel = null;
 let reloadTimer = null;
@@ -77,7 +80,7 @@ async function loadAll(showBusy=true){
       sb.from('colaboradores').select('id,nome,cargo,setor,ativo').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
-        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,fornecedor,unidade,observacao,ativo,origem,created_at,updated_at')
+        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
         .order('created_at',{ascending:true}),
       sb.from('movimentacoes_epi')
         .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,colaboradores(nome),epis(nome)')
@@ -520,12 +523,14 @@ function dateBR(v){
 function clearEpiVariantForm(){
   editingVariantId=null;
   ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
+  if($('epiVarCa')) $('epiVarCa').readOnly=false;
   if($('epiVarUnidade')) $('epiVarUnidade').value='un';
   if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
   if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. para buscar os dados oficiais.';
   if($('epiVariantEditorTitle')) $('epiVariantEditorTitle').textContent='Adicionar C.A.';
   if($('epiVariantSave')) $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar C.A.';
   if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').classList.add('hidden');
+  resetVariantImageEditor();
   refreshIcons();
 }
 function renderEpiVariantList(){
@@ -544,27 +549,55 @@ function renderEpiVariantList(){
     const upper=situacao.toLocaleUpperCase('pt-BR');
     const state=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'neutral');
     return `<article class="epi-variant-card ${state}">
-      <div class="epi-variant-top">
-        <div>
-          <span class="epi-variant-ca">C.A. ${esc(v.ca||'—')}</span>
-          <strong>${esc(v.fabricante||'Fabricante não informado')}</strong>
-          <small>${esc([v.marca,v.referencia].filter(Boolean).join(' • ')||'Marca / referência não informada')}</small>
+      <div class="epi-variant-card-layout">
+        <div class="epi-variant-thumb ${v.imagem_path?'has-image':''}">
+          <img data-variant-image="${esc(v.id)}" alt="Imagem do modelo C.A. ${esc(v.ca||'')}" hidden>
+          <span data-variant-image-empty="${esc(v.id)}"><i data-lucide="image" aria-hidden="true"></i><small>Sem foto</small></span>
         </div>
-        <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
-      </div>
-      <div class="epi-variant-meta">
-        <span><i data-lucide="calendar-days"></i><b>Validade</b><strong class="epi-variant-meta-value">${esc(dateBR(v.data_validade))}</strong></span>
-        <span><i data-lucide="badge-dollar-sign"></i><b>Preço</b><strong class="epi-variant-meta-value">${esc(moneyBR(v.preco))}</strong></span>
-        <span><i data-lucide="truck"></i><b>Fornecedor</b><strong class="epi-variant-meta-value" title="${esc(v.fornecedor||'—')}">${esc(v.fornecedor||'—')}</strong></span>
-      </div>
-      ${v.caracteristicas?`<p class="epi-variant-features">${esc(v.caracteristicas)}</p>`:''}
-      <div class="epi-variant-actions">
-        <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
-        <button class="btn compact danger" type="button" data-variant-delete="${esc(v.id)}"><i data-lucide="trash-2"></i>Excluir</button>
+
+        <div class="epi-variant-card-content">
+          <div class="epi-variant-top">
+            <div>
+              <span class="epi-variant-ca">C.A. ${esc(v.ca||'—')}</span>
+              <strong>${esc(v.fabricante||'Fabricante não informado')}</strong>
+              <small>${esc([v.marca,v.referencia].filter(Boolean).join(' • ')||'Marca / referência não informada')}</small>
+            </div>
+            <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
+          </div>
+          <div class="epi-variant-meta">
+            <span><i data-lucide="calendar-days"></i><b>Validade</b><strong class="epi-variant-meta-value">${esc(dateBR(v.data_validade))}</strong></span>
+            <span><i data-lucide="badge-dollar-sign"></i><b>Preço</b><strong class="epi-variant-meta-value">${esc(moneyBR(v.preco))}</strong></span>
+            <span><i data-lucide="truck"></i><b>Fornecedor</b><strong class="epi-variant-meta-value" title="${esc(v.fornecedor||'—')}">${esc(v.fornecedor||'—')}</strong></span>
+          </div>
+          ${v.caracteristicas?`<p class="epi-variant-features">${esc(v.caracteristicas)}</p>`:''}
+          <div class="epi-variant-actions">
+            <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
+            <button class="btn compact danger" type="button" data-variant-delete="${esc(v.id)}"><i data-lucide="trash-2"></i>Excluir</button>
+          </div>
+        </div>
       </div>
     </article>`;
   }).join('');
   refreshIcons();
+  hydrateVariantCardImages(rows);
+}
+
+async function hydrateVariantCardImages(rows){
+  await Promise.all(rows.filter(v=>v.imagem_path).map(async v=>{
+    try{
+      const {data,error}=await sb.storage.from('epi-imagens').createSignedUrl(v.imagem_path,3600);
+      if(error||!data?.signedUrl) return;
+      const img=document.querySelector(`[data-variant-image="${CSS.escape(v.id)}"]`);
+      const empty=document.querySelector(`[data-variant-image-empty="${CSS.escape(v.id)}"]`);
+      if(img){
+        img.src=data.signedUrl;
+        img.hidden=false;
+      }
+      if(empty) empty.hidden=true;
+    }catch(err){
+      console.warn('[VARIANT IMAGE CARD]',err);
+    }
+  }));
 }
 
 async function renderEpiImage(){
@@ -748,6 +781,142 @@ function closeEpiDetail(){
   selectedEpi=null;
   clearEpiVariantForm();
 }
+function resetVariantImageEditor(){
+  pendingVariantImageFile=null;
+  removeVariantImageOnSave=false;
+
+  if(pendingVariantImagePreviewUrl){
+    URL.revokeObjectURL(pendingVariantImagePreviewUrl);
+    pendingVariantImagePreviewUrl='';
+  }
+
+  if($('epiVariantImageInput')) $('epiVariantImageInput').value='';
+  if($('epiVariantImagePreview')){
+    $('epiVariantImagePreview').hidden=true;
+    $('epiVariantImagePreview').removeAttribute('src');
+  }
+  if($('epiVariantImageEmpty')) $('epiVariantImageEmpty').hidden=false;
+  if($('epiVariantImageRemove')) $('epiVariantImageRemove').hidden=true;
+  if($('epiVariantImageName')) $('epiVariantImageName').textContent='Nenhuma imagem selecionada.';
+}
+
+async function renderVariantImageEditor(v=null){
+  resetVariantImageEditor();
+  if(!v?.imagem_path) return;
+
+  try{
+    const {data,error}=await sb.storage.from('epi-imagens').createSignedUrl(v.imagem_path,3600);
+    if(error) throw error;
+
+    if($('epiVariantImagePreview')&&data?.signedUrl){
+      $('epiVariantImagePreview').src=data.signedUrl;
+      $('epiVariantImagePreview').hidden=false;
+      $('epiVariantImageEmpty').hidden=true;
+      $('epiVariantImageRemove').hidden=false;
+      $('epiVariantImageName').textContent=v.imagem_nome||'Imagem cadastrada';
+    }
+  }catch(err){
+    console.warn('[VARIANT IMAGE EDITOR]',err);
+    if($('epiVariantImageName')) $('epiVariantImageName').textContent='Não foi possível carregar a imagem atual.';
+  }
+}
+
+function chooseVariantImage(){
+  if(currentIsAdmin && $('epiVariantImageInput')) $('epiVariantImageInput').click();
+}
+
+function previewVariantImageFile(file){
+  if(!file) return;
+  const allowed=['image/jpeg','image/png','image/webp'];
+  if(!allowed.includes(file.type)){
+    $('epiVariantMsg').textContent='Imagem inválida. Use JPG, PNG ou WEBP.';
+    return;
+  }
+  if(file.size>5*1024*1024){
+    $('epiVariantMsg').textContent='A imagem do modelo ultrapassa 5 MB.';
+    return;
+  }
+
+  if(pendingVariantImagePreviewUrl) URL.revokeObjectURL(pendingVariantImagePreviewUrl);
+  pendingVariantImageFile=file;
+  removeVariantImageOnSave=false;
+  pendingVariantImagePreviewUrl=URL.createObjectURL(file);
+
+  $('epiVariantImagePreview').src=pendingVariantImagePreviewUrl;
+  $('epiVariantImagePreview').hidden=false;
+  $('epiVariantImageEmpty').hidden=true;
+  $('epiVariantImageRemove').hidden=false;
+  $('epiVariantImageName').textContent=file.name;
+  $('epiVariantMsg').textContent='Imagem pronta. Salve o C.A. para gravar.';
+}
+
+function markVariantImageForRemoval(){
+  pendingVariantImageFile=null;
+  removeVariantImageOnSave=true;
+  if(pendingVariantImagePreviewUrl){
+    URL.revokeObjectURL(pendingVariantImagePreviewUrl);
+    pendingVariantImagePreviewUrl='';
+  }
+  $('epiVariantImagePreview').hidden=true;
+  $('epiVariantImagePreview').removeAttribute('src');
+  $('epiVariantImageEmpty').hidden=false;
+  $('epiVariantImageRemove').hidden=true;
+  $('epiVariantImageName').textContent='Imagem será removida ao salvar.';
+  $('epiVariantMsg').textContent='A imagem será removida ao salvar as alterações.';
+}
+
+async function persistVariantImage(saved,previous){
+  let row=saved;
+
+  if(removeVariantImageOnSave && previous?.imagem_path){
+    const {data,error}=await sb.from('epi_variantes')
+      .update({imagem_path:null,imagem_nome:null,imagem_updated_at:new Date().toISOString()})
+      .eq('id',saved.id)
+      .select()
+      .single();
+    if(error) throw error;
+    row=data;
+    const {error:removeError}=await sb.storage.from('epi-imagens').remove([previous.imagem_path]);
+    if(removeError) console.warn('[VARIANT IMAGE REMOVE]',removeError);
+    return row;
+  }
+
+  if(!pendingVariantImageFile) return row;
+
+  const file=pendingVariantImageFile;
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+  const path=`variantes/${saved.id}/modelo-${Date.now()}.${ext}`;
+
+  const {error:uploadError}=await sb.storage.from('epi-imagens').upload(path,file,{
+    cacheControl:'3600',
+    upsert:false,
+    contentType:file.type
+  });
+  if(uploadError) throw uploadError;
+
+  const {data,error:updateError}=await sb.from('epi_variantes')
+    .update({
+      imagem_path:path,
+      imagem_nome:file.name,
+      imagem_updated_at:new Date().toISOString()
+    })
+    .eq('id',saved.id)
+    .select()
+    .single();
+
+  if(updateError){
+    await sb.storage.from('epi-imagens').remove([path]);
+    throw updateError;
+  }
+
+  if(previous?.imagem_path && previous.imagem_path!==path){
+    const {error:removeOldError}=await sb.storage.from('epi-imagens').remove([previous.imagem_path]);
+    if(removeOldError) console.warn('[VARIANT IMAGE OLD]',removeOldError);
+  }
+
+  return data;
+}
+
 function fillEpiVariantForm(v){
   editingVariantId=v.id;
   $('epiVarCa').value=v.ca||'';
@@ -764,10 +933,12 @@ function fillEpiVariantForm(v){
   $('epiVarFornecedor').value=v.fornecedor||'';
   $('epiVarUnidade').value=v.unidade||'un';
   $('epiVarObservacao').value=v.observacao||'';
+  $('epiVarCa').readOnly=true;
   $('epiVariantEditorTitle').textContent='Editar C.A.';
   $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar alterações';
   $('epiVariantCancelEdit').classList.remove('hidden');
   $('epiVarLookupStatus').textContent='Registro carregado para edição.';
+  renderVariantImageEditor(v);
   refreshIcons();
 }
 async function lookupEpiVariantCa(){
@@ -804,8 +975,17 @@ async function lookupEpiVariantCa(){
 }
 async function saveEpiVariant(){
   if(!currentIsAdmin||!selectedEpi) return;
-  const ca=String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
-  if(!ca){$('epiVariantMsg').textContent='Informe o C.A.';return}
+
+  const previous=editingVariantId ? epiVariants.find(v=>v.id===editingVariantId)||null : null;
+  const typedCa=String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
+  const ca=typedCa || String(previous?.ca||'').replace(/\D+/g,'').slice(0,8);
+
+  if(!ca){
+    $('epiVariantMsg').textContent='Informe o C.A.';
+    return;
+  }
+  $('epiVarCa').value=ca;
+
   const payload={
     epi_id:selectedEpi.id,
     ca,
@@ -826,25 +1006,42 @@ async function saveEpiVariant(){
     origem:'Site Gestão EPI',
     updated_at:new Date().toISOString()
   };
+
   $('epiVariantMsg').textContent='Salvando...';
+
   let result;
   if(editingVariantId){
     result=await sb.from('epi_variantes').update(payload).eq('id',editingVariantId).select().single();
   }else{
     result=await sb.from('epi_variantes').insert(payload).select().single();
   }
+
   if(result.error){
     $('epiVariantMsg').textContent=result.error.code==='23505'?'Este C.A. já está vinculado a este item.':result.error.message;
     return;
   }
-  const saved=result.data;
+
+  let saved=result.data;
+
+  try{
+    saved=await persistVariantImage(saved,previous);
+  }catch(err){
+    console.error('[VARIANT IMAGE SAVE]',err);
+    $('epiVariantMsg').textContent=`C.A. salvo, mas a imagem falhou: ${err.message||err}`;
+  }
+
   const idx=epiVariants.findIndex(v=>v.id===saved.id);
-  if(idx>=0) epiVariants[idx]=saved; else epiVariants.push(saved);
-  $('epiVariantMsg').textContent='C.A. salvo.';
+  if(idx>=0) epiVariants[idx]=saved;
+  else epiVariants.push(saved);
+
+  const imageFailed=$('epiVariantMsg').textContent.startsWith('C.A. salvo, mas');
+  if(!imageFailed) $('epiVariantMsg').textContent='C.A. salvo.';
+
   clearEpiVariantForm();
   renderEpiVariantList();
   renderEpis();
 }
+
 async function deleteEpiVariant(id){
   if(!currentIsAdmin) return;
   const row=epiVariants.find(v=>v.id===id);
@@ -852,6 +1049,10 @@ async function deleteEpiVariant(id){
   if(!confirm(`Excluir o C.A. ${row.ca} deste item?`)) return;
   const {error}=await sb.from('epi_variantes').delete().eq('id',id);
   if(error){alert(error.message);return}
+  if(row.imagem_path){
+    const {error:imgError}=await sb.storage.from('epi-imagens').remove([row.imagem_path]);
+    if(imgError) console.warn('[VARIANT IMAGE DELETE]',imgError);
+  }
   epiVariants=epiVariants.filter(v=>v.id!==id);
   renderEpiVariantList();
   renderEpis();
@@ -871,6 +1072,13 @@ if($('epiDetailClose')) $('epiDetailClose').addEventListener('click',closeEpiDet
 if($('epiDetailModal')) $('epiDetailModal').addEventListener('click',e=>{if(e.target===$('epiDetailModal')) closeEpiDetail();});
 if($('epiVarLookup')) $('epiVarLookup').addEventListener('click',lookupEpiVariantCa);
 if($('epiVarCa')) $('epiVarCa').addEventListener('input',()=>{$('epiVarCa').value=$('epiVarCa').value.replace(/\D+/g,'').slice(0,8);});
+if($('epiVariantImageSelect')) $('epiVariantImageSelect').addEventListener('click',chooseVariantImage);
+if($('epiVariantImageChange')) $('epiVariantImageChange').addEventListener('click',chooseVariantImage);
+if($('epiVariantImageRemove')) $('epiVariantImageRemove').addEventListener('click',markVariantImageForRemoval);
+if($('epiVariantImageInput')) $('epiVariantImageInput').addEventListener('change',e=>{
+  const file=e.target.files?.[0];
+  if(file) previewVariantImageFile(file);
+});
 if($('epiVariantSave')) $('epiVariantSave').addEventListener('click',saveEpiVariant);
 if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').addEventListener('click',clearEpiVariantForm);
 if($('epiVariantList')) $('epiVariantList').addEventListener('click',e=>{
