@@ -553,9 +553,9 @@ function renderEpiVariantList(){
         <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
       </div>
       <div class="epi-variant-meta">
-        <span><i data-lucide="calendar-days"></i><b>Validade</b>${esc(dateBR(v.data_validade))}</span>
-        <span><i data-lucide="badge-dollar-sign"></i><b>Preço</b>${esc(moneyBR(v.preco))}</span>
-        <span><i data-lucide="truck"></i><b>Fornecedor</b>${esc(v.fornecedor||'—')}</span>
+        <span><i data-lucide="calendar-days"></i><b>Validade</b><strong class="epi-variant-meta-value">${esc(dateBR(v.data_validade))}</strong></span>
+        <span><i data-lucide="badge-dollar-sign"></i><b>Preço</b><strong class="epi-variant-meta-value">${esc(moneyBR(v.preco))}</strong></span>
+        <span><i data-lucide="truck"></i><b>Fornecedor</b><strong class="epi-variant-meta-value" title="${esc(v.fornecedor||'—')}">${esc(v.fornecedor||'—')}</strong></span>
       </div>
       ${v.caracteristicas?`<p class="epi-variant-features">${esc(v.caracteristicas)}</p>`:''}
       <div class="epi-variant-actions">
