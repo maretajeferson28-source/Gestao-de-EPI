@@ -243,7 +243,7 @@ tr:hover td{background:#202020}
 .ca-validity{min-width:100px;text-align:right;padding-left:15px;border-left:1px solid #303030}
 .ca-validity strong{font-size:17px;color:#b0b0b0}
 .ca-data-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;position:relative;z-index:1}
-.ca-data-card{background:#161616;border:1px solid rgba(47,143,104,.42);border-radius:11px;padding:12px;min-height:72px}
+.ca-data-card{background:#161616;border:1px solid rgba(255,102,0,.34);border-radius:11px;padding:12px;min-height:72px}
 .ca-data-card.wide{grid-column:span 2}
 .ca-data-card.full{grid-column:1/-1;min-height:88px}
 .ca-data-card span{display:block;color:#8f8f8f;font-size:9px;text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px}
@@ -544,28 +544,31 @@ tr:hover td{background:#202020}
 .ca-base-bottom{margin-top:auto;padding-top:12px}
 
 
-/* Teste verde no stage da Consulta C.A. */
-.ca-stage{
-  background:
-    radial-gradient(circle at 80% 0%,rgba(47,143,104,.06),transparent 30%),
-    linear-gradient(180deg,#1a1a1a,#121212);
-}
-.ca-stage:after{
-  border-color:rgba(47,143,104,.05);
-  box-shadow:0 0 0 38px rgba(47,143,104,.022),0 0 0 76px rgba(47,143,104,.014);
+/* Estados visuais da Consulta C.A.: laranja / verde / vermelho */
+.ca-stage .ca-data-card{
+  border-color:rgba(255,102,0,.34);
 }
 .ca-stage .ca-hero-icon{
+  border-color:rgba(255,102,0,.42);
+  color:var(--gold);
+}
+
+/* C.A. válido */
+.ca-stage.ca-result-valid .ca-data-card{
+  border-color:rgba(47,143,104,.42);
+}
+.ca-stage.ca-result-valid .ca-hero-icon{
   border-color:rgba(47,143,104,.42);
   color:#2f8f68;
 }
-.ca-stage .ca-status.preview,
-.ca-stage .ca-status.loading{
-  color:#58b58a;
-  border-color:rgba(47,143,104,.32);
-  background:#101a16;
+
+/* C.A. vencido / inválido / erro */
+.ca-stage.ca-result-invalid .ca-data-card,
+.ca-stage.ca-result-error .ca-data-card{
+  border-color:rgba(239,91,91,.44);
 }
-.ca-stage .ca-status.preview .ca-status-dot,
-.ca-stage .ca-status.loading .ca-status-dot{
-  background:#2f8f68;
-  box-shadow:0 0 0 4px rgba(47,143,104,.10);
+.ca-stage.ca-result-invalid .ca-hero-icon,
+.ca-stage.ca-result-error .ca-hero-icon{
+  border-color:rgba(239,91,91,.44);
+  color:#ef5b5b;
 }
