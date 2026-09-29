@@ -77,7 +77,13 @@
       <button data-page="autorizacoes" id="authzNavBtn" data-admin-only hidden><span class="ico"><i data-lucide="user-round-cog" aria-hidden="true"></i></span><span class="text">Autorizações</span></button>
       <button data-page="dados" data-admin-only hidden><span class="ico"><i data-lucide="database" aria-hidden="true"></i></span><span class="text">Dados</span></button>
     </nav>
-    <div class="side-foot">Base centralizada no Supabase.<br>V4 • banco PostgreSQL • atualização em tempo real.</div>
+    <div class="side-foot user-side-profile" id="sideUserProfile">
+      <div class="side-user-avatar" id="sideUserAvatarWrap">
+        <img id="sideUserAvatar" alt="" hidden>
+        <span id="sideUserInitial">U</span>
+      </div>
+      <strong id="sideUserName">Usuário</strong>
+    </div>
   </aside>
   <main class="main">
     <header class="topbar">
