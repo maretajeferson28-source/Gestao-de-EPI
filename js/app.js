@@ -183,6 +183,7 @@ function nav(page){
   refreshIcons();
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.page)));
+if($('caDataBtn')) $('caDataBtn').addEventListener('click',()=>nav('dados'));
 
 function formatCaDate(value){
   if(!value) return '—';
