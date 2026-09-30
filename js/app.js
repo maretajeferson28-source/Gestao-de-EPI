@@ -143,6 +143,58 @@ function aggregate(arr,key){
   arr.forEach(x=>{const k=x[key]||'(sem colaborador)';m.set(k,(m.get(k)||0)+(Number(x.quantidade)||0))});
   return [...m.entries()].sort((a,b)=>b[1]-a[1]);
 }
+function caKey(value){
+  return String(value||'').replace(/\D+/g,'').replace(/^0+/,'');
+}
+
+function movementCostInfo(movement){
+  const key=caKey(movement?.ca);
+  if(!movement?.epi_id || !key) return {priced:false,total:0,unitPrice:null,variant:null};
+
+  const variant=epiVariants.find(v=>
+    v.epi_id===movement.epi_id &&
+    v.ativo!==false &&
+    caKey(v.ca)===key &&
+    v.preco!==null &&
+    v.preco!==undefined &&
+    v.preco!=='' &&
+    Number.isFinite(Number(v.preco))
+  );
+
+  if(!variant) return {priced:false,total:0,unitPrice:null,variant:null};
+
+  const unitPrice=Number(variant.preco);
+  const quantity=Number(movement.quantidade)||0;
+
+  return {priced:true,total:quantity*unitPrice,unitPrice,variant};
+}
+
+function spendingSummary(arr){
+  const byEpi=new Map();
+  let total=0;
+  let pricedMovements=0;
+  let pricedItems=0;
+
+  arr.forEach(movement=>{
+    const info=movementCostInfo(movement);
+    if(!info.priced) return;
+
+    total+=info.total;
+    pricedMovements+=1;
+    pricedItems+=Number(movement.quantidade)||0;
+
+    const name=movement.epi||'EPI / Item';
+    byEpi.set(name,(byEpi.get(name)||0)+info.total);
+  });
+
+  return {
+    total,
+    pricedMovements,
+    pricedItems,
+    byEpi:[...byEpi.entries()].sort((a,b)=>b[1]-a[1])
+  };
+}
+
 function chartBase(){
   return {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#aeb8c2',boxWidth:10,boxHeight:10,font:{size:10}}}},scales:{x:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}},y:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}}}};
 }
@@ -162,12 +214,53 @@ function renderDashboard(){
   $('kMedia').textContent=arr.length?(total/arr.length).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'0,00';
   $('kTop').textContent=top[0]; $('kTopQtd').textContent=`${fmt(top[1])} itens`;
 
+  const spend=spendingSummary(arr);
+  $('kSpend').textContent=moneyBR(spend.total);
+  $('kSpendCoverage').textContent=`${fmt(spend.pricedMovements)} de ${fmt(arr.length)} movimentações com preço`;
+  if($('spendCoverage')){
+    $('spendCoverage').textContent=`${fmt(spend.pricedMovements)} registros • ${fmt(spend.pricedItems)} itens calculados`;
+  }
+
   const byDate=new Map(); arr.forEach(x=>byDate.set(x.data,(byDate.get(x.data)||0)+(Number(x.quantidade)||0)));
   const dates=[...byDate.entries()].sort((a,b)=>parseBR(a[0])-parseBR(b[0]));
   makeChart('cTempo','line',{labels:dates.map(x=>x[0].slice(0,5)),datasets:[{label:'Qtd',data:dates.map(x=>x[1]),borderColor:'#ff6600',backgroundColor:'rgba(255,102,0,.10)',fill:true,tension:.32,pointRadius:3,pointBackgroundColor:'#ff9a00'}]},{plugins:{legend:{display:false}}});
 
   const topE=aggregate(arr,'epi').slice(0,10).reverse();
   makeChart('cTop','bar',{labels:topE.map(x=>x[0]),datasets:[{label:'Qtd',data:topE.map(x=>x[1]),backgroundColor:'#ff6600',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
+
+  const spendRows=spend.byEpi.slice(0,10).reverse();
+  makeChart('cSpend','bar',{
+    labels:spendRows.map(x=>x[0]),
+    datasets:[{
+      label:'Valor',
+      data:spendRows.map(x=>Number(x[1].toFixed(2))),
+      backgroundColor:'#38b47b',
+      borderRadius:5,
+      barThickness:18,
+      maxBarThickness:22
+    }]
+  },{
+    indexAxis:'y',
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:(ctx)=>` ${moneyBR(ctx.raw)}`}}
+    },
+    scales:{
+      x:{
+        beginAtZero:true,
+        ticks:{
+          color:'#7f8a96',
+          font:{size:9},
+          callback:(value)=>Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0})
+        },
+        grid:{color:'#202a34'}
+      },
+      y:{
+        ticks:{color:'#aeb8c2',font:{size:9}},
+        grid:{display:false}
+      }
+    }
+  });
 
   const topC=aggregate(arr.filter(x=>x.colaborador&&x.colaborador!=='Bolsa Reserva'),'colaborador').slice(0,8).reverse();
   makeChart('cColab','bar',{labels:topC.map(x=>x[0]),datasets:[{label:'Qtd',data:topC.map(x=>x[1]),backgroundColor:'#ff8500',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
