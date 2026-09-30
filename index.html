@@ -145,7 +145,7 @@
           <div class="kpi"><div class="label">Movimentações</div><div class="value" id="kMov">0</div><div class="sub">registros filtrados</div></div>
           <div class="kpi"><div class="label">Colaboradores</div><div class="value" id="kCol">0</div><div class="sub">identificados no período</div></div>
           <div class="kpi"><div class="label">Média por saída</div><div class="value" id="kMedia">0</div><div class="sub">itens por movimentação</div></div>
-          <div class="kpi"><div class="label">EPI mais consumido</div><div class="value" id="kTop" style="font-size:18px;margin-top:16px">—</div><div class="sub" id="kTopQtd">0 itens</div></div>
+          <div class="kpi kpi-spend"><div class="label">Valor das saídas</div><div class="value" id="kSpend">R$ 0,00</div><div class="sub" id="kSpendCoverage">0 movimentações com preço</div></div>
         </div>
         <div class="grid2">
           <div class="panel"><div class="panel-head"><h3>Consumo ao longo do tempo</h3><small>quantidade por dia</small></div><div class="chart-wrap"><canvas id="cTempo"></canvas></div></div>
@@ -156,11 +156,6 @@
           <div class="panel"><div class="panel-head"><h3>Qualidade do registro</h3><small>identificação do colaborador</small></div><div class="chart-wrap"><canvas id="cQual"></canvas></div></div>
           <div class="panel"><div class="panel-head"><h3>Saídas por responsável</h3><small>quantidade entregue</small></div><div class="chart-wrap"><canvas id="cResp"></canvas></div></div>
         </div>
-        <div class="panel" style="margin-top:12px">
-          <div class="panel-head"><h3>Últimas movimentações</h3><small id="latestCount"></small></div>
-          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Colaborador</th><th>EPI / Item</th><th>Qtd</th><th>C.A</th><th>Tamanho</th><th>Responsável</th></tr></thead><tbody id="latestBody"></tbody></table></div>
-        </div>
-
         <section class="dashboard-values-section">
           <div class="dashboard-values-head">
             <div>
@@ -170,22 +165,19 @@
             </div>
           </div>
 
-          <div class="dashboard-values-grid">
-            <div class="kpi kpi-spend dashboard-spend-kpi">
-              <div class="label">Valor das saídas</div>
-              <div class="value" id="kSpend">R$ 0,00</div>
-              <div class="sub" id="kSpendCoverage">0 movimentações com preço</div>
+          <div class="panel spend-panel">
+            <div class="panel-head">
+              <div><h3>Gasto por EPI</h3><small>distribuição dos valores calculáveis</small></div>
+              <span class="spend-coverage" id="spendCoverage">0 registros calculáveis</span>
             </div>
-
-            <div class="panel spend-panel">
-              <div class="panel-head">
-                <div><h3>Gasto por EPI</h3><small>distribuição dos valores calculáveis</small></div>
-                <span class="spend-coverage" id="spendCoverage">0 registros calculáveis</span>
-              </div>
-              <div class="chart-wrap spend-chart-wrap"><canvas id="cSpend"></canvas></div>
-            </div>
+            <div class="chart-wrap spend-chart-wrap"><canvas id="cSpend"></canvas></div>
           </div>
         </section>
+
+        <div class="panel" style="margin-top:12px">
+          <div class="panel-head"><h3>Últimas movimentações</h3><small id="latestCount"></small></div>
+          <div class="table-wrap"><table><thead><tr><th>Data</th><th>Colaborador</th><th>EPI / Item</th><th>Qtd</th><th>C.A</th><th>Tamanho</th><th>Responsável</th></tr></thead><tbody id="latestBody"></tbody></table></div>
+        </div>
       </section>
 
       <section class="page" data-page-content="nova">
