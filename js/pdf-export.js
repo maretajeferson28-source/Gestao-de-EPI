@@ -243,27 +243,59 @@
       const textTop = 13;
       const bottomPadding = 5;
       const minHeight = 22;
+      const pageBottom = pageH - 17;
+      const freshPageY = 38;
+      const fixedHeight = textTop + bottomPadding;
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(fontSize);
 
       const allLines = doc.splitTextToSize(raw, textWidth);
+      const fullBoxHeight = Math.max(
+        minHeight,
+        fixedHeight + (allLines.length * lineHeight)
+      );
+      const freshPageCapacity = pageBottom - freshPageY;
+
+      // Se a caixa inteira cabe em uma página nova, nunca a quebra no meio:
+      // pula para a próxima página antes de desenhar.
+      if (
+        fullBoxHeight <= freshPageCapacity &&
+        y + fullBoxHeight > pageBottom
+      ) {
+        addPage();
+      }
+
       let offset = 0;
       let continuation = false;
 
       while (offset < allLines.length) {
-        const availableHeight = (pageH - 17) - y;
-        const fixedHeight = textTop + bottomPadding;
-        let maxLines = Math.floor((availableHeight - fixedHeight) / lineHeight);
+        const availableHeight = pageBottom - y;
 
-        if (maxLines < 1) {
-          addPage();
-          continuation = true;
-          continue;
+        // Caso normal: a caixa inteira cabe no espaço atual.
+        const remainingLines = allLines.length - offset;
+        const remainingHeight = Math.max(
+          minHeight,
+          fixedHeight + (remainingLines * lineHeight)
+        );
+
+        let linesInBox;
+
+        if (remainingHeight <= availableHeight) {
+          linesInBox = remainingLines;
+        } else {
+          // Só divide quando o próprio conteúdo é grande demais para uma página.
+          const maxLines = Math.floor((availableHeight - fixedHeight) / lineHeight);
+
+          if (maxLines < 1) {
+            addPage();
+            continuation = offset > 0;
+            continue;
+          }
+
+          linesInBox = Math.min(remainingLines, maxLines);
         }
 
-        const remaining = allLines.length - offset;
-        const linesInBox = Math.min(remaining, maxLines);
         const boxLines = allLines.slice(offset, offset + linesInBox);
         const height = Math.max(
           minHeight,
