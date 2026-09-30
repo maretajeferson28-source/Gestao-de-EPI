@@ -81,7 +81,7 @@ async function loadAll(showBusy=true){
       sb.from('colaboradores').select('id,nome,cargo,setor,ativo').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
-        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
+        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
         .order('created_at',{ascending:true}),
       sb.from('movimentacoes_epi')
         .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,colaboradores(nome),epis(nome)')
@@ -171,11 +171,9 @@ function movementCostInfo(movement){
 
 function spendingSummary(arr){
   const byEpi=new Map();
-  const savingsCurrentByEpi=new Map();
   let total=0;
   let pricedMovements=0;
   let pricedItems=0;
-  let totalSavingsCurrent=0;
 
   arr.forEach(movement=>{
     const info=movementCostInfo(movement);
@@ -188,31 +186,70 @@ function spendingSummary(arr){
     pricedMovements+=1;
     pricedItems+=quantity;
     byEpi.set(name,(byEpi.get(name)||0)+info.total);
-
-    const reference=Number(info.variant?.preco_referencia);
-    if(
-      info.variant?.preco_referencia!==null &&
-      info.variant?.preco_referencia!==undefined &&
-      info.variant?.preco_referencia!=='' &&
-      Number.isFinite(reference) &&
-      reference>info.unitPrice
-    ){
-      const savedCurrent=(reference-info.unitPrice)*quantity;
-      totalSavingsCurrent+=savedCurrent;
-      savingsCurrentByEpi.set(name,(savingsCurrentByEpi.get(name)||0)+savedCurrent);
-    }
   });
+
+  const replacementRows=[];
+  const activeVariants=epiVariants.filter(v=>v.ativo!==false);
+
+  epiCatalog.forEach(epi=>{
+    const variants=activeVariants.filter(v=>v.epi_id===epi.id);
+    const current=variants.find(v=>
+      v.comparativo_status==='atual' &&
+      v.preco!==null &&
+      v.preco!==undefined &&
+      v.preco!=='' &&
+      Number.isFinite(Number(v.preco))
+    );
+
+    const past=variants
+      .filter(v=>
+        v.comparativo_status==='passada' &&
+        v.preco!==null &&
+        v.preco!==undefined &&
+        v.preco!=='' &&
+        Number.isFinite(Number(v.preco))
+      )
+      .sort((a,b)=>Number(a.preco)-Number(b.preco));
+
+    if(!current||!past.length) return;
+
+    const cheapestPast=past[0];
+    const currentPrice=Number(current.preco);
+    const pastPrice=Number(cheapestPast.preco);
+    const unitSaving=pastPrice-currentPrice;
+    if(!(unitSaving>0)) return;
+
+    const currentCa=caKey(current.ca);
+    const currentQuantity=arr
+      .filter(m=>m.epi_id===epi.id && caKey(m.ca)===currentCa)
+      .reduce((sum,m)=>sum+(Number(m.quantidade)||0),0);
+
+    const totalSaving=unitSaving*currentQuantity;
+
+    replacementRows.push({
+      epi:epi.nome||'EPI / Item',
+      epiId:epi.id,
+      currentCa:String(current.ca||''),
+      pastCa:String(cheapestPast.ca||''),
+      currentPrice,
+      pastPrice,
+      unitSaving,
+      currentQuantity,
+      totalSaving
+    });
+  });
+
+  replacementRows.sort((a,b)=>b.totalSaving-a.totalSaving||b.unitSaving-a.unitSaving);
 
   return {
     total,
     pricedMovements,
     pricedItems,
-    totalSavingsCurrent,
     byEpi:[...byEpi.entries()].sort((a,b)=>b[1]-a[1]),
-    savingsCurrentByEpi:[...savingsCurrentByEpi.entries()].sort((a,b)=>b[1]-a[1])
+    replacementRows,
+    totalReplacementSavings:replacementRows.reduce((sum,row)=>sum+row.totalSaving,0)
   };
 }
-
 
 function chartBase(){
   return {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#aeb8c2',boxWidth:10,boxHeight:10,font:{size:10}}}},scales:{x:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}},y:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}}}};
@@ -236,9 +273,9 @@ function renderDashboard(){
   if($('spendCoverage')){
     $('spendCoverage').textContent=`${fmt(spend.pricedMovements)} registros • ${fmt(spend.pricedItems)} itens calculados`;
   }
-  const savingsRows=spend.savingsCurrentByEpi;
+  const savingsRows=spend.replacementRows.filter(row=>row.totalSaving>0);
   if($('savingsTotal')){
-    $('savingsTotal').textContent=moneyBR(spend.totalSavingsCurrent);
+    $('savingsTotal').textContent=moneyBR(spend.totalReplacementSavings);
   }
 
   const byDate=new Map(); arr.forEach(x=>byDate.set(x.data,(byDate.get(x.data)||0)+(Number(x.quantidade)||0)));
@@ -285,9 +322,9 @@ function renderDashboard(){
 
   const hasSavings=savingsRows.length>0;
   makeChart('cSavings','doughnut',{
-    labels:hasSavings?savingsRows.map(x=>x[0]):['Sem redução cadastrada'],
+    labels:hasSavings?savingsRows.map(x=>x.epi):['Sem substituição comparável'],
     datasets:[{
-      data:hasSavings?savingsRows.map(x=>Number(x[1].toFixed(2))):[1],
+      data:hasSavings?savingsRows.map(x=>Number(x.totalSaving.toFixed(2))):[1],
       backgroundColor:hasSavings
         ? ['#28A86B','#7BE0AA','#1F8E5A','#8BE3B3','#46BC82','#A5EBC6','#2F9964','#67C995','#3EAF78','#91E5BA']
         : ['#303030'],
@@ -312,7 +349,17 @@ function renderDashboard(){
       tooltip:{
         enabled:hasSavings,
         callbacks:{
-          label:(ctx)=>` ${ctx.label}: ${moneyBR(ctx.raw)}`
+          label:(ctx)=>` ${ctx.label}: ${moneyBR(ctx.raw)} economizados`,
+          afterLabel:(ctx)=>{
+            const row=savingsRows[ctx.dataIndex];
+            if(!row) return [];
+            return [
+              `Passada: C.A. ${row.pastCa} • ${moneyBR(row.pastPrice)}`,
+              `Atual: C.A. ${row.currentCa} • ${moneyBR(row.currentPrice)}`,
+              `Economia/un: ${moneyBR(row.unitSaving)}`,
+              `Qtd atual no filtro: ${fmt(row.currentQuantity)}`
+            ];
+          }
         }
       }
     },
@@ -683,6 +730,8 @@ function clearEpiVariantForm(){
   editingVariantId=null;
   ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarPrecoReferencia','epiVarPrecoPromocional','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
   if($('epiVarCa')) $('epiVarCa').readOnly=false;
+  if($('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=false;
+  if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=false;
   if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
   if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. para buscar os dados oficiais.';
   if($('epiVariantEditorTitle')) $('epiVariantEditorTitle').textContent='Adicionar C.A.';
@@ -804,6 +853,7 @@ function renderEpiVariantList(){
         ${field('Preço atual',moneyBR(v.preco),'badge-dollar-sign')}
         ${field('Preço anterior / referência',moneyBR(v.preco_referencia),'history')}
         ${field('Preço promocional',moneyBR(v.preco_promocional),'badge-percent')}
+        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passada':'—'),'git-compare-arrows')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
 
@@ -1021,6 +1071,8 @@ function fillEpiVariantForm(v){
   $('epiVarPreco').value=v.preco??'';
   $('epiVarPrecoReferencia').value=v.preco_referencia??'';
   $('epiVarPrecoPromocional').value=v.preco_promocional??'';
+  if($('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=v.comparativo_status==='passada';
+  if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=v.comparativo_status==='atual';
   $('epiVarFornecedor').value=v.fornecedor||'';
   $('epiVarObservacao').value=v.observacao||'';
   $('epiVarCa').readOnly=true;
@@ -1091,6 +1143,7 @@ async function saveEpiVariant(){
     preco:$('epiVarPreco').value===''?null:Number($('epiVarPreco').value),
     preco_referencia:$('epiVarPrecoReferencia').value===''?null:Number($('epiVarPrecoReferencia').value),
     preco_promocional:$('epiVarPrecoPromocional').value===''?null:Number($('epiVarPrecoPromocional').value),
+    comparativo_status:$('epiVarComparativoAtual')?.checked?'atual':($('epiVarComparativoPassada')?.checked?'passada':null),
     fornecedor:$('epiVarFornecedor').value.trim()||null,
     unidade:'un',
     observacao:$('epiVarObservacao').value.trim()||null,
@@ -1100,6 +1153,29 @@ async function saveEpiVariant(){
   };
 
   $('epiVariantMsg').textContent='Salvando...';
+
+  if(payload.comparativo_status==='atual'){
+    let unmarkQuery=sb.from('epi_variantes')
+      .update({comparativo_status:null,updated_at:new Date().toISOString()})
+      .eq('epi_id',selectedEpi.id)
+      .eq('comparativo_status','atual');
+
+    if(editingVariantId) unmarkQuery=unmarkQuery.neq('id',editingVariantId);
+
+    const unmark=await unmarkQuery;
+    if(unmark.error){
+      $('epiVariantMsg').textContent=unmark.error.message;
+      return;
+    }
+
+    epiVariants=epiVariants.map(v=>
+      v.epi_id===selectedEpi.id &&
+      v.id!==editingVariantId &&
+      v.comparativo_status==='atual'
+        ? {...v,comparativo_status:null}
+        : v
+    );
+  }
 
   let result;
   if(editingVariantId){
@@ -1208,6 +1284,12 @@ if($('epiVariantImageRemove')) $('epiVariantImageRemove').addEventListener('clic
 if($('epiVariantImageInput')) $('epiVariantImageInput').addEventListener('change',e=>{
   const file=e.target.files?.[0];
   if(file) previewVariantImageFile(file);
+});
+if($('epiVarComparativoPassada')) $('epiVarComparativoPassada').addEventListener('change',e=>{
+  if(e.target.checked && $('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=false;
+});
+if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').addEventListener('change',e=>{
+  if(e.target.checked && $('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=false;
 });
 if($('epiVariantSave')) $('epiVariantSave').addEventListener('click',saveEpiVariant);
 if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').addEventListener('click',clearEpiVariantForm);
