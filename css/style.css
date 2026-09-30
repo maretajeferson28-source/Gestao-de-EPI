@@ -640,7 +640,7 @@ tr:hover td{background:#202020}
 .epi-detail-close svg{width:17px;height:17px}
 .epi-detail-head{
   display:grid;
-  grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-columns:auto minmax(0,1fr) minmax(180px,250px) auto;
   align-items:center;
   gap:14px;
   padding:22px 64px 20px 22px;
@@ -1330,4 +1330,75 @@ tr:hover td{background:#202020}
   .epi-dossier-image img{height:190px}
   .epi-dossier-grid{grid-template-columns:1fr}
   .epi-dossier-footer{align-items:flex-start;flex-direction:column}
+}
+
+
+/* Seletor de C.A. no cabeçalho do prontuário */
+.epi-ca-selector-wrap{
+  min-width:0;
+  align-self:center;
+}
+.epi-ca-selector-wrap>label{
+  display:block;
+  margin:0 0 5px 2px;
+  color:#777;
+  font-size:7.5px;
+  font-weight:800;
+  letter-spacing:.11em;
+}
+.epi-ca-selector-box{
+  height:36px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:7px;
+  padding:0 10px;
+  border:1px solid #343434;
+  border-radius:10px;
+  background:#121212;
+  transition:border-color .16s ease,background .16s ease;
+}
+.epi-ca-selector-box:focus-within{
+  border-color:rgba(255,102,0,.55);
+  background:#16130f;
+}
+.epi-ca-selector-box>svg{
+  width:14px;
+  height:14px;
+  color:#ff7a12;
+}
+.epi-ca-selector-box>svg:last-child{
+  width:12px;
+  height:12px;
+  color:#6f6f6f;
+}
+#epiCaSelector{
+  width:100%;
+  min-width:0;
+  appearance:none;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:#f0f0f0;
+  font:inherit;
+  font-size:10px;
+  font-weight:700;
+  cursor:pointer;
+}
+#epiCaSelector option{
+  background:#171717;
+  color:#f0f0f0;
+}
+#epiCaSelector:disabled{
+  color:#696969;
+  cursor:default;
+}
+@media(max-width:980px){
+  .epi-detail-head{
+    grid-template-columns:auto minmax(0,1fr) auto;
+  }
+  .epi-ca-selector-wrap{
+    grid-column:1/-1;
+    width:min(100%,320px);
+  }
 }
