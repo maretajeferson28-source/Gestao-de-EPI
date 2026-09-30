@@ -236,27 +236,82 @@
 
     function textSection(label, value) {
       const raw = safe(value, 'Não informado.');
-      const lines = doc.splitTextToSize(raw, contentW - 10);
-      const height = Math.max(22, 11 + lines.length * 4);
+      const textX = margin + 5;
+      const textWidth = contentW - 10;
+      const fontSize = 8.2;
+      const lineHeight = (fontSize * 1.34) / doc.internal.scaleFactor;
+      const textTop = 13;
+      const bottomPadding = 5;
+      const minHeight = 22;
 
-      ensureSpace(height + 4);
-
-      setFill([255, 255, 255]);
-      setDraw(border);
-      doc.setLineWidth(0.3);
-      doc.roundedRect(margin, y, contentW, height, 2.6, 2.6, 'FD');
-
-      setText([105, 105, 105]);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(6.5);
-      doc.text(String(label).toUpperCase(), margin + 5, y + 6);
-
-      setText([45, 45, 45]);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.2);
-      doc.text(lines, margin + 5, y + 12, { lineHeightFactor: 1.35 });
+      doc.setFontSize(fontSize);
 
-      y += height + 4;
+      const allLines = doc.splitTextToSize(raw, textWidth);
+      let offset = 0;
+      let continuation = false;
+
+      while (offset < allLines.length) {
+        const availableHeight = (pageH - 17) - y;
+        const fixedHeight = textTop + bottomPadding;
+        let maxLines = Math.floor((availableHeight - fixedHeight) / lineHeight);
+
+        if (maxLines < 1) {
+          addPage();
+          continuation = true;
+          continue;
+        }
+
+        const remaining = allLines.length - offset;
+        const linesInBox = Math.min(remaining, maxLines);
+        const boxLines = allLines.slice(offset, offset + linesInBox);
+        const height = Math.max(
+          minHeight,
+          fixedHeight + (boxLines.length * lineHeight)
+        );
+
+        setFill([255, 255, 255]);
+        setDraw(border);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, y, contentW, height, 2.6, 2.6, 'FD');
+
+        setText([105, 105, 105]);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+
+        const sectionLabel = continuation
+          ? String(label).toUpperCase() + ' - CONTINUAÇÃO'
+          : String(label).toUpperCase();
+
+        doc.text(sectionLabel, margin + 5, y + 6);
+
+        setText([45, 45, 45]);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(fontSize);
+
+        boxLines.forEach((line, index) => {
+          const globalIndex = offset + index;
+          const isLastOverallLine = globalIndex === allLines.length - 1;
+          const lineY = y + textTop + (index * lineHeight);
+
+          if (!isLastOverallLine && /\s/.test(line) && String(line).trim().length > 18) {
+            doc.text(String(line), textX, lineY, {
+              align: 'justify',
+              maxWidth: textWidth
+            });
+          } else {
+            doc.text(String(line), textX, lineY);
+          }
+        });
+
+        y += height + 4;
+        offset += linesInBox;
+
+        if (offset < allLines.length) {
+          addPage();
+          continuation = true;
+        }
+      }
     }
 
     ensureSpace(48);
