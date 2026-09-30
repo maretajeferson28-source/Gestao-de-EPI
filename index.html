@@ -146,20 +146,11 @@
           <div class="kpi"><div class="label">Colaboradores</div><div class="value" id="kCol">0</div><div class="sub">identificados no período</div></div>
           <div class="kpi"><div class="label">Média por saída</div><div class="value" id="kMedia">0</div><div class="sub">itens por movimentação</div></div>
           <div class="kpi"><div class="label">EPI mais consumido</div><div class="value" id="kTop" style="font-size:18px;margin-top:16px">—</div><div class="sub" id="kTopQtd">0 itens</div></div>
-          <div class="kpi kpi-spend"><div class="label">Valor das saídas</div><div class="value" id="kSpend">R$ 0,00</div><div class="sub" id="kSpendCoverage">0 movimentações com preço</div></div>
         </div>
         <div class="grid2">
           <div class="panel"><div class="panel-head"><h3>Consumo ao longo do tempo</h3><small>quantidade por dia</small></div><div class="chart-wrap"><canvas id="cTempo"></canvas></div></div>
           <div class="panel"><div class="panel-head"><h3>Top EPIs consumidos</h3><small>por quantidade</small></div><div class="chart-wrap"><canvas id="cTop"></canvas></div></div>
         </div>
-        <div class="panel spend-panel">
-          <div class="panel-head">
-            <div><h3>Gasto por EPI</h3><small>quantidade de saída × preço atual cadastrado no C.A.</small></div>
-            <span class="spend-coverage" id="spendCoverage">0 registros calculáveis</span>
-          </div>
-          <div class="chart-wrap spend-chart-wrap"><canvas id="cSpend"></canvas></div>
-        </div>
-
         <div class="grid3">
           <div class="panel"><div class="panel-head"><h3>Top colaboradores</h3><small>somente identificados</small></div><div class="chart-wrap"><canvas id="cColab"></canvas></div></div>
           <div class="panel"><div class="panel-head"><h3>Qualidade do registro</h3><small>identificação do colaborador</small></div><div class="chart-wrap"><canvas id="cQual"></canvas></div></div>
@@ -169,6 +160,32 @@
           <div class="panel-head"><h3>Últimas movimentações</h3><small id="latestCount"></small></div>
           <div class="table-wrap"><table><thead><tr><th>Data</th><th>Colaborador</th><th>EPI / Item</th><th>Qtd</th><th>C.A</th><th>Tamanho</th><th>Responsável</th></tr></thead><tbody id="latestBody"></tbody></table></div>
         </div>
+
+        <section class="dashboard-values-section">
+          <div class="dashboard-values-head">
+            <div>
+              <span>ANÁLISE FINANCEIRA</span>
+              <h3>Valores das saídas</h3>
+              <p>Calculado pela quantidade movimentada × preço atual cadastrado no C.A.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-values-grid">
+            <div class="kpi kpi-spend dashboard-spend-kpi">
+              <div class="label">Valor das saídas</div>
+              <div class="value" id="kSpend">R$ 0,00</div>
+              <div class="sub" id="kSpendCoverage">0 movimentações com preço</div>
+            </div>
+
+            <div class="panel spend-panel">
+              <div class="panel-head">
+                <div><h3>Gasto por EPI</h3><small>distribuição dos valores calculáveis</small></div>
+                <span class="spend-coverage" id="spendCoverage">0 registros calculáveis</span>
+              </div>
+              <div class="chart-wrap spend-chart-wrap"><canvas id="cSpend"></canvas></div>
+            </div>
+          </div>
+        </section>
       </section>
 
       <section class="page" data-page-content="nova">
