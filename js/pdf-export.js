@@ -426,11 +426,12 @@
 
     sectionTitle('Dados comerciais');
 
-    fieldCard('Preço unitário', moneyBR(variant.preco), margin, col);
-    fieldCard('Unidade', variant.unidade, margin + col + gap, col);
+    fieldCard('Preço atual', moneyBR(variant.preco), margin, col);
+    fieldCard('Preço anterior / referência', moneyBR(variant.preco_referencia), margin + col + gap, col);
     y += 21;
 
-    fieldCard('Fornecedor', variant.fornecedor, margin, contentW);
+    fieldCard('Unidade', variant.unidade, margin, col);
+    fieldCard('Fornecedor', variant.fornecedor, margin + col + gap, col);
     y += 22;
 
     sectionTitle('Informações técnicas');
