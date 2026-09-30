@@ -1787,3 +1787,38 @@ tr:hover td{background:#202020}
     align-items:flex-start;
   }
 }
+
+
+/* Análise financeira em dois painéis */
+.finance-charts-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);
+  gap:12px;
+}
+.savings-panel{
+  margin:0;
+  border-color:rgba(56,180,123,.18);
+}
+.savings-panel .panel-head{
+  align-items:flex-start;
+  gap:10px;
+}
+.savings-total{
+  display:inline-flex;
+  align-items:center;
+  min-height:26px;
+  padding:5px 8px;
+  border:1px solid rgba(56,180,123,.28);
+  border-radius:999px;
+  background:#101a15;
+  color:#73d5a6;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.savings-chart-wrap{
+  height:250px;
+}
+@media(max-width:980px){
+  .finance-charts-grid{grid-template-columns:1fr}
+}
