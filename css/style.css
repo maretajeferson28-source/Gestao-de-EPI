@@ -1410,3 +1410,24 @@ tr:hover td{background:#202020}
     transform:none;
   }
 }
+
+
+/* Download do prontuário em PDF */
+.epi-pdf-download{
+  border-color:rgba(255,102,0,.34)!important;
+  background:#1a130d!important;
+  color:#ff9a3f!important;
+}
+.epi-pdf-download:hover{
+  border-color:rgba(255,102,0,.64)!important;
+  background:#21170f!important;
+  color:#ffb16d!important;
+}
+.epi-pdf-download:disabled{
+  opacity:.65;
+  cursor:wait;
+}
+.epi-pdf-download svg{
+  width:14px;
+  height:14px;
+}
