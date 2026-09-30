@@ -1828,23 +1828,86 @@ tr:hover td{background:#202020}
 }
 
 
-/* Linha compacta de preços + promoção calculada */
-.epi-price-row{
+/* Preço + classificação Passada / Atual em uma única linha */
+.epi-price-compare-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(120px,.72fr);
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.9fr) minmax(0,.9fr);
   gap:10px;
+  align-items:end;
 }
-.epi-price-row .field{min-width:0}
-.epi-price-row .field label{
+.epi-price-field{min-width:0}
+.epi-price-compare-row .field label,
+.epi-compare-label{
+  display:block;
+  margin-bottom:6px;
+  color:#b8b8b8;
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
-.promo-field input{
-  color:#ffffff;
+.epi-compare-compact{
+  min-width:0;
+}
+.epi-compare-button{
+  position:relative;
+  height:40px;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 10px;
+  border:1px solid #3a3a3a;
+  border-radius:9px;
+  background:#171717;
+  color:#8b8b8b;
+  cursor:pointer;
+  user-select:none;
+  transition:border-color .14s ease,background .14s ease,color .14s ease;
+}
+.epi-compare-button input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.epi-compare-button svg{
+  width:14px;
+  height:14px;
+  flex:0 0 14px;
+}
+.epi-compare-button span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:10px;
+  font-weight:700;
+}
+.epi-compare-button:hover{
+  background:#1b1b1b;
+  border-color:#4a4a4a;
+  color:#d0d0d0;
+}
+.epi-compare-button.past:has(input:checked){
+  border-color:rgba(255,157,65,.52);
+  background:#1d1712;
+  color:#ff9d41;
+}
+.epi-compare-button.current:has(input:checked){
+  border-color:rgba(56,180,123,.50);
+  background:#111d18;
+  color:#67d09d;
 }
 @media(max-width:620px){
-  .epi-price-row{grid-template-columns:1fr}
+  .epi-price-compare-row{
+    grid-template-columns:1fr 1fr;
+  }
+  .epi-price-field{
+    grid-column:1/-1;
+  }
 }
 
 
@@ -1870,92 +1933,6 @@ tr:hover td{background:#202020}
 }
 
 
-
-
-/* Classificação Passada / Atual para economia por substituição */
-.epi-comparison-field{
-  margin-top:1px;
-}
-.epi-comparison-toggle{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;
-}
-.epi-comparison-option{
-  position:relative;
-  min-width:0;
-  display:grid;
-  grid-template-columns:30px minmax(0,1fr);
-  align-items:center;
-  gap:9px;
-  min-height:54px;
-  padding:9px 10px;
-  border:1px solid #353535;
-  border-radius:10px;
-  background:#171717;
-  cursor:pointer;
-  transition:border-color .14s ease,background .14s ease;
-}
-.epi-comparison-option:hover{
-  background:#1a1a1a;
-  border-color:#454545;
-}
-.epi-comparison-option input{
-  position:absolute;
-  opacity:0;
-  pointer-events:none;
-}
-.epi-comparison-box{
-  width:30px;
-  height:30px;
-  display:grid;
-  place-items:center;
-  border:1px solid #3b3b3b;
-  border-radius:8px;
-  background:#121212;
-  color:#777;
-}
-.epi-comparison-box svg{
-  width:15px;
-  height:15px;
-}
-.epi-comparison-option>span:last-child{
-  min-width:0;
-  display:grid;
-  gap:3px;
-}
-.epi-comparison-option strong{
-  color:#d8d8d8;
-  font-size:10px;
-}
-.epi-comparison-option small{
-  color:#777;
-  font-size:8px;
-  line-height:1.25;
-}
-.epi-comparison-option.past:has(input:checked){
-  border-color:rgba(255,157,65,.42);
-}
-.epi-comparison-option.past:has(input:checked) .epi-comparison-box{
-  border-color:rgba(255,157,65,.48);
-  color:#ff9d41;
-}
-.epi-comparison-option.current:has(input:checked){
-  border-color:rgba(56,180,123,.42);
-}
-.epi-comparison-option.current:has(input:checked) .epi-comparison-box{
-  border-color:rgba(56,180,123,.48);
-  color:#62cf98;
-}
-.epi-comparison-help{
-  display:block;
-  margin-top:6px;
-  color:#707070;
-  font-size:8px;
-}
-@media(max-width:620px){
-  .epi-comparison-toggle{grid-template-columns:1fr}
-}
 
 
 /* Edição administrativa de movimentações e catálogo */
