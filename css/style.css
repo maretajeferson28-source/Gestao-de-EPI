@@ -2079,19 +2079,37 @@ tr:hover td{background:#202020}
   justify-content:center;
   gap:5px;
 }
-.table-icon-btn,
-.delete-icon-btn{
+.movement-action-btn{
   width:30px!important;
   height:30px!important;
   min-width:30px!important;
   padding:0!important;
   display:grid!important;
   place-items:center;
+  border:1px solid #383838!important;
+  border-radius:9px!important;
+  background:#181818!important;
+  color:#8a8a8a!important;
+  box-shadow:none!important;
+  transition:color .14s ease,border-color .14s ease,background .14s ease;
 }
-.table-icon-btn svg,
-.delete-icon-btn svg{
+.movement-action-btn svg{
   width:13px!important;
   height:13px!important;
+}
+.movement-edit-btn:hover,
+.movement-edit-btn:focus{
+  color:#f2f2f2!important;
+  border-color:#575757!important;
+  background:#212121!important;
+  outline:none;
+}
+.movement-delete-btn:hover,
+.movement-delete-btn:focus{
+  color:#ff7d7d!important;
+  border-color:rgba(239,91,91,.52)!important;
+  background:#211415!important;
+  outline:none;
 }
 
 .epi-card-edit{
