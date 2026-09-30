@@ -648,13 +648,21 @@ function epiCardHasValidCa(epiId){
     return String(v.situacao||'').toLocaleUpperCase('pt-BR').includes('VÁLID');
   });
 }
+function epiCardHasInvalidCa(epiId){
+  return epiVariants.some(v=>{
+    if(v.epi_id!==epiId||v.ativo===false) return false;
+    const status=String(v.situacao||'').toLocaleUpperCase('pt-BR');
+    return status.includes('VENC')||status.includes('CANCEL')||status.includes('SUSP');
+  });
+}
 function renderEpis(){
   $('epiCards').innerHTML=epiCatalog.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>{
     const count=epiVariantCount(c.id);
     const fabricante=epiCardManufacturers(c.id);
     const hasValid=epiCardHasValidCa(c.id);
+    const hasInvalid=epiCardHasInvalidCa(c.id);
     const icon=epiCardIcon(c);
-    const stateClass=hasValid?'has-valid':(count?'has-ca':'no-ca');
+    const stateClass=hasValid?'has-valid':(hasInvalid?'has-invalid':(count?'has-ca':'no-ca'));
     const caLabel=`${count} ${count===1?'C.A.':'C.A.s'}`;
 
     return `<button class="mini-card epi-card ${stateClass}" type="button" data-epi-id="${esc(c.id)}">
@@ -669,7 +677,7 @@ function renderEpis(){
         </div>
 
         <span class="epi-card-ca-count">
-          ${hasValid?'<span class="epi-card-status-dot" aria-hidden="true"></span>':''}
+          ${(hasValid||hasInvalid)?'<span class="epi-card-status-dot" aria-hidden="true"></span>':''}
           ${esc(caLabel)}
         </span>
       </div>
