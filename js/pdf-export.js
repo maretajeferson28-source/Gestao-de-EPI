@@ -427,7 +427,7 @@
     sectionTitle('Dados comerciais');
 
     fieldCard('Preço', moneyBR(variant.preco), margin, col);
-    fieldCard('Comparativo', variant.comparativo_status==='atual'?'Atual':(variant.comparativo_status==='passada'?'Passada':'—'), margin + col + gap, col);
+    fieldCard('Comparativo', variant.comparativo_status==='atual'?'Atual':(variant.comparativo_status==='passada'?'Passado':'—'), margin + col + gap, col);
     y += 21;
 
     fieldCard('Fornecedor', variant.fornecedor, margin, contentW);
