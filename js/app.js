@@ -642,6 +642,7 @@ function renderEpiVariantList(){
         <div class="epi-variant-actions">
           <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
           <button class="btn compact danger" type="button" data-variant-delete="${esc(v.id)}"><i data-lucide="trash-2"></i>Excluir</button>
+          <button class="btn compact epi-pdf-download" type="button" data-variant-pdf="${esc(v.id)}"><i data-lucide="download"></i>Baixar</button>
         </div>
       </div>
     </article>`;
@@ -993,7 +994,36 @@ if($('epiVariantList')) $('epiVariantList').addEventListener('click',e=>{
     return;
   }
   const del=e.target.closest('[data-variant-delete]');
-  if(del) deleteEpiVariant(del.dataset.variantDelete);
+  if(del){
+    deleteEpiVariant(del.dataset.variantDelete);
+    return;
+  }
+
+  const pdf=e.target.closest('[data-variant-pdf]');
+  if(pdf){
+    const row=epiVariants.find(v=>v.id===pdf.dataset.variantPdf);
+    if(!row) return;
+
+    const original=pdf.innerHTML;
+    pdf.disabled=true;
+    pdf.innerHTML='<i data-lucide="loader-circle"></i>Gerando...';
+    refreshIcons();
+
+    Promise.resolve(window.EPI_PDF?.downloadVariantDossier({
+      variant:row,
+      epi:selectedEpi,
+      supabase:sb,
+      dateBR,
+      moneyBR
+    })).catch(err=>{
+      console.error('[PDF CA]',err);
+      alert(`Não foi possível gerar o PDF: ${err.message||err}`);
+    }).finally(()=>{
+      pdf.disabled=false;
+      pdf.innerHTML=original;
+      refreshIcons();
+    });
+  }
 });
 
 $('addEpi').addEventListener('click',async()=>{
