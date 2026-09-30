@@ -288,8 +288,11 @@
                 <div class="field wide"><label>Norma</label><input id="epiVarNorma" placeholder="Norma aplicável"></div>
                 <div class="field full"><label>Descrição oficial</label><textarea id="epiVarDescricao" rows="3" placeholder="Descrição do registro CAEPI"></textarea></div>
                 <div class="field full"><label>Características / especificação interna</label><textarea id="epiVarCaracteristicas" rows="3" placeholder="Material, cor, tamanho, proteção, aplicação, diferenciais..."></textarea></div>
-                <div class="field"><label>Preço atual (R$)</label><input id="epiVarPreco" type="number" min="0" step="0.01" placeholder="0,00"></div>
-                <div class="field"><label>Preço anterior / referência (R$)</label><input id="epiVarPrecoReferencia" type="number" min="0" step="0.01" placeholder="0,00"></div>
+                <div class="epi-price-row full">
+                  <div class="field"><label>Preço atual (R$)</label><input id="epiVarPreco" type="number" min="0" step="0.01" placeholder="0,00"></div>
+                  <div class="field"><label>Preço anterior / referência (R$)</label><input id="epiVarPrecoReferencia" type="number" min="0" step="0.01" placeholder="0,00"></div>
+                  <div class="field promo-field"><label>Promoção</label><input id="epiVarPromocao" type="text" value="—" readonly></div>
+                </div>
                 <div class="field"><label>Unidade</label><input id="epiVarUnidade" value="un" placeholder="un / par / cx"></div>
                 <div class="field wide"><label>Fornecedor</label><input id="epiVarFornecedor" placeholder="Fornecedor / distribuidor"></div>
                 <div class="field full"><label>Observações</label><textarea id="epiVarObservacao" rows="2" placeholder="Observações de compra, uso ou substituição"></textarea></div>
