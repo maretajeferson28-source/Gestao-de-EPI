@@ -281,7 +281,7 @@ function renderDashboard(){
     datasets:[{
       label:'Valor',
       data:spendRows.map(x=>Number(x[1].toFixed(2))),
-      backgroundColor:'#38b47b',
+      backgroundColor:'#42bf86',
       borderRadius:5,
       barThickness:18,
       maxBarThickness:22
@@ -315,7 +315,7 @@ function renderDashboard(){
     datasets:[{
       data:hasSavings?savingsRows.map(x=>Number(x[1].toFixed(2))):[1],
       backgroundColor:hasSavings
-        ? ['#38b47b','#5bc995','#80d7ad','#a0e2c2','#c0ecd8','#2e8f68','#46a87a','#6dbd91','#91cfaa','#b5dfc8']
+        ? ['#249c65','#35ad73','#46bc82','#5bc991','#72d3a2','#2f8f61','#439f70','#57ad7e','#6dbc8e','#84c99f']
         : ['#303030'],
       borderColor:'#161616',
       borderWidth:3,
