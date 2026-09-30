@@ -970,18 +970,25 @@ tr:hover td{background:#202020}
 
 .epi-card-accent{
   position:absolute;
-  left:0;
-  top:14px;
-  bottom:14px;
-  width:3px;
-  border-radius:0 4px 4px 0;
+  left:18px;
+  top:0;
+  width:34px;
+  height:3px;
+  border-radius:0 0 999px 999px;
   background:#ff6a00;
-  opacity:.88;
+  opacity:.72;
+  transition:width .16s ease,opacity .16s ease,background .16s ease;
+}
+
+.epi-card:hover .epi-card-accent{
+  width:46px;
+  opacity:.95;
 }
 
 .epi-card.has-valid .epi-card-accent{background:#38b47b}
 .epi-card.has-ca:not(.has-valid) .epi-card-accent{background:#ff8a1f}
-.epi-card.no-ca .epi-card-accent{background:#4a4a4a}
+.epi-card.no-ca .epi-card-accent{background:#555;opacity:.35}
+.epi-card.no-ca:hover .epi-card-accent{opacity:.55}
 
 .epi-card-topline{
   display:grid;
