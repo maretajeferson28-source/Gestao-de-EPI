@@ -735,18 +735,34 @@ function epiVariantCount(epiId){
 }
 function epiCardIcon(epi){
   const text=normalize(`${epi?.nome||''} ${epi?.categoria||''}`);
+
+  // Ícones específicos por item
+  if(/\bcones?\b/.test(text)) return 'traffic-cone';
+  if(/fita zebrada/.test(text)) return 'construction';
+  if(/placas? de sinalização|placas? de sinalizacao/.test(text)) return 'signpost';
+  if(/filtros? vo\/ga|filtros? vo\/go|filtro respiratório|filtro respiratorio/.test(text)) return 'funnel';
+  if(/óculos de ampla visão|oculos de ampla visao/.test(text)) return 'scan-eye';
+  if(/protetor solar/.test(text)) return 'sun';
+  if(/pilha grande/.test(text)) return 'battery';
+  if(/creme protetor/.test(text)) return 'hand-heart';
+  if(/calço de borracha|calco de borracha/.test(text)) return 'triangle';
+  if(/suportes? e batoques?/.test(text)) return 'boxes';
+
+  // Categorias / famílias
   if(/capacete|cabeça|cabeca/.test(text)) return 'hard-hat';
   if(/luva|mão|mao/.test(text)) return 'hand';
   if(/óculos|oculos|viseira|visual/.test(text)) return 'glasses';
   if(/protetor auditivo|auricular|ouvido/.test(text)) return 'ear';
   if(/bota|calçado|calcado|sapato/.test(text)) return 'footprints';
-  if(/máscara|mascara|respirador|filtro/.test(text)) return 'shield-plus';
+  if(/máscara|mascara|respirador/.test(text)) return 'shield-plus';
   if(/cinto|talabarte|trava queda|trava-quedas|altura/.test(text)) return 'shield-check';
   if(/capa|chuva|impermeável|impermeavel/.test(text)) return 'cloud-rain';
   if(/macacão|macacao|uniforme|vestimenta|colete/.test(text)) return 'shirt';
-  if(/cone|fita zebrada|sinalização|sinalizacao/.test(text)) return 'triangle-alert';
-  if(/creme|protetor solar/.test(text)) return 'sparkles';
-  if(/lanterna|pilha/.test(text)) return 'flashlight';
+  if(/lanterna/.test(text)) return 'flashlight';
+  if(/pilha|bateria/.test(text)) return 'battery';
+  if(/sinalização|sinalizacao/.test(text)) return 'signpost';
+  if(/creme/.test(text)) return 'hand-heart';
+
   return 'package-check';
 }
 function epiCardManufacturers(epiId){
