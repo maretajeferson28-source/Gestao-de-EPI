@@ -215,14 +215,16 @@
             </div>
 
             <div class="epi-ca-selector-wrap" id="epiCaSelectorWrap">
-              <label for="epiCaSelector">C.A. EM EXIBIÇÃO</label>
-              <div class="epi-ca-selector-box">
-                <i data-lucide="badge-check" aria-hidden="true"></i>
-                <select id="epiCaSelector" aria-label="Selecionar C.A. deste equipamento">
-                  <option value="">Nenhum C.A.</option>
-                </select>
-                <i data-lucide="chevron-down" aria-hidden="true"></i>
-              </div>
+              <label>C.A. EM EXIBIÇÃO</label>
+              <button class="epi-ca-selector-trigger" id="epiCaSelectorButton" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="epi-ca-selector-leading"><i data-lucide="badge-check" aria-hidden="true"></i></span>
+                <span class="epi-ca-selector-value" id="epiCaSelectorValue">
+                  <strong>Nenhum C.A.</strong>
+                  <small>Sem certificado vinculado</small>
+                </span>
+                <i class="epi-ca-selector-chevron" data-lucide="chevron-down" aria-hidden="true"></i>
+              </button>
+              <div class="epi-ca-selector-menu" id="epiCaSelectorMenu" role="listbox" hidden></div>
             </div>
 
             <div class="epi-detail-count" id="epiDetailCount">0 C.A.s vinculados</div>
