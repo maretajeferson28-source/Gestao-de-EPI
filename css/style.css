@@ -40,7 +40,7 @@ button.btn,label.btn{display:inline-flex;align-items:center;justify-content:cent
 .field label{display:block;color:#aaaaaa;font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px}
 .field input,.field select{width:100%;height:38px;background:#262626;border:1px solid rgba(232,111,24,.24);color:#ffffff;border-radius:8px;padding:0 10px;outline:none}
 .field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 10px rgba(232,111,24,.18)}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:12px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:12px}
 .kpi{position:relative;background:linear-gradient(180deg,#1a1a1a,#151515);border:1px solid rgba(232,111,24,.12);border-radius:14px;padding:16px 16px 15px;min-height:100px;overflow:hidden}
 .kpi:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--gold)}
 .kpi .label{color:#c1c1c1;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
@@ -1724,4 +1724,38 @@ tr:hover td{background:#202020}
 .epi-ca-selector-option.selected:hover{
   background:#1d1d1d!important;
   border-color:#3b3b3b!important;
+}
+
+
+/* Dashboard financeiro baseado em preço por C.A. */
+.kpi-spend:before{background:#38b47b}
+.kpi-spend .value{font-size:24px;color:#eaf8f1}
+.spend-panel{
+  margin-bottom:12px;
+  border-color:rgba(56,180,123,.18);
+}
+.spend-panel .panel-head{align-items:flex-start}
+.spend-panel .panel-head h3{margin-bottom:4px}
+.spend-coverage{
+  display:inline-flex;
+  align-items:center;
+  min-height:26px;
+  padding:5px 8px;
+  border:1px solid rgba(56,180,123,.28);
+  border-radius:999px;
+  background:#101a15;
+  color:#73d5a6;
+  font-size:9px;
+  white-space:nowrap;
+}
+.spend-chart-wrap{height:275px}
+@media(max-width:1180px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:720px){
+  .spend-panel .panel-head{
+    gap:8px;
+    flex-direction:column;
+    align-items:flex-start;
+  }
 }
