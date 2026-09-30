@@ -1431,3 +1431,51 @@ tr:hover td{background:#202020}
   width:14px;
   height:14px;
 }
+
+
+/* Ações do prontuário: neutras por padrão, cor somente no hover */
+.epi-dossier-footer .epi-variant-actions .btn,
+.epi-dossier-footer .epi-variant-actions .btn.danger,
+.epi-dossier-footer .epi-variant-actions .epi-pdf-download{
+  border-color:#3a3a3a!important;
+  background:#171717!important;
+  color:#d8d8d8!important;
+  box-shadow:none!important;
+}
+
+.epi-dossier-footer .epi-variant-actions .btn svg,
+.epi-dossier-footer .epi-variant-actions .btn.danger svg,
+.epi-dossier-footer .epi-variant-actions .epi-pdf-download svg{
+  color:#a8a8a8!important;
+  transition:color .16s ease;
+}
+
+.epi-dossier-footer .epi-variant-actions .btn[data-variant-edit]:hover{
+  border-color:rgba(255,102,0,.62)!important;
+  background:#21170f!important;
+  color:#ff9a3f!important;
+}
+
+.epi-dossier-footer .epi-variant-actions .btn[data-variant-edit]:hover svg{
+  color:#ff9a3f!important;
+}
+
+.epi-dossier-footer .epi-variant-actions .btn[data-variant-delete]:hover{
+  border-color:#7a3434!important;
+  background:#211313!important;
+  color:#ff8f8f!important;
+}
+
+.epi-dossier-footer .epi-variant-actions .btn[data-variant-delete]:hover svg{
+  color:#ff8f8f!important;
+}
+
+.epi-dossier-footer .epi-variant-actions .epi-pdf-download:hover{
+  border-color:rgba(56,180,123,.52)!important;
+  background:#102019!important;
+  color:#6fd7a4!important;
+}
+
+.epi-dossier-footer .epi-variant-actions .epi-pdf-download:hover svg{
+  color:#6fd7a4!important;
+}
