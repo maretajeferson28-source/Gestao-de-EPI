@@ -540,8 +540,7 @@ function renderEpiVariantList(){
     .sort((a,b)=>String(a.ca||'').localeCompare(String(b.ca||''),'pt-BR',{numeric:true}));
   $('epiDetailCount').textContent=`${rows.length} ${rows.length===1?'C.A. vinculado':'C.A.s vinculados'}`;
   if(!rows.length){
-    list.innerHTML='<div class="epi-variant-empty"><i data-lucide="badge-plus" aria-hidden="true"></i><strong>Nenhum C.A. vinculado</strong><span>Use o formulário ao lado para cadastrar a primeira opção deste item.</span></div>';
-    refreshIcons();
+    list.innerHTML='';
     return;
   }
   list.innerHTML=rows.map(v=>{
