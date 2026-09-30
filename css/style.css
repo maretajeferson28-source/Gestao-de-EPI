@@ -1105,3 +1105,229 @@ tr:hover td{background:#202020}
 .epi-variant-list:empty{
   display:none;
 }
+
+
+/* Prontuário de leitura do C.A. */
+.epi-variant-list{
+  display:grid;
+  gap:14px;
+}
+
+.epi-ca-dossier{
+  overflow:hidden;
+  border:1px solid #333;
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 92% 4%,rgba(255,102,0,.045),transparent 30%),
+    linear-gradient(180deg,#171717,#131313);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.epi-ca-dossier.valid{border-color:rgba(56,180,123,.42)}
+.epi-ca-dossier.invalid{border-color:rgba(255,92,92,.46)}
+
+.epi-dossier-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:15px 16px 13px;
+  border-bottom:1px solid #2b2b2b;
+}
+
+.epi-dossier-kicker{
+  display:block;
+  margin-bottom:4px;
+  color:#ff8a22;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.13em;
+}
+
+.epi-ca-dossier.valid .epi-dossier-kicker{color:#52c58c}
+.epi-ca-dossier.invalid .epi-dossier-kicker{color:#ff7777}
+
+.epi-dossier-head h3{
+  margin:0;
+  color:#f5f5f5;
+  font-size:18px;
+  line-height:1.15;
+}
+
+.epi-dossier-hero{
+  display:grid;
+  grid-template-columns:160px minmax(0,1fr);
+  gap:14px;
+  padding:14px 16px;
+  border-bottom:1px solid #292929;
+}
+
+.epi-dossier-image{
+  min-height:150px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid #2e2e2e;
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(255,102,0,.055),transparent 45%),
+    #101010;
+}
+
+.epi-dossier-image img{
+  width:100%;
+  height:150px;
+  object-fit:contain;
+  padding:10px;
+}
+
+.epi-dossier-image>span{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  color:#666;
+  text-align:center;
+}
+
+.epi-dossier-image>span[hidden]{display:none!important}
+.epi-dossier-image>span svg{width:26px;height:26px;color:#6f6f6f}
+.epi-dossier-image>span small{font-size:8px;text-transform:uppercase;letter-spacing:.07em}
+
+.epi-dossier-identity{
+  align-self:center;
+  min-width:0;
+}
+
+.epi-dossier-identity>span{
+  display:block;
+  margin-bottom:7px;
+  color:#777;
+  font-size:8px;
+  font-weight:750;
+  letter-spacing:.1em;
+}
+
+.epi-dossier-identity>strong{
+  display:block;
+  color:#f2f2f2;
+  font-size:15px;
+  line-height:1.35;
+}
+
+.epi-dossier-identity>small{
+  display:block;
+  margin-top:6px;
+  color:#929292;
+  font-size:10px;
+  line-height:1.35;
+}
+
+.epi-dossier-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  padding:14px 16px 0;
+}
+
+.epi-dossier-field{
+  min-width:0;
+  padding:10px 11px;
+  border:1px solid #2c2c2c;
+  border-radius:10px;
+  background:#151515;
+}
+
+.epi-dossier-field-label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:6px;
+  color:#7f7f7f;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+.epi-dossier-field-label svg{
+  width:12px;
+  height:12px;
+  color:#777;
+}
+
+.epi-dossier-field strong{
+  display:block;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#ededed;
+  font-size:11px;
+  font-weight:700;
+}
+
+.epi-dossier-texts{
+  display:grid;
+  gap:8px;
+  padding:8px 16px 14px;
+}
+
+.epi-dossier-text{
+  padding:11px 12px;
+  border:1px solid #2c2c2c;
+  border-radius:10px;
+  background:#151515;
+}
+
+.epi-dossier-text>span{
+  display:block;
+  margin-bottom:7px;
+  color:#828282;
+  font-size:8px;
+  font-weight:750;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+.epi-dossier-text p{
+  margin:0;
+  color:#c9c9c9;
+  font-size:10px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.epi-dossier-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 16px 13px;
+  border-top:1px solid #292929;
+}
+
+.epi-dossier-source{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:#777;
+  font-size:8px;
+}
+
+.epi-dossier-source svg{
+  width:13px;
+  height:13px;
+  flex:0 0 13px;
+  color:#777;
+}
+
+@media(max-width:620px){
+  .epi-dossier-hero{grid-template-columns:1fr}
+  .epi-dossier-image img{height:190px}
+  .epi-dossier-grid{grid-template-columns:1fr}
+  .epi-dossier-footer{align-items:flex-start;flex-direction:column}
+}
