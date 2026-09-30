@@ -1096,3 +1096,12 @@ tr:hover td{background:#202020}
   .epi-variant-image-controls{align-items:flex-start;flex-direction:column}
   .epi-variant-image-buttons{justify-content:flex-start}
 }
+
+
+/* Estado vazio dos C.A.s: não exibir card/placeholder */
+.epi-variant-empty{
+  display:none!important;
+}
+.epi-variant-list:empty{
+  display:none;
+}
