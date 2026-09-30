@@ -221,13 +221,6 @@ function spendingSummary(arr){
     const unitSaving=pastPrice-currentPrice;
     if(!(unitSaving>0)) return;
 
-    const currentCa=caKey(current.ca);
-    const currentQuantity=arr
-      .filter(m=>m.epi_id===epi.id && caKey(m.ca)===currentCa)
-      .reduce((sum,m)=>sum+(Number(m.quantidade)||0),0);
-
-    const totalSaving=unitSaving*currentQuantity;
-
     replacementRows.push({
       epi:epi.nome||'EPI / Item',
       epiId:epi.id,
@@ -236,8 +229,7 @@ function spendingSummary(arr){
       currentPrice,
       pastPrice,
       unitSaving,
-      currentQuantity,
-      totalSaving
+      totalSaving:unitSaving
     });
   });
 
@@ -351,15 +343,14 @@ function renderDashboard(){
       tooltip:{
         enabled:hasSavings,
         callbacks:{
-          label:(ctx)=>` ${ctx.label}: ${moneyBR(ctx.raw)} economizados`,
+          label:(ctx)=>` ${ctx.label}: ${moneyBR(ctx.raw)} por unidade`,
           afterLabel:(ctx)=>{
             const row=savingsRows[ctx.dataIndex];
             if(!row) return [];
             return [
               `Passada: C.A. ${row.pastCa} • ${moneyBR(row.pastPrice)}`,
               `Atual: C.A. ${row.currentCa} • ${moneyBR(row.currentPrice)}`,
-              `Economia/un: ${moneyBR(row.unitSaving)}`,
-              `Qtd atual no filtro: ${fmt(row.currentQuantity)}`
+              `Economia unitária: ${moneyBR(row.unitSaving)}`
             ];
           }
         }
