@@ -46,7 +46,7 @@ button.btn,label.btn{display:inline-flex;align-items:center;justify-content:cent
 .kpi .label{color:#c1c1c1;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
 .kpi .value{font-size:31px;font-weight:800;margin-top:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpi .sub{font-size:10px;color:#8f8f8f;margin-top:4px}
-.grid2{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(320px,.85fr);gap:12px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0;box-shadow:var(--shadow)}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
