@@ -536,51 +536,93 @@ function clearEpiVariantForm(){
 function renderEpiVariantList(){
   const list=$('epiVariantList');
   if(!list||!selectedEpi) return;
-  const rows=epiVariants.filter(v=>v.epi_id===selectedEpi.id && v.ativo!==false)
+
+  const rows=epiVariants
+    .filter(v=>v.epi_id===selectedEpi.id && v.ativo!==false)
     .sort((a,b)=>String(a.ca||'').localeCompare(String(b.ca||''),'pt-BR',{numeric:true}));
+
   $('epiDetailCount').textContent=`${rows.length} ${rows.length===1?'C.A. vinculado':'C.A.s vinculados'}`;
+
   if(!rows.length){
     list.innerHTML='';
     return;
   }
+
   list.innerHTML=rows.map(v=>{
     const situacao=String(v.situacao||'').trim();
     const upper=situacao.toLocaleUpperCase('pt-BR');
     const state=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'neutral');
-    return `<article class="epi-variant-card ${state}">
-      <div class="epi-variant-card-layout">
-        <div class="epi-variant-thumb ${v.imagem_path?'has-image':''}">
+
+    const field=(label,value,icon='file-text')=>`
+      <div class="epi-dossier-field">
+        <span class="epi-dossier-field-label"><i data-lucide="${icon}" aria-hidden="true"></i>${esc(label)}</span>
+        <strong title="${esc(value||'—')}">${esc(value||'—')}</strong>
+      </div>`;
+
+    const textBlock=(label,value)=>`
+      <section class="epi-dossier-text">
+        <span>${esc(label)}</span>
+        <p>${esc(value||'Não informado.')}</p>
+      </section>`;
+
+    return `<article class="epi-ca-dossier ${state}">
+      <div class="epi-dossier-head">
+        <div>
+          <span class="epi-dossier-kicker">PRONTUÁRIO DO C.A.</span>
+          <h3>C.A. ${esc(v.ca||'—')}</h3>
+        </div>
+        <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
+      </div>
+
+      <div class="epi-dossier-hero">
+        <div class="epi-dossier-image ${v.imagem_path?'has-image':''}">
           <img data-variant-image="${esc(v.id)}" alt="Imagem do modelo C.A. ${esc(v.ca||'')}" hidden>
-          <span data-variant-image-empty="${esc(v.id)}"><i data-lucide="image" aria-hidden="true"></i><small>Sem foto</small></span>
+          <span data-variant-image-empty="${esc(v.id)}">
+            <i data-lucide="image" aria-hidden="true"></i>
+            <small>Sem imagem do modelo</small>
+          </span>
         </div>
 
-        <div class="epi-variant-card-content">
-          <div class="epi-variant-top">
-            <div>
-              <span class="epi-variant-ca">C.A. ${esc(v.ca||'—')}</span>
-              <strong>${esc(v.fabricante||'Fabricante não informado')}</strong>
-              <small>${esc([v.marca,v.referencia].filter(Boolean).join(' • ')||'Marca / referência não informada')}</small>
-            </div>
-            <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
-          </div>
-          <div class="epi-variant-meta">
-            <span><i data-lucide="calendar-days"></i><b>Validade</b><strong class="epi-variant-meta-value">${esc(dateBR(v.data_validade))}</strong></span>
-            <span><i data-lucide="badge-dollar-sign"></i><b>Preço</b><strong class="epi-variant-meta-value">${esc(moneyBR(v.preco))}</strong></span>
-            <span><i data-lucide="truck"></i><b>Fornecedor</b><strong class="epi-variant-meta-value" title="${esc(v.fornecedor||'—')}">${esc(v.fornecedor||'—')}</strong></span>
-          </div>
-          ${v.caracteristicas?`<p class="epi-variant-features">${esc(v.caracteristicas)}</p>`:''}
-          <div class="epi-variant-actions">
-            <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
-            <button class="btn compact danger" type="button" data-variant-delete="${esc(v.id)}"><i data-lucide="trash-2"></i>Excluir</button>
-          </div>
+        <div class="epi-dossier-identity">
+          <span>FABRICANTE</span>
+          <strong>${esc(v.fabricante||'Fabricante não informado')}</strong>
+          <small>${esc([v.marca,v.referencia].filter(Boolean).join(' • ')||'Marca / referência não informada')}</small>
+        </div>
+      </div>
+
+      <div class="epi-dossier-grid">
+        ${field('CNPJ',v.cnpj,'building-2')}
+        ${field('Marca',v.marca,'badge')}
+        ${field('Referência / modelo',v.referencia,'package-search')}
+        ${field('Validade do C.A.',dateBR(v.data_validade),'calendar-days')}
+        ${field('Norma',v.norma,'book-open-check')}
+        ${field('Preço unitário',moneyBR(v.preco),'badge-dollar-sign')}
+        ${field('Unidade',v.unidade,'boxes')}
+        ${field('Fornecedor',v.fornecedor,'truck')}
+      </div>
+
+      <div class="epi-dossier-texts">
+        ${textBlock('Descrição oficial',v.descricao)}
+        ${textBlock('Características / especificação interna',v.caracteristicas)}
+        ${textBlock('Observações',v.observacao)}
+      </div>
+
+      <div class="epi-dossier-footer">
+        <div class="epi-dossier-source">
+          <i data-lucide="shield-check" aria-hidden="true"></i>
+          <span>Dados técnicos e comerciais cadastrados para este C.A.</span>
+        </div>
+        <div class="epi-variant-actions">
+          <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
+          <button class="btn compact danger" type="button" data-variant-delete="${esc(v.id)}"><i data-lucide="trash-2"></i>Excluir</button>
         </div>
       </div>
     </article>`;
   }).join('');
+
   refreshIcons();
   hydrateVariantCardImages(rows);
 }
-
 async function hydrateVariantCardImages(rows){
   await Promise.all(rows.filter(v=>v.imagem_path).map(async v=>{
     try{
