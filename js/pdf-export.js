@@ -431,7 +431,10 @@
     y += 21;
 
     fieldCard('Preço promocional', moneyBR(variant.preco_promocional), margin, col);
-    fieldCard('Fornecedor', variant.fornecedor, margin + col + gap, col);
+    fieldCard('Comparativo', variant.comparativo_status==='atual'?'Atual':(variant.comparativo_status==='passada'?'Passada':'—'), margin + col + gap, col);
+    y += 21;
+
+    fieldCard('Fornecedor', variant.fornecedor, margin, contentW);
     y += 22;
 
     sectionTitle('Informações técnicas');
