@@ -691,7 +691,6 @@ function clearEpiVariantForm(){
   editingVariantId=null;
   ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarPrecoReferencia','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
   if($('epiVarCa')) $('epiVarCa').readOnly=false;
-  if($('epiVarUnidade')) $('epiVarUnidade').value='un';
   if($('epiVarPromocao')) $('epiVarPromocao').value='—';
   if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
   if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. para buscar os dados oficiais.';
@@ -814,7 +813,6 @@ function renderEpiVariantList(){
         ${field('Preço atual',moneyBR(v.preco),'badge-dollar-sign')}
         ${field('Preço anterior / referência',moneyBR(v.preco_referencia),'history')}
         ${field('Promoção',promotionLabel(v.preco,v.preco_referencia),'badge-percent')}
-        ${field('Unidade',v.unidade,'boxes')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
 
@@ -1033,7 +1031,6 @@ function fillEpiVariantForm(v){
   $('epiVarPrecoReferencia').value=v.preco_referencia??'';
   if($('epiVarPromocao')) $('epiVarPromocao').value=promotionLabel(v.preco,v.preco_referencia);
   $('epiVarFornecedor').value=v.fornecedor||'';
-  $('epiVarUnidade').value=v.unidade||'un';
   $('epiVarObservacao').value=v.observacao||'';
   $('epiVarCa').readOnly=true;
   $('epiVariantEditorTitle').textContent='Editar C.A.';
@@ -1103,7 +1100,7 @@ async function saveEpiVariant(){
     preco:$('epiVarPreco').value===''?null:Number($('epiVarPreco').value),
     preco_referencia:$('epiVarPrecoReferencia').value===''?null:Number($('epiVarPrecoReferencia').value),
     fornecedor:$('epiVarFornecedor').value.trim()||null,
-    unidade:$('epiVarUnidade').value.trim()||'un',
+    unidade:'un',
     observacao:$('epiVarObservacao').value.trim()||null,
     ativo:true,
     origem:'Site Gestão EPI',
