@@ -175,9 +175,18 @@
             </div>
 
             <div class="panel savings-panel">
-              <div class="panel-head">
-                <div><h3>Redução de preço por EPI</h3><small>economia gerada pelo preço atual</small></div>
-                <span class="savings-total" id="savingsTotal">R$ 0,00</span>
+              <div class="panel-head savings-panel-head">
+                <div>
+                  <h3>Redução de preço por EPI</h3>
+                  <small id="savingsModeLabel">comparando referência × preço atual</small>
+                </div>
+                <div class="savings-head-actions">
+                  <div class="savings-mode" role="group" aria-label="Base do gráfico de redução">
+                    <button class="savings-mode-btn active" id="savingsModeCurrent" type="button" data-savings-mode="current">Atual</button>
+                    <button class="savings-mode-btn" id="savingsModePromo" type="button" data-savings-mode="promo">Promoção</button>
+                  </div>
+                  <span class="savings-total" id="savingsTotal">R$ 0,00</span>
+                </div>
               </div>
               <div class="chart-wrap savings-chart-wrap"><canvas id="cSavings"></canvas></div>
             </div>
@@ -291,7 +300,7 @@
                 <div class="epi-price-row full">
                   <div class="field"><label>Preço atual (R$)</label><input id="epiVarPreco" type="number" min="0" step="0.01" placeholder="0,00"></div>
                   <div class="field"><label>Preço anterior / referência (R$)</label><input id="epiVarPrecoReferencia" type="number" min="0" step="0.01" placeholder="0,00"></div>
-                  <div class="field promo-field"><label>Promoção</label><input id="epiVarPromocao" type="text" value="—" readonly></div>
+                  <div class="field promo-field"><label>Preço promocional (R$)</label><input id="epiVarPrecoPromocional" type="number" min="0" step="0.01" placeholder="0,00"></div>
                 </div>
                 <div class="field wide"><label>Fornecedor</label><input id="epiVarFornecedor" placeholder="Fornecedor / distribuidor"></div>
                 <div class="field full"><label>Observações</label><textarea id="epiVarObservacao" rows="2" placeholder="Observações de compra, uso ou substituição"></textarea></div>
