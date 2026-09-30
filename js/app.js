@@ -804,12 +804,10 @@ function renderEpis(){
           <i data-lucide="building-2" aria-hidden="true"></i>
           ${esc(fabricante||'Nenhum fabricante vinculado')}
         </span>
-        <span class="epi-card-actions">
-          ${currentIsAdmin?`<span class="epi-card-edit" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item"><i data-lucide="pencil" aria-hidden="true"></i>Editar</span>`:''}
-          <span class="epi-card-open">
-            Abrir ficha
-            <i data-lucide="arrow-up-right" aria-hidden="true"></i>
-          </span>
+        ${currentIsAdmin?`<span class="epi-card-edit" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></span>`:''}
+        <span class="epi-card-open">
+          Abrir ficha
+          <i data-lucide="arrow-up-right" aria-hidden="true"></i>
         </span>
       </div>
     </button>`;
