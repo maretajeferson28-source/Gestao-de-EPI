@@ -1890,3 +1890,25 @@ tr:hover td{background:#202020}
     justify-content:flex-start;
   }
 }
+
+
+/* C.A. vencido/cancelado/suspenso: mesma leitura visual do válido, em vermelho */
+.epi-card.has-invalid .epi-card-accent{
+  background:#e45f5f;
+}
+
+.epi-card.has-invalid .epi-card-icon{
+  border-color:rgba(228,95,95,.36);
+  color:#ef7777;
+}
+
+.epi-card.has-invalid .epi-card-ca-count{
+  border-color:rgba(228,95,95,.32);
+  background:#1b1112;
+  color:#f08a8a!important;
+}
+
+.epi-card.has-invalid .epi-card-status-dot{
+  background:#e45f5f;
+  box-shadow:0 0 0 3px rgba(228,95,95,.11);
+}
