@@ -167,9 +167,19 @@
 
           <div class="finance-charts-grid">
             <div class="panel spend-panel">
-              <div class="panel-head">
-                <div><h3>Gasto por EPI</h3><small>distribuição dos valores calculáveis</small></div>
-                <span class="spend-coverage" id="spendCoverage">0 registros calculáveis</span>
+              <div class="panel-head spend-panel-head">
+                <div><h3>Gasto por EPI</h3><small id="spendChartSubtitle">distribuição dos valores calculáveis</small></div>
+                <div class="spend-head-actions">
+                  <div class="spend-ca-filter" id="spendCaFilter" hidden>
+                    <button class="spend-ca-filter-trigger" id="spendCaFilterButton" type="button" aria-haspopup="menu" aria-expanded="false">
+                      <i data-lucide="filter" aria-hidden="true"></i>
+                      <span id="spendCaFilterLabel">Detalhar por C.A.</span>
+                      <i class="spend-ca-filter-chevron" data-lucide="chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <div class="spend-ca-filter-menu" id="spendCaFilterMenu" role="menu" hidden></div>
+                  </div>
+                  <span class="spend-coverage" id="spendCoverage">0 registros calculáveis</span>
+                </div>
               </div>
               <div class="chart-wrap spend-chart-wrap"><canvas id="cSpend"></canvas></div>
             </div>
