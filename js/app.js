@@ -14,6 +14,8 @@ let editingVariantId = null;
 let pendingVariantImageFile = null;
 let pendingVariantImagePreviewUrl = '';
 let removeVariantImageOnSave = false;
+let editingMovementId = null;
+let editingCatalogEpiId = null;
 let charts = {};
 let realtimeChannel = null;
 let reloadTimer = null;
@@ -593,17 +595,121 @@ $('saidaForm').addEventListener('submit',async e=>{
 
 function renderMovs(){
   const q=$('movSearch').value.trim().toLowerCase();
-  const arr=[...movements].sort((a,b)=>parseBR(b.data)-parseBR(a.data)||String(b.id).localeCompare(String(a.id))).filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)));
-  $('movBody').innerHTML=arr.map(x=>`<tr><td title="${esc(x.data)}">${esc(x.data)}</td><td title="${esc(x.colaborador||'—')}">${esc(x.colaborador||'—')}</td><td title="${esc(x.epi)}">${esc(x.epi)}</td><td>${esc(x.quantidade??'—')}</td><td title="${esc(x.ca||'N/A')}">${esc(x.ca||'N/A')}</td><td title="${esc(x.tamanho||'N/A')}">${esc(x.tamanho||'N/A')}</td><td title="${esc(x.responsavel)}">${esc(x.responsavel)}</td><td class="action-cell">${currentIsAdmin&&x.custom?`<button class="btn danger delete-icon-btn" data-del="${esc(x.id)}" title="Excluir" aria-label="Excluir"><i data-lucide="trash-2" aria-hidden="true"></i></button>`:'<span class="action-placeholder">—</span>'}</td></tr>`).join('');
+  const arr=[...movements]
+    .sort((a,b)=>parseBR(b.data)-parseBR(a.data)||String(b.id).localeCompare(String(a.id)))
+    .filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)));
+
+  $('movBody').innerHTML=arr.map(x=>{
+    const actions=currentIsAdmin
+      ? `<div class="table-action-group">
+          <button class="btn table-icon-btn" data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
+          ${x.custom?`<button class="btn danger delete-icon-btn" data-del="${esc(x.id)}" title="Excluir" aria-label="Excluir"><i data-lucide="trash-2" aria-hidden="true"></i></button>`:''}
+        </div>`
+      : '<span class="action-placeholder">—</span>';
+
+    return `<tr>
+      <td title="${esc(x.data)}">${esc(x.data)}</td>
+      <td title="${esc(x.colaborador||'—')}">${esc(x.colaborador||'—')}</td>
+      <td title="${esc(x.epi)}">${esc(x.epi)}</td>
+      <td>${esc(x.quantidade??'—')}</td>
+      <td title="${esc(x.ca||'N/A')}">${esc(x.ca||'N/A')}</td>
+      <td title="${esc(x.tamanho||'N/A')}">${esc(x.tamanho||'N/A')}</td>
+      <td title="${esc(x.responsavel)}">${esc(x.responsavel)}</td>
+      <td class="action-cell">${actions}</td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('[data-mov-edit]').forEach(b=>b.addEventListener('click',()=>openMovementEdit(b.dataset.movEdit)));
+
   document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
     if(!confirm('Excluir esta movimentação criada pelo site?')) return;
     const {error}=await sb.from('movimentacoes_epi').delete().eq('id',b.dataset.del).eq('origem','Site Gestão EPI');
     if(error){alert(error.message);return}
     await loadAll();
   }));
+
   refreshIcons();
 }
+
+function openMovementEdit(id){
+  if(!currentIsAdmin) return;
+  const row=movements.find(x=>x.id===id);
+  if(!row) return;
+
+  editingMovementId=id;
+  $('movEditData').value=brToISO(row.data)||'';
+  $('movEditColab').value=row.colaborador||'';
+  $('movEditEpi').value=row.epi||'';
+  $('movEditQtd').value=row.quantidade||1;
+  $('movEditCa').value=row.ca&&row.ca!=='N/A'?row.ca:'';
+  $('movEditTam').value=row.tamanho&&row.tamanho!=='N/A'?row.tamanho:'';
+  $('movEditResp').value=row.responsavel&&row.responsavel!=='—'?row.responsavel:'';
+  $('movEditObs').value=row.observacao||'';
+  $('movementEditOrigin').textContent=`Origem: ${row.origem||'Não informada'}`;
+  $('movementEditMsg').textContent='';
+  $('movementEditModal').classList.remove('hidden');
+  refreshIcons();
+}
+
+function closeMovementEdit(){
+  editingMovementId=null;
+  $('movementEditModal')?.classList.add('hidden');
+  if($('movementEditMsg')) $('movementEditMsg').textContent='';
+}
+
+async function saveMovementEdit(){
+  if(!currentIsAdmin||!editingMovementId) return;
+
+  const row=movements.find(x=>x.id===editingMovementId);
+  if(!row) return;
+
+  const epiNome=$('movEditEpi').value.trim();
+  const epi=epiCatalog.find(x=>normalize(x.nome)===normalize(epiNome));
+  const qtd=Number($('movEditQtd').value);
+  const resp=$('movEditResp').value.trim();
+  const colNome=$('movEditColab').value.trim();
+
+  if(!epi){
+    $('movementEditMsg').textContent='Selecione um EPI / item já cadastrado.';
+    return;
+  }
+  if(!$('movEditData').value||!Number.isInteger(qtd)||qtd<1||!resp){
+    $('movementEditMsg').textContent='Confira data, quantidade e responsável.';
+    return;
+  }
+
+  const col=(colNome&&colNome!=='Bolsa Reserva')?findCollaborator(colNome):null;
+  const payload={
+    data:$('movEditData').value,
+    colaborador_id:col?.id||null,
+    colaborador_nome_informado:colNome||null,
+    epi_id:epi.id,
+    epi_nome_original:epi.nome,
+    quantidade:qtd,
+    ca:$('movEditCa').value.trim()||'N/A',
+    tamanho:$('movEditTam').value.trim()||'N/A',
+    responsavel:resp,
+    observacao:$('movEditObs').value.trim()||null,
+    updated_at:new Date().toISOString()
+  };
+
+  $('movementEditMsg').textContent='Salvando...';
+  const {error}=await sb.from('movimentacoes_epi').update(payload).eq('id',editingMovementId);
+  if(error){
+    $('movementEditMsg').textContent=error.message;
+    return;
+  }
+
+  closeMovementEdit();
+  await loadAll(false);
+}
 $('movSearch').addEventListener('input',renderMovs);
+if($('movementEditClose')) $('movementEditClose').addEventListener('click',closeMovementEdit);
+if($('movementEditCancel')) $('movementEditCancel').addEventListener('click',closeMovementEdit);
+if($('movementEditSave')) $('movementEditSave').addEventListener('click',saveMovementEdit);
+if($('movementEditModal')) $('movementEditModal').addEventListener('click',e=>{
+  if(e.target===$('movementEditModal')) closeMovementEdit();
+});
 
 function renderColabs(){
   const arr=collaborators.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
@@ -708,14 +814,70 @@ function renderEpis(){
           <i data-lucide="building-2" aria-hidden="true"></i>
           ${esc(fabricante||'Nenhum fabricante vinculado')}
         </span>
-        <span class="epi-card-open">
-          Abrir ficha
-          <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+        <span class="epi-card-actions">
+          ${currentIsAdmin?`<span class="epi-card-edit" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item"><i data-lucide="pencil" aria-hidden="true"></i>Editar</span>`:''}
+          <span class="epi-card-open">
+            Abrir ficha
+            <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+          </span>
         </span>
       </div>
     </button>`;
   }).join('')||'<div class="empty">Nenhum EPI.</div>';
   refreshIcons();
+}
+
+function openEpiCatalogEdit(id){
+  if(!currentIsAdmin) return;
+  const epi=epiCatalog.find(x=>x.id===id);
+  if(!epi) return;
+
+  editingCatalogEpiId=id;
+  $('epiCatalogEditNome').value=epi.nome||'';
+  $('epiCatalogEditCategoria').value=epi.categoria||'';
+  $('epiCatalogEditMsg').textContent='';
+  $('epiCatalogEditModal').classList.remove('hidden');
+  refreshIcons();
+}
+
+function closeEpiCatalogEdit(){
+  editingCatalogEpiId=null;
+  $('epiCatalogEditModal')?.classList.add('hidden');
+  if($('epiCatalogEditMsg')) $('epiCatalogEditMsg').textContent='';
+}
+
+async function saveEpiCatalogEdit(){
+  if(!currentIsAdmin||!editingCatalogEpiId) return;
+
+  const epi=epiCatalog.find(x=>x.id===editingCatalogEpiId);
+  if(!epi) return;
+
+  const nome=$('epiCatalogEditNome').value.trim();
+  const categoria=$('epiCatalogEditCategoria').value.trim();
+
+  if(!nome){
+    $('epiCatalogEditMsg').textContent='Informe o nome do EPI / item.';
+    return;
+  }
+
+  const duplicate=epiCatalog.some(x=>x.id!==editingCatalogEpiId&&normalize(x.nome)===normalize(nome));
+  if(duplicate){
+    $('epiCatalogEditMsg').textContent='Já existe outro card com esse nome.';
+    return;
+  }
+
+  $('epiCatalogEditMsg').textContent='Salvando...';
+  const {error}=await sb.from('epis')
+    .update({nome,categoria:categoria||null,updated_at:new Date().toISOString()})
+    .eq('id',editingCatalogEpiId);
+
+  if(error){
+    $('epiCatalogEditMsg').textContent=error.message;
+    return;
+  }
+
+  closeEpiCatalogEdit();
+  await loadAll(false);
 }
 
 function moneyBR(v){
@@ -1228,8 +1390,32 @@ async function deleteEpiVariant(id){
   renderEpis();
 }
 if($('epiCards')) $('epiCards').addEventListener('click',e=>{
+  const edit=e.target.closest('[data-epi-edit]');
+  if(edit){
+    e.preventDefault();
+    e.stopPropagation();
+    openEpiCatalogEdit(edit.dataset.epiEdit);
+    return;
+  }
+
   const card=e.target.closest('[data-epi-id]');
   if(card) openEpiDetail(card.dataset.epiId);
+});
+
+if($('epiCards')) $('epiCards').addEventListener('keydown',e=>{
+  const edit=e.target.closest('[data-epi-edit]');
+  if(edit&&(e.key==='Enter'||e.key===' ')){
+    e.preventDefault();
+    e.stopPropagation();
+    openEpiCatalogEdit(edit.dataset.epiEdit);
+  }
+});
+
+if($('epiCatalogEditClose')) $('epiCatalogEditClose').addEventListener('click',closeEpiCatalogEdit);
+if($('epiCatalogEditCancel')) $('epiCatalogEditCancel').addEventListener('click',closeEpiCatalogEdit);
+if($('epiCatalogEditSave')) $('epiCatalogEditSave').addEventListener('click',saveEpiCatalogEdit);
+if($('epiCatalogEditModal')) $('epiCatalogEditModal').addEventListener('click',e=>{
+  if(e.target===$('epiCatalogEditModal')) closeEpiCatalogEdit();
 });
 if($('epiCaSelectorButton')) $('epiCaSelectorButton').addEventListener('click',e=>{
   e.stopPropagation();
@@ -1331,6 +1517,12 @@ if($('epiVariantList')) $('epiVariantList').addEventListener('click',e=>{
       refreshIcons();
     });
   }
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  if($('movementEditModal')&&!$('movementEditModal').classList.contains('hidden')) closeMovementEdit();
+  if($('epiCatalogEditModal')&&!$('epiCatalogEditModal').classList.contains('hidden')) closeEpiCatalogEdit();
 });
 
 $('addEpi').addEventListener('click',async()=>{
