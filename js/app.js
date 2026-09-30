@@ -1281,7 +1281,7 @@ function fillEpiVariantForm(v){
   if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=v.comparativo_status==='atual';
   $('epiVarFornecedor').value=v.fornecedor||'';
   $('epiVarObservacao').value=v.observacao||'';
-  $('epiVarCa').readOnly=true;
+  $('epiVarCa').readOnly=false;
   $('epiVariantEditorTitle').textContent='Editar C.A.';
   $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar alterações';
   $('epiVariantCancelEdit').classList.remove('hidden');
