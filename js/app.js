@@ -592,8 +592,8 @@ function renderMovs(){
   $('movBody').innerHTML=arr.map(x=>{
     const actions=currentIsAdmin
       ? `<div class="table-action-group">
-          <button class="btn table-icon-btn" data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
-          ${x.custom?`<button class="btn danger delete-icon-btn" data-del="${esc(x.id)}" title="Excluir" aria-label="Excluir"><i data-lucide="trash-2" aria-hidden="true"></i></button>`:''}
+          <button class="btn movement-action-btn movement-edit-btn" data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
+          <button class="btn movement-action-btn movement-delete-btn" data-del="${esc(x.id)}" title="Excluir movimentação" aria-label="Excluir movimentação"><i data-lucide="trash-2" aria-hidden="true"></i></button>
         </div>`
       : '<span class="action-placeholder">—</span>';
 
@@ -612,8 +612,11 @@ function renderMovs(){
   document.querySelectorAll('[data-mov-edit]').forEach(b=>b.addEventListener('click',()=>openMovementEdit(b.dataset.movEdit)));
 
   document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
-    if(!confirm('Excluir esta movimentação criada pelo site?')) return;
-    const {error}=await sb.from('movimentacoes_epi').delete().eq('id',b.dataset.del).eq('origem','Site Gestão EPI');
+    const row=movements.find(x=>x.id===b.dataset.del);
+    const desc=row ? `${row.data} • ${row.colaborador||'—'} • ${row.epi}` : 'esta movimentação';
+    if(!confirm(`Excluir definitivamente ${desc}?`)) return;
+
+    const {error}=await sb.from('movimentacoes_epi').delete().eq('id',b.dataset.del);
     if(error){alert(error.message);return}
     await loadAll();
   }));
