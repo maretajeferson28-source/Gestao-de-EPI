@@ -207,13 +207,10 @@ function renderDashboard(){
   rebuildLists();
   const arr=filtered(), total=arr.reduce((s,x)=>s+(Number(x.quantidade)||0),0);
   const named=unique(arr.map(x=>x.colaborador).filter(x=>x&&x!=='Bolsa Reserva'));
-  const top=aggregate(arr,'epi')[0]||['—',0];
   $('kTotal').textContent=fmt(total);
   $('kMov').textContent=fmt(arr.length);
   $('kCol').textContent=fmt(named.length);
   $('kMedia').textContent=arr.length?(total/arr.length).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'0,00';
-  $('kTop').textContent=top[0]; $('kTopQtd').textContent=`${fmt(top[1])} itens`;
-
   const spend=spendingSummary(arr);
   $('kSpend').textContent=moneyBR(spend.total);
   $('kSpendCoverage').textContent=`${fmt(spend.pricedMovements)} de ${fmt(arr.length)} movimentações com preço`;
