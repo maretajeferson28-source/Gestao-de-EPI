@@ -897,7 +897,7 @@ function dateBR(v){
 }
 function clearEpiVariantForm(){
   editingVariantId=null;
-  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarPrecoReferencia','epiVarPrecoPromocional','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
+  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
   if($('epiVarCa')) $('epiVarCa').readOnly=false;
   if($('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=false;
   if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=false;
@@ -1019,9 +1019,7 @@ function renderEpiVariantList(){
         ${field('Referência / modelo',v.referencia,'package-search')}
         ${field('Validade do C.A.',dateBR(v.data_validade),'calendar-days')}
         ${field('Norma',v.norma,'book-open-check')}
-        ${field('Preço atual',moneyBR(v.preco),'badge-dollar-sign')}
-        ${field('Preço anterior / referência',moneyBR(v.preco_referencia),'history')}
-        ${field('Preço promocional',moneyBR(v.preco_promocional),'badge-percent')}
+        ${field('Preço',moneyBR(v.preco),'badge-dollar-sign')}
         ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passada':'—'),'git-compare-arrows')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
@@ -1238,8 +1236,6 @@ function fillEpiVariantForm(v){
   $('epiVarDescricao').value=v.descricao||'';
   $('epiVarCaracteristicas').value=v.caracteristicas||'';
   $('epiVarPreco').value=v.preco??'';
-  $('epiVarPrecoReferencia').value=v.preco_referencia??'';
-  $('epiVarPrecoPromocional').value=v.preco_promocional??'';
   if($('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=v.comparativo_status==='passada';
   if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=v.comparativo_status==='atual';
   $('epiVarFornecedor').value=v.fornecedor||'';
@@ -1310,8 +1306,6 @@ async function saveEpiVariant(){
     norma:$('epiVarNorma').value.trim()||null,
     caracteristicas:$('epiVarCaracteristicas').value.trim()||null,
     preco:$('epiVarPreco').value===''?null:Number($('epiVarPreco').value),
-    preco_referencia:$('epiVarPrecoReferencia').value===''?null:Number($('epiVarPrecoReferencia').value),
-    preco_promocional:$('epiVarPrecoPromocional').value===''?null:Number($('epiVarPrecoPromocional').value),
     comparativo_status:$('epiVarComparativoAtual')?.checked?'atual':($('epiVarComparativoPassada')?.checked?'passada':null),
     fornecedor:$('epiVarFornecedor').value.trim()||null,
     unidade:'un',
