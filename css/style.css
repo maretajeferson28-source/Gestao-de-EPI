@@ -2074,25 +2074,30 @@ tr:hover td{background:#202020}
   width:13px!important;
   height:13px!important;
 }
-.movement-edit-btn:hover,
-.movement-edit-btn:focus{
+.movement-table button.movement-action-btn.movement-edit-btn:hover,
+.movement-table button.movement-action-btn.movement-edit-btn:focus-visible{
   border-color:rgba(255,102,0,.62)!important;
   background:#181818!important;
+  color:#8a8a8a!important;
   outline:none;
 }
-.movement-edit-btn:hover svg,
-.movement-edit-btn:focus svg{
+.movement-table button.movement-action-btn.movement-edit-btn:hover svg,
+.movement-table button.movement-action-btn.movement-edit-btn:focus-visible svg{
   color:#ff9a3f!important;
+  stroke:#ff9a3f!important;
 }
-.movement-delete-btn:hover,
-.movement-delete-btn:focus{
+
+.movement-table button.movement-action-btn.movement-delete-btn:hover,
+.movement-table button.movement-action-btn.movement-delete-btn:focus-visible{
   border-color:#7a3434!important;
   background:#181818!important;
+  color:#8a8a8a!important;
   outline:none;
 }
-.movement-delete-btn:hover svg,
-.movement-delete-btn:focus svg{
+.movement-table button.movement-action-btn.movement-delete-btn:hover svg,
+.movement-table button.movement-action-btn.movement-delete-btn:focus-visible svg{
   color:#ff8f8f!important;
+  stroke:#ff8f8f!important;
 }
 
 .epi-card-edit{
