@@ -812,11 +812,16 @@ function renderEpis(){
           <span class="epi-card-category">${esc(c.categoria||'Categoria não informada')}</span>
         </div>
 
-        <span class="epi-card-ca-count">
-          ${(hasValid||hasInvalid)?'<span class="epi-card-status-dot" aria-hidden="true"></span>':''}
-          ${esc(caLabel)}
-        </span>
-        ${currentIsAdmin?`<span class="epi-card-edit" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></span>`:''}
+        <div class="epi-card-head-actions">
+          <span class="epi-card-ca-count">
+            ${(hasValid||hasInvalid)?'<span class="epi-card-status-dot" aria-hidden="true"></span>':''}
+            ${esc(caLabel)}
+          </span>
+          ${currentIsAdmin?`
+            <span class="epi-card-action-btn epi-card-edit-btn" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></span>
+            <span class="epi-card-action-btn epi-card-delete-btn" role="button" tabindex="0" data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></span>
+          `:''}
+        </div>
       </div>
 
       <div class="epi-card-meta">
@@ -832,6 +837,36 @@ function renderEpis(){
     </button>`;
   }).join('')||'<div class="empty">Nenhum EPI.</div>';
   refreshIcons();
+}
+
+async function deleteEpiCatalogItem(id){
+  if(!currentIsAdmin) return;
+
+  const epi=epiCatalog.find(x=>x.id===id);
+  if(!epi) return;
+
+  const linkedMovements=movements.filter(x=>x.epi_id===id).length;
+  const linkedVariants=epiVariants.filter(x=>x.epi_id===id).length;
+
+  if(linkedMovements>0){
+    alert(`Não é possível excluir "${epi.nome}" porque existem ${linkedMovements} movimentação(ões) vinculada(s). Corrija/mescle o item ou remova essas movimentações antes de excluir o card.`);
+    return;
+  }
+
+  const variantText=linkedVariants
+    ? `\n\nOs ${linkedVariants} C.A.(s) vinculados também serão removidos.`
+    : '';
+
+  if(!confirm(`Excluir definitivamente o item "${epi.nome}"?${variantText}`)) return;
+
+  const {error}=await sb.from('epis').delete().eq('id',id);
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  if(selectedEpi?.id===id) closeEpiDetail();
+  await loadAll(false);
 }
 
 function openEpiCatalogEdit(id){
@@ -1391,6 +1426,14 @@ async function deleteEpiVariant(id){
   renderEpis();
 }
 if($('epiCards')) $('epiCards').addEventListener('click',e=>{
+  const del=e.target.closest('[data-epi-delete]');
+  if(del){
+    e.preventDefault();
+    e.stopPropagation();
+    deleteEpiCatalogItem(del.dataset.epiDelete);
+    return;
+  }
+
   const edit=e.target.closest('[data-epi-edit]');
   if(edit){
     e.preventDefault();
@@ -1404,8 +1447,18 @@ if($('epiCards')) $('epiCards').addEventListener('click',e=>{
 });
 
 if($('epiCards')) $('epiCards').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ') return;
+
+  const del=e.target.closest('[data-epi-delete]');
+  if(del){
+    e.preventDefault();
+    e.stopPropagation();
+    deleteEpiCatalogItem(del.dataset.epiDelete);
+    return;
+  }
+
   const edit=e.target.closest('[data-epi-edit]');
-  if(edit&&(e.key==='Enter'||e.key===' ')){
+  if(edit){
     e.preventDefault();
     e.stopPropagation();
     openEpiCatalogEdit(edit.dataset.epiEdit);
