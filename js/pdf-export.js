@@ -430,8 +430,17 @@
     fieldCard('Preço anterior / referência', moneyBR(variant.preco_referencia), margin + col + gap, col);
     y += 21;
 
-    fieldCard('Unidade', variant.unidade, margin, col);
-    fieldCard('Fornecedor', variant.fornecedor, margin + col + gap, col);
+    const cur=Number(variant.preco);
+    const ref=Number(variant.preco_referencia);
+    const promo=(Number.isFinite(cur)&&Number.isFinite(ref)&&ref>0)
+      ? Math.max(0,((ref-cur)/ref)*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'
+      : '—';
+
+    fieldCard('Promoção', promo, margin, col);
+    fieldCard('Unidade', variant.unidade, margin + col + gap, col);
+    y += 21;
+
+    fieldCard('Fornecedor', variant.fornecedor, margin, contentW);
     y += 22;
 
     sectionTitle('Informações técnicas');
