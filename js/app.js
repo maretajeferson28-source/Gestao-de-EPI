@@ -797,6 +797,7 @@ function renderEpis(){
           ${(hasValid||hasInvalid)?'<span class="epi-card-status-dot" aria-hidden="true"></span>':''}
           ${esc(caLabel)}
         </span>
+        ${currentIsAdmin?`<span class="epi-card-edit" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></span>`:''}
       </div>
 
       <div class="epi-card-meta">
@@ -804,7 +805,6 @@ function renderEpis(){
           <i data-lucide="building-2" aria-hidden="true"></i>
           ${esc(fabricante||'Nenhum fabricante vinculado')}
         </span>
-        ${currentIsAdmin?`<span class="epi-card-edit" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></span>`:''}
         <span class="epi-card-open">
           Abrir ficha
           <i data-lucide="arrow-up-right" aria-hidden="true"></i>
