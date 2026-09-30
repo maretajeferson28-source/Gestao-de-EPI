@@ -437,10 +437,7 @@
       : '—';
 
     fieldCard('Promoção', promo, margin, col);
-    fieldCard('Unidade', variant.unidade, margin + col + gap, col);
-    y += 21;
-
-    fieldCard('Fornecedor', variant.fornecedor, margin, contentW);
+    fieldCard('Fornecedor', variant.fornecedor, margin + col + gap, col);
     y += 22;
 
     sectionTitle('Informações técnicas');
