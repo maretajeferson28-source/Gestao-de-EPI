@@ -15,6 +15,7 @@ let pendingVariantImageFile = null;
 let pendingVariantImagePreviewUrl = '';
 let removeVariantImageOnSave = false;
 let charts = {};
+let savingsPriceMode = 'current';
 let realtimeChannel = null;
 let reloadTimer = null;
 let currentIsAdmin = false;
@@ -81,7 +82,7 @@ async function loadAll(showBusy=true){
       sb.from('colaboradores').select('id,nome,cargo,setor,ativo').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
-        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
+        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
         .order('created_at',{ascending:true}),
       sb.from('movimentacoes_epi')
         .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,colaboradores(nome),epis(nome)')
@@ -171,12 +172,13 @@ function movementCostInfo(movement){
 
 function spendingSummary(arr){
   const byEpi=new Map();
-  const savingsByEpi=new Map();
+  const savingsCurrentByEpi=new Map();
+  const savingsPromoByEpi=new Map();
   let total=0;
   let pricedMovements=0;
   let pricedItems=0;
-  let totalSavings=0;
-  let savingsMovements=0;
+  let totalSavingsCurrent=0;
+  let totalSavingsPromo=0;
 
   arr.forEach(movement=>{
     const info=movementCostInfo(movement);
@@ -195,13 +197,26 @@ function spendingSummary(arr){
       info.variant?.preco_referencia!==null &&
       info.variant?.preco_referencia!==undefined &&
       info.variant?.preco_referencia!=='' &&
-      Number.isFinite(reference) &&
-      reference>info.unitPrice
+      Number.isFinite(reference)
     ){
-      const saved=(reference-info.unitPrice)*quantity;
-      totalSavings+=saved;
-      savingsMovements+=1;
-      savingsByEpi.set(name,(savingsByEpi.get(name)||0)+saved);
+      if(reference>info.unitPrice){
+        const savedCurrent=(reference-info.unitPrice)*quantity;
+        totalSavingsCurrent+=savedCurrent;
+        savingsCurrentByEpi.set(name,(savingsCurrentByEpi.get(name)||0)+savedCurrent);
+      }
+
+      const promo=Number(info.variant?.preco_promocional);
+      if(
+        info.variant?.preco_promocional!==null &&
+        info.variant?.preco_promocional!==undefined &&
+        info.variant?.preco_promocional!=='' &&
+        Number.isFinite(promo) &&
+        reference>promo
+      ){
+        const savedPromo=(reference-promo)*quantity;
+        totalSavingsPromo+=savedPromo;
+        savingsPromoByEpi.set(name,(savingsPromoByEpi.get(name)||0)+savedPromo);
+      }
     }
   });
 
@@ -209,13 +224,13 @@ function spendingSummary(arr){
     total,
     pricedMovements,
     pricedItems,
-    totalSavings,
-    savingsMovements,
+    totalSavingsCurrent,
+    totalSavingsPromo,
     byEpi:[...byEpi.entries()].sort((a,b)=>b[1]-a[1]),
-    savingsByEpi:[...savingsByEpi.entries()].sort((a,b)=>b[1]-a[1])
+    savingsCurrentByEpi:[...savingsCurrentByEpi.entries()].sort((a,b)=>b[1]-a[1]),
+    savingsPromoByEpi:[...savingsPromoByEpi.entries()].sort((a,b)=>b[1]-a[1])
   };
 }
-
 function chartBase(){
   return {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#aeb8c2',boxWidth:10,boxHeight:10,font:{size:10}}}},scales:{x:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}},y:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}}}};
 }
@@ -238,9 +253,20 @@ function renderDashboard(){
   if($('spendCoverage')){
     $('spendCoverage').textContent=`${fmt(spend.pricedMovements)} registros • ${fmt(spend.pricedItems)} itens calculados`;
   }
+  const savingsRows=savingsPriceMode==='promo' ? spend.savingsPromoByEpi : spend.savingsCurrentByEpi;
+  const savingsTotalValue=savingsPriceMode==='promo' ? spend.totalSavingsPromo : spend.totalSavingsCurrent;
+
   if($('savingsTotal')){
-    $('savingsTotal').textContent=moneyBR(spend.totalSavings);
+    $('savingsTotal').textContent=moneyBR(savingsTotalValue);
   }
+  if($('savingsModeLabel')){
+    $('savingsModeLabel').textContent=savingsPriceMode==='promo'
+      ? 'comparando referência × preço promocional'
+      : 'comparando referência × preço atual';
+  }
+  document.querySelectorAll('[data-savings-mode]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.savingsMode===savingsPriceMode);
+  });
 
   const byDate=new Map(); arr.forEach(x=>byDate.set(x.data,(byDate.get(x.data)||0)+(Number(x.quantidade)||0)));
   const dates=[...byDate.entries()].sort((a,b)=>parseBR(a[0])-parseBR(b[0]));
@@ -283,7 +309,6 @@ function renderDashboard(){
     }
   });
 
-  const savingsRows=spend.savingsByEpi;
   const hasSavings=savingsRows.length>0;
   makeChart('cSavings','doughnut',{
     labels:hasSavings?savingsRows.map(x=>x[0]):['Sem redução cadastrada'],
@@ -668,30 +693,14 @@ function moneyBR(v){
   if(v===null||v===undefined||v==='') return '—';
   return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 }
-function promotionPct(current,reference){
-  const cur=Number(current), ref=Number(reference);
-  if(!Number.isFinite(cur)||!Number.isFinite(ref)||ref<=0) return null;
-  return Math.max(0,((ref-cur)/ref)*100);
-}
-function promotionLabel(current,reference){
-  const pct=promotionPct(current,reference);
-  if(pct===null) return '—';
-  return `${pct.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%`;
-}
-function updatePromotionPreview(){
-  const out=$('epiVarPromocao');
-  if(!out) return;
-  out.value=promotionLabel($('epiVarPreco')?.value,$('epiVarPrecoReferencia')?.value);
-}
 function dateBR(v){
   if(!v) return '—';
   return isoToBR(String(v).slice(0,10));
 }
 function clearEpiVariantForm(){
   editingVariantId=null;
-  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarPrecoReferencia','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
+  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarPrecoReferencia','epiVarPrecoPromocional','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
   if($('epiVarCa')) $('epiVarCa').readOnly=false;
-  if($('epiVarPromocao')) $('epiVarPromocao').value='—';
   if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
   if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. para buscar os dados oficiais.';
   if($('epiVariantEditorTitle')) $('epiVariantEditorTitle').textContent='Adicionar C.A.';
@@ -812,7 +821,7 @@ function renderEpiVariantList(){
         ${field('Norma',v.norma,'book-open-check')}
         ${field('Preço atual',moneyBR(v.preco),'badge-dollar-sign')}
         ${field('Preço anterior / referência',moneyBR(v.preco_referencia),'history')}
-        ${field('Promoção',promotionLabel(v.preco,v.preco_referencia),'badge-percent')}
+        ${field('Preço promocional',moneyBR(v.preco_promocional),'badge-percent')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
 
@@ -1029,7 +1038,7 @@ function fillEpiVariantForm(v){
   $('epiVarCaracteristicas').value=v.caracteristicas||'';
   $('epiVarPreco').value=v.preco??'';
   $('epiVarPrecoReferencia').value=v.preco_referencia??'';
-  if($('epiVarPromocao')) $('epiVarPromocao').value=promotionLabel(v.preco,v.preco_referencia);
+  $('epiVarPrecoPromocional').value=v.preco_promocional??'';
   $('epiVarFornecedor').value=v.fornecedor||'';
   $('epiVarObservacao').value=v.observacao||'';
   $('epiVarCa').readOnly=true;
@@ -1099,6 +1108,7 @@ async function saveEpiVariant(){
     caracteristicas:$('epiVarCaracteristicas').value.trim()||null,
     preco:$('epiVarPreco').value===''?null:Number($('epiVarPreco').value),
     preco_referencia:$('epiVarPrecoReferencia').value===''?null:Number($('epiVarPrecoReferencia').value),
+    preco_promocional:$('epiVarPrecoPromocional').value===''?null:Number($('epiVarPrecoPromocional').value),
     fornecedor:$('epiVarFornecedor').value.trim()||null,
     unidade:'un',
     observacao:$('epiVarObservacao').value.trim()||null,
@@ -1217,8 +1227,10 @@ if($('epiVariantImageInput')) $('epiVariantImageInput').addEventListener('change
   const file=e.target.files?.[0];
   if(file) previewVariantImageFile(file);
 });
-if($('epiVarPreco')) $('epiVarPreco').addEventListener('input',updatePromotionPreview);
-if($('epiVarPrecoReferencia')) $('epiVarPrecoReferencia').addEventListener('input',updatePromotionPreview);
+document.querySelectorAll('[data-savings-mode]').forEach(btn=>btn.addEventListener('click',()=>{
+  savingsPriceMode=btn.dataset.savingsMode==='promo'?'promo':'current';
+  renderDashboard();
+}));
 if($('epiVariantSave')) $('epiVariantSave').addEventListener('click',saveEpiVariant);
 if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').addEventListener('click',clearEpiVariantForm);
 if($('epiVariantList')) $('epiVariantList').addEventListener('click',e=>{
