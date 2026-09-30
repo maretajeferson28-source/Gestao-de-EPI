@@ -536,7 +536,9 @@ function clearEpiVariantForm(){
 }
 function renderEpiVariantList(){
   const list=$('epiVariantList');
-  const selector=$('epiCaSelector');
+  const selectorButton=$('epiCaSelectorButton');
+  const selectorValue=$('epiCaSelectorValue');
+  const selectorMenu=$('epiCaSelectorMenu');
   if(!list||!selectedEpi) return;
 
   const rows=epiVariants
@@ -545,24 +547,43 @@ function renderEpiVariantList(){
 
   $('epiDetailCount').textContent=`${rows.length} ${rows.length===1?'C.A. vinculado':'C.A.s vinculados'}`;
 
-  if(selector){
+  if(selectorButton&&selectorValue&&selectorMenu){
     if(!rows.length){
       selectedVariantId=null;
-      selector.innerHTML='<option value="">Nenhum C.A.</option>';
-      selector.value='';
-      selector.disabled=true;
+      selectorButton.disabled=true;
+      selectorButton.setAttribute('aria-expanded','false');
+      selectorMenu.hidden=true;
+      selectorMenu.innerHTML='';
+      selectorValue.innerHTML='<strong>Nenhum C.A.</strong><small>Sem certificado vinculado</small>';
     }else{
       if(!selectedVariantId || !rows.some(v=>v.id===selectedVariantId)){
         selectedVariantId=rows[0].id;
       }
 
-      selector.disabled=false;
-      selector.innerHTML=rows.map(v=>{
-        const maker=String(v.fabricante||'').trim();
-        const label=maker ? `C.A. ${v.ca} — ${maker}` : `C.A. ${v.ca}`;
-        return `<option value="${esc(v.id)}">${esc(label)}</option>`;
+      const selectedForHeader=rows.find(v=>v.id===selectedVariantId)||rows[0];
+      const selectedMaker=String(selectedForHeader.fabricante||'Fabricante não informado').trim();
+
+      selectorButton.disabled=false;
+      selectorValue.innerHTML=`<strong>C.A. ${esc(selectedForHeader.ca||'—')}</strong><small>${esc(selectedMaker)}</small>`;
+
+      selectorMenu.innerHTML=rows.map(v=>{
+        const maker=String(v.fabricante||'Fabricante não informado').trim();
+        const situation=String(v.situacao||'').trim();
+        const upper=situation.toLocaleUpperCase('pt-BR');
+        const state=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'neutral');
+        const active=v.id===selectedVariantId?' selected':'';
+
+        return `<button class="epi-ca-selector-option ${state}${active}" type="button" role="option" aria-selected="${v.id===selectedVariantId?'true':'false'}" data-ca-select-id="${esc(v.id)}">
+          <span class="epi-ca-selector-option-mark"><span class="epi-ca-selector-status-dot"></span></span>
+          <span class="epi-ca-selector-option-copy">
+            <strong>C.A. ${esc(v.ca||'—')}</strong>
+            <small>${esc(maker)}</small>
+          </span>
+          <span class="epi-ca-selector-option-side">
+            ${v.id===selectedVariantId?'<i data-lucide="check" aria-hidden="true"></i>':''}
+          </span>
+        </button>`;
       }).join('');
-      selector.value=selectedVariantId;
     }
   }
 
@@ -672,6 +693,8 @@ async function hydrateVariantCardImages(rows){
 function openEpiDetail(epiId){
   selectedEpi=epiCatalog.find(x=>x.id===epiId)||null;
   selectedVariantId=null;
+  if($('epiCaSelectorMenu')) $('epiCaSelectorMenu').hidden=true;
+  if($('epiCaSelectorButton')) $('epiCaSelectorButton').setAttribute('aria-expanded','false');
   if(!selectedEpi) return;
   $('epiDetailTitle').textContent=selectedEpi.nome;
   $('epiDetailCategory').textContent=selectedEpi.categoria||'Categoria não informada';
@@ -685,6 +708,8 @@ function closeEpiDetail(){
   if($('epiDetailModal')) $('epiDetailModal').classList.add('hidden');
   selectedEpi=null;
   selectedVariantId=null;
+  if($('epiCaSelectorMenu')) $('epiCaSelectorMenu').hidden=true;
+  if($('epiCaSelectorButton')) $('epiCaSelectorButton').setAttribute('aria-expanded','false');
   clearEpiVariantForm();
 }
 function resetVariantImageEditor(){
@@ -969,9 +994,48 @@ if($('epiCards')) $('epiCards').addEventListener('click',e=>{
   const card=e.target.closest('[data-epi-id]');
   if(card) openEpiDetail(card.dataset.epiId);
 });
-if($('epiCaSelector')) $('epiCaSelector').addEventListener('change',e=>{
-  selectedVariantId=e.target.value||null;
+if($('epiCaSelectorButton')) $('epiCaSelectorButton').addEventListener('click',e=>{
+  e.stopPropagation();
+  const button=$('epiCaSelectorButton');
+  const menu=$('epiCaSelectorMenu');
+  if(button.disabled) return;
+
+  const opening=menu.hidden;
+  menu.hidden=!opening;
+  button.setAttribute('aria-expanded',opening?'true':'false');
+  if(opening) refreshIcons();
+});
+
+if($('epiCaSelectorMenu')) $('epiCaSelectorMenu').addEventListener('click',e=>{
+  e.stopPropagation();
+  const option=e.target.closest('[data-ca-select-id]');
+  if(!option) return;
+
+  selectedVariantId=option.dataset.caSelectId||null;
+  $('epiCaSelectorMenu').hidden=true;
+  $('epiCaSelectorButton').setAttribute('aria-expanded','false');
   renderEpiVariantList();
+});
+
+document.addEventListener('click',e=>{
+  const wrap=$('epiCaSelectorWrap');
+  const menu=$('epiCaSelectorMenu');
+  const button=$('epiCaSelectorButton');
+  if(!wrap||!menu||menu.hidden) return;
+  if(wrap.contains(e.target)) return;
+  menu.hidden=true;
+  button?.setAttribute('aria-expanded','false');
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  const menu=$('epiCaSelectorMenu');
+  const button=$('epiCaSelectorButton');
+  if(menu&&!menu.hidden){
+    menu.hidden=true;
+    button?.setAttribute('aria-expanded','false');
+    button?.focus();
+  }
 });
 if($('epiDetailClose')) $('epiDetailClose').addEventListener('click',closeEpiDetail);
 if($('epiDetailModal')) $('epiDetailModal').addEventListener('click',e=>{if(e.target===$('epiDetailModal')) closeEpiDetail();});
