@@ -1704,3 +1704,24 @@ tr:hover td{background:#202020}
 .epi-card:hover{
   background:linear-gradient(180deg,#1c1c1c 0%,#171717 100%)!important;
 }
+
+
+/* Seletor C.A.: borda laranja só no campo fixo, opções internas neutras */
+.epi-ca-selector-trigger{
+  border-color:rgba(255,102,0,.58)!important;
+}
+
+.epi-ca-selector-trigger:hover,
+.epi-ca-selector-trigger[aria-expanded="true"]{
+  border-color:rgba(255,102,0,.78)!important;
+}
+
+.epi-ca-selector-option.selected{
+  background:#1b1b1b!important;
+  border-color:#343434!important;
+}
+
+.epi-ca-selector-option.selected:hover{
+  background:#1d1d1d!important;
+  border-color:#3b3b3b!important;
+}
