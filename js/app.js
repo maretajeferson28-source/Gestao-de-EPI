@@ -287,7 +287,13 @@ function renderDashboard(){
   const topE=aggregate(arr,'epi').slice(0,10).reverse();
   makeChart('cTop','bar',{labels:topE.map(x=>x[0]),datasets:[{label:'Qtd',data:topE.map(x=>x[1]),backgroundColor:'#ff6600',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
 
-  const spendRows=spend.byEpi.slice(0,10).reverse();
+  const spendRows=spend.byEpi.slice().reverse();
+  const spendChartInner=$('spendChartInner');
+  if(spendChartInner){
+    const visibleRows=6;
+    const rowHeight=40;
+    spendChartInner.style.height=`${Math.max(250,Math.max(visibleRows,spendRows.length)*rowHeight)}px`;
+  }
 
   makeChart('cSpend','bar',{
     labels:spendRows.map(x=>x[0]),
