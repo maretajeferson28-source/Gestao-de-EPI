@@ -2099,17 +2099,25 @@ tr:hover td{background:#202020}
 }
 .movement-edit-btn:hover,
 .movement-edit-btn:focus{
-  color:#f2f2f2!important;
-  border-color:#575757!important;
-  background:#212121!important;
+  color:#ff9a3f!important;
+  border-color:rgba(255,102,0,.62)!important;
+  background:#1b1b1b!important;
   outline:none;
+}
+.movement-edit-btn:hover svg,
+.movement-edit-btn:focus svg{
+  color:#ff9a3f!important;
 }
 .movement-delete-btn:hover,
 .movement-delete-btn:focus{
-  color:#ff7d7d!important;
-  border-color:rgba(239,91,91,.52)!important;
-  background:#211415!important;
+  color:#ff8f8f!important;
+  border-color:#7a3434!important;
+  background:#1b1b1b!important;
   outline:none;
+}
+.movement-delete-btn:hover svg,
+.movement-delete-btn:focus svg{
+  color:#ff8f8f!important;
 }
 
 .epi-card-edit{
