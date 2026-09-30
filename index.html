@@ -221,6 +221,45 @@
         </div>
       </section>
 
+      <div class="data-edit-modal hidden" id="movementEditModal" role="dialog" aria-modal="true" aria-labelledby="movementEditTitle">
+        <div class="data-edit-card movement-edit-card">
+          <button class="data-edit-close" id="movementEditClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+
+          <div class="data-edit-head">
+            <div class="data-edit-icon"><i data-lucide="pencil-line" aria-hidden="true"></i></div>
+            <div>
+              <span>EDIÇÃO DE REGISTRO</span>
+              <h3 id="movementEditTitle">Editar movimentação</h3>
+              <p id="movementEditOrigin">Origem do registro preservada.</p>
+            </div>
+          </div>
+
+          <div class="data-edit-body">
+            <div class="data-edit-grid">
+              <div class="field"><label>Data</label><input id="movEditData" type="date" required></div>
+              <div class="field"><label>Colaborador / Destino</label><input id="movEditColab" list="dlColab" placeholder="Nome ou Bolsa Reserva"></div>
+              <div class="field wide"><label>EPI / Item</label><input id="movEditEpi" list="dlEpi" required></div>
+              <div class="field"><label>Quantidade</label><input id="movEditQtd" type="number" min="1" step="1" required></div>
+              <div class="field"><label>C.A.</label><input id="movEditCa" placeholder="N/A"></div>
+              <div class="field"><label>Tamanho</label><input id="movEditTam" placeholder="N/A"></div>
+              <div class="field"><label>Responsável</label><input id="movEditResp" list="dlResp" required></div>
+              <div class="field wide"><label>Observação</label><textarea id="movEditObs" rows="2" placeholder="Opcional"></textarea></div>
+            </div>
+
+            <div class="data-edit-note">
+              <i data-lucide="history" aria-hidden="true"></i>
+              <span>A edição corrige o registro salvo no Supabase e mantém a origem original da movimentação.</span>
+            </div>
+
+            <div class="data-edit-actions">
+              <button class="btn" id="movementEditCancel" type="button">Cancelar</button>
+              <button class="btn primary" id="movementEditSave" type="button"><i data-lucide="save" aria-hidden="true"></i>Salvar alterações</button>
+            </div>
+            <div class="msg" id="movementEditMsg"></div>
+          </div>
+        </div>
+      </div>
+
       <section class="page" data-page-content="colaboradores">
         <div class="section-title"><div><h2>Colaboradores</h2><p>83 colaboradores ativos carregados da relação atual. Cadastre novos nomes quando necessário.</p></div></div>
         <div class="toolbar"><input id="newColabNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do colaborador"><input id="newColabCargo" class="btn" style="cursor:text;min-width:220px" placeholder="Cargo"><input id="newColabSetor" class="btn" style="cursor:text" placeholder="Setor"><button class="btn primary" id="addColab"><i data-lucide="user-plus" aria-hidden="true"></i>Adicionar</button></div>
@@ -232,6 +271,39 @@
         <div class="toolbar"><input id="newEpiNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do EPI / item"><input id="newEpiCat" class="btn" style="cursor:text" placeholder="Categoria"><button class="btn primary" id="addEpi"><i data-lucide="package-plus" aria-hidden="true"></i>Adicionar</button></div>
         <div class="cards-list" id="epiCards"></div>
       </section>
+
+      <div class="data-edit-modal hidden" id="epiCatalogEditModal" role="dialog" aria-modal="true" aria-labelledby="epiCatalogEditTitle">
+        <div class="data-edit-card epi-catalog-edit-card">
+          <button class="data-edit-close" id="epiCatalogEditClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+
+          <div class="data-edit-head">
+            <div class="data-edit-icon"><i data-lucide="package-cog" aria-hidden="true"></i></div>
+            <div>
+              <span>CADASTRO DO ITEM</span>
+              <h3 id="epiCatalogEditTitle">Editar EPI / Item</h3>
+              <p>Altere o nome canônico e a categoria do card.</p>
+            </div>
+          </div>
+
+          <div class="data-edit-body">
+            <div class="data-edit-grid epi-catalog-edit-grid">
+              <div class="field wide"><label>Nome do EPI / Item</label><input id="epiCatalogEditNome" placeholder="Nome do item"></div>
+              <div class="field wide"><label>Categoria</label><input id="epiCatalogEditCategoria" placeholder="Categoria"></div>
+            </div>
+
+            <div class="data-edit-note">
+              <i data-lucide="database" aria-hidden="true"></i>
+              <span>A alteração muda o cadastro principal do item. C.A.s e movimentações vinculadas permanecem associados a ele.</span>
+            </div>
+
+            <div class="data-edit-actions">
+              <button class="btn" id="epiCatalogEditCancel" type="button">Cancelar</button>
+              <button class="btn primary" id="epiCatalogEditSave" type="button"><i data-lucide="save" aria-hidden="true"></i>Salvar item</button>
+            </div>
+            <div class="msg" id="epiCatalogEditMsg"></div>
+          </div>
+        </div>
+      </div>
 
       <div class="epi-detail-modal hidden" id="epiDetailModal" role="dialog" aria-modal="true" aria-labelledby="epiDetailTitle">
         <div class="epi-detail-card">
