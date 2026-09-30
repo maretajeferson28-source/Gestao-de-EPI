@@ -16,6 +16,8 @@ let pendingVariantImagePreviewUrl = '';
 let removeVariantImageOnSave = false;
 let charts = {};
 let savingsPriceMode = 'current';
+let spendCaFilterEpi = '';
+let spendCaFilterCa = '';
 let realtimeChannel = null;
 let reloadTimer = null;
 let currentIsAdmin = false;
@@ -172,6 +174,7 @@ function movementCostInfo(movement){
 
 function spendingSummary(arr){
   const byEpi=new Map();
+  const byEpiCa=new Map();
   const savingsCurrentByEpi=new Map();
   const savingsPromoByEpi=new Map();
   let total=0;
@@ -186,11 +189,19 @@ function spendingSummary(arr){
 
     const quantity=Number(movement.quantidade)||0;
     const name=movement.epi||'EPI / Item';
+    const ca=String(info.variant?.ca||movement.ca||'N/A').trim()||'N/A';
 
     total+=info.total;
     pricedMovements+=1;
     pricedItems+=quantity;
     byEpi.set(name,(byEpi.get(name)||0)+info.total);
+
+    if(!byEpiCa.has(name)) byEpiCa.set(name,new Map());
+    const caMap=byEpiCa.get(name);
+    const existing=caMap.get(ca)||{value:0,quantity:0};
+    existing.value+=info.total;
+    existing.quantity+=quantity;
+    caMap.set(ca,existing);
 
     const reference=Number(info.variant?.preco_referencia);
     if(
@@ -227,10 +238,80 @@ function spendingSummary(arr){
     totalSavingsCurrent,
     totalSavingsPromo,
     byEpi:[...byEpi.entries()].sort((a,b)=>b[1]-a[1]),
+    byEpiCa:[...byEpiCa.entries()].map(([epi,caMap])=>({
+      epi,
+      cas:[...caMap.entries()]
+        .map(([ca,data])=>({ca,value:data.value,quantity:data.quantity}))
+        .sort((a,b)=>String(a.ca).localeCompare(String(b.ca),'pt-BR',{numeric:true}))
+    })).sort((a,b)=>a.epi.localeCompare(b.epi,'pt-BR')),
     savingsCurrentByEpi:[...savingsCurrentByEpi.entries()].sort((a,b)=>b[1]-a[1]),
     savingsPromoByEpi:[...savingsPromoByEpi.entries()].sort((a,b)=>b[1]-a[1])
   };
 }
+function renderSpendCaFilter(spend){
+  const wrap=$('spendCaFilter');
+  const button=$('spendCaFilterButton');
+  const label=$('spendCaFilterLabel');
+  const menu=$('spendCaFilterMenu');
+  const subtitle=$('spendChartSubtitle');
+  if(!wrap||!button||!label||!menu) return;
+
+  const multi=spend.byEpiCa.filter(row=>row.cas.length>1);
+
+  const currentGroup=multi.find(row=>row.epi===spendCaFilterEpi);
+  const currentCa=currentGroup?.cas.find(row=>row.ca===spendCaFilterCa);
+
+  if(spendCaFilterEpi && (!currentGroup || !currentCa)){
+    spendCaFilterEpi='';
+    spendCaFilterCa='';
+  }
+
+  if(!multi.length){
+    wrap.hidden=true;
+    menu.hidden=true;
+    button.setAttribute('aria-expanded','false');
+    label.textContent='Detalhar por C.A.';
+    if(subtitle) subtitle.textContent='distribuição dos valores calculáveis';
+    return;
+  }
+
+  wrap.hidden=false;
+
+  if(spendCaFilterEpi && spendCaFilterCa){
+    label.textContent=`C.A. ${spendCaFilterCa}`;
+    button.title=`${spendCaFilterEpi} • C.A. ${spendCaFilterCa}`;
+    if(subtitle) subtitle.textContent=`${spendCaFilterEpi} filtrado pelo C.A. ${spendCaFilterCa}`;
+  }else{
+    label.textContent='Detalhar por C.A.';
+    button.title='Filtrar um EPI que possua mais de um C.A.';
+    if(subtitle) subtitle.textContent='distribuição dos valores calculáveis';
+  }
+
+  const groups=multi.map(group=>`
+    <div class="spend-ca-filter-group">
+      <span class="spend-ca-filter-group-title">${esc(group.epi)}</span>
+      ${group.cas.map(item=>`
+        <button class="spend-ca-filter-option ${spendCaFilterEpi===group.epi&&spendCaFilterCa===item.ca?'active':''}" type="button" role="menuitem" data-spend-epi="${esc(group.epi)}" data-spend-ca="${esc(item.ca)}">
+          <span>
+            <strong>C.A. ${esc(item.ca)}</strong>
+            <small>${fmt(item.quantity)} itens • ${moneyBR(item.value)}</small>
+          </span>
+          ${spendCaFilterEpi===group.epi&&spendCaFilterCa===item.ca?'<i data-lucide="check" aria-hidden="true"></i>':''}
+        </button>`).join('')}
+    </div>
+  `).join('');
+
+  menu.innerHTML=`
+    <button class="spend-ca-filter-clear ${!spendCaFilterCa?'active':''}" type="button" role="menuitem" data-spend-ca-clear>
+      <span><strong>Todos os C.A.s</strong><small>Exibir gasto consolidado por EPI</small></span>
+      ${!spendCaFilterCa?'<i data-lucide="check" aria-hidden="true"></i>':''}
+    </button>
+    ${groups}
+  `;
+
+  refreshIcons();
+}
+
 function chartBase(){
   return {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#aeb8c2',boxWidth:10,boxHeight:10,font:{size:10}}}},scales:{x:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}},y:{ticks:{color:'#7f8a96',font:{size:9}},grid:{color:'#202a34'}}}};
 }
@@ -275,13 +356,23 @@ function renderDashboard(){
   const topE=aggregate(arr,'epi').slice(0,10).reverse();
   makeChart('cTop','bar',{labels:topE.map(x=>x[0]),datasets:[{label:'Qtd',data:topE.map(x=>x[1]),backgroundColor:'#ff6600',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
 
-  const spendRows=spend.byEpi.slice(0,10).reverse();
+  renderSpendCaFilter(spend);
+
+  const spendRows=spend.byEpi.map(([epi,value])=>{
+    if(epi===spendCaFilterEpi && spendCaFilterCa){
+      const group=spend.byEpiCa.find(row=>row.epi===epi);
+      const selected=group?.cas.find(row=>row.ca===spendCaFilterCa);
+      return [epi,selected?.value||0];
+    }
+    return [epi,value];
+  }).filter(([,value])=>value>0).sort((a,b)=>b[1]-a[1]).slice(0,10).reverse();
+
   makeChart('cSpend','bar',{
     labels:spendRows.map(x=>x[0]),
     datasets:[{
       label:'Valor',
       data:spendRows.map(x=>Number(x[1].toFixed(2))),
-      backgroundColor:'#42bf86',
+      backgroundColor:spendRows.map(x=>x[0]===spendCaFilterEpi&&spendCaFilterCa?'#7BE0AA':'#42bf86'),
       borderRadius:5,
       barThickness:18,
       maxBarThickness:22
@@ -1235,6 +1326,48 @@ if($('epiVariantImageInput')) $('epiVariantImageInput').addEventListener('change
   const file=e.target.files?.[0];
   if(file) previewVariantImageFile(file);
 });
+if($('spendCaFilterButton')) $('spendCaFilterButton').addEventListener('click',e=>{
+  e.stopPropagation();
+  const button=$('spendCaFilterButton');
+  const menu=$('spendCaFilterMenu');
+  if(!menu) return;
+  const opening=menu.hidden;
+  menu.hidden=!opening;
+  button.setAttribute('aria-expanded',opening?'true':'false');
+  if(opening) refreshIcons();
+});
+
+if($('spendCaFilterMenu')) $('spendCaFilterMenu').addEventListener('click',e=>{
+  e.stopPropagation();
+
+  if(e.target.closest('[data-spend-ca-clear]')){
+    spendCaFilterEpi='';
+    spendCaFilterCa='';
+    $('spendCaFilterMenu').hidden=true;
+    $('spendCaFilterButton')?.setAttribute('aria-expanded','false');
+    renderDashboard();
+    return;
+  }
+
+  const option=e.target.closest('[data-spend-epi][data-spend-ca]');
+  if(!option) return;
+
+  spendCaFilterEpi=option.dataset.spendEpi||'';
+  spendCaFilterCa=option.dataset.spendCa||'';
+  $('spendCaFilterMenu').hidden=true;
+  $('spendCaFilterButton')?.setAttribute('aria-expanded','false');
+  renderDashboard();
+});
+
+document.addEventListener('click',e=>{
+  const wrap=$('spendCaFilter');
+  const menu=$('spendCaFilterMenu');
+  const button=$('spendCaFilterButton');
+  if(!wrap||!menu||menu.hidden||wrap.contains(e.target)) return;
+  menu.hidden=true;
+  button?.setAttribute('aria-expanded','false');
+});
+
 document.querySelectorAll('[data-savings-mode]').forEach(btn=>btn.addEventListener('click',()=>{
   savingsPriceMode=btn.dataset.savingsMode==='promo'?'promo':'current';
   renderDashboard();
