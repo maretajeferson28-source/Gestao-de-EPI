@@ -1654,3 +1654,53 @@ tr:hover td{background:#202020}
 .epi-dossier-footer .epi-variant-actions .epi-pdf-download:hover svg{
   color:#6fd7a4!important;
 }
+
+
+/* Hover limpo: sem "invasão" de fundo laranja nos controles */
+.btn:not(.primary):hover,
+.nav button:hover,
+.epi-ca-selector-trigger:hover,
+.epi-ca-selector-trigger[aria-expanded="true"],
+.epi-ca-selector-option:hover,
+.epi-ca-selector-option.selected{
+  background:#1b1b1b!important;
+  box-shadow:none!important;
+}
+
+.btn:not(.primary):hover{
+  border-color:#505050!important;
+  color:#ffffff!important;
+}
+
+.nav button:hover{
+  color:#ffffff!important;
+}
+
+.epi-ca-selector-trigger:hover,
+.epi-ca-selector-trigger[aria-expanded="true"]{
+  border-color:rgba(255,102,0,.48)!important;
+}
+
+.epi-ca-selector-option:hover{
+  border-color:#343434!important;
+}
+
+.epi-ca-selector-option.selected{
+  border-color:rgba(255,102,0,.42)!important;
+}
+
+/* Mantém a identidade pelas bordas/ícones, sem preencher o botão com cor */
+.epi-dossier-footer .epi-variant-actions .btn[data-variant-edit]:hover{
+  background:#1b1b1b!important;
+}
+.epi-dossier-footer .epi-variant-actions .btn[data-variant-delete]:hover{
+  background:#1b1b1b!important;
+}
+.epi-dossier-footer .epi-variant-actions .epi-pdf-download:hover{
+  background:#1b1b1b!important;
+}
+
+/* Cards clicáveis: hover neutro, cor só nos detalhes */
+.epi-card:hover{
+  background:linear-gradient(180deg,#1c1c1c 0%,#171717 100%)!important;
+}
