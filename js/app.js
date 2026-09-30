@@ -600,170 +600,6 @@ async function hydrateVariantCardImages(rows){
   }));
 }
 
-async function renderEpiImage(){
-  if(!selectedEpi) return;
-
-  const preview=$('epiImagePreview');
-  const empty=$('epiImageEmpty');
-  const toolbar=$('epiImageToolbar');
-  const badge=$('epiImageBadge');
-  const msg=$('epiImageMsg');
-  const selectBtn=$('epiImageSelectBtn');
-
-  if(msg) msg.textContent='';
-  if(selectBtn) selectBtn.hidden=!currentIsAdmin;
-
-  preview.hidden=true;
-  preview.removeAttribute('src');
-  empty.hidden=false;
-  toolbar.hidden=true;
-  badge.hidden=true;
-
-  if(!selectedEpi.imagem_path){
-    refreshIcons();
-    return;
-  }
-
-  try{
-    const {data,error}=await sb.storage
-      .from('epi-imagens')
-      .createSignedUrl(selectedEpi.imagem_path,3600);
-
-    if(error) throw error;
-    if(!selectedEpi || !preview) return;
-
-    preview.src=data?.signedUrl||'';
-    preview.hidden=!data?.signedUrl;
-    empty.hidden=!!data?.signedUrl;
-    badge.hidden=!data?.signedUrl;
-    toolbar.hidden=!(data?.signedUrl && currentIsAdmin);
-
-    if($('epiImageFileName')){
-      $('epiImageFileName').textContent=selectedEpi.imagem_nome||'Imagem cadastrada';
-    }
-  }catch(err){
-    console.error('[EPI IMAGE]',err);
-    if(msg) msg.textContent='Não foi possível carregar a imagem cadastrada.';
-  }finally{
-    refreshIcons();
-  }
-}
-
-function syncSelectedEpiImageLocal(values){
-  if(!selectedEpi) return;
-  Object.assign(selectedEpi,values);
-  const idx=epiCatalog.findIndex(x=>x.id===selectedEpi.id);
-  if(idx>=0) Object.assign(epiCatalog[idx],values);
-}
-
-async function uploadEpiImage(file){
-  if(!currentIsAdmin||!selectedEpi||!file) return;
-
-  const allowed=['image/jpeg','image/png','image/webp'];
-  const msg=$('epiImageMsg');
-
-  if(!allowed.includes(file.type)){
-    msg.textContent='Formato inválido. Use JPG, PNG ou WEBP.';
-    return;
-  }
-  if(file.size>5*1024*1024){
-    msg.textContent='A imagem ultrapassa o limite de 5 MB.';
-    return;
-  }
-
-  const oldPath=selectedEpi.imagem_path||null;
-  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
-  const path=`${selectedEpi.id}/item-${Date.now()}.${ext}`;
-
-  msg.textContent='Enviando imagem...';
-
-  try{
-    const {error:uploadError}=await sb.storage
-      .from('epi-imagens')
-      .upload(path,file,{
-        cacheControl:'3600',
-        upsert:false,
-        contentType:file.type
-      });
-    if(uploadError) throw uploadError;
-
-    const updatedAt=new Date().toISOString();
-    const {data,error:updateError}=await sb
-      .from('epis')
-      .update({
-        imagem_path:path,
-        imagem_nome:file.name,
-        imagem_updated_at:updatedAt
-      })
-      .eq('id',selectedEpi.id)
-      .select('id,imagem_path,imagem_nome,imagem_updated_at')
-      .single();
-
-    if(updateError){
-      await sb.storage.from('epi-imagens').remove([path]);
-      throw updateError;
-    }
-
-    syncSelectedEpiImageLocal({
-      imagem_path:data.imagem_path,
-      imagem_nome:data.imagem_nome,
-      imagem_updated_at:data.imagem_updated_at
-    });
-
-    if(oldPath && oldPath!==path){
-      const {error:removeOldError}=await sb.storage.from('epi-imagens').remove([oldPath]);
-      if(removeOldError) console.warn('[EPI IMAGE] arquivo anterior não removido:',removeOldError);
-    }
-
-    msg.textContent='Imagem atualizada.';
-    await renderEpiImage();
-  }catch(err){
-    console.error('[EPI IMAGE UPLOAD]',err);
-    msg.textContent=`Erro ao salvar imagem: ${err.message||err}`;
-  }finally{
-    if($('epiImageInput')) $('epiImageInput').value='';
-  }
-}
-
-async function removeEpiImage(){
-  if(!currentIsAdmin||!selectedEpi||!selectedEpi.imagem_path) return;
-  if(!confirm('Remover a imagem de referência deste item?')) return;
-
-  const msg=$('epiImageMsg');
-  const oldPath=selectedEpi.imagem_path;
-  msg.textContent='Removendo imagem...';
-
-  const {error:updateError}=await sb
-    .from('epis')
-    .update({
-      imagem_path:null,
-      imagem_nome:null,
-      imagem_updated_at:new Date().toISOString()
-    })
-    .eq('id',selectedEpi.id);
-
-  if(updateError){
-    msg.textContent=updateError.message;
-    return;
-  }
-
-  syncSelectedEpiImageLocal({
-    imagem_path:null,
-    imagem_nome:null,
-    imagem_updated_at:new Date().toISOString()
-  });
-
-  const {error:storageError}=await sb.storage.from('epi-imagens').remove([oldPath]);
-  if(storageError) console.warn('[EPI IMAGE] falha ao remover arquivo antigo:',storageError);
-
-  msg.textContent='Imagem removida.';
-  await renderEpiImage();
-}
-
-function chooseEpiImage(){
-  if(currentIsAdmin && $('epiImageInput')) $('epiImageInput').click();
-}
-
 function openEpiDetail(epiId){
   selectedEpi=epiCatalog.find(x=>x.id===epiId)||null;
   if(!selectedEpi) return;
@@ -773,7 +609,6 @@ function openEpiDetail(epiId){
   clearEpiVariantForm();
   renderEpiVariantList();
   $('epiDetailModal').classList.remove('hidden');
-  renderEpiImage();
   refreshIcons();
 }
 function closeEpiDetail(){
@@ -1060,13 +895,6 @@ async function deleteEpiVariant(id){
 if($('epiCards')) $('epiCards').addEventListener('click',e=>{
   const card=e.target.closest('[data-epi-id]');
   if(card) openEpiDetail(card.dataset.epiId);
-});
-if($('epiImageSelectBtn')) $('epiImageSelectBtn').addEventListener('click',chooseEpiImage);
-if($('epiImageChangeBtn')) $('epiImageChangeBtn').addEventListener('click',chooseEpiImage);
-if($('epiImageRemoveBtn')) $('epiImageRemoveBtn').addEventListener('click',removeEpiImage);
-if($('epiImageInput')) $('epiImageInput').addEventListener('change',e=>{
-  const file=e.target.files?.[0];
-  if(file) uploadEpiImage(file);
 });
 if($('epiDetailClose')) $('epiDetailClose').addEventListener('click',closeEpiDetail);
 if($('epiDetailModal')) $('epiDetailModal').addEventListener('click',e=>{if(e.target===$('epiDetailModal')) closeEpiDetail();});
