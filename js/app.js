@@ -668,6 +668,21 @@ function moneyBR(v){
   if(v===null||v===undefined||v==='') return '—';
   return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 }
+function promotionPct(current,reference){
+  const cur=Number(current), ref=Number(reference);
+  if(!Number.isFinite(cur)||!Number.isFinite(ref)||ref<=0) return null;
+  return Math.max(0,((ref-cur)/ref)*100);
+}
+function promotionLabel(current,reference){
+  const pct=promotionPct(current,reference);
+  if(pct===null) return '—';
+  return `${pct.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%`;
+}
+function updatePromotionPreview(){
+  const out=$('epiVarPromocao');
+  if(!out) return;
+  out.value=promotionLabel($('epiVarPreco')?.value,$('epiVarPrecoReferencia')?.value);
+}
 function dateBR(v){
   if(!v) return '—';
   return isoToBR(String(v).slice(0,10));
@@ -677,6 +692,7 @@ function clearEpiVariantForm(){
   ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarPrecoReferencia','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
   if($('epiVarCa')) $('epiVarCa').readOnly=false;
   if($('epiVarUnidade')) $('epiVarUnidade').value='un';
+  if($('epiVarPromocao')) $('epiVarPromocao').value='—';
   if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
   if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. para buscar os dados oficiais.';
   if($('epiVariantEditorTitle')) $('epiVariantEditorTitle').textContent='Adicionar C.A.';
@@ -797,6 +813,7 @@ function renderEpiVariantList(){
         ${field('Norma',v.norma,'book-open-check')}
         ${field('Preço atual',moneyBR(v.preco),'badge-dollar-sign')}
         ${field('Preço anterior / referência',moneyBR(v.preco_referencia),'history')}
+        ${field('Promoção',promotionLabel(v.preco,v.preco_referencia),'badge-percent')}
         ${field('Unidade',v.unidade,'boxes')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
@@ -1014,6 +1031,7 @@ function fillEpiVariantForm(v){
   $('epiVarCaracteristicas').value=v.caracteristicas||'';
   $('epiVarPreco').value=v.preco??'';
   $('epiVarPrecoReferencia').value=v.preco_referencia??'';
+  if($('epiVarPromocao')) $('epiVarPromocao').value=promotionLabel(v.preco,v.preco_referencia);
   $('epiVarFornecedor').value=v.fornecedor||'';
   $('epiVarUnidade').value=v.unidade||'un';
   $('epiVarObservacao').value=v.observacao||'';
@@ -1202,6 +1220,8 @@ if($('epiVariantImageInput')) $('epiVariantImageInput').addEventListener('change
   const file=e.target.files?.[0];
   if(file) previewVariantImageFile(file);
 });
+if($('epiVarPreco')) $('epiVarPreco').addEventListener('input',updatePromotionPreview);
+if($('epiVarPrecoReferencia')) $('epiVarPrecoReferencia').addEventListener('input',updatePromotionPreview);
 if($('epiVariantSave')) $('epiVariantSave').addEventListener('click',saveEpiVariant);
 if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').addEventListener('click',clearEpiVariantForm);
 if($('epiVariantList')) $('epiVariantList').addEventListener('click',e=>{
