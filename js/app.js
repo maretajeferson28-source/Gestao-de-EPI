@@ -315,7 +315,7 @@ function renderDashboard(){
     datasets:[{
       data:hasSavings?savingsRows.map(x=>Number(x[1].toFixed(2))):[1],
       backgroundColor:hasSavings
-        ? ['#249c65','#35ad73','#46bc82','#5bc991','#72d3a2','#2f8f61','#439f70','#57ad7e','#6dbc8e','#84c99f']
+        ? ['#28A86B','#7BE0AA','#1F8E5A','#8BE3B3','#46BC82','#A5EBC6','#2F9964','#67C995','#3EAF78','#91E5BA']
         : ['#303030'],
       borderColor:'#161616',
       borderWidth:3,
