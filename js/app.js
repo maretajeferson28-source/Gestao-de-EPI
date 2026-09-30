@@ -81,7 +81,7 @@ async function loadAll(showBusy=true){
       sb.from('colaboradores').select('id,nome,cargo,setor,ativo').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
-        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
+        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
         .order('created_at',{ascending:true}),
       sb.from('movimentacoes_epi')
         .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,colaboradores(nome),epis(nome)')
@@ -171,27 +171,48 @@ function movementCostInfo(movement){
 
 function spendingSummary(arr){
   const byEpi=new Map();
+  const savingsByEpi=new Map();
   let total=0;
   let pricedMovements=0;
   let pricedItems=0;
+  let totalSavings=0;
+  let savingsMovements=0;
 
   arr.forEach(movement=>{
     const info=movementCostInfo(movement);
     if(!info.priced) return;
 
+    const quantity=Number(movement.quantidade)||0;
+    const name=movement.epi||'EPI / Item';
+
     total+=info.total;
     pricedMovements+=1;
-    pricedItems+=Number(movement.quantidade)||0;
-
-    const name=movement.epi||'EPI / Item';
+    pricedItems+=quantity;
     byEpi.set(name,(byEpi.get(name)||0)+info.total);
+
+    const reference=Number(info.variant?.preco_referencia);
+    if(
+      info.variant?.preco_referencia!==null &&
+      info.variant?.preco_referencia!==undefined &&
+      info.variant?.preco_referencia!=='' &&
+      Number.isFinite(reference) &&
+      reference>info.unitPrice
+    ){
+      const saved=(reference-info.unitPrice)*quantity;
+      totalSavings+=saved;
+      savingsMovements+=1;
+      savingsByEpi.set(name,(savingsByEpi.get(name)||0)+saved);
+    }
   });
 
   return {
     total,
     pricedMovements,
     pricedItems,
-    byEpi:[...byEpi.entries()].sort((a,b)=>b[1]-a[1])
+    totalSavings,
+    savingsMovements,
+    byEpi:[...byEpi.entries()].sort((a,b)=>b[1]-a[1]),
+    savingsByEpi:[...savingsByEpi.entries()].sort((a,b)=>b[1]-a[1])
   };
 }
 
@@ -216,6 +237,9 @@ function renderDashboard(){
   $('kSpendCoverage').textContent=`${fmt(spend.pricedMovements)} de ${fmt(arr.length)} movimentações com preço`;
   if($('spendCoverage')){
     $('spendCoverage').textContent=`${fmt(spend.pricedMovements)} registros • ${fmt(spend.pricedItems)} itens calculados`;
+  }
+  if($('savingsTotal')){
+    $('savingsTotal').textContent=moneyBR(spend.totalSavings);
   }
 
   const byDate=new Map(); arr.forEach(x=>byDate.set(x.data,(byDate.get(x.data)||0)+(Number(x.quantidade)||0)));
@@ -257,6 +281,43 @@ function renderDashboard(){
         grid:{display:false}
       }
     }
+  });
+
+  const savingsRows=spend.savingsByEpi;
+  const hasSavings=savingsRows.length>0;
+  makeChart('cSavings','doughnut',{
+    labels:hasSavings?savingsRows.map(x=>x[0]):['Sem redução cadastrada'],
+    datasets:[{
+      data:hasSavings?savingsRows.map(x=>Number(x[1].toFixed(2))):[1],
+      backgroundColor:hasSavings
+        ? ['#38b47b','#5bc995','#80d7ad','#a0e2c2','#c0ecd8','#2e8f68','#46a87a','#6dbd91','#91cfaa','#b5dfc8']
+        : ['#303030'],
+      borderColor:'#161616',
+      borderWidth:3,
+      hoverOffset:5
+    }]
+  },{
+    cutout:'64%',
+    plugins:{
+      legend:{
+        display:true,
+        position:'bottom',
+        labels:{
+          color:'#9aa4ad',
+          boxWidth:9,
+          boxHeight:9,
+          padding:10,
+          font:{size:8}
+        }
+      },
+      tooltip:{
+        enabled:hasSavings,
+        callbacks:{
+          label:(ctx)=>` ${ctx.label}: ${moneyBR(ctx.raw)}`
+        }
+      }
+    },
+    scales:{}
   });
 
   const topC=aggregate(arr.filter(x=>x.colaborador&&x.colaborador!=='Bolsa Reserva'),'colaborador').slice(0,8).reverse();
@@ -613,7 +674,7 @@ function dateBR(v){
 }
 function clearEpiVariantForm(){
   editingVariantId=null;
-  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
+  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarPrecoReferencia','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
   if($('epiVarCa')) $('epiVarCa').readOnly=false;
   if($('epiVarUnidade')) $('epiVarUnidade').value='un';
   if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
@@ -734,7 +795,8 @@ function renderEpiVariantList(){
         ${field('Referência / modelo',v.referencia,'package-search')}
         ${field('Validade do C.A.',dateBR(v.data_validade),'calendar-days')}
         ${field('Norma',v.norma,'book-open-check')}
-        ${field('Preço unitário',moneyBR(v.preco),'badge-dollar-sign')}
+        ${field('Preço atual',moneyBR(v.preco),'badge-dollar-sign')}
+        ${field('Preço anterior / referência',moneyBR(v.preco_referencia),'history')}
         ${field('Unidade',v.unidade,'boxes')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
@@ -951,6 +1013,7 @@ function fillEpiVariantForm(v){
   $('epiVarDescricao').value=v.descricao||'';
   $('epiVarCaracteristicas').value=v.caracteristicas||'';
   $('epiVarPreco').value=v.preco??'';
+  $('epiVarPrecoReferencia').value=v.preco_referencia??'';
   $('epiVarFornecedor').value=v.fornecedor||'';
   $('epiVarUnidade').value=v.unidade||'un';
   $('epiVarObservacao').value=v.observacao||'';
@@ -1020,6 +1083,7 @@ async function saveEpiVariant(){
     norma:$('epiVarNorma').value.trim()||null,
     caracteristicas:$('epiVarCaracteristicas').value.trim()||null,
     preco:$('epiVarPreco').value===''?null:Number($('epiVarPreco').value),
+    preco_referencia:$('epiVarPrecoReferencia').value===''?null:Number($('epiVarPrecoReferencia').value),
     fornecedor:$('epiVarFornecedor').value.trim()||null,
     unidade:$('epiVarUnidade').value.trim()||'un',
     observacao:$('epiVarObservacao').value.trim()||null,
