@@ -2076,9 +2076,8 @@ tr:hover td{background:#202020}
 }
 .movement-edit-btn:hover,
 .movement-edit-btn:focus{
-  color:#ff9a3f!important;
   border-color:rgba(255,102,0,.62)!important;
-  background:#1b1b1b!important;
+  background:#181818!important;
   outline:none;
 }
 .movement-edit-btn:hover svg,
@@ -2087,9 +2086,8 @@ tr:hover td{background:#202020}
 }
 .movement-delete-btn:hover,
 .movement-delete-btn:focus{
-  color:#ff8f8f!important;
   border-color:#7a3434!important;
-  background:#1b1b1b!important;
+  background:#181818!important;
   outline:none;
 }
 .movement-delete-btn:hover svg,
