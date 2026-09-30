@@ -917,10 +917,10 @@ tr:hover td{background:#202020}
 }
 
 .epi-card-meta{
-  display:flex;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 20px auto;
   align-items:center;
-  justify-content:space-between;
-  gap:10px;
+  gap:7px;
   min-width:0;
   padding-top:10px;
   border-top:1px solid rgba(255,255,255,.055);
@@ -2090,25 +2090,21 @@ tr:hover td{background:#202020}
   height:13px!important;
 }
 
-.epi-card-actions{
-  display:flex!important;
-  align-items:center;
-  gap:10px;
-  flex:0 0 auto;
-}
 .epi-card-edit{
-  display:inline-flex!important;
-  align-items:center;
-  gap:4px;
-  color:#858585!important;
-  font-size:9px!important;
-  font-weight:700;
+  width:20px;
+  height:20px;
+  display:grid!important;
+  place-items:center;
+  justify-self:center;
+  color:#737373!important;
   cursor:pointer;
-  transition:color .16s ease;
+  border-radius:5px;
+  transition:color .16s ease,background .16s ease;
 }
 .epi-card-edit:hover,
 .epi-card-edit:focus{
   color:#fff!important;
+  background:#242424;
   outline:none;
 }
 .epi-card-edit svg{
@@ -2119,7 +2115,4 @@ tr:hover td{background:#202020}
 @media(max-width:760px){
   .data-edit-grid{grid-template-columns:1fr}
   .data-edit-grid .wide{grid-column:auto}
-  .epi-card-actions{gap:7px}
-  .epi-card-edit{font-size:0!important}
-  .epi-card-edit svg{width:13px;height:13px}
 }
