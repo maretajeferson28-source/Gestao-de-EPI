@@ -740,7 +740,7 @@ function epiCardIcon(epi){
   if(/\bcones?\b/.test(text)) return 'traffic-cone';
   if(/fita zebrada/.test(text)) return 'construction';
   if(/placas? de sinalização|placas? de sinalizacao/.test(text)) return 'signpost';
-  if(/filtros? vo\/ga|filtros? vo\/go|filtro respiratório|filtro respiratorio/.test(text)) return 'funnel';
+  if(/filtros? vo\/ga|filtros? vo\/go|filtro respiratório|filtro respiratorio/.test(text)) return 'filter';
   if(/óculos de ampla visão|oculos de ampla visao/.test(text)) return 'scan-eye';
   if(/protetor solar/.test(text)) return 'sun';
   if(/pilha grande/.test(text)) return 'battery';
