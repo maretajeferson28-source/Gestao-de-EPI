@@ -426,11 +426,7 @@
 
     sectionTitle('Dados comerciais');
 
-    fieldCard('Preço atual', moneyBR(variant.preco), margin, col);
-    fieldCard('Preço anterior / referência', moneyBR(variant.preco_referencia), margin + col + gap, col);
-    y += 21;
-
-    fieldCard('Preço promocional', moneyBR(variant.preco_promocional), margin, col);
+    fieldCard('Preço', moneyBR(variant.preco), margin, col);
     fieldCard('Comparativo', variant.comparativo_status==='atual'?'Atual':(variant.comparativo_status==='passada'?'Passada':'—'), margin + col + gap, col);
     y += 21;
 
