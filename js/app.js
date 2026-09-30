@@ -9,6 +9,7 @@ let collaborators = [];
 let epiCatalog = [];
 let epiVariants = [];
 let selectedEpi = null;
+let selectedVariantId = null;
 let editingVariantId = null;
 let pendingVariantImageFile = null;
 let pendingVariantImagePreviewUrl = '';
@@ -535,6 +536,7 @@ function clearEpiVariantForm(){
 }
 function renderEpiVariantList(){
   const list=$('epiVariantList');
+  const selector=$('epiCaSelector');
   if(!list||!selectedEpi) return;
 
   const rows=epiVariants
@@ -543,12 +545,37 @@ function renderEpiVariantList(){
 
   $('epiDetailCount').textContent=`${rows.length} ${rows.length===1?'C.A. vinculado':'C.A.s vinculados'}`;
 
+  if(selector){
+    if(!rows.length){
+      selectedVariantId=null;
+      selector.innerHTML='<option value="">Nenhum C.A.</option>';
+      selector.value='';
+      selector.disabled=true;
+    }else{
+      if(!selectedVariantId || !rows.some(v=>v.id===selectedVariantId)){
+        selectedVariantId=rows[0].id;
+      }
+
+      selector.disabled=false;
+      selector.innerHTML=rows.map(v=>{
+        const maker=String(v.fabricante||'').trim();
+        const label=maker ? `C.A. ${v.ca} — ${maker}` : `C.A. ${v.ca}`;
+        return `<option value="${esc(v.id)}">${esc(label)}</option>`;
+      }).join('');
+      selector.value=selectedVariantId;
+    }
+  }
+
   if(!rows.length){
     list.innerHTML='';
     return;
   }
 
-  list.innerHTML=rows.map(v=>{
+  const selected=rows.find(v=>v.id===selectedVariantId)||rows[0];
+  selectedVariantId=selected.id;
+  const visibleRows=[selected];
+
+  list.innerHTML=visibleRows.map(v=>{
     const situacao=String(v.situacao||'').trim();
     const upper=situacao.toLocaleUpperCase('pt-BR');
     const state=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'neutral');
@@ -621,7 +648,7 @@ function renderEpiVariantList(){
   }).join('');
 
   refreshIcons();
-  hydrateVariantCardImages(rows);
+  hydrateVariantCardImages(visibleRows);
 }
 async function hydrateVariantCardImages(rows){
   await Promise.all(rows.filter(v=>v.imagem_path).map(async v=>{
@@ -643,6 +670,7 @@ async function hydrateVariantCardImages(rows){
 
 function openEpiDetail(epiId){
   selectedEpi=epiCatalog.find(x=>x.id===epiId)||null;
+  selectedVariantId=null;
   if(!selectedEpi) return;
   $('epiDetailTitle').textContent=selectedEpi.nome;
   $('epiDetailCategory').textContent=selectedEpi.categoria||'Categoria não informada';
@@ -655,6 +683,7 @@ function openEpiDetail(epiId){
 function closeEpiDetail(){
   if($('epiDetailModal')) $('epiDetailModal').classList.add('hidden');
   selectedEpi=null;
+  selectedVariantId=null;
   clearEpiVariantForm();
 }
 function resetVariantImageEditor(){
@@ -909,6 +938,7 @@ async function saveEpiVariant(){
   const idx=epiVariants.findIndex(v=>v.id===saved.id);
   if(idx>=0) epiVariants[idx]=saved;
   else epiVariants.push(saved);
+  selectedVariantId=saved.id;
 
   const imageFailed=$('epiVariantMsg').textContent.startsWith('C.A. salvo, mas');
   if(!imageFailed) $('epiVariantMsg').textContent='C.A. salvo.';
@@ -930,12 +960,17 @@ async function deleteEpiVariant(id){
     if(imgError) console.warn('[VARIANT IMAGE DELETE]',imgError);
   }
   epiVariants=epiVariants.filter(v=>v.id!==id);
+  if(selectedVariantId===id) selectedVariantId=null;
   renderEpiVariantList();
   renderEpis();
 }
 if($('epiCards')) $('epiCards').addEventListener('click',e=>{
   const card=e.target.closest('[data-epi-id]');
   if(card) openEpiDetail(card.dataset.epiId);
+});
+if($('epiCaSelector')) $('epiCaSelector').addEventListener('change',e=>{
+  selectedVariantId=e.target.value||null;
+  renderEpiVariantList();
 });
 if($('epiDetailClose')) $('epiDetailClose').addEventListener('click',closeEpiDetail);
 if($('epiDetailModal')) $('epiDetailModal').addEventListener('click',e=>{if(e.target===$('epiDetailModal')) closeEpiDetail();});
