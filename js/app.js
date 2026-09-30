@@ -1055,7 +1055,7 @@ function renderEpiVariantList(){
         ${field('Validade do C.A.',dateBR(v.data_validade),'calendar-days')}
         ${field('Norma',v.norma,'book-open-check')}
         ${field('Preço',moneyBR(v.preco),'badge-dollar-sign')}
-        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passada':'—'),'git-compare-arrows')}
+        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passado':'—'),'git-compare-arrows')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
 
