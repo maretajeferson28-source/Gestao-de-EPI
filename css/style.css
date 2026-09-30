@@ -1893,12 +1893,12 @@ tr:hover td{background:#202020}
 }
 .epi-compare-button.past:has(input:checked){
   border-color:rgba(255,157,65,.52);
-  background:#1d1712;
+  background:#171717;
   color:#ff9d41;
 }
 .epi-compare-button.current:has(input:checked){
   border-color:rgba(56,180,123,.50);
-  background:#111d18;
+  background:#171717;
   color:#67d09d;
 }
 @media(max-width:620px){
@@ -2122,4 +2122,9 @@ tr:hover td{background:#202020}
 @media(max-width:760px){
   .data-edit-grid{grid-template-columns:1fr}
   .data-edit-grid .wide{grid-column:auto}
+}
+
+.epi-compare-button.past:has(input:checked):hover,
+.epi-compare-button.current:has(input:checked):hover{
+  background:#1b1b1b;
 }
