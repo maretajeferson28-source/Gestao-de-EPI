@@ -639,8 +639,9 @@ tr:hover td{background:#202020}
 .epi-detail-close:hover{color:#fff;border-color:#555}
 .epi-detail-close svg{width:17px;height:17px}
 .epi-detail-head{
+  position:relative;
   display:grid;
-  grid-template-columns:auto minmax(0,1fr) minmax(180px,250px) auto;
+  grid-template-columns:auto minmax(0,1fr) auto;
   align-items:center;
   gap:14px;
   padding:22px 64px 20px 22px;
@@ -1335,8 +1336,13 @@ tr:hover td{background:#202020}
 
 /* Seletor de C.A. no cabeçalho do prontuário */
 .epi-ca-selector-wrap{
+  position:absolute;
+  left:47%;
+  top:46px;
+  width:220px;
   min-width:0;
-  align-self:center;
+  transform:translateX(-50%);
+  z-index:2;
 }
 .epi-ca-selector-wrap>label{
   display:block;
@@ -1398,7 +1404,9 @@ tr:hover td{background:#202020}
     grid-template-columns:auto minmax(0,1fr) auto;
   }
   .epi-ca-selector-wrap{
+    position:static;
     grid-column:1/-1;
     width:min(100%,320px);
+    transform:none;
   }
 }
