@@ -1822,3 +1822,28 @@ tr:hover td{background:#202020}
 @media(max-width:980px){
   .finance-charts-grid{grid-template-columns:1fr}
 }
+
+
+/* Linha compacta de preços + promoção calculada */
+.epi-price-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(120px,.72fr);
+  gap:10px;
+}
+.epi-price-row .field{min-width:0}
+.epi-price-row .field label{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.promo-field input{
+  color:#73d5a6!important;
+  border-color:rgba(56,180,123,.28)!important;
+  background:#101a15!important;
+  font-weight:800;
+  text-align:center;
+  cursor:default;
+}
+@media(max-width:620px){
+  .epi-price-row{grid-template-columns:1fr}
+}
