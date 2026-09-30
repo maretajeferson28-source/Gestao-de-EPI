@@ -1866,3 +1866,89 @@ tr:hover td{background:#202020}
 }
 
 
+
+
+/* Classificação Passada / Atual para economia por substituição */
+.epi-comparison-field{
+  margin-top:1px;
+}
+.epi-comparison-toggle{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.epi-comparison-option{
+  position:relative;
+  min-width:0;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+  min-height:54px;
+  padding:9px 10px;
+  border:1px solid #353535;
+  border-radius:10px;
+  background:#171717;
+  cursor:pointer;
+  transition:border-color .14s ease,background .14s ease;
+}
+.epi-comparison-option:hover{
+  background:#1a1a1a;
+  border-color:#454545;
+}
+.epi-comparison-option input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.epi-comparison-box{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border:1px solid #3b3b3b;
+  border-radius:8px;
+  background:#121212;
+  color:#777;
+}
+.epi-comparison-box svg{
+  width:15px;
+  height:15px;
+}
+.epi-comparison-option>span:last-child{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.epi-comparison-option strong{
+  color:#d8d8d8;
+  font-size:10px;
+}
+.epi-comparison-option small{
+  color:#777;
+  font-size:8px;
+  line-height:1.25;
+}
+.epi-comparison-option.past:has(input:checked){
+  border-color:rgba(255,157,65,.42);
+}
+.epi-comparison-option.past:has(input:checked) .epi-comparison-box{
+  border-color:rgba(255,157,65,.48);
+  color:#ff9d41;
+}
+.epi-comparison-option.current:has(input:checked){
+  border-color:rgba(56,180,123,.42);
+}
+.epi-comparison-option.current:has(input:checked) .epi-comparison-box{
+  border-color:rgba(56,180,123,.48);
+  color:#62cf98;
+}
+.epi-comparison-help{
+  display:block;
+  margin-top:6px;
+  color:#707070;
+  font-size:8px;
+}
+@media(max-width:620px){
+  .epi-comparison-toggle{grid-template-columns:1fr}
+}
