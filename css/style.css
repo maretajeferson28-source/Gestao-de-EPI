@@ -1952,3 +1952,174 @@ tr:hover td{background:#202020}
 @media(max-width:620px){
   .epi-comparison-toggle{grid-template-columns:1fr}
 }
+
+
+/* Edição administrativa de movimentações e catálogo */
+.data-edit-modal{
+  position:fixed;
+  inset:0;
+  z-index:1400;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(0,0,0,.80);
+  backdrop-filter:blur(6px);
+}
+.data-edit-modal.hidden{display:none!important}
+
+.data-edit-card{
+  position:relative;
+  width:min(760px,calc(100vw - 28px));
+  max-height:calc(100vh - 28px);
+  overflow:auto;
+  border:1px solid #343434;
+  border-radius:16px;
+  background:#141414;
+  box-shadow:0 30px 90px rgba(0,0,0,.64);
+}
+.epi-catalog-edit-card{width:min(560px,calc(100vw - 28px))}
+
+.data-edit-close{
+  position:absolute;
+  top:13px;
+  right:13px;
+  z-index:2;
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border:1px solid #383838;
+  border-radius:10px;
+  background:#181818;
+  color:#8d8d8d;
+  cursor:pointer;
+}
+.data-edit-close:hover{color:#fff;border-color:#505050}
+.data-edit-close svg{width:16px;height:16px}
+
+.data-edit-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-height:92px;
+  padding:18px 58px 17px 18px;
+  border-bottom:1px solid #292929;
+  background:
+    radial-gradient(circle at 88% 0%,rgba(255,102,0,.07),transparent 36%),
+    linear-gradient(180deg,#191919,#151515);
+}
+.data-edit-icon{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,102,0,.38);
+  border-radius:12px;
+  background:#18120d;
+  color:#ff7d17;
+}
+.data-edit-icon svg{width:20px;height:20px}
+.data-edit-head span{
+  display:block;
+  margin-bottom:3px;
+  color:#ff8500;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.data-edit-head h3{margin:0;font-size:17px}
+.data-edit-head p{margin:4px 0 0;color:#858585;font-size:9px}
+
+.data-edit-body{padding:18px}
+.data-edit-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:11px;
+}
+.data-edit-grid .wide{grid-column:span 2}
+.data-edit-grid textarea{resize:vertical;min-height:62px}
+.epi-catalog-edit-grid{grid-template-columns:1fr}
+.epi-catalog-edit-grid .wide{grid-column:auto}
+
+.data-edit-note{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  margin-top:14px;
+  padding:10px 11px;
+  border:1px solid #2c2c2c;
+  border-radius:10px;
+  background:#111;
+  color:#7f7f7f;
+  font-size:9px;
+  line-height:1.45;
+}
+.data-edit-note svg{
+  width:14px;
+  height:14px;
+  flex:0 0 14px;
+  margin-top:1px;
+  color:#666;
+}
+.data-edit-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:15px;
+}
+
+.table-action-group{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+}
+.table-icon-btn,
+.delete-icon-btn{
+  width:30px!important;
+  height:30px!important;
+  min-width:30px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center;
+}
+.table-icon-btn svg,
+.delete-icon-btn svg{
+  width:13px!important;
+  height:13px!important;
+}
+
+.epi-card-actions{
+  display:flex!important;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+}
+.epi-card-edit{
+  display:inline-flex!important;
+  align-items:center;
+  gap:4px;
+  color:#858585!important;
+  font-size:9px!important;
+  font-weight:700;
+  cursor:pointer;
+  transition:color .16s ease;
+}
+.epi-card-edit:hover,
+.epi-card-edit:focus{
+  color:#fff!important;
+  outline:none;
+}
+.epi-card-edit svg{
+  width:11px;
+  height:11px;
+}
+
+@media(max-width:760px){
+  .data-edit-grid{grid-template-columns:1fr}
+  .data-edit-grid .wide{grid-column:auto}
+  .epi-card-actions{gap:7px}
+  .epi-card-edit{font-size:0!important}
+  .epi-card-edit svg{width:13px;height:13px}
+}
