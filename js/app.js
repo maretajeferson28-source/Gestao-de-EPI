@@ -697,6 +697,24 @@ async function saveMovementEdit(){
   await loadAll(false);
 }
 $('movSearch').addEventListener('input',renderMovs);
+
+if($('clearCustom')) $('clearCustom').addEventListener('click',async()=>{
+  const customCount=movements.filter(x=>x.origem==='Site Gestão EPI').length;
+  if(!customCount){
+    alert('Não há lançamentos adicionados pelo site para remover.');
+    return;
+  }
+
+  if(!confirm(`Remover os ${customCount} lançamentos adicionados pelo site? Os registros importados serão preservados.`)) return;
+
+  const {error}=await sb.from('movimentacoes_epi').delete().eq('origem','Site Gestão EPI');
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await loadAll();
+});
 if($('movementEditClose')) $('movementEditClose').addEventListener('click',closeMovementEdit);
 if($('movementEditCancel')) $('movementEditCancel').addEventListener('click',closeMovementEdit);
 if($('movementEditSave')) $('movementEditSave').addEventListener('click',saveMovementEdit);
