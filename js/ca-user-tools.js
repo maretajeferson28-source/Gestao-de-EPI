@@ -47,8 +47,8 @@
         gap:10px!important;
         text-align:left!important;
         border-radius:10px!important;
-        background:#181818!important;
-        border:1px solid #3a3a3a!important;
+        background:transparent!important;
+        border:0!important;
         color:#d8d8d8!important;
         box-shadow:none!important;
       }
@@ -103,8 +103,8 @@
         stroke:#666!important;
       }
       .ca-view-cadastro-btn:hover{
-        background:#181818!important;
-        border-color:#3a3a3a!important;
+        background:transparent!important;
+        border-color:transparent!important;
         color:#d8d8d8!important;
         box-shadow:none!important;
       }
