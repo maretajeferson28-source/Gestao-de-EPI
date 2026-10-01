@@ -40,9 +40,17 @@ document.title = "Gestão de EPI";
 
 // Complemento de consulta de C.A. para usuários comuns.
 window.addEventListener('load', () => {
-  if (document.querySelector('script[data-ca-user-tools]')) return;
-  const script = document.createElement('script');
-  script.src = 'js/ca-user-tools.js';
-  script.dataset.caUserTools = 'true';
-  document.body.appendChild(script);
+  if (!document.querySelector('script[data-ca-user-tools]')) {
+    const script = document.createElement('script');
+    script.src = 'js/ca-user-tools.js';
+    script.dataset.caUserTools = 'true';
+    document.body.appendChild(script);
+  }
+
+  if (!document.querySelector('script[data-dashboard-admin-colors]')) {
+    const chartScript = document.createElement('script');
+    chartScript.src = 'js/dashboard-admin-colors.js';
+    chartScript.dataset.dashboardAdminColors = 'true';
+    document.body.appendChild(chartScript);
+  }
 }, { once: true });
