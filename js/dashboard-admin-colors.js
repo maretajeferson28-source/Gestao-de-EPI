@@ -26,8 +26,40 @@
     return true;
   }
 
+  function applySpendDescendingOrder() {
+    if (!window.Chart) return false;
+
+    const chart = Chart.getChart('cSpend');
+    const dataset = chart?.data?.datasets?.[0];
+    const labels = chart?.data?.labels;
+    if (!chart || !dataset || !Array.isArray(labels) || !Array.isArray(dataset.data) || labels.length !== dataset.data.length) return false;
+
+    const rows = labels.map((label, index) => ({
+      label,
+      value: Number(dataset.data[index]) || 0
+    })).sort((a, b) => b.value - a.value);
+
+    const alreadyDescending = rows.every((row, index) =>
+      row.label === labels[index] && row.value === (Number(dataset.data[index]) || 0)
+    );
+
+    if (!alreadyDescending) {
+      chart.data.labels = rows.map((row) => row.label);
+      dataset.data = rows.map((row) => row.value);
+      chart.update('none');
+    }
+
+    return true;
+  }
+
+  function applyDashboardTweaks() {
+    const qualityApplied = applyQualityChartAccent();
+    const spendApplied = applySpendDescendingOrder();
+    return qualityApplied || spendApplied;
+  }
+
   function scheduleApply() {
-    requestAnimationFrame(() => requestAnimationFrame(applyQualityChartAccent));
+    requestAnimationFrame(() => requestAnimationFrame(applyDashboardTweaks));
   }
 
   function start() {
@@ -54,7 +86,7 @@
 
     let attempts = 0;
     const timer = setInterval(() => {
-      const applied = applyQualityChartAccent();
+      const applied = applyDashboardTweaks();
       attempts += 1;
       if (applied || attempts >= 40) clearInterval(timer);
     }, 250);
