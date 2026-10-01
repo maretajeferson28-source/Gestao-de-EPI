@@ -92,7 +92,7 @@ document.title = "Gestão de EPI";
   }
 })();
 
-// Complemento de consulta de C.A. para usuários comuns.
+// Complementos visuais e de consulta.
 window.addEventListener('load', () => {
   if (!document.querySelector('script[data-ca-user-tools]')) {
     const script = document.createElement('script');
@@ -106,5 +106,12 @@ window.addEventListener('load', () => {
     chartScript.src = 'js/dashboard-admin-colors.js';
     chartScript.dataset.dashboardAdminColors = 'true';
     document.body.appendChild(chartScript);
+  }
+
+  if (!document.querySelector('script[data-dashboard-spend-order]')) {
+    const spendOrderScript = document.createElement('script');
+    spendOrderScript.src = 'js/dashboard-spend-order.js';
+    spendOrderScript.dataset.dashboardSpendOrder = 'true';
+    document.body.appendChild(spendOrderScript);
   }
 }, { once: true });
