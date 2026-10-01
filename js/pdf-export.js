@@ -64,16 +64,12 @@
 
   async function getBrandLogoDataUrl() {
     if (!brandLogoPromise) {
-      const parts = Array.from({ length: 6 }, (_, index) =>
-        fetch(`/assets/pdf-brand/logo.part${index}.txt`, { cache: 'force-cache' })
-          .then((response) => {
-            if (!response.ok) throw new Error(`Parte ${index} da logo não encontrada.`);
-            return response.text();
-          })
-      );
-
-      brandLogoPromise = Promise.all(parts)
-        .then((chunks) => `data:image/png;base64,${chunks.join('')}`)
+      brandLogoPromise = fetch('/assets/pdf-brand/logo.png?v=20261001', { cache: 'force-cache' })
+        .then((response) => {
+          if (!response.ok) throw new Error('Logo do PDF não encontrada.');
+          return response.blob();
+        })
+        .then(blobToPngDataUrl)
         .catch((error) => {
           console.warn('[EPI PDF BRAND]', error);
           return null;
