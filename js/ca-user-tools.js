@@ -95,13 +95,6 @@
         line-height:1.25;
         font-weight:500!important;
       }
-      .ca-view-cadastro-arrow{
-        width:16px!important;
-        height:16px!important;
-        flex:0 0 16px;
-        color:#666!important;
-        stroke:#666!important;
-      }
       .ca-view-cadastro-btn:hover{
         background:transparent!important;
         border-color:transparent!important;
@@ -117,11 +110,6 @@
       }
       .ca-view-cadastro-btn:hover .ca-view-cadastro-copy small{
         color:#858585!important;
-      }
-      .ca-view-cadastro-btn:hover .ca-view-cadastro-arrow{
-        color:#666!important;
-        stroke:#666!important;
-        transform:none!important;
       }
       .ca-view-cadastro-btn[hidden]{display:none!important}
     `;
@@ -169,7 +157,6 @@
         <strong>C.A. cadastrado</strong>
         <small>Ver cadastro técnico</small>
       </span>
-      <i class="ca-view-cadastro-arrow" data-lucide="chevron-right" aria-hidden="true"></i>
     `;
 
     button.addEventListener('click', () => {
