@@ -15,6 +15,14 @@ document.title = "Gestão de EPI";
     document.head.appendChild(link);
   }
 
+  if (!document.querySelector('link[data-nfe-icon-style]')) {
+    const iconLink = document.createElement('link');
+    iconLink.rel = 'stylesheet';
+    iconLink.href = 'css/nfe-icon.css';
+    iconLink.dataset.nfeIconStyle = 'true';
+    document.head.appendChild(iconLink);
+  }
+
   if (!document.querySelector('script[data-nfe-module]')) {
     const script = document.createElement('script');
     script.src = 'js/nfe.js';
