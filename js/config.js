@@ -21,4 +21,11 @@ document.title = "Gestão de EPI";
     script.dataset.nfeModule = 'true';
     document.body.appendChild(script);
   }
+
+  if (!document.querySelector('script[data-nfe-barcode]')) {
+    const barcodeScript = document.createElement('script');
+    barcodeScript.src = 'js/nfe-barcode.js';
+    barcodeScript.dataset.nfeBarcode = 'true';
+    document.body.appendChild(barcodeScript);
+  }
 })();
