@@ -30,27 +30,41 @@
         padding:0!important;
         border:0!important;
         background:transparent!important;
+        display:flex!important;
+        align-items:center;
+        justify-content:center;
       }
       .ca-view-cadastro-btn{
-        width:100%;
-        min-height:54px;
-        margin:0;
+        width:auto!important;
+        min-width:0!important;
+        min-height:36px!important;
+        margin:0!important;
+        padding:8px 12px!important;
         justify-content:center;
+        gap:7px;
+        border-radius:9px!important;
         background:#181818!important;
         border:1px solid #3a3a3a!important;
         color:#d8d8d8!important;
         box-shadow:none!important;
+        font-size:11px;
+        font-weight:600;
+        transition:border-color .16s ease,color .16s ease;
       }
       .ca-view-cadastro-btn svg{
+        width:16px!important;
+        height:16px!important;
         color:#8a8a8a!important;
         stroke:#8a8a8a!important;
+        transition:color .16s ease,stroke .16s ease;
       }
       .ca-view-cadastro-btn:hover,
       .ca-view-cadastro-btn:focus-visible{
         background:#181818!important;
-        border-color:rgba(255,102,0,.62)!important;
+        border-color:rgba(255,102,0,.72)!important;
         color:#ff9a3f!important;
         outline:none;
+        box-shadow:none!important;
       }
       .ca-view-cadastro-btn:hover svg,
       .ca-view-cadastro-btn:focus-visible svg{
@@ -96,7 +110,7 @@
     button.type = 'button';
     button.className = 'btn compact ca-view-cadastro-btn';
     button.hidden = true;
-    button.innerHTML = '<i data-lucide="folder-open" aria-hidden="true"></i>Ver Cadastro';
+    button.innerHTML = '<i data-lucide="eye" aria-hidden="true"></i>Ver Cadastro';
 
     button.addEventListener('click', () => {
       const variantId = button.dataset.variantId || '';
@@ -161,7 +175,7 @@
     button.dataset.epiId = String(variant.epi_id);
     button.hidden = false;
     baseInfo.hidden = false;
-    baseInfo.style.display = 'block';
+    baseInfo.style.display = 'flex';
   }
 
   function start() {
