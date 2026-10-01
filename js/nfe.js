@@ -468,9 +468,20 @@
     result.innerHTML = `
       <div class="nfe-doc-toolbar">
         <span><strong>NF-e lida</strong> • ${note.products.length} item(ns) • ${matchCount} vínculo(s) sugerido(s)</span>
-        <span>${esc(note.fileName)}</span>
+        <span class="nfe-doc-filename" title="${esc(note.fileName)}">${esc(note.fileName)}</span>
       </div>
-
+      <div class="nfe-view-controls">
+        <div class="nfe-zoom-controls">
+          <button type="button" class="btn compact" id="nfeZoomOut" aria-label="Diminuir zoom">−</button>
+          <output id="nfeZoomLevel" aria-live="polite"></output>
+          <button type="button" class="btn compact" id="nfeZoomIn" aria-label="Aumentar zoom">+</button>
+          <button type="button" class="btn compact" id="nfeZoomFit">Ajustar</button>
+        </div>
+        <button type="button" class="btn compact" id="nfeDownloadPdf"><i data-lucide="download"></i>Baixar PDF</button>
+      </div>
+      <p class="nfe-view-hint">Use a roda do mouse para dar zoom e segure e arraste para mover a nota.</p>
+      <div class="nfe-doc-viewport" id="nfeDocViewport" tabindex="0" aria-label="Visualização da nota fiscal com zoom e arraste">
+      <div class="nfe-doc-canvas" id="nfeDocCanvas">
       <article class="danfe-sheet">
         <section class="danfe-receipt">
           <div class="danfe-receipt-copy">${esc(receiptText)}</div>
@@ -598,9 +609,127 @@
           <div class="danfe-additional-box"><span>INFORMAÇÕES COMPLEMENTARES</span><p>${esc(note.additionalInfo || '—')}</p></div>
           <div class="danfe-additional-box fiscal"><span>RESERVADO AO FISCO</span></div>
         </section>
-      </article>`;
+      </article></div></div>`;
 
     refreshNfeIcons();
+    bindDocumentViewer(note);
+  }
+
+  function bindDocumentViewer(note) {
+    const viewport = $('nfeDocViewport');
+    const canvas = $('nfeDocCanvas');
+    const sheet = canvas.querySelector('.danfe-sheet');
+    let zoom = 1;
+    let drag = null;
+    const fit = () => Math.max(0.25, Math.min(1, (viewport.clientWidth - 16) / 900));
+
+    function setZoom(next, x = viewport.clientWidth / 2, y = viewport.clientHeight / 2) {
+      const old = zoom;
+      zoom = Math.max(0.25, Math.min(3, next));
+      const left = (viewport.scrollLeft + x) / old;
+      const top = (viewport.scrollTop + y) / old;
+      sheet.style.transform = `scale(${zoom})`;
+      canvas.style.width = `${900 * zoom}px`;
+      canvas.style.height = `${sheet.offsetHeight * zoom}px`;
+      viewport.scrollLeft = left * zoom - x;
+      viewport.scrollTop = top * zoom - y;
+      $('nfeZoomLevel').textContent = `${Math.round(zoom * 100)}%`;
+    }
+
+    const reset = () => { setZoom(fit(), 0, 0); viewport.scrollLeft = 0; viewport.scrollTop = 0; };
+    $('nfeZoomIn').addEventListener('click', () => setZoom(zoom * 1.2));
+    $('nfeZoomOut').addEventListener('click', () => setZoom(zoom / 1.2));
+    $('nfeZoomFit').addEventListener('click', reset);
+    viewport.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const rect = viewport.getBoundingClientRect();
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientHeight : 1);
+      setZoom(zoom * Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.002), event.clientX - rect.left, event.clientY - rect.top);
+    }, { passive: false });
+    viewport.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
+      viewport.setPointerCapture(event.pointerId);
+      viewport.classList.add('is-dragging');
+      event.preventDefault();
+    });
+    viewport.addEventListener('pointermove', (event) => {
+      if (!drag) return;
+      viewport.scrollLeft = drag.left - (event.clientX - drag.x);
+      viewport.scrollTop = drag.top - (event.clientY - drag.y);
+    });
+    const stopDrag = () => { drag = null; viewport.classList.remove('is-dragging'); };
+    viewport.addEventListener('pointerup', stopDrag);
+    viewport.addEventListener('pointercancel', stopDrag);
+    viewport.addEventListener('lostpointercapture', stopDrag);
+    viewport.addEventListener('keydown', (event) => {
+      if (event.key === '+' || event.key === '=') { event.preventDefault(); setZoom(zoom * 1.2); }
+      if (event.key === '-') { event.preventDefault(); setZoom(zoom / 1.2); }
+      if (event.key === '0') { event.preventDefault(); reset(); }
+    });
+    $('nfeDownloadPdf').addEventListener('click', () => downloadNotePdf(note, sheet));
+    requestAnimationFrame(reset);
+  }
+
+  async function downloadNotePdf(note, sheet) {
+    const button = $('nfeDownloadPdf');
+    button.disabled = true;
+    button.textContent = 'Gerando PDF...';
+    const holder = document.createElement('div');
+    try {
+      if (!window.html2canvas || !window.jspdf?.jsPDF) throw new Error('Gerador de PDF indisponível. Atualize a página e tente novamente.');
+      const clone = sheet.cloneNode(true);
+      const sheetNumber = [...clone.querySelectorAll('.danfe-title-box span')].find((node) => node.textContent.startsWith('Folha '));
+      if (sheetNumber) sheetNumber.textContent = '';
+      // Captura a nota completa no tamanho original, independentemente do zoom.
+      holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:900px;';
+      clone.style.cssText = 'width:900px;min-width:900px;transform:none;margin:0;box-shadow:none;';
+      holder.appendChild(clone);
+      document.body.appendChild(holder);
+      await document.fonts.ready;
+      const rendered = await window.html2canvas(clone, { scale: 2, backgroundColor: '#fff', logging: false });
+      const pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+      const printWidth = 190;
+      const pagePixels = Math.floor(277 * rendered.width / printWidth);
+      const rect = clone.getBoundingClientRect();
+      const boundaries = [...clone.querySelectorAll(':scope > section, :scope > h4, .danfe-products tr')]
+        .map((node) => Math.round((node.getBoundingClientRect().top - rect.top) * 2))
+        .filter((position) => position > 0);
+      let offset = 0;
+      let page = 0;
+      while (offset < rendered.height) {
+        const limit = Math.min(offset + pagePixels, rendered.height);
+        const candidates = boundaries.filter((position) => position > offset && position <= limit);
+        let end = limit;
+        if (limit < rendered.height && candidates.length) {
+          const boundary = Math.max(...candidates);
+          if (boundary - offset > pagePixels * 0.5) end = boundary;
+        }
+        const slice = document.createElement('canvas');
+        slice.width = rendered.width;
+        slice.height = end - offset;
+        slice.getContext('2d').drawImage(rendered, 0, offset, rendered.width, slice.height, 0, 0, slice.width, slice.height);
+        if (page++) pdf.addPage();
+        pdf.addImage(slice.toDataURL('image/png'), 'PNG', 10, 10, printWidth, slice.height * printWidth / slice.width);
+        offset = end;
+      }
+      for (let index = 1; index <= pdf.getNumberOfPages(); index += 1) {
+        pdf.setPage(index);
+        pdf.setFontSize(7);
+        pdf.setTextColor(90);
+        pdf.text(`NF ${note.number || '—'} • Série ${note.series || '—'} • Página ${index} de ${pdf.getNumberOfPages()}`, 200, 293, { align: 'right' });
+      }
+      const filename = `DANFE_${note.number || 'nota'}_Serie_${note.series || '0'}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+      pdf.save(`${filename}.pdf`);
+    } catch (error) {
+      console.error('[NF-E PDF]', error);
+      setMessage(`Não foi possível gerar o PDF: ${error.message || error}`, true);
+    } finally {
+      holder.remove();
+      button.disabled = false;
+      button.innerHTML = '<i data-lucide="download"></i>Baixar PDF';
+      refreshNfeIcons();
+    }
   }
 
   if (!injectUi()) {
