@@ -37,3 +37,12 @@ document.title = "Gestão de EPI";
     document.body.appendChild(barcodeScript);
   }
 })();
+
+// Complemento de consulta de C.A. para usuários comuns.
+window.addEventListener('load', () => {
+  if (document.querySelector('script[data-ca-user-tools]')) return;
+  const script = document.createElement('script');
+  script.src = 'js/ca-user-tools.js';
+  script.dataset.caUserTools = 'true';
+  document.body.appendChild(script);
+}, { once: true });
