@@ -110,7 +110,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-dashboard-spend-order]')) {
     const spendOrderScript = document.createElement('script');
-    spendOrderScript.src = 'js/dashboard-spend-order.js';
+    spendOrderScript.src = 'js/dashboard-spend-order.js?v=20261001-2';
     spendOrderScript.dataset.dashboardSpendOrder = 'true';
     document.body.appendChild(spendOrderScript);
   }
