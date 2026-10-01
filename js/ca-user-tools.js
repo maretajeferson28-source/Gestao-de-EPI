@@ -112,6 +112,21 @@
         color:#858585!important;
       }
       .ca-view-cadastro-btn[hidden]{display:none!important}
+
+      /* Usuário comum: sem editor, o prontuário ocupa a área útil e fica centralizado. */
+      .epi-detail-layout:has(#epiVariantEditor[hidden]){
+        grid-template-columns:1fr!important;
+      }
+      .epi-detail-layout:has(#epiVariantEditor[hidden]) .epi-variants-panel{
+        border-right:0!important;
+        border-bottom:0!important;
+        display:flex!important;
+        justify-content:center!important;
+        width:100%;
+      }
+      .epi-detail-layout:has(#epiVariantEditor[hidden]) .epi-variant-list{
+        width:min(760px,100%)!important;
+      }
     `;
     document.head.appendChild(style);
   }
