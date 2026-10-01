@@ -134,7 +134,7 @@
         left:auto!important;
         top:auto!important;
         width:220px!important;
-        transform:none!important;
+        transform:translateX(-64px)!important;
         justify-self:end!important;
       }
       .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-count{
@@ -163,6 +163,7 @@
           grid-column:1/-1!important;
           justify-self:stretch!important;
           width:100%!important;
+          transform:none!important;
         }
         .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-count{
           grid-column:1/-1!important;
