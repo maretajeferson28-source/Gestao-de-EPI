@@ -1,0 +1,33 @@
+/* Ajuste visual isolado do ícone de importação NF-e: fundo sempre neutro */
+.nfe-drop-icon{
+  width:54px;
+  height:54px;
+  border:1px solid #3a3a3a;
+  border-radius:14px;
+  margin:0 auto 13px;
+  display:grid;
+  place-items:center;
+  color:#ff7a00;
+  background:#181818;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 5px 14px rgba(0,0,0,.18);
+  transition:border-color .16s ease,color .16s ease,transform .16s ease;
+}
+
+.nfe-drop-icon svg{
+  width:24px;
+  height:24px;
+  stroke-width:2.15;
+}
+
+.nfe-dropzone:hover .nfe-drop-icon{
+  border-color:#4a4a4a;
+  background:#181818;
+  color:#ff7a00;
+}
+
+.nfe-dropzone.dragover .nfe-drop-icon{
+  border-color:rgba(255,102,0,.72);
+  background:#181818;
+  color:#ff9a3f;
+  transform:translateY(-1px);
+}
