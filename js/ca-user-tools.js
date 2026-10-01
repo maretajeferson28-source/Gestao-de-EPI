@@ -122,6 +122,7 @@
         openEpiDetail(epiId);
         if (typeof selectedVariantId !== 'undefined') selectedVariantId = variantId;
         if (typeof renderEpiVariantList === 'function') renderEpiVariantList();
+        syncVariantActions();
         refreshLucide();
       } catch (error) {
         console.error('[CA VER CADASTRO]', error);
@@ -178,14 +179,27 @@
     baseInfo.style.display = 'flex';
   }
 
+  function syncVariantActions() {
+    const admin = isAdminUser();
+    document.querySelectorAll('[data-variant-edit],[data-variant-delete]').forEach((button) => {
+      if (admin) button.style.removeProperty('display');
+      else button.style.display = 'none';
+    });
+  }
+
+  function syncAll() {
+    syncViewButton();
+    syncVariantActions();
+  }
+
   function start() {
     ensureStyle();
     ensureViewButton();
-    syncViewButton();
+    syncAll();
 
     const app = byId('epiApp');
     if (app) {
-      new MutationObserver(syncViewButton).observe(app, {
+      new MutationObserver(syncAll).observe(app, {
         attributes: true,
         attributeFilter: ['class'],
         childList: false,
@@ -202,10 +216,20 @@
       });
     }
 
+    const detail = byId('epiDetailModal');
+    if (detail) {
+      new MutationObserver(syncVariantActions).observe(detail, {
+        attributes: true,
+        attributeFilter: ['class'],
+        childList: true,
+        subtree: true
+      });
+    }
+
     // Garante sincronização após a carga assíncrona de autorização/dados.
     let checks = 0;
     const timer = setInterval(() => {
-      syncViewButton();
+      syncAll();
       checks += 1;
       if (checks >= 30) clearInterval(timer);
     }, 500);
