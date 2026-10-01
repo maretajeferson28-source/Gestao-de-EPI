@@ -5,6 +5,7 @@
   window.__EPI_NFE_MODULE__ = true;
 
   const state = { notes: [], selected: -1 };
+  let viewerResizeObserver = null;
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money = (value) => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -441,6 +442,7 @@
   }
 
   function renderSelectedNote() {
+    viewerResizeObserver?.disconnect();
     const result = $('nfeResult');
     const empty = $('nfeEmpty');
     const note = state.notes[state.selected];
@@ -479,7 +481,7 @@
         </div>
         <button type="button" class="btn compact" id="nfeDownloadPdf"><i data-lucide="download"></i>Baixar PDF</button>
       </div>
-      <p class="nfe-view-hint">Use a roda do mouse para dar zoom e segure e arraste para mover a nota.</p>
+      <p class="nfe-view-hint">Role para cima sobre a nota para ampliar e arraste para mover. No tamanho padrão, rolar para baixo move a página.</p>
       <div class="nfe-doc-viewport" id="nfeDocViewport" tabindex="0" aria-label="Visualização da nota fiscal com zoom e arraste">
       <div class="nfe-doc-canvas" id="nfeDocCanvas">
       <article class="danfe-sheet">
@@ -621,33 +623,43 @@
     const sheet = canvas.querySelector('.danfe-sheet');
     let zoom = 1;
     let drag = null;
-    const fit = () => Math.max(0.25, Math.min(1, (viewport.clientWidth - 16) / 900));
+    let minimumZoom = 1;
+    let fittedWidth = 0;
+    let fittedHeight = 0;
+    const isZoomed = () => zoom > minimumZoom + 0.00001;
 
     function setZoom(next, x = viewport.clientWidth / 2, y = viewport.clientHeight / 2) {
       const old = zoom;
-      zoom = Math.max(0.25, Math.min(3, next));
+      zoom = Math.max(minimumZoom, Math.min(3, next));
       const left = (viewport.scrollLeft + x) / old;
       const top = (viewport.scrollTop + y) / old;
       sheet.style.transform = `scale(${zoom})`;
       canvas.style.width = `${900 * zoom}px`;
       canvas.style.height = `${sheet.offsetHeight * zoom}px`;
+      // A caixa mantém a altura da nota inteira no tamanho padrão.
+      viewport.style.height = `${Math.ceil(sheet.offsetHeight * minimumZoom)}px`;
+      viewport.classList.toggle('is-zoomed', isZoomed());
+      if (!isZoomed()) { drag = null; viewport.classList.remove('is-dragging'); }
       viewport.scrollLeft = left * zoom - x;
       viewport.scrollTop = top * zoom - y;
-      $('nfeZoomLevel').textContent = `${Math.round(zoom * 100)}%`;
+      $('nfeZoomLevel').textContent = `${Math.round(zoom / minimumZoom * 100)}%`;
+      $('nfeZoomOut').disabled = !isZoomed();
     }
 
-    const reset = () => { setZoom(fit(), 0, 0); viewport.scrollLeft = 0; viewport.scrollTop = 0; };
+    const reset = () => { setZoom(minimumZoom, 0, 0); viewport.scrollLeft = 0; viewport.scrollTop = 0; };
     $('nfeZoomIn').addEventListener('click', () => setZoom(zoom * 1.2));
     $('nfeZoomOut').addEventListener('click', () => setZoom(zoom / 1.2));
     $('nfeZoomFit').addEventListener('click', reset);
     viewport.addEventListener('wheel', (event) => {
+      // No limite inferior, deixa a rolagem seguir para a página normalmente.
+      if (!event.deltaY || (event.deltaY > 0 && !isZoomed())) return;
       event.preventDefault();
       const rect = viewport.getBoundingClientRect();
       const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientHeight : 1);
       setZoom(zoom * Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.002), event.clientX - rect.left, event.clientY - rect.top);
     }, { passive: false });
     viewport.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0) return;
+      if (event.button !== 0 || !isZoomed()) return;
       drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
       viewport.setPointerCapture(event.pointerId);
       viewport.classList.add('is-dragging');
@@ -668,7 +680,20 @@
       if (event.key === '0') { event.preventDefault(); reset(); }
     });
     $('nfeDownloadPdf').addEventListener('click', () => downloadNotePdf(note, sheet));
-    requestAnimationFrame(reset);
+    const resize = () => {
+      const width = viewport.getBoundingClientRect().width;
+      if (!width) return;
+      if (width === fittedWidth && sheet.offsetHeight === fittedHeight) return;
+      const relativeZoom = fittedWidth ? zoom / minimumZoom : 1;
+      fittedWidth = width;
+      fittedHeight = sheet.offsetHeight;
+      minimumZoom = Math.min(1, width / 900);
+      setZoom(minimumZoom * relativeZoom, 0, 0);
+    };
+    viewerResizeObserver = new ResizeObserver(resize);
+    viewerResizeObserver.observe(viewport);
+    viewerResizeObserver.observe(sheet);
+    requestAnimationFrame(resize);
   }
 
   async function downloadNotePdf(note, sheet) {

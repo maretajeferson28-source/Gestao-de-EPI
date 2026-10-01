@@ -7,7 +7,8 @@
 .nfe-zoom-controls{display:flex;align-items:center;gap:6px}
 .nfe-zoom-controls output{min-width:46px;text-align:center;font-size:12px;color:#ddd}
 .nfe-view-hint{margin:0 0 10px;color:#929ba4;font-size:11px}
-.nfe-doc-viewport{position:relative;overflow:auto;height:clamp(380px,65vh,760px);cursor:grab;touch-action:none;user-select:none;overscroll-behavior:contain;background:#303030;border-radius:6px}
+.nfe-doc-viewport{position:relative;overflow:hidden;width:100%;max-width:900px;margin:0 auto;touch-action:pan-y;background:#303030;border-radius:6px}
+.nfe-doc-viewport.is-zoomed{overflow:auto;cursor:grab;touch-action:none;user-select:none;overscroll-behavior:contain}
 .nfe-doc-viewport.is-dragging{cursor:grabbing}
 .nfe-doc-viewport:focus-visible{outline:2px solid #ff6a00;outline-offset:2px}
 .nfe-doc-canvas{position:relative;overflow:hidden}
