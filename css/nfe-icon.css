@@ -1,4 +1,6 @@
-/* Ajuste visual isolado do ícone de importação NF-e: fundo sempre neutro */
+/* Ajustes visuais isolados da tela NF-e */
+
+/* Ícone de importação NF-e: fundo sempre neutro */
 .nfe-drop-icon{
   width:54px;
   height:54px;
@@ -45,4 +47,22 @@
 .page[data-page-content="notas"] .nfe-file-row.active .nfe-file-row-copy strong,
 .page[data-page-content="notas"] .nfe-file-row.active:hover .nfe-file-row-copy strong{
   color:#d9d9d9!important;
+}
+
+/* Recibo DANFE: data e identificação do recebedor na mesma faixa horizontal */
+.danfe-receipt > .danfe-receipt-sign:not(.wide){
+  grid-column:1;
+  grid-row:2;
+  width:32%;
+  justify-self:start;
+  border-right:0;
+}
+
+.danfe-receipt > .danfe-receipt-sign.wide{
+  grid-column:1;
+  grid-row:2;
+  width:68%;
+  margin-left:32%;
+  border-left:1px solid #000;
+  border-right:1px solid #000;
 }
