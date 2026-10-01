@@ -51,23 +51,30 @@
         border:1px solid #3a3a3a!important;
         color:#d8d8d8!important;
         box-shadow:none!important;
-        transition:border-color .16s ease,box-shadow .16s ease!important;
       }
       .ca-view-cadastro-icon{
         width:34px;
         height:34px;
         flex:0 0 34px;
-        display:grid;
-        place-items:center;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        padding:0!important;
+        line-height:0!important;
         border-radius:9px;
         border:1px solid #333!important;
         background:#121212!important;
         color:#8d8d8d!important;
         transition:border-color .16s ease,color .16s ease!important;
       }
-      .ca-view-cadastro-icon svg{
+      .ca-view-cadastro-icon > svg{
         width:17px!important;
         height:17px!important;
+        display:block!important;
+        margin:0!important;
+        padding:0!important;
+        position:static!important;
+        transform:none!important;
         stroke:currentColor!important;
       }
       .ca-view-cadastro-copy{
@@ -81,7 +88,6 @@
         font-size:11px!important;
         font-weight:700!important;
         line-height:1.2;
-        transition:color .16s ease!important;
       }
       .ca-view-cadastro-copy small{
         color:#858585!important;
@@ -95,29 +101,27 @@
         flex:0 0 16px;
         color:#666!important;
         stroke:#666!important;
-        transition:color .16s ease,stroke .16s ease,transform .16s ease!important;
       }
-      .ca-view-cadastro-btn:hover,
-      .ca-view-cadastro-btn:focus-visible{
+      .ca-view-cadastro-btn:hover{
         background:#181818!important;
+        border-color:#3a3a3a!important;
+        color:#d8d8d8!important;
+        box-shadow:none!important;
+      }
+      .ca-view-cadastro-btn:hover .ca-view-cadastro-icon{
         border-color:#ff6600!important;
-        box-shadow:inset 0 0 0 1px rgba(255,102,0,.16)!important;
-        outline:none!important;
-      }
-      .ca-view-cadastro-btn:hover .ca-view-cadastro-icon,
-      .ca-view-cadastro-btn:focus-visible .ca-view-cadastro-icon{
-        border-color:#ff6600!important;
         color:#ff8a2a!important;
       }
-      .ca-view-cadastro-btn:hover .ca-view-cadastro-copy strong,
-      .ca-view-cadastro-btn:focus-visible .ca-view-cadastro-copy strong{
-        color:#ff8a2a!important;
+      .ca-view-cadastro-btn:hover .ca-view-cadastro-copy strong{
+        color:#e5e5e5!important;
       }
-      .ca-view-cadastro-btn:hover .ca-view-cadastro-arrow,
-      .ca-view-cadastro-btn:focus-visible .ca-view-cadastro-arrow{
-        color:#ff8a2a!important;
-        stroke:#ff8a2a!important;
-        transform:translateX(2px);
+      .ca-view-cadastro-btn:hover .ca-view-cadastro-copy small{
+        color:#858585!important;
+      }
+      .ca-view-cadastro-btn:hover .ca-view-cadastro-arrow{
+        color:#666!important;
+        stroke:#666!important;
+        transform:none!important;
       }
       .ca-view-cadastro-btn[hidden]{display:none!important}
     `;
