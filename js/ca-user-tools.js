@@ -116,11 +116,21 @@
       /* Usuário comum: modal de leitura mais compacto, sem áreas mortas laterais. */
       .epi-detail-card:has(#epiVariantEditor[hidden]){
         width:min(850px,calc(100vw - 28px))!important;
+        border-radius:18px!important;
+        scrollbar-width:none!important;
+        -ms-overflow-style:none!important;
+      }
+      .epi-detail-card:has(#epiVariantEditor[hidden])::-webkit-scrollbar{
+        width:0!important;
+        height:0!important;
+        display:none!important;
       }
       .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-head{
         grid-template-columns:auto minmax(0,1fr) 220px auto!important;
         gap:10px!important;
         padding:16px 56px 16px 18px!important;
+        border-radius:17px 17px 0 0!important;
+        background-clip:padding-box!important;
       }
       .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-icon{
         width:46px!important;
