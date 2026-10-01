@@ -8,6 +8,7 @@
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money = (value) => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const fiscalNumber = (value, digits = 2) => Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
   const numberBR = (value, digits = 4) => Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: digits });
 
   function refreshNfeIcons() {
@@ -52,11 +53,9 @@
       <div class="nfe-layout">
         <aside class="nfe-panel nfe-import-panel">
           <div class="nfe-import-head">
-            <div>
-              <span class="nfe-kicker">IMPORTAÇÃO</span>
-              <h3>Importar NF-e</h3>
-              <p>Selecione um ou mais XMLs. Nesta fase, nada é lançado no estoque automaticamente.</p>
-            </div>
+            <span class="nfe-kicker">IMPORTAÇÃO</span>
+            <h3>Importar NF-e</h3>
+            <p>Selecione um ou mais XMLs. Nesta fase, nada é lançado no estoque automaticamente.</p>
           </div>
 
           <div class="nfe-dropzone" id="nfeDropzone" tabindex="0" role="button" aria-label="Selecionar XML de nota fiscal">
@@ -80,12 +79,12 @@
           <div class="nfe-file-list" id="nfeFileList"></div>
         </aside>
 
-        <section class="nfe-panel nfe-stage" id="nfeStage">
+        <section class="nfe-stage" id="nfeStage">
           <div class="nfe-empty" id="nfeEmpty">
             <div class="nfe-empty-inner">
               <div class="nfe-empty-icon"><i data-lucide="scan-line"></i></div>
               <strong>Aguardando XML</strong>
-              <span>Importe uma NF-e para visualizar documento, participantes, valores e produtos.</span>
+              <span>Importe uma NF-e para visualizar o documento.</span>
             </div>
           </div>
           <div id="nfeResult" hidden></div>
@@ -151,15 +150,12 @@
 
   async function importFiles(fileList) {
     const files = [...(fileList || [])].filter((file) => file && (file.name.toLowerCase().endsWith('.xml') || /xml/i.test(file.type || '')));
-    const msg = $('nfeMsg');
     if (!files.length) {
       setMessage('Selecione um arquivo XML válido.', true);
       return;
     }
 
-    msg.className = 'nfe-msg';
-    msg.textContent = `Lendo ${files.length} arquivo(s)...`;
-
+    setMessage(`Lendo ${files.length} arquivo(s)...`);
     let imported = 0;
     const errors = [];
 
@@ -220,28 +216,41 @@
     return value || '—';
   }
 
-  function formatDate(value) {
+  function dateOnly(value) {
     if (!value) return '—';
-    const date = new Date(value);
-    if (!Number.isNaN(date.getTime())) return date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: value.includes('T') ? 'short' : undefined });
-    const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
-    return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+    const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : value;
   }
 
-  function addressFrom(node) {
-    if (!node) return '—';
-    const street = text(node, 'xLgr');
-    const number = text(node, 'nro');
-    const district = text(node, 'xBairro');
-    const city = text(node, 'xMun');
-    const uf = text(node, 'UF');
+  function dateTime(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return dateOnly(value);
+    return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+  }
+
+  function timeOnly(value) {
+    if (!value || !String(value).includes('T')) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function readAddress(node) {
     const cep = text(node, 'CEP');
-    const parts = [];
-    if (street) parts.push(`${street}${number ? `, ${number}` : ''}`);
-    if (district) parts.push(district);
-    if (city || uf) parts.push([city, uf].filter(Boolean).join(' / '));
-    if (cep) parts.push(`CEP ${cep.replace(/^(\d{5})(\d{3})$/, '$1-$2')}`);
-    return parts.join(' • ') || '—';
+    return {
+      street: text(node, 'xLgr'),
+      number: text(node, 'nro'),
+      district: text(node, 'xBairro'),
+      city: text(node, 'xMun'),
+      uf: text(node, 'UF'),
+      cep: cep ? cep.replace(/^(\d{5})(\d{3})$/, '$1-$2') : '',
+      phone: text(node, 'fone')
+    };
+  }
+
+  function addressLine(address) {
+    if (!address) return '—';
+    return [address.street && `${address.street}${address.number ? `, ${address.number}` : ''}`, address.district, [address.city, address.uf].filter(Boolean).join(' / '), address.cep && `CEP ${address.cep}`].filter(Boolean).join(' • ') || '—';
   }
 
   function parseNfeXml(xmlText, fileName) {
@@ -254,11 +263,12 @@
     const ide = first(inf, 'ide');
     const emit = first(inf, 'emit');
     const dest = first(inf, 'dest');
-    const emitAddress = first(emit, 'enderEmit');
-    const destAddress = first(dest, 'enderDest');
+    const emitAddressNode = first(emit, 'enderEmit');
+    const destAddressNode = first(dest, 'enderDest');
     const total = first(inf, 'ICMSTot');
     const transp = first(inf, 'transp');
     const transporta = first(transp, 'transporta');
+    const volume = first(transp, 'vol');
     const cobr = first(inf, 'cobr');
     const infAdic = first(inf, 'infAdic');
     const prot = first(xml, 'protNFe');
@@ -268,28 +278,37 @@
 
     const products = nodeList(inf, 'det').map((det, index) => {
       const prod = first(det, 'prod') || det;
+      const imposto = first(det, 'imposto');
+      const icmsWrap = first(imposto, 'ICMS');
+      const icmsNode = icmsWrap?.firstElementChild || icmsWrap;
+      const ipiWrap = first(imposto, 'IPI');
+      const ipiTrib = first(ipiWrap, 'IPITrib') || ipiWrap;
       const description = text(prod, 'xProd');
       const unitQty = decimal(prod, 'qCom');
       const unitPrice = decimal(prod, 'vUnCom');
       const totalPrice = decimal(prod, 'vProd');
       const caMatch = description.match(/(?:\bC\.?\s*A\.?\b|\bCA\b)\s*[:#-]?\s*(\d{3,8})/i);
-      const match = findCatalogMatch(description);
 
       return {
         index: index + 1,
         code: text(prod, 'cProd'),
-        ean: text(prod, 'cEAN'),
         description,
         ncm: text(prod, 'NCM'),
         cest: text(prod, 'CEST'),
+        cst: text(icmsNode, 'CST') || text(icmsNode, 'CSOSN'),
         cfop: text(prod, 'CFOP'),
         unit: text(prod, 'uCom'),
         quantity: unitQty,
         unitPrice,
         total: totalPrice || (unitQty * unitPrice),
         discount: decimal(prod, 'vDesc'),
+        icmsBase: decimal(icmsNode, 'vBC'),
+        icms: decimal(icmsNode, 'vICMS'),
+        ipi: decimal(ipiTrib, 'vIPI'),
+        icmsRate: decimal(icmsNode, 'pICMS'),
+        ipiRate: decimal(ipiTrib, 'pIPI'),
         detectedCa: caMatch ? caMatch[1] : '',
-        match
+        match: findCatalogMatch(description)
       };
     });
 
@@ -305,23 +324,22 @@
       number: text(ide, 'nNF'),
       series: text(ide, 'serie'),
       model: text(ide, 'mod'),
+      type: text(ide, 'tpNF'),
       issueDate: text(ide, 'dhEmi') || text(ide, 'dEmi'),
       exitDate: text(ide, 'dhSaiEnt') || text(ide, 'dSaiEnt'),
       operation: text(ide, 'natOp'),
-      environment: text(ide, 'tpAmb'),
-      purpose: text(ide, 'finNFe'),
 
       supplierName: text(emit, 'xNome'),
       supplierTradeName: text(emit, 'xFant'),
       supplierDocument: text(emit, 'CNPJ') || text(emit, 'CPF'),
       supplierIe: text(emit, 'IE'),
       supplierIm: text(emit, 'IM'),
-      supplierAddress: addressFrom(emitAddress),
+      supplierAddress: readAddress(emitAddressNode),
 
       recipientName: text(dest, 'xNome'),
       recipientDocument: text(dest, 'CNPJ') || text(dest, 'CPF'),
       recipientIe: text(dest, 'IE'),
-      recipientAddress: addressFrom(destAddress),
+      recipientAddress: readAddress(destAddressNode),
 
       totalProducts: decimal(total, 'vProd'),
       totalDiscount: decimal(total, 'vDesc'),
@@ -329,16 +347,27 @@
       freight: decimal(total, 'vFrete'),
       insurance: decimal(total, 'vSeg'),
       otherExpenses: decimal(total, 'vOutro'),
+      importTax: decimal(total, 'vII'),
       icmsBase: decimal(total, 'vBC'),
       icms: decimal(total, 'vICMS'),
+      icmsStBase: decimal(total, 'vBCST'),
+      icmsSt: decimal(total, 'vST'),
       ipi: decimal(total, 'vIPI'),
-      pis: decimal(total, 'vPIS'),
-      cofins: decimal(total, 'vCOFINS'),
       taxes: decimal(total, 'vTotTrib'),
 
       transporter: text(transporta, 'xNome'),
       transporterDocument: text(transporta, 'CNPJ') || text(transporta, 'CPF'),
+      transporterIe: text(transporta, 'IE'),
+      transporterAddress: text(transporta, 'xEnder'),
+      transporterCity: text(transporta, 'xMun'),
+      transporterUf: text(transporta, 'UF'),
       freightMode: text(transp, 'modFrete'),
+      volumeQuantity: text(volume, 'qVol'),
+      volumeSpecies: text(volume, 'esp'),
+      volumeBrand: text(volume, 'marca'),
+      volumeNumber: text(volume, 'nVol'),
+      grossWeight: decimal(volume, 'pesoB'),
+      netWeight: decimal(volume, 'pesoL'),
 
       invoiceNumber: text(cobr, 'nFat'),
       invoiceOriginal: decimal(cobr, 'vOrig'),
@@ -354,11 +383,7 @@
   }
 
   function normalizeMatch(value) {
-    return String(value || '')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .trim();
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   }
 
   function findCatalogMatch(description) {
@@ -372,14 +397,14 @@
     let best = null;
 
     for (const item of catalog) {
+      const name = normalizeMatch(item.nome || '');
       const target = normalizeMatch(`${item.nome || ''} ${item.categoria || ''}`);
       const targetTokens = new Set(target.split(/\s+/).filter((token) => token.length > 2));
       if (!targetTokens.size) continue;
-
       let common = 0;
       targetTokens.forEach((token) => { if (sourceTokens.has(token)) common += 1; });
       let score = common / targetTokens.size;
-      if (source.includes(normalizeMatch(item.nome || '')) && normalizeMatch(item.nome || '').length > 4) score += 0.45;
+      if (name.length > 4 && source.includes(name)) score += 0.45;
       if (!best || score > best.score) best = { id: item.id, name: item.nome, score };
     }
 
@@ -407,12 +432,12 @@
     refreshNfeIcons();
   }
 
-  function infoRow(label, value) {
-    return `<div class="nfe-info-row"><span>${esc(label)}</span><strong>${esc(value || '—')}</strong></div>`;
+  function cell(label, value, cls = '') {
+    return `<div class="danfe-cell ${cls}"><span>${esc(label)}</span><strong>${esc(value || '—')}</strong></div>`;
   }
 
-  function valueCard(label, value, emphasis = false) {
-    return `<article class="nfe-value-card${emphasis ? ' emphasis' : ''}"><span>${esc(label)}</span><strong>${esc(value)}</strong></article>`;
+  function moneyCell(label, value, cls = '') {
+    return cell(label, fiscalNumber(value), cls);
   }
 
   function renderSelectedNote() {
@@ -431,123 +456,149 @@
     result.hidden = false;
 
     const matchCount = note.products.filter((item) => item.match).length;
-    const installmentText = note.installments.length
-      ? note.installments.map((item) => `${item.number || 'Parcela'} • ${formatDate(item.due)} • ${money(item.value)}`).join(' | ')
-      : 'Não informado no XML';
+    const supplierAddress = addressLine(note.supplierAddress);
+    const recipientAddress = note.recipientAddress || {};
+    const receiptText = `RECEBEMOS DE ${note.supplierName || '—'} OS PRODUTOS E/OU SERVIÇOS CONSTANTES DA NOTA FISCAL ELETRÔNICA INDICADA ABAIXO. EMISSÃO: ${dateOnly(note.issueDate)} VALOR TOTAL: ${money(note.totalNote)} DESTINATÁRIO: ${note.recipientName || '—'} - ${addressLine(note.recipientAddress)}`;
+    const typeLabel = note.type === '0' ? '0 - ENTRADA' : '1 - SAÍDA';
+    const freightLabels = {'0':'0-Emitente','1':'1-Destinatário','2':'2-Terceiros','3':'3-Próprio por conta do Rem','4':'4-Próprio por conta do Dest','9':'9-Sem frete'};
+    const invoiceRows = note.installments.length
+      ? note.installments.map((item) => `<div class="danfe-dup">${cell('Num.', item.number)}${cell('Venc.', dateOnly(item.due))}${moneyCell('Valor', item.value)}</div>`).join('')
+      : `<div class="danfe-dup">${cell('Fatura', note.invoiceNumber || '—')}${moneyCell('Valor', note.invoiceNet || note.totalNote)}</div>`;
 
     result.innerHTML = `
-      <header class="nfe-document-head">
-        <div class="nfe-document-title">
-          <span class="nfe-kicker success">NF-e LIDA COM SUCESSO</span>
-          <div class="nfe-title-line">
-            <h3>NF ${esc(note.number || '—')}</h3>
-            <span>Série ${esc(note.series || '—')}</span>
+      <div class="nfe-doc-toolbar">
+        <span><strong>NF-e lida</strong> • ${note.products.length} item(ns) • ${matchCount} vínculo(s) sugerido(s)</span>
+        <span>${esc(note.fileName)}</span>
+      </div>
+
+      <article class="danfe-sheet">
+        <section class="danfe-receipt">
+          <div class="danfe-receipt-copy">${esc(receiptText)}</div>
+          <div class="danfe-receipt-nfe"><b>NF-e</b><strong>Nº ${esc(note.number || '—')}</strong><span>Série ${esc(note.series || '—')}</span></div>
+          <div class="danfe-receipt-sign">DATA DE RECEBIMENTO</div>
+          <div class="danfe-receipt-sign wide">IDENTIFICAÇÃO E ASSINATURA DO RECEBEDOR</div>
+        </section>
+
+        <section class="danfe-top">
+          <div class="danfe-issuer">
+            <em>IDENTIFICAÇÃO DO EMITENTE</em>
+            <strong>${esc(note.supplierName || '—')}</strong>
+            <span>${esc(supplierAddress)}</span>
+            ${note.supplierAddress?.phone ? `<span>Fone/Fax: ${esc(note.supplierAddress.phone)}</span>` : ''}
           </div>
-          <p>${esc(note.operation || 'Natureza da operação não informada')}</p>
-        </div>
-        <div class="nfe-document-status">
-          <span>${note.products.length} item(ns)</span>
-          <strong>${matchCount} vínculo(s) sugerido(s)</strong>
-        </div>
-      </header>
-
-      <div class="nfe-main-grid">
-        <section class="nfe-info-card">
-          <div class="nfe-card-title"><i data-lucide="building-2"></i><span>Emitente / Fornecedor</span></div>
-          ${infoRow('Razão social', note.supplierName)}
-          ${infoRow('Nome fantasia', note.supplierTradeName)}
-          ${infoRow('CNPJ / CPF', formatDocument(note.supplierDocument))}
-          ${infoRow('Inscrição estadual', note.supplierIe)}
-          ${infoRow('Endereço', note.supplierAddress)}
+          <div class="danfe-title-box">
+            <b>DANFE</b>
+            <span>Documento Auxiliar da Nota<br>Fiscal Eletrônica</span>
+            <div class="danfe-entry"><span>0 - ENTRADA<br>1 - SAÍDA</span><strong>${esc(note.type || '1')}</strong></div>
+            <strong>Nº ${esc(note.number || '—')}</strong>
+            <strong>Série ${esc(note.series || '—')}</strong>
+            <span>Folha 1/1</span>
+          </div>
+          <div class="danfe-key-box">
+            <div class="danfe-barcode" aria-hidden="true"></div>
+            <span>CHAVE DE ACESSO</span>
+            <strong>${esc(String(note.key || '').replace(/(.{4})/g, '$1 ').trim() || '—')}</strong>
+            <small>Consulta de autenticidade no portal nacional da NF-e</small>
+          </div>
         </section>
 
-        <section class="nfe-info-card">
-          <div class="nfe-card-title"><i data-lucide="truck"></i><span>Destinatário</span></div>
-          ${infoRow('Razão social', note.recipientName)}
-          ${infoRow('CNPJ / CPF', formatDocument(note.recipientDocument))}
-          ${infoRow('Inscrição estadual', note.recipientIe)}
-          ${infoRow('Endereço', note.recipientAddress)}
-          ${infoRow('Data de saída / entrada', formatDate(note.exitDate))}
+        <section class="danfe-row two-wide">
+          ${cell('NATUREZA DA OPERAÇÃO', note.operation, 'grow')}
+          ${cell('PROTOCOLO DE AUTORIZAÇÃO DE USO', [note.protocol, dateTime(note.authorizationDate)].filter(Boolean).join(' - '), 'grow')}
         </section>
-      </div>
+        <section class="danfe-row four">
+          ${cell('INSCRIÇÃO ESTADUAL', note.supplierIe)}
+          ${cell('INSCRIÇÃO MUNICIPAL', note.supplierIm)}
+          ${cell('INSCRIÇÃO ESTADUAL DO SUBST. TRIBUT.', '—')}
+          ${cell('CNPJ / CPF', formatDocument(note.supplierDocument))}
+        </section>
 
-      <section class="nfe-info-card nfe-document-card">
-        <div class="nfe-card-title"><i data-lucide="file-text"></i><span>Dados do documento</span></div>
-        <div class="nfe-document-grid">
-          ${infoRow('Emissão', formatDate(note.issueDate))}
-          ${infoRow('Modelo', note.model)}
-          ${infoRow('Número', note.number)}
-          ${infoRow('Série', note.series)}
-          ${infoRow('Protocolo de autorização', note.protocol)}
-          ${infoRow('Autorização', formatDate(note.authorizationDate))}
-          <div class="nfe-info-row nfe-key-row"><span>Chave de acesso</span><strong>${esc(note.key || '—')}</strong></div>
-        </div>
-      </section>
+        <h4 class="danfe-section-title">DESTINATÁRIO / REMETENTE</h4>
+        <section class="danfe-row recipient-top">
+          ${cell('NOME / RAZÃO SOCIAL', note.recipientName, 'recipient-name')}
+          ${cell('CNPJ / CPF', formatDocument(note.recipientDocument))}
+          ${cell('DATA DA EMISSÃO', dateOnly(note.issueDate))}
+        </section>
+        <section class="danfe-row recipient-address">
+          ${cell('ENDEREÇO', [recipientAddress.street, recipientAddress.number].filter(Boolean).join(', '), 'recipient-street')}
+          ${cell('BAIRRO / DISTRITO', recipientAddress.district)}
+          ${cell('CEP', recipientAddress.cep)}
+          ${cell('DATA DA SAÍDA/ENTRADA', dateOnly(note.exitDate))}
+        </section>
+        <section class="danfe-row recipient-bottom">
+          ${cell('MUNICÍPIO', recipientAddress.city, 'recipient-city')}
+          ${cell('UF', recipientAddress.uf)}
+          ${cell('FONE / FAX', recipientAddress.phone)}
+          ${cell('INSCRIÇÃO ESTADUAL', note.recipientIe)}
+          ${cell('HORA DA SAÍDA/ENTRADA', timeOnly(note.exitDate))}
+        </section>
 
-      <section class="nfe-values-section">
-        <div class="nfe-section-heading">
-          <div><span class="nfe-kicker">VALORES</span><h3>Resumo financeiro</h3></div>
-        </div>
-        <div class="nfe-values-grid">
-          ${valueCard('Produtos', money(note.totalProducts))}
-          ${valueCard('Frete', money(note.freight))}
-          ${valueCard('Desconto', money(note.totalDiscount))}
-          ${valueCard('Outras despesas', money(note.otherExpenses))}
-          ${valueCard('ICMS', money(note.icms))}
-          ${valueCard('IPI', money(note.ipi))}
-          ${valueCard('Tributos informados', money(note.taxes))}
-          ${valueCard('Total da NF', money(note.totalNote), true)}
-        </div>
-      </section>
+        <h4 class="danfe-section-title">FATURA / DUPLICATA</h4>
+        <section class="danfe-invoice">${invoiceRows}</section>
 
-      <section class="nfe-items-section">
-        <div class="nfe-section-heading">
-          <div><span class="nfe-kicker">PRODUTOS</span><h3>Itens da nota</h3></div>
-          <small>Conferência antes de qualquer integração com estoque</small>
-        </div>
+        <h4 class="danfe-section-title">CÁLCULO DO IMPOSTO</h4>
+        <section class="danfe-tax-grid">
+          ${moneyCell('BASE DE CÁLC. DO ICMS', note.icmsBase)}
+          ${moneyCell('VALOR DO ICMS', note.icms)}
+          ${moneyCell('BASE DE CÁLC. ICMS S.T.', note.icmsStBase)}
+          ${moneyCell('VALOR DO ICMS SUBST.', note.icmsSt)}
+          ${moneyCell('V. IMP. IMPORTAÇÃO', note.importTax)}
+          ${moneyCell('V. TOTAL PRODUTOS', note.totalProducts)}
+          ${moneyCell('VALOR DO FRETE', note.freight)}
+          ${moneyCell('VALOR DO SEGURO', note.insurance)}
+          ${moneyCell('DESCONTO', note.totalDiscount)}
+          ${moneyCell('OUTRAS DESPESAS', note.otherExpenses)}
+          ${moneyCell('VALOR TOTAL IPI', note.ipi)}
+          ${moneyCell('V. TOT. TRIB.', note.taxes)}
+          ${moneyCell('V. TOTAL DA NOTA', note.totalNote, 'danfe-total')}
+        </section>
 
-        <div class="nfe-items-table-wrap">
-          <table class="nfe-items-table">
-            <thead><tr><th>#</th><th>Produto</th><th>Cód.</th><th>Qtd.</th><th>Un.</th><th>Valor unit.</th><th>Total</th><th>Catálogo</th></tr></thead>
-            <tbody>
-              ${note.products.map((item) => `
-                <tr>
-                  <td class="nfe-item-index">${item.index}</td>
-                  <td>
-                    <div class="nfe-item-name">${esc(item.description || 'Produto sem descrição')}</div>
-                    <div class="nfe-item-sub">NCM ${esc(item.ncm || '—')} • CFOP ${esc(item.cfop || '—')}${item.cest ? ` • CEST ${esc(item.cest)}` : ''}${item.detectedCa ? ` • C.A. ${esc(item.detectedCa)}` : ''}</div>
-                  </td>
-                  <td>${esc(item.code || '—')}</td>
-                  <td>${numberBR(item.quantity)}</td>
-                  <td>${esc(item.unit || '—')}</td>
-                  <td class="nfe-money-cell">${money(item.unitPrice)}</td>
-                  <td class="nfe-money-cell strong">${money(item.total)}</td>
-                  <td>${item.match ? `<span class="nfe-match"><i data-lucide="link-2"></i>${esc(item.match.name)}</span>` : '<span class="nfe-match none"><i data-lucide="circle-help"></i>Sem vínculo</span>'}</td>
-                </tr>`).join('')}
-            </tbody>
+        <h4 class="danfe-section-title">TRANSPORTADOR / VOLUMES TRANSPORTADOS</h4>
+        <section class="danfe-row transport-top">
+          ${cell('NOME / RAZÃO SOCIAL', note.transporter)}
+          ${cell('FRETE', freightLabels[note.freightMode] || note.freightMode || '—')}
+          ${cell('CNPJ / CPF', formatDocument(note.transporterDocument))}
+        </section>
+        <section class="danfe-row transport-mid">
+          ${cell('ENDEREÇO', note.transporterAddress)}
+          ${cell('MUNICÍPIO', note.transporterCity)}
+          ${cell('UF', note.transporterUf)}
+          ${cell('INSCRIÇÃO ESTADUAL', note.transporterIe)}
+        </section>
+        <section class="danfe-row transport-volumes">
+          ${cell('QUANTIDADE', note.volumeQuantity)}
+          ${cell('ESPÉCIE', note.volumeSpecies)}
+          ${cell('MARCA', note.volumeBrand)}
+          ${cell('NUMERAÇÃO', note.volumeNumber)}
+          ${cell('PESO BRUTO', note.grossWeight ? fiscalNumber(note.grossWeight, 3) : '—')}
+          ${cell('PESO LÍQUIDO', note.netWeight ? fiscalNumber(note.netWeight, 3) : '—')}
+        </section>
+
+        <h4 class="danfe-section-title">DADOS DOS PRODUTOS / SERVIÇOS</h4>
+        <section class="danfe-products-wrap">
+          <table class="danfe-products">
+            <colgroup>
+              <col class="c-code"><col class="c-desc"><col class="c-ncm"><col class="c-cst"><col class="c-cfop"><col class="c-un"><col class="c-qtd"><col class="c-unit"><col class="c-total"><col class="c-descval"><col class="c-base"><col class="c-icms"><col class="c-ipi"><col class="c-picms"><col class="c-pipi">
+            </colgroup>
+            <thead><tr>
+              <th>CÓDIGO<br>PRODUTO</th><th>DESCRIÇÃO DO PRODUTO / SERVIÇO</th><th>NCM/SH</th><th>O/CST</th><th>CFOP</th><th>UN</th><th>QUANT</th><th>VALOR<br>UNIT</th><th>VALOR<br>TOTAL</th><th>VALOR<br>DESC</th><th>B.CÁLC<br>ICMS</th><th>VALOR<br>ICMS</th><th>VALOR<br>IPI</th><th>ALÍQ.<br>ICMS</th><th>ALÍQ.<br>IPI</th>
+            </tr></thead>
+            <tbody>${note.products.map((item) => `<tr>
+              <td>${esc(item.code || '')}</td>
+              <td class="desc">${esc(item.description || '')}${item.detectedCa ? `<small>C.A. ${esc(item.detectedCa)}</small>` : ''}</td>
+              <td>${esc(item.ncm || '')}</td><td>${esc(item.cst || '')}</td><td>${esc(item.cfop || '')}</td><td>${esc(item.unit || '')}</td>
+              <td>${numberBR(item.quantity)}</td><td>${fiscalNumber(item.unitPrice, 4)}</td><td>${fiscalNumber(item.total)}</td><td>${fiscalNumber(item.discount)}</td>
+              <td>${fiscalNumber(item.icmsBase)}</td><td>${fiscalNumber(item.icms)}</td><td>${fiscalNumber(item.ipi)}</td><td>${fiscalNumber(item.icmsRate)}</td><td>${fiscalNumber(item.ipiRate)}</td>
+            </tr>`).join('')}</tbody>
           </table>
-        </div>
-      </section>
-
-      <div class="nfe-secondary-grid">
-        <section class="nfe-info-card">
-          <div class="nfe-card-title"><i data-lucide="credit-card"></i><span>Cobrança</span></div>
-          ${infoRow('Fatura', note.invoiceNumber)}
-          ${infoRow('Valor original', note.invoiceOriginal ? money(note.invoiceOriginal) : '—')}
-          ${infoRow('Valor líquido', note.invoiceNet ? money(note.invoiceNet) : '—')}
-          ${infoRow('Parcelas', installmentText)}
         </section>
 
-        <section class="nfe-info-card">
-          <div class="nfe-card-title"><i data-lucide="package-open"></i><span>Transporte</span></div>
-          ${infoRow('Transportador', note.transporter)}
-          ${infoRow('CNPJ / CPF', formatDocument(note.transporterDocument))}
-          ${infoRow('Modalidade do frete', note.freightMode)}
-          ${infoRow('Arquivo', note.fileName)}
+        <h4 class="danfe-section-title">DADOS ADICIONAIS</h4>
+        <section class="danfe-additional-grid">
+          <div class="danfe-additional-box"><span>INFORMAÇÕES COMPLEMENTARES</span><p>${esc(note.additionalInfo || '—')}</p></div>
+          <div class="danfe-additional-box fiscal"><span>RESERVADO AO FISCO</span></div>
         </section>
-      </div>
-
-      ${note.additionalInfo ? `<section class="nfe-additional"><span>INFORMAÇÕES ADICIONAIS</span><p>${esc(note.additionalInfo)}</p></section>` : ''}`;
+      </article>`;
 
     refreshNfeIcons();
   }
