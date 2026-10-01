@@ -113,19 +113,61 @@
       }
       .ca-view-cadastro-btn[hidden]{display:none!important}
 
-      /* Usuário comum: sem editor, o prontuário ocupa a área útil e fica centralizado. */
-      .epi-detail-layout:has(#epiVariantEditor[hidden]){
-        grid-template-columns:1fr!important;
+      /* Usuário comum: modal de leitura mais compacto, sem áreas mortas laterais. */
+      .epi-detail-card:has(#epiVariantEditor[hidden]){
+        width:min(850px,calc(100vw - 28px))!important;
       }
-      .epi-detail-layout:has(#epiVariantEditor[hidden]) .epi-variants-panel{
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-head{
+        grid-template-columns:auto minmax(0,1fr) 220px auto!important;
+        gap:10px!important;
+        padding:16px 56px 16px 18px!important;
+      }
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-icon{
+        width:46px!important;
+        height:46px!important;
+      }
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-head h2{
+        font-size:19px!important;
+      }
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-ca-selector-wrap{
+        position:static!important;
+        left:auto!important;
+        top:auto!important;
+        width:220px!important;
+        transform:none!important;
+        justify-self:end!important;
+      }
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-count{
+        justify-self:end!important;
+      }
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-layout{
+        grid-template-columns:1fr!important;
+        min-height:0!important;
+      }
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-variants-panel{
         border-right:0!important;
         border-bottom:0!important;
-        display:flex!important;
-        justify-content:center!important;
-        width:100%;
+        padding:16px 18px 18px!important;
+        width:100%!important;
       }
-      .epi-detail-layout:has(#epiVariantEditor[hidden]) .epi-variant-list{
-        width:min(760px,100%)!important;
+      .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-variant-list{
+        width:100%!important;
+      }
+
+      @media(max-width:760px){
+        .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-head{
+          grid-template-columns:auto minmax(0,1fr)!important;
+          padding:16px 54px 14px 16px!important;
+        }
+        .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-ca-selector-wrap{
+          grid-column:1/-1!important;
+          justify-self:stretch!important;
+          width:100%!important;
+        }
+        .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-detail-count{
+          grid-column:1/-1!important;
+          justify-self:start!important;
+        }
       }
     `;
     document.head.appendChild(style);
