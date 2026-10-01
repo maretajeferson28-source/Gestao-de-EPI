@@ -33,43 +33,91 @@
         display:flex!important;
         align-items:center;
         justify-content:center;
+        width:100%;
       }
       .ca-view-cadastro-btn{
-        width:auto!important;
+        width:100%!important;
         min-width:0!important;
-        min-height:36px!important;
+        min-height:60px!important;
         margin:0!important;
-        padding:8px 12px!important;
-        justify-content:center;
-        gap:7px;
-        border-radius:9px!important;
+        padding:10px 12px!important;
+        display:flex!important;
+        align-items:center!important;
+        justify-content:flex-start!important;
+        gap:10px!important;
+        text-align:left!important;
+        border-radius:10px!important;
         background:#181818!important;
         border:1px solid #3a3a3a!important;
         color:#d8d8d8!important;
         box-shadow:none!important;
-        font-size:11px;
-        font-weight:600;
-        transition:border-color .16s ease,color .16s ease;
+        transition:border-color .16s ease,box-shadow .16s ease!important;
       }
-      .ca-view-cadastro-btn svg{
+      .ca-view-cadastro-icon{
+        width:34px;
+        height:34px;
+        flex:0 0 34px;
+        display:grid;
+        place-items:center;
+        border-radius:9px;
+        border:1px solid #333!important;
+        background:#121212!important;
+        color:#8d8d8d!important;
+        transition:border-color .16s ease,color .16s ease!important;
+      }
+      .ca-view-cadastro-icon svg{
+        width:17px!important;
+        height:17px!important;
+        stroke:currentColor!important;
+      }
+      .ca-view-cadastro-copy{
+        min-width:0;
+        display:grid;
+        gap:2px;
+        flex:1;
+      }
+      .ca-view-cadastro-copy strong{
+        color:#e5e5e5!important;
+        font-size:11px!important;
+        font-weight:700!important;
+        line-height:1.2;
+        transition:color .16s ease!important;
+      }
+      .ca-view-cadastro-copy small{
+        color:#858585!important;
+        font-size:9px!important;
+        line-height:1.25;
+        font-weight:500!important;
+      }
+      .ca-view-cadastro-arrow{
         width:16px!important;
         height:16px!important;
-        color:#8a8a8a!important;
-        stroke:#8a8a8a!important;
-        transition:color .16s ease,stroke .16s ease;
+        flex:0 0 16px;
+        color:#666!important;
+        stroke:#666!important;
+        transition:color .16s ease,stroke .16s ease,transform .16s ease!important;
       }
       .ca-view-cadastro-btn:hover,
       .ca-view-cadastro-btn:focus-visible{
         background:#181818!important;
-        border-color:rgba(255,102,0,.72)!important;
-        color:#ff9a3f!important;
-        outline:none;
-        box-shadow:none!important;
+        border-color:#ff6600!important;
+        box-shadow:inset 0 0 0 1px rgba(255,102,0,.16)!important;
+        outline:none!important;
       }
-      .ca-view-cadastro-btn:hover svg,
-      .ca-view-cadastro-btn:focus-visible svg{
-        color:#ff9a3f!important;
-        stroke:#ff9a3f!important;
+      .ca-view-cadastro-btn:hover .ca-view-cadastro-icon,
+      .ca-view-cadastro-btn:focus-visible .ca-view-cadastro-icon{
+        border-color:#ff6600!important;
+        color:#ff8a2a!important;
+      }
+      .ca-view-cadastro-btn:hover .ca-view-cadastro-copy strong,
+      .ca-view-cadastro-btn:focus-visible .ca-view-cadastro-copy strong{
+        color:#ff8a2a!important;
+      }
+      .ca-view-cadastro-btn:hover .ca-view-cadastro-arrow,
+      .ca-view-cadastro-btn:focus-visible .ca-view-cadastro-arrow{
+        color:#ff8a2a!important;
+        stroke:#ff8a2a!important;
+        transform:translateX(2px);
       }
       .ca-view-cadastro-btn[hidden]{display:none!important}
     `;
@@ -108,9 +156,17 @@
     button = document.createElement('button');
     button.id = 'caViewCadastroBtn';
     button.type = 'button';
-    button.className = 'btn compact ca-view-cadastro-btn';
+    button.className = 'ca-view-cadastro-btn';
     button.hidden = true;
-    button.innerHTML = '<i data-lucide="eye" aria-hidden="true"></i>Ver Cadastro';
+    button.setAttribute('aria-label', 'Abrir cadastro técnico deste C.A.');
+    button.innerHTML = `
+      <span class="ca-view-cadastro-icon"><i data-lucide="eye" aria-hidden="true"></i></span>
+      <span class="ca-view-cadastro-copy">
+        <strong>C.A. cadastrado</strong>
+        <small>Ver cadastro técnico</small>
+      </span>
+      <i class="ca-view-cadastro-arrow" data-lucide="chevron-right" aria-hidden="true"></i>
+    `;
 
     button.addEventListener('click', () => {
       const variantId = button.dataset.variantId || '';
@@ -226,7 +282,6 @@
       });
     }
 
-    // Garante sincronização após a carga assíncrona de autorização/dados.
     let checks = 0;
     const timer = setInterval(() => {
       syncAll();
