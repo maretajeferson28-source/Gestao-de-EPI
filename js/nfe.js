@@ -48,7 +48,6 @@
           <h2>Notas Fiscais</h2>
           <p>Leitura e conferência de XML de NF-e para compras, estoque e histórico de preços.</p>
         </div>
-        <span class="ca-visual-badge"><i data-lucide="file-check-2"></i> LEITURA XML</span>
       </div>
 
       <div class="nfe-layout">
