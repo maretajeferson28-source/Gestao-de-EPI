@@ -31,3 +31,18 @@
   color:#ff9a3f;
   transform:translateY(-1px);
 }
+
+/* Lista de NF-e: hover e seleção afetam somente a borda */
+.page[data-page-content="notas"] .nfe-file-row:hover,
+.page[data-page-content="notas"] .nfe-file-row.active,
+.page[data-page-content="notas"] .nfe-file-row.active:hover{
+  border-color:rgba(255,102,0,.62)!important;
+  background:#121212!important;
+  color:#d9d9d9!important;
+}
+
+.page[data-page-content="notas"] .nfe-file-row:hover .nfe-file-row-copy strong,
+.page[data-page-content="notas"] .nfe-file-row.active .nfe-file-row-copy strong,
+.page[data-page-content="notas"] .nfe-file-row.active:hover .nfe-file-row-copy strong{
+  color:#d9d9d9!important;
+}
