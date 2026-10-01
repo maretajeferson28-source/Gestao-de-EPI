@@ -287,7 +287,7 @@ function renderDashboard(){
   const topE=aggregate(arr,'epi').slice(0,10).reverse();
   makeChart('cTop','bar',{labels:topE.map(x=>x[0]),datasets:[{label:'Qtd',data:topE.map(x=>x[1]),backgroundColor:'#ff6600',borderRadius:4}]},{indexAxis:'y',plugins:{legend:{display:false}}});
 
-  const spendRows=spend.byEpi.slice().reverse();
+  const spendRows=spend.byEpi.slice().sort((a,b)=>b[1]-a[1]);
   const spendChartInner=$('spendChartInner');
   if(spendChartInner){
     const visibleRows=6;
