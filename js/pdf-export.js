@@ -7,6 +7,8 @@
     margin: 14
   };
 
+  let brandLogoPromise = null;
+
   function safe(value, fallback = '—') {
     const text = String(value ?? '').trim();
     return text || fallback;
@@ -42,7 +44,7 @@
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          const data = canvas.toDataURL('image/png', 0.92);
+          const data = canvas.toDataURL('image/png');
           URL.revokeObjectURL(url);
           resolve(data);
         } catch (error) {
@@ -58,6 +60,22 @@
 
       img.src = url;
     });
+  }
+
+  async function getBrandLogoDataUrl() {
+    if (!brandLogoPromise) {
+      brandLogoPromise = fetch('/assets/pdf-brand/logo.png', { cache: 'force-cache' })
+        .then((response) => {
+          if (!response.ok) throw new Error('Logo do prontuário não encontrado.');
+          return response.blob();
+        })
+        .then((blob) => blobToPngDataUrl(blob))
+        .catch((error) => {
+          console.warn('[EPI PDF BRAND]', error);
+          return null;
+        });
+    }
+    return brandLogoPromise;
   }
 
   async function getModelImage(variant, supabase) {
@@ -123,7 +141,10 @@
     const epiName = safe(epi.nome, 'EPI / Item');
     const epiCategory = safe(epi.categoria, 'Categoria não informada');
     const generatedAt = new Date().toLocaleString('pt-BR');
-    const imageData = await getModelImage(variant, supabase);
+    const [imageData, brandLogoData] = await Promise.all([
+      getModelImage(variant, supabase),
+      getBrandLogoDataUrl()
+    ]);
 
     const setText = (rgb) => doc.setTextColor(rgb[0], rgb[1], rgb[2]);
     const setFill = (rgb) => doc.setFillColor(rgb[0], rgb[1], rgb[2]);
@@ -139,24 +160,38 @@
       setFill(orange);
       doc.rect(0, 0, 4, 31, 'F');
 
-      setDraw(orange);
-      doc.setLineWidth(0.6);
-      doc.roundedRect(margin, 7, 16, 16, 3, 3, 'S');
+      let brandDrawn = false;
+      if (brandLogoData) {
+        try {
+          doc.addImage(brandLogoData, 'PNG', 6.3, 4.4, 20.8, 20.8, 'EPI_DOSSIER_BRAND');
+          brandDrawn = true;
+        } catch (error) {
+          console.warn('[EPI PDF BRAND DRAW]', error);
+        }
+      }
 
-      setText(orange);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text('EPI', margin + 8, 17, { align: 'center' });
+      if (!brandDrawn) {
+        setDraw(orange);
+        doc.setLineWidth(0.6);
+        doc.roundedRect(margin, 7, 16, 16, 3, 3, 'S');
+
+        setText(orange);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('EPI', margin + 8, 17, { align: 'center' });
+      }
+
+      const brandTextX = 36.8;
 
       setText([255, 255, 255]);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.text('GESTÃO DE EPI', margin + 21, 13);
+      doc.text('GESTÃO DE EPI', brandTextX, 13);
 
       setText([175, 175, 175]);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
-      doc.text('CONTROLE OPERACIONAL', margin + 21, 18);
+      doc.text('CONTROLE OPERACIONAL', brandTextX, 18);
 
       setText([210, 210, 210]);
       doc.setFontSize(7);
@@ -257,8 +292,6 @@
       );
       const freshPageCapacity = pageBottom - freshPageY;
 
-      // Se a caixa inteira cabe em uma página nova, nunca a quebra no meio:
-      // pula para a próxima página antes de desenhar.
       if (
         fullBoxHeight <= freshPageCapacity &&
         y + fullBoxHeight > pageBottom
@@ -271,8 +304,6 @@
 
       while (offset < allLines.length) {
         const availableHeight = pageBottom - y;
-
-        // Caso normal: a caixa inteira cabe no espaço atual.
         const remainingLines = allLines.length - offset;
         const remainingHeight = Math.max(
           minHeight,
@@ -284,7 +315,6 @@
         if (remainingHeight <= availableHeight) {
           linesInBox = remainingLines;
         } else {
-          // Só divide quando o próprio conteúdo é grande demais para uma página.
           const maxLines = Math.floor((availableHeight - fixedHeight) / lineHeight);
 
           if (maxLines < 1) {
