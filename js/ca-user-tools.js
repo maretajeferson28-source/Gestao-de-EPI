@@ -26,11 +26,18 @@
     const style = document.createElement('style');
     style.id = 'caUserToolsStyle';
     style.textContent = `
+      #caBaseInfo.ca-user-cadastro-slot{
+        padding:0!important;
+        border:0!important;
+        background:transparent!important;
+      }
       .ca-view-cadastro-btn{
-        margin-top:8px;
-        width:max-content;
+        width:100%;
+        min-height:54px;
+        margin:0;
+        justify-content:center;
         background:#181818!important;
-        border-color:#3a3a3a!important;
+        border:1px solid #3a3a3a!important;
         color:#d8d8d8!important;
         box-shadow:none!important;
       }
@@ -74,16 +81,15 @@
     if (!situation || situation === '—') return '';
 
     const numberText = String(byId('caStageNumber')?.textContent || '');
-    const digits = numberText.replace(/\D+/g, '');
-    return digits;
+    return numberText.replace(/\D+/g, '');
   }
 
   function ensureViewButton() {
     let button = byId('caViewCadastroBtn');
     if (button) return button;
 
-    const copy = document.querySelector('.ca-hero-copy');
-    if (!copy) return null;
+    const baseInfo = byId('caBaseInfo');
+    if (!baseInfo) return null;
 
     button = document.createElement('button');
     button.id = 'caViewCadastroBtn';
@@ -108,62 +114,64 @@
       }
     });
 
-    copy.appendChild(button);
+    baseInfo.appendChild(button);
     refreshLucide();
     return button;
   }
 
-  function syncBaseTag() {
-    const baseInfo = byId('caBaseInfo');
-    if (!baseInfo) return;
-
-    const app = byId('epiApp');
-    if (!app || app.classList.contains('app-hidden')) return;
-
-    const admin = isAdminUser();
-    baseInfo.hidden = !admin;
-    if (admin) baseInfo.style.removeProperty('display');
-    else baseInfo.style.display = 'none';
+  function setOriginalBaseContentVisible(baseInfo, visible) {
+    [...baseInfo.children].forEach((child) => {
+      if (child.id === 'caViewCadastroBtn') return;
+      if (visible) child.style.removeProperty('display');
+      else child.style.display = 'none';
+    });
   }
 
   function syncViewButton() {
+    const baseInfo = byId('caBaseInfo');
     const button = ensureViewButton();
-    if (!button) return;
+    if (!baseInfo || !button) return;
 
     if (isAdminUser()) {
+      baseInfo.hidden = false;
+      baseInfo.style.removeProperty('display');
+      baseInfo.classList.remove('ca-user-cadastro-slot');
+      setOriginalBaseContentVisible(baseInfo, true);
       button.hidden = true;
       button.removeAttribute('data-variant-id');
       button.removeAttribute('data-epi-id');
       return;
     }
+
+    setOriginalBaseContentVisible(baseInfo, false);
+    baseInfo.classList.add('ca-user-cadastro-slot');
 
     const ca = currentResultCa();
     const variant = findRegisteredVariant(ca);
-    if (!variant) {
+    if (!variant || !variant.id || !variant.epi_id) {
       button.hidden = true;
       button.removeAttribute('data-variant-id');
       button.removeAttribute('data-epi-id');
+      baseInfo.hidden = true;
+      baseInfo.style.display = 'none';
       return;
     }
 
-    button.dataset.variantId = String(variant.id || '');
-    button.dataset.epiId = String(variant.epi_id || '');
-    button.hidden = !(button.dataset.variantId && button.dataset.epiId);
-  }
-
-  function syncAll() {
-    syncBaseTag();
-    syncViewButton();
+    button.dataset.variantId = String(variant.id);
+    button.dataset.epiId = String(variant.epi_id);
+    button.hidden = false;
+    baseInfo.hidden = false;
+    baseInfo.style.display = 'block';
   }
 
   function start() {
     ensureStyle();
     ensureViewButton();
-    syncAll();
+    syncViewButton();
 
     const app = byId('epiApp');
     if (app) {
-      new MutationObserver(syncAll).observe(app, {
+      new MutationObserver(syncViewButton).observe(app, {
         attributes: true,
         attributeFilter: ['class'],
         childList: false,
@@ -183,7 +191,7 @@
     // Garante sincronização após a carga assíncrona de autorização/dados.
     let checks = 0;
     const timer = setInterval(() => {
-      syncAll();
+      syncViewButton();
       checks += 1;
       if (checks >= 30) clearInterval(timer);
     }, 500);
