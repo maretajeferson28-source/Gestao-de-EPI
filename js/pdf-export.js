@@ -163,7 +163,8 @@
       let brandDrawn = false;
       if (brandLogoData) {
         try {
-          doc.addImage(brandLogoData, 'PNG', 6.3, 4.4, 20.8, 20.8, 'EPI_DOSSIER_BRAND');
+          // Centraliza a parte visível da logo, considerando sua margem transparente.
+          doc.addImage(brandLogoData, 'PNG', 10.365, 4.4, 20.8, 20.8, 'EPI_DOSSIER_BRAND');
           brandDrawn = true;
         } catch (error) {
           console.warn('[EPI PDF BRAND DRAW]', error);
