@@ -19,8 +19,8 @@
   ];
 
   function buildCode128C(value) {
-    const digits = String(value || '').replace(/\D/g, '');
-    if (!digits || digits.length % 2 !== 0) return null;
+    const digits = String(value || '').trim();
+    if (!/^\d{44}$/.test(digits)) return null;
 
     const codes = [105]; // START C
     for (let i = 0; i < digits.length; i += 2) codes.push(Number(digits.slice(i, i + 2)));
@@ -50,7 +50,7 @@
       }
     });
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} 46" preserveAspectRatio="none" role="img" aria-label="Código de barras da chave de acesso ${digits}" shape-rendering="crispEdges"><rect width="${width}" height="46" fill="#fff"/>${bars.join('')}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} 46" width="100%" height="100%" preserveAspectRatio="none" role="img" aria-label="Código de barras da chave de acesso ${digits}" shape-rendering="crispEdges"><rect width="${width}" height="46" fill="#fff"/>${bars.join('')}</svg>`;
   }
 
   function findAccessKey(box) {
@@ -67,17 +67,29 @@
     scope.querySelectorAll('.danfe-key-box .danfe-barcode').forEach((barcode) => {
       const box = barcode.closest('.danfe-key-box');
       if (!box) return;
-      const key = findAccessKey(box);
-      if (key.length !== 44 || barcode.dataset.code128Key === key) return;
 
-      const svg = buildCode128C(key);
-      if (!svg) return;
-
-      barcode.dataset.code128Key = key;
-      barcode.innerHTML = svg;
+      // Neutraliza o antigo gradiente decorativo mesmo quando a chave não for válida.
       barcode.style.background = '#fff';
       barcode.style.height = '46px';
       barcode.style.overflow = 'hidden';
+
+      const key = findAccessKey(box);
+      if (!/^\d{44}$/.test(key)) {
+        barcode.removeAttribute('data-code128-key');
+        barcode.innerHTML = '';
+        return;
+      }
+      if (barcode.dataset.code128Key === key) return;
+
+      const svg = buildCode128C(key);
+      if (!svg) {
+        barcode.removeAttribute('data-code128-key');
+        barcode.innerHTML = '';
+        return;
+      }
+
+      barcode.dataset.code128Key = key;
+      barcode.innerHTML = svg;
     });
   }
 
