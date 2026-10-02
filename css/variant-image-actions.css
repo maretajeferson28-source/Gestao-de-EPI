@@ -1,0 +1,54 @@
+/* Ações do anexador de imagem: neutras por padrão; cor apenas no hover/foco. */
+.epi-variant-image-buttons #epiVariantImageSelect,
+.epi-variant-image-buttons #epiVariantImageChange,
+.epi-variant-image-buttons #epiVariantImageRemove,
+.epi-variant-image-buttons #epiVariantImageRemove.btn.danger{
+  border-color:#3a3a3a!important;
+  background:#171717!important;
+  color:#d8d8d8!important;
+  box-shadow:none!important;
+  transition:border-color .16s ease,color .16s ease,background-color .16s ease!important;
+}
+
+.epi-variant-image-buttons #epiVariantImageSelect svg,
+.epi-variant-image-buttons #epiVariantImageChange svg,
+.epi-variant-image-buttons #epiVariantImageRemove svg{
+  color:#a8a8a8!important;
+  transition:color .16s ease!important;
+}
+
+/* Selecionar: verde */
+.epi-variant-image-buttons #epiVariantImageSelect:hover,
+.epi-variant-image-buttons #epiVariantImageSelect:focus-visible{
+  border-color:rgba(53,201,139,.72)!important;
+  background:#171717!important;
+  color:#6fd7a4!important;
+}
+.epi-variant-image-buttons #epiVariantImageSelect:hover svg,
+.epi-variant-image-buttons #epiVariantImageSelect:focus-visible svg{
+  color:#6fd7a4!important;
+}
+
+/* Trocar: laranja */
+.epi-variant-image-buttons #epiVariantImageChange:hover,
+.epi-variant-image-buttons #epiVariantImageChange:focus-visible{
+  border-color:rgba(255,102,0,.72)!important;
+  background:#171717!important;
+  color:#ff9a3f!important;
+}
+.epi-variant-image-buttons #epiVariantImageChange:hover svg,
+.epi-variant-image-buttons #epiVariantImageChange:focus-visible svg{
+  color:#ff9a3f!important;
+}
+
+/* Remover: vermelho */
+.epi-variant-image-buttons #epiVariantImageRemove:hover,
+.epi-variant-image-buttons #epiVariantImageRemove:focus-visible{
+  border-color:#7a3434!important;
+  background:#171717!important;
+  color:#ff8f8f!important;
+}
+.epi-variant-image-buttons #epiVariantImageRemove:hover svg,
+.epi-variant-image-buttons #epiVariantImageRemove:focus-visible svg{
+  color:#ff8f8f!important;
+}
