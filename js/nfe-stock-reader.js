@@ -4,10 +4,7 @@
   if (window.__EPI_NFE_STOCK_READER__) return;
   window.__EPI_NFE_STOCK_READER__ = true;
 
-  const state = {
-    notes: [],
-    latest: null
-  };
+  const state = { notes: [], latest: null };
 
   function db() {
     try { return typeof sb !== 'undefined' ? sb : null; }
@@ -150,7 +147,7 @@
         itemName: match?.epiNome || description,
         category: match?.categoria || null,
         confidence: match ? Number(match.score.toFixed(3)) : 0,
-        matchMethod: match?.method || null,
+        matchMethod: match?.method || 'descricao_nf',
         recognized: !!match
       };
     });
@@ -260,10 +257,10 @@
       epi_id: item.epiId || null,
       match_score: item.confidence || null,
       dados: {
-        item_name: item.itemName || null,
+        item_name: item.itemName || item.sourceDescription || null,
         category: item.category || null,
         recognized: item.recognized === true,
-        match_method: item.matchMethod || null
+        match_method: item.matchMethod || 'descricao_nf'
       }
     }));
 
@@ -276,12 +273,13 @@
         source: 'nfe',
         entryId,
         key: note.key,
-        quantity: note.recognizedQuantity,
+        quantity: note.totalQuantity,
+        recognizedQuantity: note.recognizedQuantity,
         recognizedCount: note.recognizedCount
       }
     }));
 
-    setNfeMessage(`Entrada salva • ${note.recognizedCount} item(ns) identificado(s) • ${note.recognizedQuantity} unidade(s) para estoque.`, false, true);
+    setNfeMessage(`Entrada salva • ${note.itemCount} item(ns) • ${note.totalQuantity} unidade(s) adicionada(s) ao estoque.`, false, true);
 
     if (button) {
       button.disabled = false;
@@ -293,32 +291,42 @@
   }
 
   function ensureSaveButton() {
-    const result = document.getElementById('nfeResult');
-    const toolbar = result?.querySelector('.nfe-doc-toolbar');
-    if (!toolbar || toolbar.querySelector('#nfeSaveEntryBtn')) return;
+    const pageTitle = document.querySelector('[data-page-content="notas"] .nfe-page-title');
+    if (!pageTitle) return;
 
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.id = 'nfeSaveEntryBtn';
-    button.className = 'btn primary compact';
-    button.innerHTML = '<i data-lucide="database-zap"></i><span>Salvar entrada</span>';
-    button.addEventListener('click', async () => {
-      try {
-        const note = currentNote();
-        if (!note) throw new Error('Importe uma NF-e antes de salvar.');
-        await saveNote(note, button);
-      } catch (error) {
-        console.error('[NF-e estoque] Falha ao salvar entrada', error);
-        setNfeMessage(`Erro ao salvar entrada: ${error.message || error}`, true);
-        if (button) {
+    let button = document.getElementById('nfeSaveEntryBtn');
+    if (!button) {
+      button = document.createElement('button');
+      button.type = 'button';
+      button.id = 'nfeSaveEntryBtn';
+      button.className = 'btn primary compact nfe-save-entry-top';
+      button.style.marginLeft = 'auto';
+      button.style.alignSelf = 'flex-start';
+      button.addEventListener('click', async () => {
+        try {
+          const note = currentNote();
+          if (!note) throw new Error('Importe uma NF-e antes de salvar.');
+          await saveNote(note, button);
+        } catch (error) {
+          console.error('[NF-e estoque] Falha ao salvar entrada', error);
+          setNfeMessage(`Erro ao salvar entrada: ${error.message || error}`, true);
           button.disabled = false;
           button.innerHTML = button.dataset.originalHtml || '<i data-lucide="database-zap"></i><span>Salvar entrada</span>';
           window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
         }
-      }
-    });
+      });
+    }
 
-    toolbar.appendChild(button);
+    if (button.parentElement !== pageTitle) pageTitle.appendChild(button);
+
+    const note = currentNote();
+    button.hidden = !note;
+    if (note) {
+      button.innerHTML = note.savedId
+        ? '<i data-lucide="check"></i><span>Entrada salva</span>'
+        : '<i data-lucide="database-zap"></i><span>Salvar entrada</span>';
+    }
+
     window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   }
 
@@ -350,6 +358,7 @@
     const input = document.getElementById('nfeFileInput');
     const dropzone = document.getElementById('nfeDropzone');
     const result = document.getElementById('nfeResult');
+    const fileList = document.getElementById('nfeFileList');
 
     if (!input || input.dataset.stockReaderBound === 'true') return false;
 
@@ -362,7 +371,8 @@
       observer.observe(result, { childList: true, subtree: true });
     }
 
-    document.getElementById('nfeFileList')?.addEventListener('click', () => setTimeout(ensureSaveButton, 0));
+    fileList?.addEventListener('click', () => setTimeout(ensureSaveButton, 0));
+    ensureSaveButton();
     return true;
   }
 
