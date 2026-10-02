@@ -117,7 +117,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-item-safety-dossier]')) {
     const itemDossierScript = document.createElement('script');
-    itemDossierScript.src = 'js/item-safety-dossier.js?v=20261002-1';
+    itemDossierScript.src = 'js/item-safety-dossier.js?v=20261002-2';
     itemDossierScript.dataset.itemSafetyDossier = 'true';
     document.body.appendChild(itemDossierScript);
   }
