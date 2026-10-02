@@ -45,11 +45,59 @@
       [data-page-content="estoque"] .stock-kpi-out{--stock-kpi-accent:#ff6600}
       [data-page-content="estoque"] .stock-kpi-min{--stock-kpi-accent:#ffb800}
       [data-page-content="estoque"] .stock-kpi-critical{--stock-kpi-accent:#ef5b5b}
+
+      [data-page-content="estoque"] .stock-filter-bar{
+        margin-top:12px;
+        padding:10px 12px;
+        border:1px solid #252525;
+        border-radius:12px;
+        background:#151515;
+        display:flex;
+        align-items:flex-end;
+        gap:8px;
+      }
+      [data-page-content="estoque"] .stock-filter-field{
+        flex:1;
+        min-width:0;
+      }
+      [data-page-content="estoque"] .stock-filter-field label{
+        display:block;
+        margin:0 0 5px;
+        font-size:10px;
+        font-weight:700;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+        color:#9aa3ad;
+      }
+      [data-page-content="estoque"] .stock-filter-field input{
+        width:100%;
+        height:36px;
+        min-height:36px;
+        padding:0 11px;
+        border-radius:8px;
+      }
+      [data-page-content="estoque"] .stock-search-btn{
+        min-height:36px!important;
+        height:36px!important;
+        padding:7px 11px!important;
+        border-radius:8px!important;
+        gap:6px!important;
+        font-size:12px!important;
+        line-height:1!important;
+        white-space:nowrap;
+      }
+      [data-page-content="estoque"] .stock-search-btn svg{
+        width:15px!important;
+        height:15px!important;
+      }
+
       @media(max-width:900px){
         [data-page-content="estoque"] .stock-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
       }
       @media(max-width:520px){
         [data-page-content="estoque"] .stock-kpis{grid-template-columns:1fr}
+        [data-page-content="estoque"] .stock-filter-bar{align-items:stretch;flex-direction:column}
+        [data-page-content="estoque"] .stock-search-btn{align-self:flex-start}
       }
     `;
     document.head.appendChild(style);
@@ -96,7 +144,22 @@
           <div class="value" id="stockKpiCritical">0</div>
           <div class="sub">itens abaixo do mínimo</div>
         </div>
-      </div>`;
+      </div>
+
+      <form class="stock-filter-bar" id="stockFilterForm">
+        <div class="stock-filter-field">
+          <label for="stockSearchInput">Filtro</label>
+          <input id="stockSearchInput" type="search" autocomplete="off" placeholder="Buscar EPI / Item">
+        </div>
+        <button class="btn primary stock-search-btn" id="stockSearchBtn" type="submit">
+          <i data-lucide="search" aria-hidden="true"></i>Buscar
+        </button>
+      </form>`;
+
+    const filterForm = page.querySelector('#stockFilterForm');
+    filterForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+    });
 
     page.dataset.stockKpisReady = 'true';
     renderStockKpis(page);
