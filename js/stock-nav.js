@@ -47,7 +47,8 @@
       [data-page-content="estoque"] .stock-kpi-critical{--stock-kpi-accent:#ef5b5b}
 
       [data-page-content="estoque"] .stock-filter-bar{
-        margin-top:12px;
+        margin-top:28px;
+        width:min(760px,100%);
         display:grid;
         grid-template-columns:minmax(0,1fr) auto;
         align-items:center;
@@ -91,7 +92,7 @@
       }
       @media(max-width:520px){
         [data-page-content="estoque"] .stock-kpis{grid-template-columns:1fr}
-        [data-page-content="estoque"] .stock-filter-bar{grid-template-columns:1fr auto}
+        [data-page-content="estoque"] .stock-filter-bar{grid-template-columns:1fr auto;width:100%;margin-top:20px}
       }
     `;
     document.head.appendChild(style);
