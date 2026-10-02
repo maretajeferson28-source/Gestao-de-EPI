@@ -11,6 +11,9 @@
     '9ecf96b8-0812-444a-b831-6dd83064411f'  // Cones de Sinalização
   ]);
 
+  // Mapeamento exclusivo do item "Filtros VO/GA Classe 1".
+  const FILTER_VOGA_ID = 'bcba3fc9-725d-45c3-a19c-67854a7cca45';
+
   const normalLabels = {
     epiVarCa: 'C.A.',
     epiVarFabricante: 'Fabricante',
@@ -74,6 +77,39 @@
     epiVarObservacao: 'Informe utilização, manutenção, armazenagem e embalagem'
   };
 
+  // Ficha técnica AIR F600VG — aplicado somente ao cadastro "Filtros VO/GA Classe 1".
+  // Os textos são exemplos de preenchimento; nenhum dado é preenchido automaticamente.
+  const filterVogaLabels = {
+    epiVarCa: 'Código / identificação',
+    epiVarFabricante: 'Fabricante',
+    epiVarCnpj: 'Classe / identificação visual',
+    epiVarMarca: 'Materiais',
+    epiVarReferencia: 'Referência / Modelo',
+    epiVarValidade: 'Revisão da ficha técnica',
+    epiVarSituacao: 'Compatibilidade',
+    epiVarNorma: 'Norma(s) / certificação',
+    epiVarDescricao: 'Proteção / uso',
+    epiVarCaracteristicas: 'Eficiência / características técnicas',
+    epiVarPreco: 'Preço (R$)',
+    epiVarFornecedor: 'Fornecedor',
+    epiVarObservacao: 'Restrições / observações'
+  };
+
+  const filterVogaPlaceholders = {
+    epiVarCa: 'Ex.: F600VG',
+    epiVarFabricante: 'Ex.: AIR Safety',
+    epiVarCnpj: 'Ex.: A1E1 • etiqueta marrom e amarela',
+    epiVarMarca: 'Ex.: cápsula termoplástica; carvão ativado',
+    epiVarReferencia: 'Ex.: AIR F600VG',
+    epiVarSituacao: 'Ex.: AIR S900, S950 e FFS990',
+    epiVarNorma: 'Ex.: EN14387:2004+A1:2008',
+    epiVarDescricao: 'Ex.: vapores orgânicos, SO₂ e gases ácidos',
+    epiVarCaracteristicas: 'Ex.: C6H12 > 70 min; SO₂ > 20 min; conexão tipo baioneta',
+    epiVarPreco: '0,00',
+    epiVarFornecedor: 'Fornecedor / distribuidor',
+    epiVarObservacao: 'Ex.: não fornece oxigênio; não utilizar em IPVS ou atmosfera explosiva'
+  };
+
   function fieldWrap(id) {
     return $(id)?.closest('.field') || null;
   }
@@ -102,6 +138,10 @@
     }
   }
 
+  function isFilterVoga(epi) {
+    return !!epi && epi.id === FILTER_VOGA_ID;
+  }
+
   function isTechnicalItem(epi) {
     if (!epi) return false;
     if (TECHNICAL_ITEM_IDS.has(epi.id)) return true;
@@ -119,6 +159,13 @@
     }
 
     const epi = currentEpi();
+
+    if (isFilterVoga(epi)) {
+      applyLabels(filterVogaLabels);
+      applyPlaceholders(filterVogaPlaceholders);
+      return;
+    }
+
     const technical = isTechnicalItem(epi);
     applyLabels(technical ? technicalLabels : normalLabels);
     applyPlaceholders(technical ? technicalPlaceholders : normalPlaceholders);
