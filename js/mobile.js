@@ -117,10 +117,30 @@
   function labelTables() {
     app.querySelectorAll('[data-page-content="dashboard"] .table-wrap table,.movement-table,.authz-table').forEach((table) => {
       table.classList.add('mobile-card-table');
+      const isMovement = table.classList.contains('movement-table') || !!table.closest('[data-page-content="dashboard"]');
+      if (isMovement) table.classList.add('mobile-record-table');
       const labels = [...table.querySelectorAll('thead th')].map((cell) => cell.textContent.trim());
-      table.querySelectorAll('tbody tr').forEach((row) => [...row.cells].forEach((cell, index) => {
-        if (cell.dataset.mobileLabel !== labels[index]) cell.dataset.mobileLabel = labels[index] || '';
-      }));
+      table.querySelectorAll('tbody tr').forEach((row) => {
+        [...row.cells].forEach((cell, index) => {
+          const label = labels[index] || '';
+          if (cell.dataset.mobileLabel !== label) cell.dataset.mobileLabel = label;
+        });
+        if (!isMovement || row.cells.length < 7 || row.querySelector('.mobile-movement-details')) return;
+        const details = row.insertCell();
+        details.className = 'mobile-only mobile-movement-details';
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'mobile-movement-toggle';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.innerHTML = `${icon('chevron-down')}<span>Ver C.A., tamanho e responsável</span>`;
+        toggle.addEventListener('click', () => {
+          const expanded = row.classList.toggle('mobile-movement-expanded');
+          toggle.setAttribute('aria-expanded', String(expanded));
+          toggle.querySelector('span').textContent = expanded ? 'Recolher detalhes' : 'Ver C.A., tamanho e responsável';
+        });
+        details.appendChild(toggle);
+        window.lucide?.createIcons({ nodes: [toggle] });
+      });
     });
   }
   const adaptNoteHint = () => {
