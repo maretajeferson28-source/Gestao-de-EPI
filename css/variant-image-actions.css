@@ -41,14 +41,20 @@
   color:#ff9a3f!important;
 }
 
-/* Remover: vermelho */
-.epi-variant-image-buttons #epiVariantImageRemove:hover,
-.epi-variant-image-buttons #epiVariantImageRemove:focus-visible{
-  border-color:#7a3434!important;
+/* Remover: vermelho — força borda, texto e ícone. */
+.epi-variant-image-buttons button#epiVariantImageRemove.btn.compact.danger:hover,
+.epi-variant-image-buttons button#epiVariantImageRemove.btn.compact.danger:focus-visible{
+  border-color:#ef5b5b!important;
+  border-width:1px!important;
+  border-style:solid!important;
   background:#171717!important;
-  color:#ff8f8f!important;
+  color:#ef5b5b!important;
+  -webkit-text-fill-color:#ef5b5b!important;
 }
-.epi-variant-image-buttons #epiVariantImageRemove:hover svg,
-.epi-variant-image-buttons #epiVariantImageRemove:focus-visible svg{
-  color:#ff8f8f!important;
+.epi-variant-image-buttons button#epiVariantImageRemove.btn.compact.danger:hover svg,
+.epi-variant-image-buttons button#epiVariantImageRemove.btn.compact.danger:focus-visible svg,
+.epi-variant-image-buttons button#epiVariantImageRemove.btn.compact.danger:hover *,
+.epi-variant-image-buttons button#epiVariantImageRemove.btn.compact.danger:focus-visible *{
+  color:#ef5b5b!important;
+  stroke:#ef5b5b!important;
 }
