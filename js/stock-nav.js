@@ -48,41 +48,36 @@
 
       [data-page-content="estoque"] .stock-filter-bar{
         margin-top:12px;
-        padding:10px 12px;
-        border:1px solid #252525;
-        border-radius:12px;
-        background:#151515;
-        display:flex;
-        align-items:flex-end;
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
         gap:8px;
       }
-      [data-page-content="estoque"] .stock-filter-field{
-        flex:1;
-        min-width:0;
-      }
-      [data-page-content="estoque"] .stock-filter-field label{
-        display:block;
-        margin:0 0 5px;
-        font-size:10px;
-        font-weight:700;
-        letter-spacing:.08em;
-        text-transform:uppercase;
-        color:#9aa3ad;
-      }
-      [data-page-content="estoque"] .stock-filter-field input{
+      [data-page-content="estoque"] .stock-filter-bar input{
         width:100%;
-        height:36px;
-        min-height:36px;
-        padding:0 11px;
-        border-radius:8px;
+        height:40px;
+        background:#262626;
+        border:1px solid rgba(232,111,24,.18);
+        color:#fff;
+        border-radius:9px;
+        padding:0 12px;
+        outline:none;
+      }
+      [data-page-content="estoque"] .stock-filter-bar input::placeholder{
+        color:#8f8f8f;
+      }
+      [data-page-content="estoque"] .stock-filter-bar input:focus{
+        border-color:var(--gold);
+        box-shadow:0 0 10px rgba(232,111,24,.18);
       }
       [data-page-content="estoque"] .stock-search-btn{
         min-height:36px!important;
         height:36px!important;
-        padding:7px 11px!important;
+        padding:0 10px!important;
         border-radius:8px!important;
         gap:6px!important;
         font-size:12px!important;
+        font-weight:800!important;
         line-height:1!important;
         white-space:nowrap;
       }
@@ -96,8 +91,7 @@
       }
       @media(max-width:520px){
         [data-page-content="estoque"] .stock-kpis{grid-template-columns:1fr}
-        [data-page-content="estoque"] .stock-filter-bar{align-items:stretch;flex-direction:column}
-        [data-page-content="estoque"] .stock-search-btn{align-self:flex-start}
+        [data-page-content="estoque"] .stock-filter-bar{grid-template-columns:1fr auto}
       }
     `;
     document.head.appendChild(style);
@@ -147,12 +141,9 @@
       </div>
 
       <form class="stock-filter-bar" id="stockFilterForm">
-        <div class="stock-filter-field">
-          <label for="stockSearchInput">Filtro</label>
-          <input id="stockSearchInput" type="search" autocomplete="off" placeholder="Buscar EPI / Item">
-        </div>
+        <input id="stockSearchInput" type="search" autocomplete="off" placeholder="Buscar EPI / Item">
         <button class="btn primary stock-search-btn" id="stockSearchBtn" type="submit">
-          <i data-lucide="search" aria-hidden="true"></i>Buscar
+          <i data-lucide="search" aria-hidden="true"></i><span>Buscar</span>
         </button>
       </form>`;
 
