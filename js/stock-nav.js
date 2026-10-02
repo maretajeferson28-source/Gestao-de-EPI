@@ -126,16 +126,13 @@
       if (request !== refreshId || !isAdmin()) return;
       stockSummary = data;
       const msg = page.querySelector('#stockStatus');
-      if (msg) msg.textContent = formatNumber(data.entradas) + ' entradas contabilizadas − ' + formatNumber(data.saidas) + ' saídas registradas = ' + formatNumber(data.saldo) + ' de saldo.' +
-        ' Saídas antigas, anteriores à primeira nota cadastrada, ficam somente no histórico.' +
-        (data.pendentes ? ' ' + data.pendentes + ' linha(s) de notas pendente(s), fora do saldo.' : '') +
-        (data.saldo < 0 ? ' Saldo negativo: há saídas sem compras correspondentes registradas. O histórico foi preservado.' : '');
+      if (msg) { msg.textContent = ''; msg.hidden = true; }
     } catch (error) {
       if (request !== refreshId) return;
       stockSummary = null;
       console.error('[Estoque] Falha ao carregar entradas de NF-e', error);
       const msg = page.querySelector('#stockStatus');
-      if (msg) msg.textContent = 'Não foi possível consultar o saldo: ' + (error.message || error);
+      if (msg) { msg.textContent = 'Não foi possível consultar o saldo: ' + (error.message || error); msg.hidden = false; }
     }
 
     renderStockKpis(page);
@@ -175,7 +172,7 @@
           <i data-lucide="search" aria-hidden="true"></i><span>Buscar</span>
         </button>
       </form>
-      <p id="stockStatus" role="status" style="font-size:12px;color:var(--muted);line-height:1.6">Consultando saldo…</p>`;
+      <p id="stockStatus" role="status" hidden style="font-size:12px;color:var(--muted);line-height:1.6"></p>`;
 
     const filterForm = page.querySelector('#stockFilterForm');
     filterForm?.addEventListener('submit', (event) => {
