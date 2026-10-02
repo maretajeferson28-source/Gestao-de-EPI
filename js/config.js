@@ -101,6 +101,13 @@ document.title = "Gestão de EPI";
     barcodeScript.dataset.nfeBarcode = 'true';
     document.body.appendChild(barcodeScript);
   }
+
+  if (!document.querySelector('script[data-nfe-stock-reader]')) {
+    const stockReaderScript = document.createElement('script');
+    stockReaderScript.src = 'js/nfe-stock-reader.js?v=20261002-1';
+    stockReaderScript.dataset.nfeStockReader = 'true';
+    document.body.appendChild(stockReaderScript);
+  }
 })();
 
 // Complementos visuais e de consulta.
