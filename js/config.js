@@ -10,7 +10,7 @@ document.title = "Gestão de EPI";
   if (!document.querySelector('link[data-variant-image-actions]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'css/variant-image-actions.css?v=20261002-1';
+    link.href = 'css/variant-image-actions.css?v=20261002-2';
     link.dataset.variantImageActions = 'true';
     document.head.appendChild(link);
   }
