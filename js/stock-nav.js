@@ -130,8 +130,7 @@
     try {
       const { data, error } = await client
         .from('nfe_entrada_itens')
-        .select('quantidade,epi_id')
-        .not('epi_id', 'is', null);
+        .select('quantidade,epi_id');
       if (error) throw error;
 
       stockTotal = (data || []).reduce((sum, row) => sum + (Number(row.quantidade) || 0), 0);
