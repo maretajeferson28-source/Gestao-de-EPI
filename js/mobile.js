@@ -91,23 +91,13 @@
   new MutationObserver(syncNavigation).observe(app, { attributes: true, attributeFilter: ['class'] });
   const filters = app.querySelector('.filters');
   if (filters) {
-    const overview = document.createElement('div');
-    overview.className = 'mobile-only mobile-overview';
-    overview.innerHTML = '<span class="mobile-eyebrow">PAINEL OPERACIONAL</span><h2>Visão geral</h2><p>Indicadores de consumo e custos</p>';
-    filters.before(overview);
     filters.id = 'mobileDashboardFilters';
     const toggle = document.createElement('button');
     toggle.type = 'button';
     toggle.className = 'mobile-only mobile-filter-toggle';
     toggle.setAttribute('aria-controls', filters.id);
     toggle.setAttribute('aria-expanded', 'false');
-    toggle.innerHTML = `${icon('sliders-horizontal')}<span>Filtros</span>${icon('chevron-down')}`;
-    const updateFilterSummary = () => {
-      const active = [...filters.querySelectorAll('input,select')].filter((field) => field.value && !['Todos','Todas','all'].includes(field.value)).length;
-      toggle.querySelector('span').textContent = active ? `Filtros · ${active} ativo${active > 1 ? 's' : ''}` : 'Filtros · todos os registros';
-    };
-    filters.addEventListener('change', updateFilterSummary);
-    updateFilterSummary();
+    toggle.innerHTML = `${icon('sliders-horizontal')}<span>Filtrar indicadores</span>${icon('chevron-down')}`;
     toggle.addEventListener('click', () => {
       const open = filters.classList.toggle('mobile-filters-open');
       toggle.setAttribute('aria-expanded', String(open));
@@ -117,30 +107,10 @@
   function labelTables() {
     app.querySelectorAll('[data-page-content="dashboard"] .table-wrap table,.movement-table,.authz-table').forEach((table) => {
       table.classList.add('mobile-card-table');
-      const isMovement = table.classList.contains('movement-table') || !!table.closest('[data-page-content="dashboard"]');
-      if (isMovement) table.classList.add('mobile-record-table');
       const labels = [...table.querySelectorAll('thead th')].map((cell) => cell.textContent.trim());
-      table.querySelectorAll('tbody tr').forEach((row) => {
-        [...row.cells].forEach((cell, index) => {
-          const label = labels[index] || '';
-          if (cell.dataset.mobileLabel !== label) cell.dataset.mobileLabel = label;
-        });
-        if (!isMovement || row.cells.length < 7 || row.querySelector('.mobile-movement-details')) return;
-        const details = row.insertCell();
-        details.className = 'mobile-only mobile-movement-details';
-        const toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = 'mobile-movement-toggle';
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.innerHTML = `${icon('chevron-down')}<span>Ver C.A., tamanho e responsável</span>`;
-        toggle.addEventListener('click', () => {
-          const expanded = row.classList.toggle('mobile-movement-expanded');
-          toggle.setAttribute('aria-expanded', String(expanded));
-          toggle.querySelector('span').textContent = expanded ? 'Recolher detalhes' : 'Ver C.A., tamanho e responsável';
-        });
-        details.appendChild(toggle);
-        window.lucide?.createIcons({ nodes: [toggle] });
-      });
+      table.querySelectorAll('tbody tr').forEach((row) => [...row.cells].forEach((cell, index) => {
+        if (cell.dataset.mobileLabel !== labels[index]) cell.dataset.mobileLabel = labels[index] || '';
+      }));
     });
   }
   const adaptNoteHint = () => {
