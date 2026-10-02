@@ -15,6 +15,93 @@
     }
   }
 
+  function formatNumber(value) {
+    return new Intl.NumberFormat('pt-BR').format(Number(value) || 0);
+  }
+
+  function totalSaidas() {
+    try {
+      if (typeof movements === 'undefined' || !Array.isArray(movements)) return 0;
+      return movements.reduce((sum, movement) => sum + (Number(movement?.quantidade) || 0), 0);
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function ensureStockStyles() {
+    if (document.getElementById('stockKpiStyles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'stockKpiStyles';
+    style.textContent = `
+      [data-page-content="estoque"] .stock-kpis{
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        margin-bottom:0;
+      }
+      [data-page-content="estoque"] .stock-kpi::before{
+        background:var(--stock-kpi-accent,var(--gold));
+      }
+      [data-page-content="estoque"] .stock-kpi-stock{--stock-kpi-accent:#35c98b}
+      [data-page-content="estoque"] .stock-kpi-out{--stock-kpi-accent:#ff6600}
+      [data-page-content="estoque"] .stock-kpi-min{--stock-kpi-accent:#ffb800}
+      [data-page-content="estoque"] .stock-kpi-critical{--stock-kpi-accent:#ef5b5b}
+      @media(max-width:900px){
+        [data-page-content="estoque"] .stock-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+      }
+      @media(max-width:520px){
+        [data-page-content="estoque"] .stock-kpis{grid-template-columns:1fr}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function renderStockKpis(page) {
+    if (!page) return;
+    const exits = totalSaidas();
+
+    const stockValue = page.querySelector('#stockKpiStock');
+    const outValue = page.querySelector('#stockKpiOut');
+    const minValue = page.querySelector('#stockKpiMin');
+    const criticalValue = page.querySelector('#stockKpiCritical');
+
+    if (stockValue) stockValue.textContent = '0';
+    if (outValue) outValue.textContent = formatNumber(exits);
+    if (minValue) minValue.textContent = '0';
+    if (criticalValue) criticalValue.textContent = '0';
+  }
+
+  function buildStockStage(page) {
+    if (!page || page.dataset.stockKpisReady === 'true') return;
+
+    ensureStockStyles();
+    page.innerHTML = `
+      <div class="kpis stock-kpis">
+        <div class="kpi stock-kpi stock-kpi-stock">
+          <div class="label">Estoque</div>
+          <div class="value" id="stockKpiStock">0</div>
+          <div class="sub">itens disponíveis</div>
+        </div>
+        <div class="kpi stock-kpi stock-kpi-out">
+          <div class="label">Saídas</div>
+          <div class="value" id="stockKpiOut">0</div>
+          <div class="sub">itens movimentados</div>
+        </div>
+        <div class="kpi stock-kpi stock-kpi-min">
+          <div class="label">Mínimo</div>
+          <div class="value" id="stockKpiMin">0</div>
+          <div class="sub">itens no limite mínimo</div>
+        </div>
+        <div class="kpi stock-kpi stock-kpi-critical">
+          <div class="label">Crítico</div>
+          <div class="value" id="stockKpiCritical">0</div>
+          <div class="sub">itens abaixo do mínimo</div>
+        </div>
+      </div>`;
+
+    page.dataset.stockKpisReady = 'true';
+    renderStockKpis(page);
+  }
+
   function syncAdminButton(button) {
     const start = Date.now();
     const timer = setInterval(() => {
@@ -54,6 +141,8 @@
       else content.appendChild(page);
     }
 
+    buildStockStage(page);
+
     button.addEventListener('click', () => {
       if (!isAdmin()) return;
 
@@ -65,8 +154,18 @@
         stage.classList.toggle('active', stage === page);
       });
 
+      renderStockKpis(page);
       refreshIcons();
     });
+
+    const statusText = document.getElementById('statusText');
+    if (statusText) {
+      new MutationObserver(() => renderStockKpis(page)).observe(statusText, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+    }
 
     syncAdminButton(button);
     refreshIcons();
