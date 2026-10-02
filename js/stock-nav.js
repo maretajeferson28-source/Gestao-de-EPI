@@ -4,9 +4,16 @@
   if (window.__EPI_STOCK_NAV__) return;
   window.__EPI_STOCK_NAV__ = true;
 
+  let stockTotal = 0;
+
   function isAdmin() {
     try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; }
     catch (_) { return false; }
+  }
+
+  function db() {
+    try { return typeof sb !== 'undefined' ? sb : null; }
+    catch (_) { return null; }
   }
 
   function refreshIcons() {
@@ -107,10 +114,32 @@
     const minValue = page.querySelector('#stockKpiMin');
     const criticalValue = page.querySelector('#stockKpiCritical');
 
-    if (stockValue) stockValue.textContent = '0';
+    if (stockValue) stockValue.textContent = formatNumber(stockTotal);
     if (outValue) outValue.textContent = formatNumber(exits);
     if (minValue) minValue.textContent = '0';
     if (criticalValue) criticalValue.textContent = '0';
+  }
+
+  async function refreshStockFromSupabase(page) {
+    const client = db();
+    if (!client || !isAdmin()) {
+      renderStockKpis(page);
+      return;
+    }
+
+    try {
+      const { data, error } = await client
+        .from('nfe_entrada_itens')
+        .select('quantidade,epi_id')
+        .not('epi_id', 'is', null);
+      if (error) throw error;
+
+      stockTotal = (data || []).reduce((sum, row) => sum + (Number(row.quantidade) || 0), 0);
+    } catch (error) {
+      console.error('[Estoque] Falha ao carregar entradas de NF-e', error);
+    }
+
+    renderStockKpis(page);
   }
 
   function buildStockStage(page) {
@@ -155,12 +184,17 @@
 
     page.dataset.stockKpisReady = 'true';
     renderStockKpis(page);
+    refreshStockFromSupabase(page);
   }
 
   function syncAdminButton(button) {
     const start = Date.now();
     const timer = setInterval(() => {
       button.hidden = !isAdmin();
+      if (isAdmin()) {
+        const page = document.querySelector('[data-page-content="estoque"]');
+        refreshStockFromSupabase(page);
+      }
       if (isAdmin() || Date.now() - start > 15000) clearInterval(timer);
     }, 350);
   }
@@ -210,8 +244,11 @@
       });
 
       renderStockKpis(page);
+      refreshStockFromSupabase(page);
       refreshIcons();
     });
+
+    window.addEventListener('epi:stock-changed', () => refreshStockFromSupabase(page));
 
     const statusText = document.getElementById('statusText');
     if (statusText) {
