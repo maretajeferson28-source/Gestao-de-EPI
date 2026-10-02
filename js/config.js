@@ -5,6 +5,17 @@ window.EPI_CONFIG = {
 
 document.title = "Gestão de EPI";
 
+// Hover contextual dos botões do anexador de imagem.
+(() => {
+  if (!document.querySelector('link[data-variant-image-actions]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'css/variant-image-actions.css?v=20261002-1';
+    link.dataset.variantImageActions = 'true';
+    document.head.appendChild(link);
+  }
+})();
+
 // Identidade visual do app: logo no menu lateral e favicon da aba.
 (() => {
   const APP_LOGO = "/assets/app-brand/logo.png?v=20261001";
