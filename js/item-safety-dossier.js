@@ -27,6 +27,21 @@
     epiVarObservacao: 'Observações'
   };
 
+  const normalPlaceholders = {
+    epiVarCa: 'Ex.: 39707',
+    epiVarFabricante: 'Fabricante',
+    epiVarCnpj: 'CNPJ',
+    epiVarMarca: 'Marca',
+    epiVarReferencia: 'Referência',
+    epiVarSituacao: 'Válido / Vencido',
+    epiVarNorma: 'Norma aplicável',
+    epiVarDescricao: 'Descrição do registro CAEPI',
+    epiVarCaracteristicas: 'Material, cor, tamanho, proteção, aplicação, diferenciais...',
+    epiVarPreco: '0,00',
+    epiVarFornecedor: 'Fornecedor / distribuidor',
+    epiVarObservacao: 'Observações de compra, uso ou substituição'
+  };
+
   // Mesma estrutura do cadastro de C.A.; somente os campos mudam de significado.
   const technicalLabels = {
     epiVarCa: 'Código / identificação',
@@ -44,6 +59,21 @@
     epiVarObservacao: 'Utilização / manutenção / armazenagem / embalagem'
   };
 
+  const technicalPlaceholders = {
+    epiVarCa: 'Ex.: CONE-75',
+    epiVarFabricante: 'Ex.: Plastcor',
+    epiVarCnpj: 'Ex.: 3,4 kg',
+    epiVarMarca: 'Ex.: PVC flexível',
+    epiVarReferencia: 'Ex.: Cone NBR 15.071',
+    epiVarSituacao: 'Ex.: 3 anos',
+    epiVarNorma: 'Ex.: ABNT NBR 15071:2022',
+    epiVarDescricao: 'Descreva o item conforme a ficha técnica',
+    epiVarCaracteristicas: 'Ex.: 700 mm de altura; base 400 x 400 mm; NCM 39269090',
+    epiVarPreco: '0,00',
+    epiVarFornecedor: 'Fornecedor / distribuidor',
+    epiVarObservacao: 'Informe utilização, manutenção, armazenagem e embalagem'
+  };
+
   function fieldWrap(id) {
     return $(id)?.closest('.field') || null;
   }
@@ -55,6 +85,13 @@
 
   function applyLabels(labels) {
     Object.entries(labels).forEach(([id, text]) => setLabel(id, text));
+  }
+
+  function applyPlaceholders(placeholders) {
+    Object.entries(placeholders).forEach(([id, text]) => {
+      const field = $(id);
+      if (field) field.placeholder = text;
+    });
   }
 
   function currentEpi() {
@@ -77,11 +114,14 @@
     const modal = $('epiDetailModal');
     if (!modal || modal.classList.contains('hidden')) {
       applyLabels(normalLabels);
+      applyPlaceholders(normalPlaceholders);
       return;
     }
 
     const epi = currentEpi();
-    applyLabels(isTechnicalItem(epi) ? technicalLabels : normalLabels);
+    const technical = isTechnicalItem(epi);
+    applyLabels(technical ? technicalLabels : normalLabels);
+    applyPlaceholders(technical ? technicalPlaceholders : normalPlaceholders);
 
     // Intencionalmente não altera nada além dos campos:
     // botões, seletor, comparativo, anexador de imagem, layout e ações continuam iguais.
