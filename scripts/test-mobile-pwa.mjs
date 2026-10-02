@@ -6,6 +6,20 @@ import vm from 'node:vm';
 const root = new URL('../', import.meta.url);
 const read = (name) => readFileSync(new URL(name, root), 'utf8');
 
+test('mobile sem navegação inferior nem perfil duplicado no cabeçalho', () => {
+  const source = read('js/mobile.js');
+  assert.ok(!source.includes('mobile-bottom-nav'));
+  assert.ok(!source.includes('profileButton'));
+  assert.ok(source.includes("'Abrir menu'"));
+  assert.ok(source.includes('#sideUserProfile'));
+});
+test('nota fiscal usa botões de zoom sem interceptar a roda do mouse', () => {
+  const source = read('js/nfe.js');
+  assert.ok(!/addEventListener\(['"]wheel['"]/.test(source));
+  assert.ok(source.includes("$('nfeZoomIn').addEventListener('click'"));
+  assert.ok(source.includes("$('nfeZoomOut').addEventListener('click'"));
+});
+
 test('manifest instalável e ícones reais com dimensões declaradas', () => {
   const manifest = JSON.parse(read('manifest.webmanifest'));
   assert.equal(manifest.display, 'standalone');

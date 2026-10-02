@@ -2,6 +2,8 @@
 
 O layout exclusivo para telefone usa `css/mobile.css` apenas até 720px. Acima desse limite, os estilos existentes continuam ativos. `js/mobile.js` encaminha a navegação aos botões originais, sem duplicar consultas, gravações ou permissões administrativas.
 
+A navegação mobile fica somente no menu hambúrguer. O perfil fica dentro desse menu, sem repetição no cabeçalho ou navegação inferior. Na nota fiscal, a roda do mouse faz apenas a rolagem normal: o zoom usa +/−, mantendo Ajustar e arraste após ampliar.
+
 ## Instalação
 
 - Android/Chrome: abrir o site HTTPS e tocar em **Instalar aplicativo** no menu ou na tela de login. Se o navegador ainda não oferecer a instalação, usar seu menu → Instalar aplicativo / Adicionar à tela inicial.

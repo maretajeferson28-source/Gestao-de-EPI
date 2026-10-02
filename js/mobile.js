@@ -19,28 +19,6 @@
   sidebar.id = 'mobileMenu';
   menuButton.setAttribute('aria-controls', sidebar.id);
   topbar.prepend(menuButton);
-  const profileButton = document.createElement('button');
-  profileButton.type = 'button';
-  profileButton.className = 'mobile-only mobile-icon-btn mobile-profile';
-  profileButton.setAttribute('aria-label', 'Meu perfil');
-  profileButton.innerHTML = icon('user-round');
-  profileButton.addEventListener('click', () => document.getElementById('sideUserProfile').click());
-  topbar.appendChild(profileButton);
-  const syncProfile = () => {
-    const image = document.getElementById('sideUserAvatar');
-    const name = document.getElementById('sideUserName')?.textContent || 'Usuário';
-    profileButton.setAttribute('aria-label', `Meu perfil: ${name}`);
-    if (image?.getAttribute('src') && !image.hidden) {
-      const clone = image.cloneNode();
-      clone.removeAttribute('id');
-      clone.alt = '';
-      profileButton.replaceChildren(clone);
-    } else profileButton.textContent = document.getElementById('sideUserInitial')?.textContent || 'U';
-  };
-  const profileObserver = new MutationObserver(syncProfile);
-  profileObserver.observe(document.getElementById('sideUserAvatarWrap'), { subtree: true, attributes: true, childList: true, characterData: true });
-  profileObserver.observe(document.getElementById('sideUserName'), { childList: true, characterData: true, subtree: true });
-  syncProfile();
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
   closeButton.className = 'mobile-only mobile-icon-btn mobile-menu-close';
@@ -54,34 +32,6 @@
   backdrop.tabIndex = -1;
   backdrop.setAttribute('aria-label', 'Fechar menu');
   app.appendChild(backdrop);
-  const bottom = document.createElement('nav');
-  bottom.className = 'mobile-only mobile-bottom-nav';
-  bottom.setAttribute('aria-label', 'Navegação principal');
-  const destinations = [
-    ['dashboard', 'Início', 'layout-dashboard'],
-    ['nova', 'Nova saída', 'package-plus'],
-    ['movimentacoes', 'Histórico', 'arrow-right-left'],
-    ['caepi', 'Consulta C.A.', 'badge-check']
-  ];
-  destinations.forEach(([page, label, glyph]) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.dataset.mobilePage = page;
-    button.innerHTML = `${icon(glyph)}<span>${label}</span>`;
-    button.addEventListener('click', () => {
-      const original = sidebar.querySelector(`[data-page="${page}"]`);
-      if (!original || original.hidden) return;
-      original.click();
-    });
-    bottom.appendChild(button);
-  });
-  const more = document.createElement('button');
-  more.type = 'button';
-  more.innerHTML = `${icon('grid-2x2')}<span>Mais</span>`;
-  more.setAttribute('aria-controls', sidebar.id);
-  more.setAttribute('aria-expanded', 'false');
-  bottom.appendChild(more);
-  app.appendChild(bottom);
   const signOut = document.createElement('button');
   signOut.type = 'button';
   signOut.className = 'mobile-only btn';
@@ -94,11 +44,9 @@
     document.body.classList.remove('mobile-menu-open');
     backdrop.hidden = true;
     menuButton.setAttribute('aria-expanded', 'false');
-    more.setAttribute('aria-expanded', 'false');
     sidebar.removeAttribute('role');
     sidebar.removeAttribute('aria-modal');
     main.inert = false;
-    bottom.inert = false;
     if (wasOpen && media.matches) returnFocus.focus();
   }
   function openMenu(event) {
@@ -107,16 +55,13 @@
     document.body.classList.add('mobile-menu-open');
     backdrop.hidden = false;
     menuButton.setAttribute('aria-expanded', 'true');
-    more.setAttribute('aria-expanded', 'true');
     sidebar.setAttribute('role', 'dialog');
     sidebar.setAttribute('aria-modal', 'true');
     sidebar.setAttribute('aria-label', 'Menu do aplicativo');
     main.inert = true;
-    bottom.inert = true;
     closeButton.focus();
   }
   menuButton.addEventListener('click', openMenu);
-  more.addEventListener('click', openMenu);
   closeButton.addEventListener('click', closeMenu);
   backdrop.addEventListener('click', closeMenu);
   sidebar.addEventListener('click', (event) => {
@@ -135,14 +80,6 @@
   let previousPage = '';
   function syncNavigation() {
     const active = sidebar.querySelector('[data-page].active')?.dataset.page;
-    bottom.querySelectorAll('[data-mobile-page]').forEach((button) => {
-      const original = sidebar.querySelector(`[data-page="${button.dataset.mobilePage}"]`);
-      button.hidden = !original || original.hidden;
-      if (active === button.dataset.mobilePage) button.setAttribute('aria-current', 'page');
-      else button.removeAttribute('aria-current');
-    });
-    if (active && !destinations.some(([page]) => page === active)) more.setAttribute('aria-current', 'page');
-    else more.removeAttribute('aria-current');
     if (media.matches && active !== previousPage) {
       closeMenu();
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -179,7 +116,7 @@
   const adaptNoteHint = () => {
     const hint = app.querySelector('.nfe-view-hint');
     if (!hint) return;
-    const text = media.matches ? 'Use + e − para ampliar a nota. Depois de ampliar, arraste com o dedo. Ajustar volta à nota inteira.' : 'Role para cima sobre a nota para ampliar e arraste para mover. No tamanho padrão, rolar para baixo move a página.';
+    const text = media.matches ? 'Use + e − para ampliar a nota. Depois de ampliar, arraste com o dedo. Ajustar volta à nota inteira.' : 'Use + e − para ajustar o zoom. Arraste para mover a nota ampliada. A roda do mouse apenas rola o documento.';
     if (hint.textContent !== text) hint.textContent = text;
   };
   new MutationObserver(() => { if (media.matches) labelTables(); adaptNoteHint(); }).observe(app.querySelector('.content'), { childList: true, subtree: true });

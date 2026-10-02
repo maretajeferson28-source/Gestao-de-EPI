@@ -480,7 +480,7 @@
         </div>
         <button type="button" class="btn compact" id="nfeDownloadPdf"><i data-lucide="download"></i>Baixar PDF</button>
       </div>
-      <p class="nfe-view-hint">Role para cima sobre a nota para ampliar e arraste para mover. No tamanho padrão, rolar para baixo move a página.</p>
+      <p class="nfe-view-hint">Use + e − para ajustar o zoom. Arraste para mover a nota ampliada. A roda do mouse apenas rola o documento.</p>
       <div class="nfe-doc-viewport" id="nfeDocViewport" tabindex="0" aria-label="Visualização da nota fiscal com zoom e arraste">
       <div class="nfe-doc-canvas" id="nfeDocCanvas">
       <article class="danfe-sheet">
@@ -649,14 +649,6 @@
     $('nfeZoomIn').addEventListener('click', () => setZoom(zoom * 1.2));
     $('nfeZoomOut').addEventListener('click', () => setZoom(zoom / 1.2));
     $('nfeZoomFit').addEventListener('click', reset);
-    viewport.addEventListener('wheel', (event) => {
-      // No limite inferior, deixa a rolagem seguir para a página normalmente.
-      if (!event.deltaY || (event.deltaY > 0 && !isZoomed())) return;
-      event.preventDefault();
-      const rect = viewport.getBoundingClientRect();
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientHeight : 1);
-      setZoom(zoom * Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.002), event.clientX - rect.left, event.clientY - rect.top);
-    }, { passive: false });
     viewport.addEventListener('pointerdown', (event) => {
       if (event.button !== 0 || !isZoomed()) return;
       drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
