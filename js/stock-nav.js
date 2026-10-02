@@ -4,7 +4,8 @@
   if (window.__EPI_STOCK_NAV__) return;
   window.__EPI_STOCK_NAV__ = true;
 
-  let stockTotal = 0;
+  let stockSummary = null;
+  let refreshId = 0;
 
   function isAdmin() {
     try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; }
@@ -24,15 +25,6 @@
 
   function formatNumber(value) {
     return new Intl.NumberFormat('pt-BR').format(Number(value) || 0);
-  }
-
-  function totalSaidas() {
-    try {
-      if (typeof movements === 'undefined' || !Array.isArray(movements)) return 0;
-      return movements.reduce((sum, movement) => sum + (Number(movement?.quantidade) || 0), 0);
-    } catch (_) {
-      return 0;
-    }
   }
 
   function ensureStockStyles() {
@@ -107,35 +99,42 @@
 
   function renderStockKpis(page) {
     if (!page) return;
-    const exits = totalSaidas();
-
     const stockValue = page.querySelector('#stockKpiStock');
     const outValue = page.querySelector('#stockKpiOut');
     const minValue = page.querySelector('#stockKpiMin');
     const criticalValue = page.querySelector('#stockKpiCritical');
 
-    if (stockValue) stockValue.textContent = formatNumber(stockTotal);
-    if (outValue) outValue.textContent = formatNumber(exits);
-    if (minValue) minValue.textContent = '0';
-    if (criticalValue) criticalValue.textContent = '0';
+    if (stockValue) stockValue.textContent = stockSummary ? formatNumber(stockSummary.saldo) : '—';
+    if (outValue) outValue.textContent = stockSummary ? formatNumber(stockSummary.saidas) : '—';
+    if (minValue) minValue.textContent = '—';
+    if (criticalValue) criticalValue.textContent = stockSummary ? formatNumber(stockSummary.criticos) : '—';
   }
 
   async function refreshStockFromSupabase(page) {
     const client = db();
+    const request = ++refreshId;
     if (!client || !isAdmin()) {
+      stockSummary = null;
       renderStockKpis(page);
       return;
     }
 
     try {
-      const { data, error } = await client
-        .from('nfe_entrada_itens')
-        .select('quantidade,epi_id');
+      const busca = page.querySelector('#stockSearchInput')?.value.trim() || '';
+      const { data, error } = await client.rpc('epi_stock_summary', { p_busca: busca });
       if (error) throw error;
-
-      stockTotal = (data || []).reduce((sum, row) => sum + (Number(row.quantidade) || 0), 0);
+      if (request !== refreshId || !isAdmin()) return;
+      stockSummary = data;
+      const msg = page.querySelector('#stockStatus');
+      if (msg) msg.textContent = formatNumber(data.entradas) + ' entradas contabilizadas − ' + formatNumber(data.saidas) + ' saídas registradas = ' + formatNumber(data.saldo) + ' de saldo.' +
+        (data.pendentes ? ' ' + data.pendentes + ' linha(s) de notas pendente(s), fora do saldo.' : '') +
+        (data.saldo < 0 ? ' Saldo negativo: há saídas sem compras correspondentes registradas. O histórico foi preservado.' : '');
     } catch (error) {
+      if (request !== refreshId) return;
+      stockSummary = null;
       console.error('[Estoque] Falha ao carregar entradas de NF-e', error);
+      const msg = page.querySelector('#stockStatus');
+      if (msg) msg.textContent = 'Não foi possível consultar o saldo: ' + (error.message || error);
     }
 
     renderStockKpis(page);
@@ -150,7 +149,7 @@
         <div class="kpi stock-kpi stock-kpi-stock">
           <div class="label">Estoque</div>
           <div class="value" id="stockKpiStock">0</div>
-          <div class="sub">itens disponíveis</div>
+          <div class="sub">entradas menos saídas</div>
         </div>
         <div class="kpi stock-kpi stock-kpi-out">
           <div class="label">Saídas</div>
@@ -160,12 +159,12 @@
         <div class="kpi stock-kpi stock-kpi-min">
           <div class="label">Mínimo</div>
           <div class="value" id="stockKpiMin">0</div>
-          <div class="sub">itens no limite mínimo</div>
+          <div class="sub">ainda não configurado</div>
         </div>
         <div class="kpi stock-kpi stock-kpi-critical">
           <div class="label">Crítico</div>
           <div class="value" id="stockKpiCritical">0</div>
-          <div class="sub">itens abaixo do mínimo</div>
+          <div class="sub">itens com saldo zero ou negativo</div>
         </div>
       </div>
 
@@ -174,11 +173,13 @@
         <button class="btn primary stock-search-btn" id="stockSearchBtn" type="submit">
           <i data-lucide="search" aria-hidden="true"></i><span>Buscar</span>
         </button>
-      </form>`;
+      </form>
+      <p id="stockStatus" role="status" style="font-size:12px;color:var(--muted);line-height:1.6">Consultando saldo…</p>`;
 
     const filterForm = page.querySelector('#stockFilterForm');
     filterForm?.addEventListener('submit', (event) => {
       event.preventDefault();
+      refreshStockFromSupabase(page);
     });
 
     page.dataset.stockKpisReady = 'true';
@@ -248,10 +249,14 @@
     });
 
     window.addEventListener('epi:stock-changed', () => refreshStockFromSupabase(page));
+    window.addEventListener('epi:data-loaded', () => { button.hidden = !isAdmin(); refreshStockFromSupabase(page); });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && page.classList.contains('active')) refreshStockFromSupabase(page);
+    });
 
     const statusText = document.getElementById('statusText');
     if (statusText) {
-      new MutationObserver(() => renderStockKpis(page)).observe(statusText, {
+      new MutationObserver(() => { if (!isAdmin()) { stockSummary = null; renderStockKpis(page); } }).observe(statusText, {
         childList: true,
         subtree: true,
         characterData: true

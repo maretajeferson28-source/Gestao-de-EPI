@@ -121,6 +121,7 @@ async function loadAll(showBusy=true){
     renderColabs();
     renderEpis();
     setStatus(`Supabase sincronizado • ${movements.length} movimentações`);
+    window.dispatchEvent(new CustomEvent('epi:data-loaded'));
   }catch(err){
     console.error(err);
     setStatus('Erro ao carregar o Supabase', false);

@@ -70,12 +70,12 @@ document.title = "Gestão de EPI";
   }
 })();
 
-// Módulo experimental de leitura de XML de NF-e.
+// Leitura de NF-e e conferência antes do salvamento atômico no Supabase.
 (() => {
   if (!document.querySelector('link[data-nfe-module]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'css/nfe.css';
+    link.href = 'css/nfe.css?v=20261002-stock-1';
     link.dataset.nfeModule = 'true';
     document.head.appendChild(link);
   }
@@ -90,7 +90,7 @@ document.title = "Gestão de EPI";
 
   if (!document.querySelector('script[data-nfe-module]')) {
     const script = document.createElement('script');
-    script.src = 'js/nfe.js';
+    script.src = 'js/nfe.js?v=20261002-stock-1';
     script.dataset.nfeModule = 'true';
     document.body.appendChild(script);
   }
@@ -104,7 +104,7 @@ document.title = "Gestão de EPI";
 
   if (!document.querySelector('script[data-nfe-stock-reader]')) {
     const stockReaderScript = document.createElement('script');
-    stockReaderScript.src = 'js/nfe-stock-reader.js?v=20261002-3';
+    stockReaderScript.src = 'js/nfe-stock-reader.js?v=20261002-stock-1';
     stockReaderScript.dataset.nfeStockReader = 'true';
     document.body.appendChild(stockReaderScript);
   }
@@ -142,7 +142,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-stock-nav]')) {
     const stockNavScript = document.createElement('script');
-    stockNavScript.src = 'js/stock-nav.js?v=20261002-8';
+    stockNavScript.src = 'js/stock-nav.js?v=20261002-stock-1';
     stockNavScript.dataset.stockNav = 'true';
     document.body.appendChild(stockNavScript);
   }

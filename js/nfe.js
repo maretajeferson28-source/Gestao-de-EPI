@@ -4,7 +4,7 @@
   if (window.__EPI_NFE_MODULE__) return;
   window.__EPI_NFE_MODULE__ = true;
 
-  const state = { notes: [], selected: -1 };
+  const state = { notes: [], selected: -1, importing: false };
   let viewerResizeObserver = null;
   const $ = (id) => document.getElementById(id);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -55,7 +55,7 @@
           <div class="nfe-import-head">
             <span class="nfe-kicker">IMPORTAÇÃO</span>
             <h3>Importar NF-e</h3>
-            <p>Selecione um ou mais XMLs. Nesta fase, nada é lançado no estoque automaticamente.</p>
+            <p>Importe o XML, confira os itens e clique em Salvar entrada para atualizar o estoque.</p>
           </div>
 
           <div class="nfe-dropzone" id="nfeDropzone" tabindex="0" role="button" aria-label="Selecionar XML de nota fiscal">
@@ -72,7 +72,7 @@
 
           <div class="nfe-help">
             <i data-lucide="shield-check"></i>
-            <span>Leitura local no navegador. Use a tela para conferência antes de qualquer integração futura.</span>
+            <span>O XML só é enviado ao Supabase quando você clica em Salvar entrada.</span>
           </div>
 
           <div class="nfe-msg" id="nfeMsg"></div>
@@ -149,12 +149,16 @@
   }
 
   async function importFiles(fileList) {
+    if (state.importing) return;
     const files = [...(fileList || [])].filter((file) => file && (file.name.toLowerCase().endsWith('.xml') || /xml/i.test(file.type || '')));
     if (!files.length) {
       setMessage('Selecione um arquivo XML válido.', true);
       return;
     }
 
+    state.importing = true;
+    window.dispatchEvent(new CustomEvent('epi:nfe-import-start'));
+    try {
     setMessage(`Lendo ${files.length} arquivo(s)...`);
     let imported = 0;
     const errors = [];
@@ -181,6 +185,10 @@
     else setMessage(`${imported} XML(s) lido(s) com sucesso.`, false, true);
 
     if ($('nfeFileInput')) $('nfeFileInput').value = '';
+    } finally {
+      state.importing = false;
+      window.dispatchEvent(new CustomEvent('epi:nfe-selected', { detail: state.notes[state.selected] || null }));
+    }
   }
 
   function setMessage(text, error = false, ok = false) {
@@ -320,6 +328,7 @@
 
     return {
       fileName,
+      xmlOriginal: xmlText,
       key,
       number: text(ide, 'nNF'),
       series: text(ide, 'serie'),
@@ -441,6 +450,8 @@
   }
 
   function renderSelectedNote() {
+    // A conferência roda depois da mensagem de importação, sem sobrescrever erros.
+    queueMicrotask(() => window.dispatchEvent(new CustomEvent('epi:nfe-selected', { detail: state.notes[state.selected] || null })));
     viewerResizeObserver?.disconnect();
     const result = $('nfeResult');
     const empty = $('nfeEmpty');
@@ -748,6 +759,7 @@
     }
   }
 
+  window.EPI_NFE_VIEWER = { getCurrent: () => state.notes[state.selected] || null, getNotes: () => [...state.notes], isImporting: () => state.importing, importFiles };
   if (!injectUi()) {
     const observer = new MutationObserver(() => {
       if (injectUi()) observer.disconnect();
