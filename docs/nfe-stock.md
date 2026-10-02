@@ -18,9 +18,12 @@ informar explicitamente a quantidade de itens após a conversão. Linhas sem
 EPI ou sem conversão ficam salvas como pendentes, mas não aumentam o saldo.
 
 `epi_stock_summary` agrega todas as linhas no banco, sem limite de paginação:
-entradas vinculadas de notas com status `entrada` menos todas as movimentações.
-As saídas históricas são incluídas, sem criar um saldo inicial fictício. Valores
-negativos são mostrados com aviso. Editar/excluir uma movimentação altera o saldo
+entradas vinculadas de notas com status `entrada` menos novas movimentações.
+O início é a primeira nota cadastrada (não sua data de emissão). Movimentações
+anteriores ficam preservadas no histórico com `contabiliza_estoque=false`, sem
+reduzir o saldo. Novas movimentações recebem `true` por padrão, mesmo com data
+informada retroativa. Editar uma saída antiga não a inclui no estoque.
+Valores negativos são mostrados com aviso. Editar/excluir uma nova movimentação altera o saldo
 derivado; não há um contador separado que possa ficar desatualizado.
 
 O botão de busca filtra o saldo pelo nome do EPI. `epi_id`, C.A., unidade e
@@ -37,3 +40,5 @@ São negadas para anônimos e usuários não administradores.
   com `ROLLBACK` obrigatório; não deixa registros sintéticos no banco.
 - `supabase/nfe-stock.sql`: SQL da migração aplicada remotamente
   `atomic_nfe_save_and_stock_balance`.
+- `supabase/stock-notes-start.sql`: aplicar depois do SQL acima; migração
+  `stock_start_from_registered_notes`. A marcação inicial ocorre uma única vez.

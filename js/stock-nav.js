@@ -127,6 +127,7 @@
       stockSummary = data;
       const msg = page.querySelector('#stockStatus');
       if (msg) msg.textContent = formatNumber(data.entradas) + ' entradas contabilizadas − ' + formatNumber(data.saidas) + ' saídas registradas = ' + formatNumber(data.saldo) + ' de saldo.' +
+        ' Saídas antigas, anteriores à primeira nota cadastrada, ficam somente no histórico.' +
         (data.pendentes ? ' ' + data.pendentes + ' linha(s) de notas pendente(s), fora do saldo.' : '') +
         (data.saldo < 0 ? ' Saldo negativo: há saídas sem compras correspondentes registradas. O histórico foi preservado.' : '');
     } catch (error) {
@@ -154,7 +155,7 @@
         <div class="kpi stock-kpi stock-kpi-out">
           <div class="label">Saídas</div>
           <div class="value" id="stockKpiOut">0</div>
-          <div class="sub">itens movimentados</div>
+          <div class="sub">baixas do estoque por notas</div>
         </div>
         <div class="kpi stock-kpi stock-kpi-min">
           <div class="label">Mínimo</div>
