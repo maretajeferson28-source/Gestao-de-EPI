@@ -87,16 +87,6 @@
         width:15px!important;
         height:15px!important;
       }
-      [data-page-content="estoque"] .stock-register-btn{
-        background:#1b1b1b!important;
-        border:1px solid #343434!important;
-        color:#f1f1f1!important;
-      }
-      [data-page-content="estoque"] .stock-register-btn:hover{
-        background:#1b1b1b!important;
-        border-color:var(--gold)!important;
-        color:var(--gold)!important;
-      }
 
       @media(max-width:900px){
         [data-page-content="estoque"] .stock-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -183,7 +173,7 @@
         <button class="btn primary stock-search-btn" id="stockSearchBtn" type="submit">
           <i data-lucide="search" aria-hidden="true"></i><span>Buscar</span>
         </button>
-        <button class="btn stock-register-btn" id="stockRegisterBtn" type="button" title="Cadastrar estoque antigo">
+        <button class="btn primary stock-register-btn" id="stockRegisterBtn" type="button" title="Cadastrar estoque antigo">
           <i data-lucide="package-plus" aria-hidden="true"></i><span>Cadastro</span>
         </button>
       </form>
