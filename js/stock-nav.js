@@ -25,11 +25,13 @@
 
   function injectStockButton() {
     const nav = document.querySelector('.nav');
-    if (!nav || nav.querySelector('[data-stock-nav]')) return false;
+    const content = document.querySelector('.content');
+    if (!nav || !content || nav.querySelector('[data-stock-nav]')) return false;
 
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.stockNav = 'true';
+    button.dataset.page = 'estoque';
     button.setAttribute('data-admin-only', '');
     button.hidden = true;
     button.innerHTML = '<span class="ico"><i data-lucide="warehouse"></i></span><span class="text">Estoque</span>';
@@ -41,8 +43,30 @@
     if (anchor) anchor.insertAdjacentElement('afterend', button);
     else nav.appendChild(button);
 
-    // Por enquanto o botão é apenas visual na navbar; nenhum stage/página é criado.
-    button.addEventListener('click', (event) => event.preventDefault());
+    let page = content.querySelector('[data-page-content="estoque"]');
+    if (!page) {
+      page = document.createElement('section');
+      page.className = 'page';
+      page.dataset.pageContent = 'estoque';
+
+      const caPage = content.querySelector('[data-page-content="caepi"]');
+      if (caPage) caPage.insertAdjacentElement('beforebegin', page);
+      else content.appendChild(page);
+    }
+
+    button.addEventListener('click', () => {
+      if (!isAdmin()) return;
+
+      document.querySelectorAll('.nav button').forEach((navButton) => {
+        navButton.classList.toggle('active', navButton === button);
+      });
+
+      document.querySelectorAll('.page').forEach((stage) => {
+        stage.classList.toggle('active', stage === page);
+      });
+
+      refreshIcons();
+    });
 
     syncAdminButton(button);
     refreshIcons();
