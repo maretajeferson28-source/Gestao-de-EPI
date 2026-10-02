@@ -91,13 +91,23 @@
   new MutationObserver(syncNavigation).observe(app, { attributes: true, attributeFilter: ['class'] });
   const filters = app.querySelector('.filters');
   if (filters) {
+    const overview = document.createElement('div');
+    overview.className = 'mobile-only mobile-overview';
+    overview.innerHTML = '<span class="mobile-eyebrow">PAINEL OPERACIONAL</span><h2>Visão geral</h2><p>Indicadores de consumo e custos</p>';
+    filters.before(overview);
     filters.id = 'mobileDashboardFilters';
     const toggle = document.createElement('button');
     toggle.type = 'button';
     toggle.className = 'mobile-only mobile-filter-toggle';
     toggle.setAttribute('aria-controls', filters.id);
     toggle.setAttribute('aria-expanded', 'false');
-    toggle.innerHTML = `${icon('sliders-horizontal')}<span>Filtrar indicadores</span>${icon('chevron-down')}`;
+    toggle.innerHTML = `${icon('sliders-horizontal')}<span>Filtros</span>${icon('chevron-down')}`;
+    const updateFilterSummary = () => {
+      const active = [...filters.querySelectorAll('input,select')].filter((field) => field.value && !['Todos','Todas','all'].includes(field.value)).length;
+      toggle.querySelector('span').textContent = active ? `Filtros · ${active} ativo${active > 1 ? 's' : ''}` : 'Filtros · todos os registros';
+    };
+    filters.addEventListener('change', updateFilterSummary);
+    updateFilterSummary();
     toggle.addEventListener('click', () => {
       const open = filters.classList.toggle('mobile-filters-open');
       toggle.setAttribute('aria-expanded', String(open));
