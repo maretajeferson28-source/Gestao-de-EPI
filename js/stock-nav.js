@@ -47,9 +47,9 @@
 
       [data-page-content="estoque"] .stock-filter-bar{
         margin-top:28px;
-        width:min(760px,100%);
+        width:min(860px,100%);
         display:grid;
-        grid-template-columns:minmax(0,1fr) auto;
+        grid-template-columns:minmax(0,1fr) auto auto;
         align-items:center;
         gap:8px;
       }
@@ -70,7 +70,8 @@
         border-color:var(--gold);
         box-shadow:0 0 10px rgba(232,111,24,.18);
       }
-      [data-page-content="estoque"] .stock-search-btn{
+      [data-page-content="estoque"] .stock-search-btn,
+      [data-page-content="estoque"] .stock-register-btn{
         min-height:36px!important;
         height:36px!important;
         padding:0 10px!important;
@@ -81,9 +82,20 @@
         line-height:1!important;
         white-space:nowrap;
       }
-      [data-page-content="estoque"] .stock-search-btn svg{
+      [data-page-content="estoque"] .stock-search-btn svg,
+      [data-page-content="estoque"] .stock-register-btn svg{
         width:15px!important;
         height:15px!important;
+      }
+      [data-page-content="estoque"] .stock-register-btn{
+        background:#1b1b1b!important;
+        border:1px solid #343434!important;
+        color:#f1f1f1!important;
+      }
+      [data-page-content="estoque"] .stock-register-btn:hover{
+        background:#1b1b1b!important;
+        border-color:var(--gold)!important;
+        color:var(--gold)!important;
       }
 
       @media(max-width:900px){
@@ -91,7 +103,7 @@
       }
       @media(max-width:520px){
         [data-page-content="estoque"] .stock-kpis{grid-template-columns:1fr}
-        [data-page-content="estoque"] .stock-filter-bar{grid-template-columns:1fr auto;width:100%;margin-top:20px}
+        [data-page-content="estoque"] .stock-filter-bar{grid-template-columns:1fr auto auto;width:100%;margin-top:20px}
       }
     `;
     document.head.appendChild(style);
@@ -171,6 +183,9 @@
         <button class="btn primary stock-search-btn" id="stockSearchBtn" type="submit">
           <i data-lucide="search" aria-hidden="true"></i><span>Buscar</span>
         </button>
+        <button class="btn stock-register-btn" id="stockRegisterBtn" type="button" title="Cadastrar estoque antigo">
+          <i data-lucide="package-plus" aria-hidden="true"></i><span>Cadastro</span>
+        </button>
       </form>
       <p id="stockStatus" role="status" hidden style="font-size:12px;color:var(--muted);line-height:1.6"></p>`;
 
@@ -178,6 +193,10 @@
     filterForm?.addEventListener('submit', (event) => {
       event.preventDefault();
       refreshStockFromSupabase(page);
+    });
+
+    page.querySelector('#stockRegisterBtn')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('epi:stock-register-request'));
     });
 
     page.dataset.stockKpisReady = 'true';
