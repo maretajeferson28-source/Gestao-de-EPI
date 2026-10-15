@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { extractGzip, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget } from './sync-caepi-to-supabase.mjs';
+import { extractGzip, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget, validateApprovedHash } from './sync-caepi-to-supabase.mjs';
 
 const header = ['NR Registro CA','DATA DE VALIDADE','SITUACAO','RAZAO SOCIAL','EQUIPAMENTO','DESCRICAO EQUIPAMENTO'];
 const row = ['39707','29/10/2026','VÁLIDO','Fabricante Teste','MACACÃO','Descrição de teste'];
@@ -80,6 +80,12 @@ test('orçamento inclui base existente, índices e margem, sem prometer tamanho 
   const budget=estimateImportBudget(50_000_000,160_282_557,123917);
   assert.ok(budget.estimatedPeakBytes>50_000_000+160_282_557);
   assert.ok(estimateImportBudget(200_000_000,160_282_557,123917).estimatedPeakBytes>budget.limitBytes);
+});
+test('somente conteúdo com hash revisado pode entrar no banco',()=>{
+  const approved='18218bbe9b9c78d27293d0709a0365ea6932dbcbf6b01878d03841c778ae0cd2';
+  assert.doesNotThrow(()=>validateApprovedHash(approved,approved));
+  assert.throws(()=>validateApprovedHash('a'.repeat(64),approved),/fonte oficial mudou/);
+  for(const missing of [undefined,'', 'hash-invalido']) assert.throws(()=>validateApprovedHash(approved,missing),/não configurado/);
 });
 test('SQL mantém troca atômica, lock da carga, revalidação do hash e limite real',async()=>{
   const sql=await fs.readFile(new URL('../supabase/caepi-import.sql',import.meta.url),'utf8');

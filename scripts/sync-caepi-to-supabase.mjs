@@ -469,6 +469,15 @@ function estimateImportBudget(databaseBytes, csvBytes, rows) {
   return { databaseBytes, csvBytes, estimatedGrowth, estimatedPeakBytes: databaseBytes + estimatedGrowth, limitBytes: MAX_DB_BYTES };
 }
 
+function validateApprovedHash(sourceHash, approvedHash) {
+  if (!/^[a-f0-9]{64}$/.test(approvedHash || '')) {
+    throw new Error('Carga bloqueada: hash de conteúdo revisado não configurado.');
+  }
+  if (sourceHash !== approvedHash) {
+    throw new Error('Carga bloqueada: a fonte oficial mudou desde a revisão. Validar novamente antes de importar.');
+  }
+}
+
 function checkDatabaseBudget(csvBytes, rows) {
   const bytes = Number(execFileSync('psql', ['-X', '-At', '-v', 'ON_ERROR_STOP=1', '-c',
     'select pg_database_size(current_database())'], {
@@ -744,6 +753,7 @@ async function main() {
     const datasetId = crypto.randomUUID();
     const built = await buildCsv(extracted.buffer, csvPath, datasetId);
     const sourceHash = built.contentHash;
+    if (!DRY_RUN) validateApprovedHash(sourceHash, process.env.CAEPI_APPROVED_HASH);
     const csvBytes = (await fsp.stat(csvPath)).size;
     if (csvBytes > MAX_TXT_BYTES) throw new Error('CSV preparado acima de 256 MiB.');
 
@@ -811,7 +821,7 @@ async function main() {
   }
 }
 
-export { extractGzip, extractTxt, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget };
+export { extractGzip, extractTxt, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget, validateApprovedHash };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error) => {

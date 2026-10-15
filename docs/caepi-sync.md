@@ -64,6 +64,11 @@ Não reativar agendamento sem medir o pico de espaço durante uma segunda carga.
 Não apagar execuções antigas para tentar corrigir armazenamento do Supabase:
 histórico de Actions, RAM, tamanho do banco e WAL são medidas diferentes.
 
+O workflow fixa `CAEPI_APPROVED_HASH` no hash de conteúdo revisado. Se o portal
+publicar uma base diferente, a carga será recusada até uma nova validação e
+atualização explícita desse hash. Em execução local de importação, esse valor
+também é obrigatório. Não há upload de artefatos da base para o GitHub.
+
 ## Testes
 
 ```text

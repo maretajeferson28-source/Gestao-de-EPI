@@ -59,6 +59,8 @@ jobs:
           SUPABASE_DB_URL: ${{ inputs.mode == 'import' && secrets.CAEPI_DB_URL || '' }}
           CAEPI_DRY_RUN: ${{ inputs.mode == 'import' && '0' || '1' }}
           CAEPI_SYNC_ENABLED: ${{ vars.CAEPI_SYNC_ENABLED }}
+          # Conteúdo efetivamente validado; mudança na fonte exige nova revisão.
+          CAEPI_APPROVED_HASH: 18218bbe9b9c78d27293d0709a0365ea6932dbcbf6b01878d03841c778ae0cd2
           CAEPI_DOWNLOAD_METHOD: browser
         run: |
           if [ "$CAEPI_DRY_RUN" != '1' ] && [ -z "$SUPABASE_DB_URL" ]; then
