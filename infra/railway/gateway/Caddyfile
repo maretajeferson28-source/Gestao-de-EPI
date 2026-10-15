@@ -1,0 +1,74 @@
+# Gateway do Gestão de EPI: faz o papel do <projeto>.supabase.co, juntando
+# auth, rest, storage e realtime numa URL pública. Rotas iguais às do Kong
+# do Supabase self-hosted; os serviços ficam só na rede privada do Railway.
+{
+	admin off
+	auto_https off
+	servers {
+		# Só a borda do Railway alcança este container: confiar no
+		# X-Forwarded-Proto dela para os serviços saberem que é https.
+		trusted_proxies static 0.0.0.0/0 ::/0
+	}
+}
+
+# CORS como o plugin do Kong: qualquer origem, sem cookies. O auth e o
+# storage não respondem sozinhos ao preflight do navegador.
+(cors) {
+	@preflight method OPTIONS
+	handle @preflight {
+		header Access-Control-Allow-Origin "*"
+		header Access-Control-Allow-Methods "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS"
+		header Access-Control-Allow-Headers "{http.request.header.Access-Control-Request-Headers}"
+		header Access-Control-Max-Age "3600"
+		respond 204
+	}
+}
+
+:{$PORT:8080} {
+	handle /health {
+		respond "ok" 200
+	}
+
+	handle_path /auth/v1/* {
+		import cors
+		reverse_proxy auth.railway.internal:9999 {
+			header_down Access-Control-Allow-Origin "*"
+		}
+	}
+
+	handle_path /rest/v1/* {
+		import cors
+		reverse_proxy rest.railway.internal:3000 {
+			header_down Access-Control-Allow-Origin "*"
+		}
+	}
+
+	handle_path /storage/v1/* {
+		import cors
+		reverse_proxy storage.railway.internal:5000 {
+			header_up X-Forwarded-Prefix /storage/v1
+			header_down Access-Control-Allow-Origin "*"
+		}
+	}
+
+	# O realtime descobre o tenant pelo subdomínio do Host (realtime-dev).
+	handle_path /realtime/v1/api/* {
+		import cors
+		rewrite * /api{uri}
+		reverse_proxy realtime.railway.internal:4000 {
+			header_up Host realtime-dev.supabase-realtime
+			header_down Access-Control-Allow-Origin "*"
+		}
+	}
+
+	handle_path /realtime/v1/* {
+		rewrite * /socket{uri}
+		reverse_proxy realtime.railway.internal:4000 {
+			header_up Host realtime-dev.supabase-realtime
+		}
+	}
+
+	handle {
+		respond "not found" 404
+	}
+}

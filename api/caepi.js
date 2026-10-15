@@ -1,5 +1,6 @@
-const SUPABASE_URL = 'https://jrzviiaywfjaawwkwgze.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_6dGPVd27-e8WkjMYOjaByQ_lXqp7Ool';
+// No Railway vêm das variáveis do serviço; na Vercel, sem elas, vale o Supabase.
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://jrzviiaywfjaawwkwgze.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_6dGPVd27-e8WkjMYOjaByQ_lXqp7Ool';
 
 async function rest(path) {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
