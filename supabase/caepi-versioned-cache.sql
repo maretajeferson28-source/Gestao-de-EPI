@@ -51,7 +51,7 @@ create index if not exists caepi_datasets_hash_idx
 create or replace function public.caepi_activate_dataset(p_dataset_id uuid)
 returns void
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -93,13 +93,17 @@ begin
          distinct_cas = v_cas,
          completed_at = now()
    where id = p_dataset_id;
+
+  -- Preserva apenas a base ativa. A carga e a troca são atômicas:
+  -- em caso de erro, a versão anterior permanece disponível.
+  delete from public.caepi_datasets where status = 'archived';
 end;
 $$;
 
 create or replace function public.caepi_fail_dataset(p_dataset_id uuid, p_error text)
 returns void
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 begin

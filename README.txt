@@ -17,7 +17,7 @@ No Supabase > Authentication > URL Configuration:
 No Google Cloud > OAuth Client:
 - Authorized JavaScript origins: adicione a origem do Netlify, por exemplo https://seu-site.netlify.app
 - Authorized redirect URIs: MANTENHA o callback do Supabase:
-  https://aqnrjjllfzirrtwvjjbl.supabase.co/auth/v1/callback
+  https://jrzviiaywfjaawwkwgze.supabase.co/auth/v1/callback
 
 O botão Acessar com Google usa automaticamente a URL em que o site estiver publicado.
 

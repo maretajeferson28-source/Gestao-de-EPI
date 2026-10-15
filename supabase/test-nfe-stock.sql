@@ -1,8 +1,8 @@
 -- Verificação transacional: todos os registros sintéticos são desfeitos.
 begin;
 do $$ begin
-  perform set_config('request.jwt.claims',(select jsonb_build_object('sub',a.id,'email',a.email,'role','authenticated')::text
-    from auth.users a join public.usuarios_autorizados u on lower(u.email)=lower(a.email)
+  perform set_config('request.jwt.claims',(select jsonb_build_object('sub',coalesce(a.id,gen_random_uuid()),'email',u.email,'role','authenticated')::text
+    from public.usuarios_autorizados u left join auth.users a on lower(u.email)=lower(a.email)
     where u.admin and u.ativo limit 1),true);
 end $$;
 set local role authenticated;
@@ -21,7 +21,9 @@ declare
   key text := repeat('9',44);
 begin
   select id,nome into e,n from public.epis order by id limit 1;
-  if e is null then raise exception 'Catálogo vazio para teste.'; end if;
+  if e is null then
+    insert into public.epis(nome,origem) values('QA_ROLLBACK','QA_ROLLBACK') returning id,nome into e,n;
+  end if;
   baseline := (public.epi_stock_summary()->>'saldo')::numeric;
   insert into public.movimentacoes_epi(data,epi_id,epi_nome_original,quantidade,responsavel,origem,contabiliza_estoque)
     values(current_date-30,e,n,99,'QA_ROLLBACK','QA_ROLLBACK',false) returning id into historical;

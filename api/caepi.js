@@ -1,11 +1,10 @@
-const SUPABASE_URL = 'https://aqnrjjllfzirrtwvjjbl.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxbnJqamxsZnppcnJ0d3ZqamJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNTc4MzcsImV4cCI6MjEwNTgzMzgzN30.-v6uZT7C5bznB9j-HKQm_XWxDmqM8_p9ozTwwQsZBP8';
+const SUPABASE_URL = 'https://jrzviiaywfjaawwkwgze.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_6dGPVd27-e8WkjMYOjaByQ_lXqp7Ool';
 
 async function rest(path) {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
     headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: SUPABASE_PUBLISHABLE_KEY,
       Accept: 'application/json'
     }
   });

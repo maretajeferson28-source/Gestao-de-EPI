@@ -1,6 +1,6 @@
 window.EPI_CONFIG = {
-  SUPABASE_URL: "https://aqnrjjllfzirrtwvjjbl.supabase.co",
-  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_zZv85Iuy-nHEkBCFHNoEhw_z9nHEsm3"
+  SUPABASE_URL: "https://jrzviiaywfjaawwkwgze.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_6dGPVd27-e8WkjMYOjaByQ_lXqp7Ool"
 };
 
 document.title = "Gestão de EPI";

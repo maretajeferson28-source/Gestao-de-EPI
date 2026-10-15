@@ -621,6 +621,8 @@ async function main() {
   console.log(`[CAEPI] temporário: ${tempDir}`);
 
   try {
+    // Falha cedo se o banco estiver indisponível, antes de baixar/processar 150 MB.
+    const currentHash = DRY_RUN ? '' : activeHash();
     console.log('[CAEPI] baixando exportação atual da consulta pública oficial...');
     const download = await downloadPublicCaepi(archivePath, tempDir);
 
@@ -664,7 +666,6 @@ async function main() {
       return;
     }
 
-    const currentHash = activeHash();
     if (currentHash && currentHash === sourceHash) {
       console.log('[CAEPI] hash idêntico ao dataset ativo. Nenhuma nova versão será criada.');
       return;
