@@ -1,0 +1,33 @@
+name: Testar conexão PostgreSQL
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-connection-check
+  cancel-in-progress: false
+
+jobs:
+  connection-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Testar proteções sem credenciais
+        run: node --test scripts/test-db-connection.mjs
+      - name: Garantir cliente PostgreSQL
+        run: |
+          if ! command -v psql >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+          fi
+      - name: Testar SELECT 1 somente leitura
+        env:
+          CAEPI_DB_URL: ${{ secrets.CAEPI_DB_URL }}
+        run: node scripts/check-db-connection.mjs
