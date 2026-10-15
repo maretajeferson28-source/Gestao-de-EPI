@@ -12,10 +12,20 @@ público; o resto fica na rede privada (`<serviço>.railway.internal`).
 | storage  | imagem `supabase/storage-api`           | 5000  | —                            |
 | realtime | imagem `supabase/realtime`              | 4000  | —                            |
 | gateway  | `infra/railway/gateway` (Caddy)         | 8080  | `infra/railway/gateway/**`   |
-| app      | raiz do repo + `infra/railway/app`      | 8080  | o site (fora de infra/db, infra/gateway, supabase, scripts, docs) |
+| app      | raiz do repo + `infra/railway/app`      | 8080  | o site (fora de infra/db, infra/gateway, infra/backup, supabase, scripts, docs) |
+| backup   | `infra/railway/backup` (cron 06:00 UTC) | —     | `infra/railway/backup/**`    |
 
-`db`, `gateway` e `app` publicam sozinhos a cada push no branch ligado no
-Railway. Os serviços por imagem mudam só pela versão da imagem no painel.
+`db`, `gateway`, `app` e `backup` publicam sozinhos a cada push no `main`.
+Os serviços por imagem mudam só pela versão da imagem no painel.
+
+## Backups
+
+- Volumes do Railway (`db-volume`, `storage-volume`): diário (6 dias) e semanal (27 dias).
+- Fora do Railway: o cron `backup` envia todo dia o banco (`pg_dump -Fc`) e os
+  arquivos do storage para o bucket R2 `gestao-epi-backups`, criptografados com
+  `openssl enc -aes-256-cbc -pbkdf2 -iter 200000` e guardados por 90 dias.
+  Para abrir: `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in <arquivo> -out <saída>`
+  com a senha `BACKUP_PASSPHRASE`, que fica fora do repositório.
 
 ## Segredos
 
