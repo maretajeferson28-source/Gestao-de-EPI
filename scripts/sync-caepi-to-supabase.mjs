@@ -7,6 +7,7 @@ import { once } from 'node:events';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { gunzipSync } from 'node:zlib';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 
@@ -15,15 +16,15 @@ const DOWNLOAD_EVENT_TARGET = 'ctl00$PlaceHolderConteudo$LinkButton1';
 const CURL = process.platform === 'win32' ? 'curl.exe' : 'curl';
 
 const MIN_ARCHIVE_BYTES = 1 * 1024 * 1024;
+const MAX_ARCHIVE_BYTES = 64 * 1024 * 1024;
+const MAX_TXT_BYTES = 256 * 1024 * 1024;
+const MAX_DB_BYTES = 450_000_000; // Margem abaixo da cota Free; não é espaço livre do disco/WAL.
 const MIN_TXT_BYTES = 50 * 1024 * 1024;
 const MIN_ROWS = 80000;
 const MIN_DISTINCT_CA = 25000;
 
 const DB_URL = process.env.SUPABASE_DB_URL;
 const DRY_RUN = process.env.CAEPI_DRY_RUN === '1';
-if (!DB_URL && !DRY_RUN) {
-  throw new Error('SUPABASE_DB_URL não configurada.');
-}
 
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
 const onlyDigits = (value) => String(value || '').replace(/\D+/g, '');
@@ -42,8 +43,12 @@ function toIsoDate(value) {
   const v = clean(value);
   if (!v) return '';
   const m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (!m) return '';
+  if (!m) throw new Error(`Data CAEPI inválida: ${v}`);
   const [, d, mo, y] = m;
+  const parsed = new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d)));
+  if (parsed.getUTCFullYear() !== Number(y) || parsed.getUTCMonth() + 1 !== Number(mo) || parsed.getUTCDate() !== Number(d)) {
+    throw new Error(`Data CAEPI inválida: ${v}`);
+  }
   return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
 }
 
@@ -60,6 +65,7 @@ function* parseDelimitedRecords(text, delimiter) {
   let row = [];
   let field = '';
   let quoted = false;
+  let closedQuote = false;
 
   for (let i = 0; i < text.length; i += 1) {
     const ch = text[i];
@@ -71,6 +77,7 @@ function* parseDelimitedRecords(text, delimiter) {
           i += 1;
         } else {
           quoted = false;
+          closedQuote = true;
         }
       } else {
         field += ch;
@@ -78,21 +85,26 @@ function* parseDelimitedRecords(text, delimiter) {
       continue;
     }
 
+    if (closedQuote && ch !== delimiter && ch !== '\r' && ch !== '\n') throw new Error('CSV CAEPI com conteúdo após aspas fechadas.');
     if (ch === '"') {
+      if (field.length) throw new Error('CSV CAEPI com aspas em campo não delimitado.');
       quoted = true;
     } else if (ch === delimiter) {
       row.push(field);
       field = '';
+      closedQuote = false;
     } else if (ch === '\n') {
       row.push(field.replace(/\r$/, ''));
       field = '';
       if (row.some((v) => v !== '')) yield row;
       row = [];
+      closedQuote = false;
     } else {
       field += ch;
     }
   }
 
+  if (quoted) throw new Error('CSV CAEPI com aspas não fechadas.');
   if (field.length || row.length) {
     row.push(field.replace(/\r$/, ''));
     if (row.some((v) => v !== '')) yield row;
@@ -119,17 +131,24 @@ function extractGzip(buffer) {
     throw new Error('Cabeçalho GZIP inválido.');
   }
 
-  // O endpoint CAEPI acrescenta uma página HTML depois do membro GZIP.
-  // Removemos apenas esse sufixo conhecido e deixamos gunzipSync validar
-  // integralmente o DEFLATE, o tamanho e o CRC antes de aceitar a fonte.
+  // O trailer é binário: inclusive 0x09/0x0a/0x0d/0x20 podem fazer parte
+  // do CRC/ISIZE. Nunca usar trim/whitespace para decidir onde ele termina.
+  const options = { maxOutputLength: MAX_TXT_BYTES };
+  let extracted;
+  let originalError;
+  try { extracted = gunzipSync(buffer, options); } catch (error) { originalError = error; }
   const searchStart = Math.max(10, buffer.length - (2 * 1024 * 1024));
   const htmlStart = buffer.indexOf(Buffer.from('<!DOCTYPE html'), searchStart);
-  let memberEnd = htmlStart < 0 ? buffer.length : htmlStart;
-  while (memberEnd > 10 && /\s/.test(String.fromCharCode(buffer[memberEnd - 1]))) {
-    memberEnd -= 1;
+  if (!extracted && htmlStart >= 0) {
+    // Só aceitar separadores conhecidos, e só quando o GZIP completo
+    // passar na verificação de CRC e tamanho feita pelo zlib.
+    for (const separator of ['', '\r\n', '\r\n\r\n', '\n']) {
+      const end = htmlStart - Buffer.byteLength(separator);
+      if (!buffer.subarray(end, htmlStart).equals(Buffer.from(separator))) continue;
+      try { extracted = gunzipSync(buffer.subarray(0, end), options); break; } catch {}
+    }
   }
-
-  const extracted = gunzipSync(buffer.subarray(0, memberEnd));
+  if (!extracted) throw new Error('GZIP CAEPI inválido, truncado ou acima do limite.', { cause: originalError });
   if (!extracted.length) throw new Error('CSV vazio após descompactar o GZIP.');
   return { fileName: 'RelatorioCA.csv', buffer: extracted };
 }
@@ -147,6 +166,7 @@ async function extractRar(buffer) {
   if (!headers.length) throw new Error('Nenhum TXT encontrado no RAR.');
 
   const target = headers[0];
+  if (Number(target.unpSize) > MAX_TXT_BYTES) throw new Error('TXT do RAR acima do limite.');
   const extracted = extractor.extract({ files: [target.name] });
   const files = [...extracted.files];
   const found = files.find((f) => f.fileHeader?.name === target.name) || files[0];
@@ -173,11 +193,25 @@ function extractZip(buffer) {
           zipfile.readEntry();
           return;
         }
+        if (entry.uncompressedSize > MAX_TXT_BYTES) {
+          zipfile.close();
+          reject(new Error('TXT do ZIP acima do limite.'));
+          return;
+        }
 
         zipfile.openReadStream(entry, (streamErr, stream) => {
           if (streamErr) return reject(streamErr);
           const chunks = [];
-          stream.on('data', (chunk) => chunks.push(chunk));
+          let bytes = 0;
+          stream.on('data', (chunk) => {
+            bytes += chunk.length;
+            if (bytes > MAX_TXT_BYTES) {
+              stream.destroy(new Error('TXT do ZIP acima do limite.'));
+              zipfile.close();
+              return;
+            }
+            chunks.push(chunk);
+          });
           stream.on('error', reject);
           stream.on('end', () => {
             resolved = true;
@@ -220,7 +254,7 @@ function hiddenAspNetFields(html) {
 function curlBrowserArgs() {
   return [
     '--fail', '--silent', '--show-error', '--location',
-    '--retry', '3', '--retry-all-errors',
+    '--retry', '0', '--max-filesize', String(MAX_ARCHIVE_BYTES),
     '--connect-timeout', '30', '--max-time', '600',
     '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36',
     '--header', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -236,6 +270,7 @@ async function validateDownloadedArchive(archivePath, sourceBase) {
   if (buffer.length < MIN_ARCHIVE_BYTES) {
     throw new Error(`download CAEPI abaixo de 1 MB (${buffer.length} bytes)`);
   }
+  if (buffer.length > MAX_ARCHIVE_BYTES) throw new Error('Download CAEPI acima de 64 MiB.');
   if (detectArchiveFormat(buffer) === 'unknown') {
     const sample = buffer.subarray(0, 300).toString('latin1').replace(/\s+/g, ' ');
     throw new Error(`download CAEPI não é GZIP/RAR/ZIP. Início: ${sample}`);
@@ -314,7 +349,7 @@ async function findBrowserExecutable() {
 async function downloadPublicCaepiWithBrowser(archivePath) {
   const { chromium } = await import('playwright-core');
   const executablePath = await findBrowserExecutable();
-  console.log(`[CAEPI] fallback com navegador real: ${executablePath}`);
+  console.log(`[CAEPI] download oficial com navegador: ${executablePath}`);
 
   const browser = await chromium.launch({
     executablePath,
@@ -348,7 +383,7 @@ async function downloadPublicCaepiWithBrowser(archivePath) {
         await output.write(Buffer.from(base64, 'base64'));
       });
 
-      const result = await page.evaluate(async ({ eventTarget }) => {
+      const result = await page.evaluate(async ({ eventTarget, maxArchiveBytes }) => {
         const formElement = document.querySelector('form');
         if (!formElement) throw new Error('Formulário ASP.NET não encontrado.');
 
@@ -364,7 +399,8 @@ async function downloadPublicCaepiWithBrowser(archivePath) {
           method: 'POST',
           credentials: 'same-origin',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString()
+          body: body.toString(),
+          signal: AbortSignal.timeout(180000)
         });
         if (!downloadResponse.ok) {
           return { status: downloadResponse.status, bytes: 0 };
@@ -377,6 +413,10 @@ async function downloadPublicCaepiWithBrowser(archivePath) {
           const { value, done } = await reader.read();
           if (done) break;
           bytes += value.byteLength;
+          if (bytes > maxArchiveBytes) {
+            await reader.cancel();
+            throw new Error('Download CAEPI acima do limite.');
+          }
           let binary = '';
           for (let offset = 0; offset < value.length; offset += 0x8000) {
             binary += String.fromCharCode(...value.subarray(offset, offset + 0x8000));
@@ -384,7 +424,7 @@ async function downloadPublicCaepiWithBrowser(archivePath) {
           await window.__writeCaepiChunk(btoa(binary));
         }
         return { status: downloadResponse.status, bytes };
-      }, { eventTarget: DOWNLOAD_EVENT_TARGET });
+      }, { eventTarget: DOWNLOAD_EVENT_TARGET, maxArchiveBytes: MAX_ARCHIVE_BYTES });
 
       if (result.status < 200 || result.status >= 300) {
         throw new Error(`download CAEPI respondeu HTTP ${result.status} no navegador`);
@@ -406,26 +446,42 @@ async function downloadPublicCaepi(archivePath, tempDir) {
   if (method === 'browser') return downloadPublicCaepiWithBrowser(archivePath);
   if (method === 'curl') return downloadPublicCaepiWithCurl(archivePath, tempDir);
 
-  try {
-    return await downloadPublicCaepiWithCurl(archivePath, tempDir);
-  } catch (curlError) {
-    console.warn(`[CAEPI] curl recusado: ${curlError.message}`);
-    console.log('[CAEPI] tentando a consulta oficial com navegador real...');
-    return downloadPublicCaepiWithBrowser(archivePath);
-  }
+  throw new Error('Defina CAEPI_DOWNLOAD_METHOD como browser ou curl; não há fallback automático.');
 }
 
 function activeHash() {
   return execFileSync(
     'psql',
     [
-      `--dbname=${DB_URL}`,
+      '-X',
       '-At',
       '-v', 'ON_ERROR_STOP=1',
       '-c', "select source_hash from public.caepi_datasets where status = 'active' limit 1"
     ],
-    { encoding: 'utf8' }
+    { encoding: 'utf8', timeout: 30000, env: { ...process.env, PGDATABASE: DB_URL, PGCONNECT_TIMEOUT: '15' } }
   ).trim();
+}
+
+function estimateImportBudget(databaseBytes, csvBytes, rows) {
+  // Estimativa conservadora para a NOVA versão + índices + margem.
+  // A versão atual permanece incluída em databaseBytes durante a troca.
+  const estimatedGrowth = Math.ceil(csvBytes * 2 + rows * 384 + 32 * 1024 * 1024);
+  return { databaseBytes, csvBytes, estimatedGrowth, estimatedPeakBytes: databaseBytes + estimatedGrowth, limitBytes: MAX_DB_BYTES };
+}
+
+function checkDatabaseBudget(csvBytes, rows) {
+  const bytes = Number(execFileSync('psql', ['-X', '-At', '-v', 'ON_ERROR_STOP=1', '-c',
+    'select pg_database_size(current_database())'], {
+    encoding: 'utf8', timeout: 30000,
+    env: { ...process.env, PGDATABASE: DB_URL, PGCONNECT_TIMEOUT: '15' }
+  }).trim());
+  if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error('Tamanho do banco não pôde ser verificado.');
+  const budget = estimateImportBudget(bytes, csvBytes, rows);
+  console.log('[CAEPI] orçamento estimado (bytes):', JSON.stringify(budget));
+  if (budget.estimatedPeakBytes > MAX_DB_BYTES) {
+    throw new Error('Carga bloqueada: estimativa ultrapassa o orçamento de 450 MB. Dimensionar antes de importar.');
+  }
+  return budget;
 }
 
 async function buildCsv(txtBuffer, csvPath, datasetId) {
@@ -447,6 +503,19 @@ async function buildCsv(txtBuffer, csvPath, datasetId) {
   console.log(`[CAEPI] delimitador detectado: ${delimiter === ';' ? 'ponto e vírgula' : 'pipe'}`);
   const originalHeaders = first.value.map((h) => clean(h));
   const normalizedHeaders = originalHeaders.map(normalizeKey);
+  if (normalizedHeaders.some((h) => !h) || new Set(normalizedHeaders).size !== normalizedHeaders.length) {
+    throw new Error('Cabeçalhos CAEPI vazios ou duplicados.');
+  }
+  for (const aliases of [
+    ['nrregistroca','nr_registro_ca','numero_ca','ca'],
+    ['datavalidade','data_validade','data_de_validade','validade'],
+    ['situacao','situacao_ca','status'],
+    ['razaosocial','razao_social','fabricante'],
+    ['nomeequipamento','equipamento','nome_equipamento'],
+    ['descricaoequipamento','descricao_equipamento','descricao']
+  ]) {
+    if (!aliases.some((key) => normalizedHeaders.includes(key))) throw new Error(`Coluna obrigatória CAEPI ausente: ${aliases[0]}`);
+  }
   console.log('[CAEPI] cabeçalho oficial:', originalHeaders.join(' | '));
   console.log('[CAEPI] cabeçalho normalizado:', normalizedHeaders.join(' | '));
 
@@ -462,106 +531,120 @@ async function buildCsv(txtBuffer, csvPath, datasetId) {
   const recordHashes = [];
   const seenRecordHashes = new Set();
   const validationSamples = new Map();
+  let sourceRows = 0;
+  const emptyFields = {};
+  let streamError;
+  stream.on('error', (error) => { streamError = error; });
 
-  for (const values of iterator) {
-    const row = {};
-    const raw = {};
+  try {
+    for (const values of iterator) {
+      sourceRows += 1;
+      if (streamError) throw streamError;
+      if (values.length !== originalHeaders.length) throw new Error(`Linha ${sourceRows + 1}: número de colunas incorreto.`);
+      const row = {};
+      const raw = {};
 
-    for (let i = 0; i < originalHeaders.length; i += 1) {
-      const original = originalHeaders[i] || `campo_${i + 1}`;
-      const key = normalizedHeaders[i] || `campo_${i + 1}`;
-      const value = clean(values[i]);
-      row[key] = value;
-      raw[original] = value;
-    }
-
-    const ca = onlyDigits(pick(row, [
-      'nrregistroca','nr_registro_ca','numero_ca','n_do_ca','n_ca','ca','registro_ca','certificado_de_aprovacao'
-    ]));
-
-    if (!ca) {
-      ignored += 1;
-      continue;
-    }
-
-    const dataValidade = toIsoDate(pick(row, [
-      'datavalidade','data_validade','data_de_validade','validade','validade_ca'
-    ]));
-    const situacao = pick(row, ['situacao','situacao_ca','status','status_ca']);
-    const fabricante = pick(row, [
-      'razaosocial','fabricante','razao_social','razao_social_fabricante','nome_fabricante','empresa'
-    ]);
-    const cnpj = pick(row, ['cnpj','cnpj_empresa','cnpj_fabricante']);
-    const equipamento = pick(row, [
-      'nomeequipamento','equipamento','tipo_equipamento','natureza','natureza_equipamento','nome_equipamento'
-    ]);
-    const descricao = pick(row, [
-      'descricaoequipamento','descricao','descricao_equipamento','descricao_do_equipamento'
-    ]);
-    const marca = pick(row, ['marcaca','marca','marca_ca','marca_equipamento']);
-    const referencia = pick(row, [
-      'referencia','referencia_ca','referencia_equipamento','modelo'
-    ]);
-    const norma = pick(row, [
-      'norma','normas','norma_tecnica','referencia_norma','norma_referencia'
-    ]);
-
-    if (ca === '39707' || ca === '43840') {
-      const previous = validationSamples.get(ca);
-      if (!previous || dataValidade > previous.dataValidade) {
-        validationSamples.set(ca, { dataValidade, situacao, equipamento });
+      for (let i = 0; i < originalHeaders.length; i += 1) {
+        const original = originalHeaders[i] || `campo_${i + 1}`;
+        const key = normalizedHeaders[i] || `campo_${i + 1}`;
+        const value = clean(values[i]);
+        if (value.includes('\u0000') || value.includes('\uFFFD')) throw new Error(`Linha ${sourceRows + 1}: caracteres inválidos.`);
+        if (!value) emptyFields[key] = (emptyFields[key] || 0) + 1;
+        row[key] = value;
+        raw[original] = value;
       }
-    }
 
-    const laudos = {};
-    for (const [key, value] of Object.entries(row)) {
-      if (
-        value &&
-        (
-          key.includes('laudo') ||
-          key.includes('restricao') ||
-          key.includes('aprovadopara') ||
-          key.includes('aprovado_para') ||
-          key.includes('observacao')
-        )
-      ) {
-        laudos[key] = value;
+      const caOriginal = pick(row, [
+        'nrregistroca','nr_registro_ca','numero_ca','n_do_ca','n_ca','ca','registro_ca','certificado_de_aprovacao'
+      ]);
+      const ca = onlyDigits(caOriginal);
+
+      if (!/^\d{1,10}$/.test(caOriginal)) throw new Error(`Linha ${sourceRows + 1}: número de CA inválido.`);
+
+      const dataValidade = toIsoDate(pick(row, [
+        'datavalidade','data_validade','data_de_validade','validade','validade_ca'
+      ]));
+      const situacao = pick(row, ['situacao','situacao_ca','status','status_ca']);
+      const fabricante = pick(row, [
+        'razaosocial','fabricante','razao_social','razao_social_fabricante','nome_fabricante','empresa'
+      ]);
+      const cnpj = pick(row, ['cnpj','cnpj_empresa','cnpj_fabricante']);
+      const equipamento = pick(row, [
+        'nomeequipamento','equipamento','tipo_equipamento','natureza','natureza_equipamento','nome_equipamento'
+      ]);
+      const descricao = pick(row, [
+        'descricaoequipamento','descricao','descricao_equipamento','descricao_do_equipamento'
+      ]);
+      const marca = pick(row, ['marcaca','marca','marca_ca','marca_equipamento']);
+      const referencia = pick(row, [
+        'referencia','referencia_ca','referencia_equipamento','modelo'
+      ]);
+      const norma = pick(row, [
+        'norma','normas','norma_tecnica','referencia_norma','norma_referencia'
+      ]);
+
+      if (ca === '39707' || ca === '43840') {
+        const previous = validationSamples.get(ca);
+        if (!previous || dataValidade > previous.dataValidade) {
+          validationSamples.set(ca, { dataValidade, situacao, equipamento });
+        }
       }
+
+      const laudos = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (
+          value &&
+          (
+            key.includes('laudo') ||
+            key.includes('restricao') ||
+            key.includes('aprovadopara') ||
+            key.includes('aprovado_para') ||
+            key.includes('observacao')
+          )
+        ) {
+          laudos[key] = value;
+        }
+      }
+
+      const recordHash = sha256(JSON.stringify(raw));
+      if (seenRecordHashes.has(recordHash)) {
+        ignored += 1;
+        continue;
+      }
+      seenRecordHashes.add(recordHash);
+      recordHashes.push(recordHash);
+      const line = [
+        datasetId,
+        recordHash,
+        ca,
+        dataValidade,
+        situacao,
+        fabricante,
+        cnpj,
+        equipamento,
+        descricao,
+        marca,
+        referencia,
+        norma,
+        JSON.stringify(laudos),
+        '{}'
+      ].map(csvCopyCell).join(',') + '\n';
+
+      if (!stream.write(line)) await once(stream, 'drain');
+      prepared += 1;
+      distinct.add(ca);
     }
 
-    const recordHash = sha256(JSON.stringify(raw));
-    if (seenRecordHashes.has(recordHash)) {
-      ignored += 1;
-      continue;
-    }
-    seenRecordHashes.add(recordHash);
-    recordHashes.push(recordHash);
-    const line = [
-      datasetId,
-      recordHash,
-      ca,
-      dataValidade,
-      situacao,
-      fabricante,
-      cnpj,
-      equipamento,
-      descricao,
-      marca,
-      referencia,
-      norma,
-      JSON.stringify(laudos),
-      '{}'
-    ].map(csvCopyCell).join(',') + '\n';
-
-    if (!stream.write(line)) await once(stream, 'drain');
-    prepared += 1;
-    distinct.add(ca);
+    stream.end();
+    await once(stream, 'finish');
+    if (streamError) throw streamError;
+  } finally {
+    stream.destroy();
   }
 
-  stream.end();
-  await once(stream, 'finish');
-
   return {
+    sourceRows,
+    emptyFields,
     prepared,
     ignored,
     distinctCas: distinct.size,
@@ -596,7 +679,7 @@ function importDataset({
   execFileSync(
     'psql',
     [
-      `--dbname=${DB_URL}`,
+      '-X',
       '-v', 'ON_ERROR_STOP=1',
       '-v', `dataset_id=${datasetId}`,
       '-v', `source_type=${sourceType}`,
@@ -606,13 +689,24 @@ function importDataset({
       '-v', `archive_bytes=${archiveBytes}`,
       '-v', `txt_bytes=${txtBytes}`,
       '-v', `metadata=${JSON.stringify(metadata)}`,
+      '-v', `max_db_bytes=${MAX_DB_BYTES}`,
       '-f', renderedPath
     ],
-    { stdio: 'inherit' }
+    { stdio: 'inherit', timeout: 18 * 60 * 1000, env: { ...process.env, PGDATABASE: DB_URL, PGCONNECT_TIMEOUT: '15' } }
   );
 }
 
 async function main() {
+  if (!DRY_RUN) {
+    if (!DB_URL || process.env.CAEPI_SYNC_ENABLED !== 'true') throw new Error('Carga bloqueada: credencial e liberação explícita são obrigatórias.');
+    const url = new URL(DB_URL);
+    const ref = 'jrzviiaywfjaawwkwgze';
+    if (!['postgres:', 'postgresql:'].includes(url.protocol) || !(
+      url.hostname === `db.${ref}.supabase.co` ||
+      (url.hostname.endsWith('.pooler.supabase.com') && decodeURIComponent(url.username) === `postgres.${ref}`)
+    )) throw new Error('Carga bloqueada: a conexão não aponta para o projeto novo esperado.');
+  }
+  if (process.env.CAEPI_ARCHIVE_PATH && !DRY_RUN) throw new Error('Arquivo local permitido somente em validação sem banco.');
   const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'caepi-'));
   const archivePath = path.join(tempDir, 'caepi-oficial.bin');
   const txtPath = path.join(tempDir, 'caepi-oficial.csv');
@@ -624,14 +718,20 @@ async function main() {
     // Falha cedo se o banco estiver indisponível, antes de baixar/processar 150 MB.
     const currentHash = DRY_RUN ? '' : activeHash();
     console.log('[CAEPI] baixando exportação atual da consulta pública oficial...');
-    const download = await downloadPublicCaepi(archivePath, tempDir);
+    let download;
+    if (process.env.CAEPI_ARCHIVE_PATH) {
+      await fsp.copyFile(path.resolve(process.env.CAEPI_ARCHIVE_PATH), archivePath);
+      download = await validateDownloadedArchive(archivePath, 'caepi-local-validation');
+    } else {
+      download = await downloadPublicCaepi(archivePath, tempDir);
+    }
 
     const archiveBytes = download.buffer.length;
     const extracted = await extractTxt(download.buffer);
     const txtBytes = extracted.buffer.length;
 
-    if (txtBytes < MIN_TXT_BYTES) {
-      throw new Error(`TXT extraído abaixo de 50 MB (${txtBytes} bytes)`);
+    if (txtBytes < MIN_TXT_BYTES || txtBytes > MAX_TXT_BYTES) {
+      throw new Error(`TXT extraído fora dos limites de 50 a 256 MiB (${txtBytes} bytes)`);
     }
 
     await fsp.writeFile(txtPath, extracted.buffer);
@@ -644,6 +744,8 @@ async function main() {
     const datasetId = crypto.randomUUID();
     const built = await buildCsv(extracted.buffer, csvPath, datasetId);
     const sourceHash = built.contentHash;
+    const csvBytes = (await fsp.stat(csvPath)).size;
+    if (csvBytes > MAX_TXT_BYTES) throw new Error('CSV preparado acima de 256 MiB.');
 
     console.log(`[CAEPI] preparados: ${built.prepared}`);
     console.log(`[CAEPI] CAs distintos: ${built.distinctCas}`);
@@ -661,6 +763,15 @@ async function main() {
     }
 
     if (DRY_RUN) {
+      if (process.env.CAEPI_REPORT_PATH) {
+        await fsp.writeFile(path.resolve(process.env.CAEPI_REPORT_PATH), JSON.stringify({
+          validated_at: new Date().toISOString(), source_url: CAEPI_PAGE_URL,
+          archiveBytes, txtBytes, csvBytes, ...built,
+          database: 'not connected; no writes',
+          budget: estimateImportBudget(0, csvBytes, built.prepared),
+          budget_note: 'Estimativa apenas. Importação consulta tamanho real do banco antes da carga.'
+        }, null, 2));
+      }
       console.log(`[CAEPI] hash da fonte: ${sourceHash}`);
       console.log('[CAEPI] dry-run concluído; banco não foi consultado nem alterado.');
       return;
@@ -670,6 +781,7 @@ async function main() {
       console.log('[CAEPI] hash idêntico ao dataset ativo. Nenhuma nova versão será criada.');
       return;
     }
+    checkDatabaseBudget(csvBytes, built.prepared);
 
     const sourceType = `${download.sourceBase}-${extracted.format}`;
     const metadata = {
@@ -699,7 +811,12 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error('[CAEPI] ERRO:', error);
-  process.exitCode = 1;
-});
+export { extractGzip, extractTxt, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget };
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    const message = String(error.message).replaceAll(DB_URL || '\u0000', '[CONEXÃO REDIGIDA]');
+    console.error('[CAEPI] ERRO:', message);
+    process.exitCode = 1;
+  });
+}

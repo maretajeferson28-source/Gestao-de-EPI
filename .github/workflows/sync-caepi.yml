@@ -3,6 +3,18 @@ name: Sync CAEPI
 on:
   # Agendamento suspenso até validar tamanho e carga no banco novo.
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Validar sem banco ou importar (exige liberação)
+        type: choice
+        options:
+          - validate
+          - import
+        default: validate
+        required: true
+
+permissions:
+  contents: read
 
 concurrency:
   group: sync-caepi
@@ -10,7 +22,7 @@ concurrency:
 
 jobs:
   sync-caepi:
-    if: ${{ vars.CAEPI_SYNC_ENABLED == 'true' }}
+    if: ${{ inputs.mode == 'validate' || vars.CAEPI_SYNC_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -31,7 +43,10 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Testar extrator e proteções
+        run: node --test scripts/test-caepi-sync.mjs scripts/test-supabase-rebuild.mjs
 
       - name: Install PostgreSQL client
         run: |
@@ -40,11 +55,14 @@ jobs:
 
       - name: Sync CAEPI to Supabase
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # Secret novo e separado: não religar execuções antigas à base nova.
+          SUPABASE_DB_URL: ${{ inputs.mode == 'import' && secrets.CAEPI_DB_URL || '' }}
+          CAEPI_DRY_RUN: ${{ inputs.mode == 'import' && '0' || '1' }}
+          CAEPI_SYNC_ENABLED: ${{ vars.CAEPI_SYNC_ENABLED }}
           CAEPI_DOWNLOAD_METHOD: browser
         run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "Configure o secret SUPABASE_DB_URL do banco novo antes de executar."
+          if [ "$CAEPI_DRY_RUN" != '1' ] && [ -z "$SUPABASE_DB_URL" ]; then
+            echo "Configure o secret CAEPI_DB_URL do banco novo antes de executar."
             exit 1
           fi
           xvfb-run --auto-servernum node scripts/sync-caepi-to-supabase.mjs
