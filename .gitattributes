@@ -1,0 +1,2 @@
+# Arquivos que rodam em container Linux no Railway: sempre com quebra LF.
+infra/** text eol=lf
