@@ -1,0 +1,14 @@
+<!-- Modelo do e-mail de redefinição de senha, lido pelo auth (GoTrue) no Railway. -->
+<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1f2937">
+  <h2 style="margin:0 0 16px;font-size:20px">Gestão de <span style="color:#f97316">EPI</span></h2>
+  <p style="margin:0 0 12px;font-size:15px;line-height:1.5">Olá,</p>
+  <p style="margin:0 0 20px;font-size:15px;line-height:1.5">
+    Recebemos um pedido para redefinir a senha da conta <strong>{{ .Email }}</strong>. Para criar uma senha nova, clique no botão abaixo.
+  </p>
+  <p style="margin:0 0 24px">
+    <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#f97316;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:8px">Redefinir minha senha</a>
+  </p>
+  <p style="margin:0;font-size:13px;line-height:1.5;color:#6b7280">
+    Se você não pediu isso, ignore este e-mail. Sua senha atual continua valendo.
+  </p>
+</div>
