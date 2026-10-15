@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { extractGzip, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget, validateApprovedHash } from './sync-caepi-to-supabase.mjs';
+import { extractGzip, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget, validateApprovedHash, postgresEnvironment } from './sync-caepi-to-supabase.mjs';
 
 const header = ['NR Registro CA','DATA DE VALIDADE','SITUACAO','RAZAO SOCIAL','EQUIPAMENTO','DESCRICAO EQUIPAMENTO'];
 const row = ['39707','29/10/2026','VÁLIDO','Fabricante Teste','MACACÃO','Descrição de teste'];
@@ -86,6 +86,15 @@ test('somente conteúdo com hash revisado pode entrar no banco',()=>{
   assert.doesNotThrow(()=>validateApprovedHash(approved,approved));
   assert.throws(()=>validateApprovedHash('a'.repeat(64),approved),/fonte oficial mudou/);
   for(const missing of [undefined,'', 'hash-invalido']) assert.throws(()=>validateApprovedHash(approved,missing),/não configurado/);
+});
+test('psql recebe host/porta/banco separados; senha não vai nos argumentos',()=>{
+  const env=postgresEnvironment('postgresql://postgres.projeto:exemplo%40teste@aws-1-sa-east-1.pooler.supabase.com:5432/postgres');
+  assert.equal(env.PGHOST,'aws-1-sa-east-1.pooler.supabase.com');
+  assert.equal(env.PGPORT,'5432');
+  assert.equal(env.PGUSER,'postgres.projeto');
+  assert.equal(env.PGPASSWORD,'exemplo@teste');
+  assert.equal(env.PGDATABASE,'postgres');
+  assert.equal(env.PGSSLMODE,'require');
 });
 test('SQL mantém troca atômica, lock da carga, revalidação do hash e limite real',async()=>{
   const sql=await fs.readFile(new URL('../supabase/caepi-import.sql',import.meta.url),'utf8');

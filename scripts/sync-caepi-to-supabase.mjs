@@ -458,8 +458,21 @@ function activeHash() {
       '-v', 'ON_ERROR_STOP=1',
       '-c', "select source_hash from public.caepi_datasets where status = 'active' limit 1"
     ],
-    { encoding: 'utf8', timeout: 30000, env: { ...process.env, PGDATABASE: DB_URL, PGCONNECT_TIMEOUT: '15' } }
+    { encoding: 'utf8', timeout: 30000, env: { ...process.env, ...postgresEnvironment(DB_URL) } }
   ).trim();
+}
+
+function postgresEnvironment(connectionString) {
+  // PGDATABASE é somente o nome do banco. URI completa nessa variável não
+  // equivale a psql --dbname=URI. Separar evita conexão local e não expõe a
+  // senha nos argumentos do processo/erros do child_process.
+  const url = new URL(connectionString);
+  return {
+    PGHOST: url.hostname, PGPORT: url.port || '5432',
+    PGUSER: decodeURIComponent(url.username), PGPASSWORD: decodeURIComponent(url.password),
+    PGDATABASE: decodeURIComponent(url.pathname.slice(1)) || 'postgres',
+    PGSSLMODE: 'require', PGCONNECT_TIMEOUT: '15'
+  };
 }
 
 function estimateImportBudget(databaseBytes, csvBytes, rows) {
@@ -482,7 +495,7 @@ function checkDatabaseBudget(csvBytes, rows) {
   const bytes = Number(execFileSync('psql', ['-X', '-At', '-v', 'ON_ERROR_STOP=1', '-c',
     'select pg_database_size(current_database())'], {
     encoding: 'utf8', timeout: 30000,
-    env: { ...process.env, PGDATABASE: DB_URL, PGCONNECT_TIMEOUT: '15' }
+    env: { ...process.env, ...postgresEnvironment(DB_URL) }
   }).trim());
   if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error('Tamanho do banco não pôde ser verificado.');
   const budget = estimateImportBudget(bytes, csvBytes, rows);
@@ -701,7 +714,7 @@ function importDataset({
       '-v', `max_db_bytes=${MAX_DB_BYTES}`,
       '-f', renderedPath
     ],
-    { stdio: 'inherit', timeout: 18 * 60 * 1000, env: { ...process.env, PGDATABASE: DB_URL, PGCONNECT_TIMEOUT: '15' } }
+    { stdio: 'inherit', timeout: 18 * 60 * 1000, env: { ...process.env, ...postgresEnvironment(DB_URL) } }
   );
 }
 
@@ -821,7 +834,7 @@ async function main() {
   }
 }
 
-export { extractGzip, extractTxt, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget, validateApprovedHash };
+export { extractGzip, extractTxt, parseDelimitedRecords, toIsoDate, buildCsv, estimateImportBudget, validateApprovedHash, postgresEnvironment };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
