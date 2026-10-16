@@ -77,10 +77,52 @@
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
+  // Início: página de entrada do celular, com saudação e atalhos grandes para
+  // as páginas do menu. O botão é mobile-only; no computador nada aparece.
+  const navList = sidebar.querySelector('.nav');
+  const homeButton = document.createElement('button');
+  homeButton.type = 'button';
+  homeButton.className = 'mobile-only';
+  homeButton.dataset.page = 'inicio';
+  homeButton.innerHTML = `<span class="ico">${icon('house')}</span><span class="text">Início</span>`;
+  navList.prepend(homeButton);
+  const homePage = document.createElement('section');
+  homePage.className = 'page mobile-home';
+  homePage.dataset.pageContent = 'inicio';
+  app.querySelector('.content').prepend(homePage);
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  function renderHome() {
+    if (!homePage.classList.contains('active')) return;
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+    const name = (document.getElementById('sideUserName')?.textContent || '').trim();
+    const firstName = name && name !== 'Usuário' ? name.split(/\s+/)[0] : '';
+    const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const tiles = [...navList.querySelectorAll('[data-page]')]
+      .filter((button) => button !== homeButton && !button.hidden && getComputedStyle(button).display !== 'none');
+    homePage.innerHTML = `
+      <div class="mobile-home-head">
+        <span>${escapeHtml(today)}</span>
+        <h2>${greeting}${firstName ? `, ${escapeHtml(firstName)}` : ''}</h2>
+        <p>O que você precisa fazer agora?</p>
+      </div>
+      <div class="mobile-home-grid">
+        ${tiles.map((button) => `
+          <button type="button" class="mobile-home-tile" data-home-go="${escapeHtml(button.dataset.page)}">
+            <span class="mobile-home-icon">${button.querySelector('.ico')?.innerHTML || ''}</span>
+            <span>${escapeHtml(button.querySelector('.text')?.textContent.trim() || '')}</span>
+          </button>`).join('')}
+      </div>`;
+  }
+  homeButton.addEventListener('click', () => { window.nav?.('inicio'); renderHome(); });
+  homePage.addEventListener('click', (event) => {
+    const tile = event.target.closest('[data-home-go]');
+    if (tile) navList.querySelector(`[data-page="${CSS.escape(tile.dataset.homeGo)}"]`)?.click();
+  });
+
   // Páginas que o celular não mostra (o mobile.css esconde os botões). Se uma
   // delas estiver aberta — o app abre no Dashboard —, vai para a primeira
-  // página permitida. Enquanto o acesso de administrador ainda carrega, a
-  // escolha automática pode mudar de novo; depois que a pessoa navega, não.
+  // página permitida, que é o Início (primeiro botão do menu).
   const MOBILE_HIDDEN_PAGES = ['dashboard', 'movimentacoes', 'notas'];
   let autoPage = null;
   function leaveHiddenPage() {
@@ -102,6 +144,9 @@
   let previousPage = '';
   function syncNavigation() {
     leaveHiddenPage();
+    // Tela que cresceu para computador com o Início aberto: volta ao Dashboard.
+    if (!media.matches && homeButton.classList.contains('active')) navList.querySelector('[data-page="dashboard"]')?.click();
+    renderHome();
     const active = sidebar.querySelector('[data-page].active')?.dataset.page;
     if (media.matches && active !== previousPage) {
       closeMenu();
