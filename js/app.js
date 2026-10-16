@@ -726,7 +726,7 @@ function renderColabs(){
         <strong title="${esc(nome)}">${esc(nome)}</strong>
         <span title="${esc(detalhe)}">${esc(detalhe)}</span>
       </div>
-      ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis-vertical" aria-hidden="true"></i></span>`:''}
+      ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
       <span class="collab-dot ${ativo?'active':'inactive'}" title="${ativo?'Ativo':'Inativo'}"></span>
     </article>`;
   }).join('')||'<div class="empty">Nenhum colaborador.</div>';
