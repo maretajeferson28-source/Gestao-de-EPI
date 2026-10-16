@@ -2,6 +2,11 @@
 .mobile-only{display:none!important}
 @media(max-width:720px){
   .mobile-only:not([hidden]){display:flex!important}
+  /* No celular ficam de fora o painel, as movimentações e as notas fiscais
+     (continuam no computador). A troca de página fica no js/mobile.js. */
+  .sidebar .nav [data-page="dashboard"],
+  .sidebar .nav [data-page="movimentacoes"],
+  .sidebar .nav [data-page="notas"]{display:none!important}
   html,body{min-height:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
   body{background:#0d0d0d}
   .app:not(.app-hidden){display:block;min-height:100dvh}

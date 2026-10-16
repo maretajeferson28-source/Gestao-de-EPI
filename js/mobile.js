@@ -77,8 +77,31 @@
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
+  // Páginas que o celular não mostra (o mobile.css esconde os botões). Se uma
+  // delas estiver aberta — o app abre no Dashboard —, vai para a primeira
+  // página permitida. Enquanto o acesso de administrador ainda carrega, a
+  // escolha automática pode mudar de novo; depois que a pessoa navega, não.
+  const MOBILE_HIDDEN_PAGES = ['dashboard', 'movimentacoes', 'notas'];
+  let autoPage = null;
+  function leaveHiddenPage() {
+    if (!media.matches || app.classList.contains('app-hidden')) return;
+    const active = sidebar.querySelector('[data-page].active');
+    const preferred = [...sidebar.querySelectorAll('.nav [data-page]')]
+      .find((button) => !button.hidden && !MOBILE_HIDDEN_PAGES.includes(button.dataset.page));
+    if (!preferred) return;
+    const onHidden = !active || MOBILE_HIDDEN_PAGES.includes(active.dataset.page);
+    const betterAuto = autoPage && active?.dataset.page === autoPage && preferred.dataset.page !== autoPage;
+    if (onHidden || betterAuto) {
+      autoPage = preferred.dataset.page;
+      preferred.click();
+    }
+  }
+  sidebar.addEventListener('click', (event) => {
+    if (event.isTrusted && event.target.closest('[data-page]')) autoPage = null;
+  });
   let previousPage = '';
   function syncNavigation() {
+    leaveHiddenPage();
     const active = sidebar.querySelector('[data-page].active')?.dataset.page;
     if (media.matches && active !== previousPage) {
       closeMenu();
