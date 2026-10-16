@@ -45,6 +45,13 @@
 
 	handle_path /storage/v1/* {
 		import cors
+		# O storage não manda Cache-Control nos links assinados (1 h): sem isto
+		# o navegador baixa a foto do EPI de novo a cada abertura da ficha.
+		@signed path /object/sign/*
+		header @signed {
+			Cache-Control "private, max-age=3600"
+			defer
+		}
 		reverse_proxy storage.railway.internal:5000 {
 			header_up X-Forwarded-Prefix /storage/v1
 			header_down Access-Control-Allow-Origin "*"

@@ -1089,15 +1089,28 @@ function renderEpiVariantList(){
   refreshIcons();
   hydrateVariantCardImages(visibleRows);
 }
+// Link assinado vale 1 h. Reaproveitar o mesmo link deixa o navegador usar a
+// imagem que já baixou ao reabrir a ficha; o caminho muda a cada novo envio.
+const variantImageUrls=new Map();
+async function variantImageUrl(path){
+  const cached=variantImageUrls.get(path);
+  if(cached&&cached.expires>Date.now()) return cached.url;
+  const {data,error}=await sb.storage.from('epi-imagens').createSignedUrl(path,3600);
+  if(error) throw error;
+  if(!data?.signedUrl) return null;
+  variantImageUrls.set(path,{url:data.signedUrl,expires:Date.now()+50*60*1000});
+  return data.signedUrl;
+}
+
 async function hydrateVariantCardImages(rows){
   await Promise.all(rows.filter(v=>v.imagem_path).map(async v=>{
     try{
-      const {data,error}=await sb.storage.from('epi-imagens').createSignedUrl(v.imagem_path,3600);
-      if(error||!data?.signedUrl) return;
+      const url=await variantImageUrl(v.imagem_path);
+      if(!url) return;
       const img=document.querySelector(`[data-variant-image="${CSS.escape(v.id)}"]`);
       const empty=document.querySelector(`[data-variant-image-empty="${CSS.escape(v.id)}"]`);
       if(img){
-        img.src=data.signedUrl;
+        img.src=url;
         img.hidden=false;
       }
       if(empty) empty.hidden=true;
@@ -1153,11 +1166,10 @@ async function renderVariantImageEditor(v=null){
   if(!v?.imagem_path) return;
 
   try{
-    const {data,error}=await sb.storage.from('epi-imagens').createSignedUrl(v.imagem_path,3600);
-    if(error) throw error;
+    const url=await variantImageUrl(v.imagem_path);
 
-    if($('epiVariantImagePreview')&&data?.signedUrl){
-      $('epiVariantImagePreview').src=data.signedUrl;
+    if($('epiVariantImagePreview')&&url){
+      $('epiVariantImagePreview').src=url;
       $('epiVariantImagePreview').hidden=false;
       $('epiVariantImageEmpty').hidden=true;
       $('epiVariantImageRemove').hidden=false;
@@ -1213,6 +1225,27 @@ function markVariantImageForRemoval(){
   $('epiVariantMsg').textContent='A imagem será removida ao salvar as alterações.';
 }
 
+// Reduz a foto do modelo antes do envio: a ficha mostra no máximo ~1200 px e
+// um PNG de celular passa de 1 MB, o que deixava a abertura da ficha lenta.
+async function compressVariantImage(file){
+  try{
+    const bitmap=await createImageBitmap(file);
+    const scale=Math.min(1,1200/Math.max(bitmap.width,bitmap.height));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(bitmap.width*scale);
+    canvas.height=Math.round(bitmap.height*scale);
+    canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
+    bitmap.close?.();
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.82));
+    // Navegador sem WebP no canvas devolve PNG: nesse caso fica o original.
+    if(!blob||blob.type!=='image/webp'||blob.size>=file.size) return file;
+    return new File([blob],file.name.replace(/\.[^.]+$/,'')+'.webp',{type:'image/webp'});
+  }catch(err){
+    console.warn('[VARIANT IMAGE COMPRESS]',err);
+    return file;
+  }
+}
+
 async function persistVariantImage(saved,previous){
   let row=saved;
 
@@ -1231,7 +1264,7 @@ async function persistVariantImage(saved,previous){
 
   if(!pendingVariantImageFile) return row;
 
-  const file=pendingVariantImageFile;
+  const file=await compressVariantImage(pendingVariantImageFile);
   const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
   const path=`variantes/${saved.id}/modelo-${Date.now()}.${ext}`;
 
@@ -1245,7 +1278,7 @@ async function persistVariantImage(saved,previous){
   const {data,error:updateError}=await sb.from('epi_variantes')
     .update({
       imagem_path:path,
-      imagem_nome:file.name,
+      imagem_nome:pendingVariantImageFile.name,
       imagem_updated_at:new Date().toISOString()
     })
     .eq('id',saved.id)
