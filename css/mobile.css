@@ -152,8 +152,8 @@
   [data-page-content="caepi"] .ca-field>label{display:none}
   [data-page-content="caepi"] .ca-field{margin:0}
   [data-page-content="caepi"] .ca-input-row{grid-template-columns:minmax(0,1fr) 52px;gap:8px}
-  [data-page-content="caepi"] .ca-input-row input{height:52px;font-size:20px;letter-spacing:.06em;border-radius:999px;padding:0 20px}
-  [data-page-content="caepi"] .ca-input-row .btn{min-width:0;width:52px;height:52px;padding:0;border-radius:50%;font-size:0;gap:0;justify-content:center}
+  [data-page-content="caepi"] .ca-input-row input{height:52px;font-size:20px;letter-spacing:.06em;border-radius:14px}
+  [data-page-content="caepi"] .ca-input-row .btn{min-width:0;width:52px;height:52px;padding:0;border-radius:14px;font-size:0;gap:0;justify-content:center}
   [data-page-content="caepi"] .ca-input-row .btn svg{width:22px;height:22px;margin:0}
   [data-page-content="caepi"] .ca-search-note{margin-top:10px;padding:8px 10px;border-radius:12px}
   /* A data da base já aparece no rodapé da ficha; embaixo da busca só fica
