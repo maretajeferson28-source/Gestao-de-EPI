@@ -154,6 +154,9 @@
   [data-page-content="caepi"] .ca-input-row .btn{min-width:0;width:52px;height:52px;padding:0;border-radius:14px;font-size:0;gap:0;justify-content:center}
   [data-page-content="caepi"] .ca-input-row .btn svg{width:22px;height:22px;margin:0}
   [data-page-content="caepi"] .ca-search-note{margin-top:10px;padding:8px 10px;border-radius:12px}
+  /* A data da base já aparece no rodapé da ficha; embaixo da busca só fica
+     quando o espaço vira o botão "Ver cadastro" (ca-user-tools.js) */
+  [data-page-content="caepi"] #caBaseInfo:not(.ca-user-cadastro-slot){display:none}
   [data-page-content="caepi"] .ca-search-note strong{display:none}
   [data-page-content="caepi"] .ca-stage{margin-top:2px;padding:14px;border-radius:18px}
   [data-page-content="caepi"] .ca-stage::after{display:none}
