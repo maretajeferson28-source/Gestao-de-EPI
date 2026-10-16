@@ -13,6 +13,7 @@ público; o resto fica na rede privada (`<serviço>.railway.internal`).
 | gateway  | `infra/railway/gateway` (Caddy)         | 8080  | `infra/railway/gateway/**`   |
 | app      | raiz do repo + `infra/railway/app`      | 8080  | o site (fora de infra/db, infra/gateway, infra/backup, supabase, scripts, docs) |
 | backup   | `infra/railway/backup` (cron 06:00 UTC) | —     | `infra/railway/backup/**`    |
+| caepi-sync | `infra/railway/caepi` (roda 1x por deploy) | — | `infra/railway/caepi/**`, script e SQL da CAEPI |
 
 `db`, `gateway`, `app` e `backup` publicam sozinhos a cada push no `main`.
 Os serviços por imagem mudam só pela versão da imagem no painel.

@@ -31,6 +31,26 @@ duplicatas exatas, mínimo de 80.000 registros e 25.000 C.A.s distintos.
 Campos ausentes são contabilizados, nunca completados por adivinhação.
 Limites: download de 64 MiB; arquivo extraído e CSV preparado de 256 MiB.
 
+## Importação no Railway (banco atual)
+
+Desde a migração para o Railway (15/10/2026), o banco só é alcançável pela
+rede privada do projeto. A importação roda no serviço `caepi-sync`
+(`infra/railway/caepi`), que executa uma vez a cada deploy e encerra, com o
+mesmo script e as mesmas travas. O script aceita, além do Supabase antigo,
+apenas `db.railway.internal` com o usuário `postgres`.
+
+- Padrão: **validação** (`CAEPI_DRY_RUN=1`, `CAEPI_SYNC_ENABLED=false`), sem
+  tocar no banco. Para validar de novo, refazer o deploy do serviço.
+- Importar: revisar o log da validação, atualizar `CAEPI_APPROVED_HASH` com o
+  hash revisado, definir `CAEPI_DRY_RUN=0` e `CAEPI_SYNC_ENABLED=true` nas
+  variáveis do serviço e refazer o deploy. Ao terminar, voltar as duas
+  variáveis para o padrão.
+- O `xvfb-run` trava como processo principal do container; o `run.sh` abre o
+  Xvfb diretamente.
+
+O workflow do GitHub continua servindo só para validação; o modo `import` dele
+aponta para o Supabase antigo.
+
 ## Primeira carga — exige liberação separada
 
 1. Revisar o relatório da validação e dimensionar o banco.

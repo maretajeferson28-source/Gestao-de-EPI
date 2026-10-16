@@ -725,7 +725,9 @@ async function main() {
     const ref = 'jrzviiaywfjaawwkwgze';
     if (!['postgres:', 'postgresql:'].includes(url.protocol) || !(
       url.hostname === `db.${ref}.supabase.co` ||
-      (url.hostname.endsWith('.pooler.supabase.com') && decodeURIComponent(url.username) === `postgres.${ref}`)
+      (url.hostname.endsWith('.pooler.supabase.com') && decodeURIComponent(url.username) === `postgres.${ref}`) ||
+      // Banco do Railway, alcançável só de dentro da rede privada do projeto.
+      (url.hostname === 'db.railway.internal' && decodeURIComponent(url.username) === 'postgres')
     )) throw new Error('Carga bloqueada: a conexão não aponta para o projeto novo esperado.');
   }
   if (process.env.CAEPI_ARCHIVE_PATH && !DRY_RUN) throw new Error('Arquivo local permitido somente em validação sem banco.');

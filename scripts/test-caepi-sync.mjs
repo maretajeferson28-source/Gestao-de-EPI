@@ -108,7 +108,10 @@ test('CLI bloqueia carga sem liberação, destino antigo e arquivo local em modo
   const cases=[
     { SUPABASE_DB_URL:'', CAEPI_SYNC_ENABLED:'', expected:/liberação explícita/ },
     { SUPABASE_DB_URL:'postgresql://postgres:senha@db.aqnrjjllfzirrtwvjjbl.supabase.co:5432/postgres', CAEPI_SYNC_ENABLED:'true', expected:/projeto novo esperado/ },
-    { SUPABASE_DB_URL:'postgresql://postgres:senha@db.jrzviiaywfjaawwkwgze.supabase.co:5432/postgres', CAEPI_SYNC_ENABLED:'true', CAEPI_ARCHIVE_PATH:'arquivo.bin', expected:/somente em validação/ }
+    { SUPABASE_DB_URL:'postgresql://postgres:senha@db.jrzviiaywfjaawwkwgze.supabase.co:5432/postgres', CAEPI_SYNC_ENABLED:'true', CAEPI_ARCHIVE_PATH:'arquivo.bin', expected:/somente em validação/ },
+    { SUPABASE_DB_URL:'postgresql://supabase_admin:senha@db.railway.internal:5432/postgres', CAEPI_SYNC_ENABLED:'true', expected:/projeto novo esperado/ },
+    { SUPABASE_DB_URL:'postgresql://postgres:senha@outro.railway.internal:5432/postgres', CAEPI_SYNC_ENABLED:'true', expected:/projeto novo esperado/ },
+    { SUPABASE_DB_URL:'postgresql://postgres:senha@db.railway.internal:5432/postgres', CAEPI_SYNC_ENABLED:'true', CAEPI_ARCHIVE_PATH:'arquivo.bin', expected:/somente em validação/ }
   ];
   for (const {expected,...config} of cases) {
     const result=spawnSync(process.execPath,[script.pathname.replace(/^\/([A-Z]:)/i,'$1')],{
