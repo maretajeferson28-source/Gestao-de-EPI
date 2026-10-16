@@ -14,4 +14,5 @@ trap 'kill "$xvfb_pid" 2>/dev/null || true' EXIT
 export DISPLAY=:99
 sleep 2
 
-node scripts/sync-caepi-to-supabase.mjs
+# Teto de 30 min: o serviço é cobrado por memória enquanto estiver de pé.
+timeout 30m node scripts/sync-caepi-to-supabase.mjs

@@ -853,5 +853,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const message = String(error.message).replaceAll(DB_URL || '\u0000', '[CONEXÃO REDIGIDA]');
     console.error('[CAEPI] ERRO:', message);
     process.exitCode = 1;
+  }).finally(() => {
+    // No container do Railway algo do navegador segurava o processo aberto
+    // depois de terminar, com ~2,6 GB de memória cobrada. Encerrar sempre.
+    setTimeout(() => process.exit(process.exitCode ?? 0), 1000).unref();
   });
 }
