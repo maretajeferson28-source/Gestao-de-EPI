@@ -3,8 +3,6 @@ const cfg = window.EPI_CONFIG || {};
 const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
-// Gráficos na mesma fonte do resto do app (o Chart.js usa Helvetica por padrão).
-if (window.Chart?.defaults?.font) window.Chart.defaults.font.family = 'Inter, "Segoe UI", Arial, sans-serif';
 
 let movements = [];
 let collaborators = [];
