@@ -91,28 +91,51 @@
   homePage.dataset.pageContent = 'inicio';
   app.querySelector('.content').prepend(homePage);
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  // Atalhos do Início. `page` é a página do menu que o atalho abre; sem
+  // `page` o recurso ainda não existe no app e o atalho aparece como "Em breve".
+  const HOME_MAIN = [
+    { label: 'Entrega', icon: 'clipboard-list', page: 'nova' },
+    { label: 'Consulta C.A.', icon: 'badge-check', page: 'caepi' },
+    { label: 'Termo de Autorização', icon: 'shield-check' },
+    { label: 'Solicitação de EPIs', icon: 'bookmark' }
+  ];
+  const HOME_OTHERS = [
+    { label: 'Advertências', icon: 'triangle-alert' },
+    { label: 'Treinamentos', icon: 'graduation-cap' },
+    { label: 'Situação do Colaborador', icon: 'contact' }
+  ];
+  function homeTile(item, kind) {
+    const target = item.page ? navList.querySelector(`[data-page="${item.page}"]`) : null;
+    // Página que existe mas a pessoa não pode abrir (ex.: Entrega para leitor): não mostra.
+    if (item.page && (!target || target.hidden)) return '';
+    const soon = !item.page;
+    return `
+      <button type="button" class="${kind}${soon ? ' is-soon' : ''}" ${soon ? 'disabled' : `data-home-go="${item.page}"`}>
+        <span class="mobile-home-icon">${icon(item.icon)}</span>
+        <span class="mobile-home-text">
+          <span class="mobile-home-label">${escapeHtml(item.label)}</span>
+          ${soon ? '<span class="mobile-home-soon">Em breve</span>' : ''}
+        </span>
+      </button>`;
+  }
+  // Só redesenha quando o conteúdo muda: o createIcons troca também os ícones
+  // do menu, o que dispara o observador do menu e chamaria esta função de novo.
+  let lastHomeHtml = '';
   function renderHome() {
     if (!homePage.classList.contains('active')) return;
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
     const name = (document.getElementById('sideUserName')?.textContent || '').trim();
     const firstName = name && name !== 'Usuário' ? name.split(/\s+/)[0] : '';
-    const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-    const tiles = [...navList.querySelectorAll('[data-page]')]
-      .filter((button) => button !== homeButton && !button.hidden && getComputedStyle(button).display !== 'none');
-    homePage.innerHTML = `
-      <div class="mobile-home-head">
-        <span>${escapeHtml(today)}</span>
-        <h2>${greeting}${firstName ? `, ${escapeHtml(firstName)}` : ''}</h2>
-        <p>O que você precisa fazer agora?</p>
-      </div>
-      <div class="mobile-home-grid">
-        ${tiles.map((button) => `
-          <button type="button" class="mobile-home-tile" data-home-go="${escapeHtml(button.dataset.page)}">
-            <span class="mobile-home-icon">${button.querySelector('.ico')?.innerHTML || ''}</span>
-            <span>${escapeHtml(button.querySelector('.text')?.textContent.trim() || '')}</span>
-          </button>`).join('')}
-      </div>`;
+    const html = `
+      <h2 class="mobile-home-hello">Olá${firstName ? `, ${escapeHtml(firstName)}` : ''}</h2>
+      <div class="mobile-home-grid">${HOME_MAIN.map((item) => homeTile(item, 'mobile-home-tile')).join('')}</div>
+      <section class="mobile-home-others">
+        <h3>Outros</h3>
+        <div class="mobile-home-others-grid">${HOME_OTHERS.map((item) => homeTile(item, 'mobile-home-chip')).join('')}</div>
+      </section>`;
+    if (html === lastHomeHtml && homePage.childElementCount) return;
+    lastHomeHtml = html;
+    homePage.innerHTML = html;
+    window.lucide?.createIcons();
   }
   homeButton.addEventListener('click', () => { window.nav?.('inicio'); renderHome(); });
   homePage.addEventListener('click', (event) => {

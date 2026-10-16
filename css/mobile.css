@@ -8,21 +8,45 @@
   .sidebar .nav [data-page="movimentacoes"],
   .sidebar .nav [data-page="notas"]{display:none!important}
 
-  /* Início do celular: saudação e atalhos grandes para as páginas do menu */
-  .mobile-home-head{padding:6px 2px 18px}
-  .mobile-home-head span{display:block;color:#ff8500;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
-  .mobile-home-head h2{margin:6px 0 4px;font-size:24px;letter-spacing:-.02em}
-  .mobile-home-head p{margin:0;color:#8d8d8d;font-size:13px}
-  .mobile-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  /* Início do celular: mesma estrutura do app de entrega (cartões grandes +
+     "Outros"), nas cores do Gestão de EPI */
+  .mobile-home-hello{margin:6px 2px 18px;font-size:26px;letter-spacing:-.02em}
+  .mobile-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
   .mobile-home-tile{
-    display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:18px;
-    min-height:112px;padding:16px;border:1px solid #2d2d2d;border-radius:18px;
-    background:radial-gradient(circle at 100% 0%,rgba(255,102,0,.10),transparent 55%),#171717;
-    color:#f3f3f3;font-size:14px;font-weight:700;text-align:left;cursor:pointer;
+    position:relative;overflow:hidden;
+    display:flex;align-items:center;gap:12px;
+    min-height:122px;padding:16px 14px 30px;border:1px solid rgba(255,102,0,.30);border-radius:22px;
+    background:linear-gradient(160deg,#ff7a1a,#e85d00);
+    color:#fff;font-size:15px;font-weight:800;line-height:1.2;text-align:left;cursor:pointer;
+    box-shadow:0 10px 24px rgba(255,102,0,.16);
   }
-  .mobile-home-tile:active{transform:scale(.98);border-color:rgba(255,102,0,.55)}
-  .mobile-home-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(255,102,0,.38);border-radius:12px;background:#18120d}
-  .mobile-home-icon svg{width:21px;height:21px;color:#ff7d17;stroke:#ff7d17}
+  /* Onda decorativa no rodapé do cartão */
+  .mobile-home-tile::after{
+    content:"";position:absolute;left:-10%;right:-10%;bottom:-38px;height:70px;
+    border-radius:50% 50% 0 0;background:rgba(255,255,255,.14);pointer-events:none;
+  }
+  .mobile-home-tile .mobile-home-icon{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.18)}
+  .mobile-home-tile .mobile-home-icon svg{width:22px;height:22px;color:#fff;stroke:#fff}
+  .mobile-home-tile:active:not(:disabled){transform:scale(.98)}
+
+  .mobile-home-others{margin-top:18px;padding:16px 14px 18px;border:1px solid #2a2a2a;border-radius:22px;background:#151515}
+  .mobile-home-others h3{margin:0 0 12px;font-size:17px}
+  .mobile-home-others-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .mobile-home-chip{
+    position:relative;display:flex;align-items:center;gap:10px;min-height:62px;padding:10px 12px;
+    border:1px solid #2f2f2f;border-radius:18px;background:#1c1c1c;color:#f0f0f0;
+    font-size:13px;font-weight:700;line-height:1.2;text-align:left;cursor:pointer;
+  }
+  .mobile-home-chip .mobile-home-icon{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;border-radius:50%;background:#251a12}
+  .mobile-home-chip .mobile-home-icon svg{width:18px;height:18px;color:#ff7d17;stroke:#ff7d17}
+
+  /* Recurso que ainda não existe no app */
+  .mobile-home-tile.is-soon,.mobile-home-chip.is-soon{cursor:default}
+  .mobile-home-tile.is-soon{background:linear-gradient(160deg,#5a3418,#3c2412);border-color:#4a2c17;box-shadow:none;color:#e9d6c8}
+  .mobile-home-chip.is-soon{color:#9a9a9a}
+  .mobile-home-soon{position:absolute;top:8px;right:10px;padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.35);color:#ffd2ad;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .mobile-home-text{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+  .mobile-home-chip .mobile-home-soon{position:static;background:#2a2a2a;color:#9a9a9a}
   html,body{min-height:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
   body{background:#0d0d0d}
   .app:not(.app-hidden){display:block;min-height:100dvh}
