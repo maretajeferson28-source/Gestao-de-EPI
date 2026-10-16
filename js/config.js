@@ -155,4 +155,11 @@ window.addEventListener('load', () => {
     stockNavScript.dataset.stockNav = 'true';
     document.body.appendChild(stockNavScript);
   }
+
+  if (!document.querySelector('script[data-stock-entry]')) {
+    const stockEntryScript = document.createElement('script');
+    stockEntryScript.src = 'js/stock-entry.js?v=20261016-1';
+    stockEntryScript.dataset.stockEntry = 'true';
+    document.body.appendChild(stockEntryScript);
+  }
 }, { once: true });

@@ -327,6 +327,50 @@
         </div>
       </div>
 
+      <div class="data-edit-modal hidden" id="stockEntryModal" role="dialog" aria-modal="true" aria-labelledby="stockEntryTitle">
+        <div class="data-edit-card stock-entry-card">
+          <button class="data-edit-close" id="stockEntryClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+
+          <div class="data-edit-head">
+            <div class="data-edit-icon"><i data-lucide="package-plus" aria-hidden="true"></i></div>
+            <div>
+              <h3 id="stockEntryTitle">Entrada no estoque</h3>
+              <p>Para itens que entram sem nota fiscal. Campos com * são obrigatórios.</p>
+            </div>
+          </div>
+
+          <div class="data-edit-body">
+            <div class="data-edit-grid stock-entry-grid">
+              <div class="field stock-col-full"><label for="stockEntryEpi">EPI*</label><input id="stockEntryEpi" list="dlStockEntryEpi" placeholder="Digite para buscar" autocomplete="off"></div>
+              <div class="field stock-col-half"><label for="stockEntryCa">C.A.</label><select id="stockEntryCa"><option value="">Sem C.A. definido</option></select></div>
+              <div class="field stock-col-half"><label for="stockEntryQtd">Quantidade*</label><input id="stockEntryQtd" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+              <div class="field stock-col-half"><label for="stockEntryMotivo">Motivo*</label>
+                <select id="stockEntryMotivo">
+                  <option value="saldo_inicial">Saldo inicial</option>
+                  <option value="compra_sem_nota">Compra sem nota</option>
+                  <option value="devolucao">Devolução ao estoque</option>
+                  <option value="doacao_transferencia">Doação / transferência</option>
+                </select>
+              </div>
+              <div class="field stock-col-half"><label for="stockEntryData">Data*</label><input id="stockEntryData" type="date"></div>
+              <div class="field stock-col-full"><label for="stockEntryObs">Observação</label><input id="stockEntryObs" placeholder="Opcional" autocomplete="off"></div>
+            </div>
+            <datalist id="dlStockEntryEpi"></datalist>
+
+            <div class="data-edit-actions">
+              <button class="btn" id="stockEntryCancel" type="button">Cancelar</button>
+              <button class="btn primary" id="stockEntrySave" type="button"><i data-lucide="save" aria-hidden="true"></i>Salvar entrada</button>
+            </div>
+            <div class="msg" id="stockEntryMsg"></div>
+
+            <div class="stock-entry-recent">
+              <h4>Últimas entradas sem nota</h4>
+              <div id="stockEntryList"><p class="stock-entry-empty">Carregando…</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="collab-menu hidden" id="colabMenu" role="menu" aria-label="Opções do funcionário">
         <button type="button" role="menuitem" data-colab-action="editar"><i data-lucide="pencil" aria-hidden="true"></i><span>Alterar funcionário</span></button>
         <button type="button" role="menuitem" data-colab-action="termo" disabled title="Em breve"><i data-lucide="file-text" aria-hidden="true"></i><span>Ver termo de autorização</span></button>

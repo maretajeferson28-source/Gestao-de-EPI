@@ -2289,3 +2289,25 @@ tr:hover td{background:#202020}
 .epi-compare-button.current:has(input:checked):hover{
   background:#1b1b1b;
 }
+
+/* Entrada no estoque sem nota (stock-entry.js) */
+.stock-entry-card{width:min(620px,calc(100vw - 28px))}
+.stock-entry-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stock-entry-grid .stock-col-full{grid-column:1/-1}
+.stock-entry-grid select:disabled{opacity:.55}
+.stock-entry-recent{margin-top:18px;padding-top:14px;border-top:1px solid #2b2b2b}
+.stock-entry-recent h4{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a9a9a9}
+.stock-entry-empty{margin:0;font-size:12px;color:#8f8f8f}
+.stock-entry-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #222}
+.stock-entry-row:last-child{border-bottom:0}
+.stock-entry-row-copy{flex:1;min-width:0}
+.stock-entry-row-copy strong{display:block;font-size:13px;font-weight:700;color:#f1f1f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stock-entry-row-copy strong span{font-weight:500;color:#9a9a9a;font-size:12px}
+.stock-entry-row-copy small{display:block;margin-top:2px;font-size:11px;color:#8f8f8f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stock-entry-del{flex:0 0 auto;width:32px;height:32px;display:grid;place-items:center;border:1px solid #333;border-radius:8px;background:#181818;color:#b8b8b8;cursor:pointer}
+.stock-entry-del svg{width:15px;height:15px}
+.stock-entry-del:hover,.stock-entry-del:focus-visible{border-color:#7a3434;color:#ff8f8f;outline:none}
+@media(max-width:760px){
+  .stock-entry-grid{grid-template-columns:1fr}
+  .stock-entry-grid .stock-col-full{grid-column:auto}
+}
