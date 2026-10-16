@@ -271,9 +271,57 @@
 
       <section class="page" data-page-content="colaboradores">
         <div class="section-title"><div><h2>Colaboradores</h2><p>83 colaboradores ativos carregados da relação atual. Cadastre novos nomes quando necessário.</p></div></div>
-        <div class="toolbar"><input id="newColabNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do colaborador"><input id="newColabCargo" class="btn" style="cursor:text;min-width:220px" placeholder="Cargo"><input id="newColabSetor" class="btn" style="cursor:text" placeholder="Setor"><button class="btn primary" id="addColab"><i data-lucide="user-plus" aria-hidden="true"></i>Adicionar</button></div>
+        <div class="toolbar"><button class="btn primary" id="addColab" type="button"><i data-lucide="user-plus" aria-hidden="true"></i>Novo funcionário</button></div>
         <div class="cards-list" id="colabCards"></div>
       </section>
+
+      <div class="data-edit-modal hidden" id="colabEditModal" role="dialog" aria-modal="true" aria-labelledby="colabEditTitle">
+        <div class="data-edit-card colab-edit-card">
+          <button class="data-edit-close" id="colabEditClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+
+          <div class="data-edit-head">
+            <div class="data-edit-icon"><i data-lucide="user-round" aria-hidden="true"></i></div>
+            <div>
+              <span id="colabEditKicker">NOVO FUNCIONÁRIO</span>
+              <h3 id="colabEditTitle">Cadastro de funcionário</h3>
+              <p id="colabEditSubtitle">Campos com * são obrigatórios.</p>
+            </div>
+          </div>
+
+          <div class="data-edit-body">
+            <label class="colab-switch">
+              <input type="checkbox" id="colabSimplificado">
+              <span class="colab-switch-track" aria-hidden="true"></span>
+              <span>Cadastro simplificado</span>
+            </label>
+
+            <div class="data-edit-grid colab-edit-grid" id="colabEditGrid">
+              <div class="field colab-col-half" data-colab-basico><label for="colabCpf">CPF*</label><input id="colabCpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off"></div>
+              <div class="field colab-col-half" data-colab-basico><label for="colabNome">Nome*</label><input id="colabNome" placeholder="Nome completo" autocomplete="off"></div>
+              <div class="field colab-col-half" data-colab-padrao><label for="colabMatricula">Matrícula*</label><input id="colabMatricula" autocomplete="off"></div>
+              <div class="field colab-col-half" data-colab-padrao><label for="colabAdmissao">Data de admissão*</label><input id="colabAdmissao" type="date"></div>
+              <div class="field colab-col-third" data-colab-padrao><label for="colabCargo">Cargo</label><input id="colabCargo" list="dlColabCargo" autocomplete="off"></div>
+              <div class="field colab-col-third" data-colab-padrao><label for="colabSetor">Setor</label><input id="colabSetor" list="dlColabSetor" autocomplete="off"></div>
+              <div class="field colab-col-third" data-colab-padrao><label for="colabFuncao">Função</label><input id="colabFuncao" list="dlColabFuncao" autocomplete="off"></div>
+            </div>
+            <datalist id="dlColabCargo"></datalist>
+            <datalist id="dlColabSetor"></datalist>
+            <datalist id="dlColabFuncao"></datalist>
+
+            <div class="data-edit-note">
+              <i data-lucide="info" aria-hidden="true"></i>
+              <span id="colabEditNote">No cadastro padrão, CPF, nome, matrícula e data de admissão são obrigatórios.</span>
+            </div>
+
+            <div class="data-edit-actions">
+              <button class="btn" id="colabEditCancel" type="button">Cancelar</button>
+              <button class="btn" id="colabEditSaveNew" type="button"><i data-lucide="user-plus" aria-hidden="true"></i>Salvar e novo</button>
+              <button class="btn primary" id="colabEditSave" type="button"><i data-lucide="save" aria-hidden="true"></i>Salvar</button>
+            </div>
+            <div class="msg" id="colabEditMsg"></div>
+          </div>
+        </div>
+      </div>
 
       <section class="page" data-page-content="epis">
         <div class="section-title"><div><h2>EPIs / Itens</h2><p>Catálogo usado no lançamento e nos filtros.</p></div></div>

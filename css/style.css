@@ -2177,6 +2177,65 @@ tr:hover td{background:#202020}
   .data-edit-grid .wide{grid-column:auto}
 }
 
+/* Cadastro de funcionário (padrão e simplificado) */
+.colab-edit-card{width:min(680px,calc(100vw - 28px))}
+.colab-edit-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+.colab-edit-grid .colab-col-half{grid-column:span 3}
+.colab-edit-grid .colab-col-third{grid-column:span 2}
+.colab-edit-grid.is-simplificado .colab-col-half{grid-column:1/-1}
+.colab-edit-grid [hidden],
+.colab-edit-card .data-edit-actions [hidden]{display:none!important}
+
+.colab-switch{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 16px;
+  color:#cfcfcf;
+  font-size:12px;
+  cursor:pointer;
+  user-select:none;
+}
+.colab-switch input{position:absolute;opacity:0;pointer-events:none}
+.colab-switch-track{
+  position:relative;
+  width:38px;
+  height:22px;
+  flex:0 0 38px;
+  border:1px solid #393939;
+  border-radius:999px;
+  background:#262626;
+  transition:background .16s ease,border-color .16s ease;
+}
+.colab-switch-track::after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:#8d8d8d;
+  transition:transform .16s ease,background .16s ease;
+}
+.colab-switch input:checked + .colab-switch-track{background:rgba(255,102,0,.18);border-color:rgba(255,102,0,.62)}
+.colab-switch input:checked + .colab-switch-track::after{transform:translateX(16px);background:#ff7d17}
+.colab-switch input:focus-visible + .colab-switch-track{box-shadow:0 0 0 3px rgba(255,102,0,.22)}
+.colab-switch input:checked ~ span:last-child{color:#ff9a3f}
+
+.msg.is-error{color:var(--red)}
+
+.collab-card .collab-edit-btn:hover,
+.collab-card .collab-edit-btn:focus-visible{border-color:rgba(255,102,0,.62);outline:none}
+.collab-card .collab-edit-btn:hover svg,
+.collab-card .collab-edit-btn:focus-visible svg{color:#ff9a3f;stroke:#ff9a3f}
+
+@media(max-width:760px){
+  .colab-edit-grid{grid-template-columns:1fr}
+  .colab-edit-grid .colab-col-half,
+  .colab-edit-grid .colab-col-third{grid-column:auto}
+}
+
 .epi-compare-button.past:has(input:checked):hover,
 .epi-compare-button.current:has(input:checked):hover{
   background:#1b1b1b;

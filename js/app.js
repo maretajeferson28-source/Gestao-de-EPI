@@ -80,7 +80,7 @@ async function loadAll(showBusy=true){
   setStatus('Atualizando dados...');
   try{
     const [cRes,eRes,vRes,mRes] = await Promise.all([
-      sb.from('colaboradores').select('id,nome,cargo,setor,ativo').order('nome'),
+      sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
         .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
@@ -726,19 +726,136 @@ function renderColabs(){
         <strong title="${esc(nome)}">${esc(nome)}</strong>
         <span title="${esc(detalhe)}">${esc(detalhe)}</span>
       </div>
+      ${currentIsAdmin?`<span class="epi-card-action-btn collab-edit-btn" role="button" tabindex="0" data-colab-edit="${esc(c.id)}" title="Editar funcionário" aria-label="Editar funcionário"><i data-lucide="pencil" aria-hidden="true"></i></span>`:''}
       <span class="collab-dot ${ativo?'active':'inactive'}" title="${ativo?'Ativo':'Inativo'}"></span>
     </article>`;
   }).join('')||'<div class="empty">Nenhum colaborador.</div>';
-}$('addColab').addEventListener('click',async()=>{
+  refreshIcons();
+}
+
+// Cadastro de funcionário: o mesmo formulário serve para novo e para editar.
+let editingColabId=null;
+function onlyDigits(v){return String(v||'').replace(/\D+/g,'')}
+function formatCpf(v){
+  const d=onlyDigits(v).slice(0,11);
+  if(d.length<=3) return d;
+  if(d.length<=6) return `${d.slice(0,3)}.${d.slice(3)}`;
+  if(d.length<=9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+}
+function validCpf(d){
+  if(!/^\d{11}$/.test(d)||/^(\d)\1{10}$/.test(d)) return false;
+  const digit=n=>{let s=0;for(let i=0;i<n;i++) s+=Number(d[i])*(n+1-i);const r=(s*10)%11;return r===10?0:r};
+  return digit(9)===Number(d[9])&&digit(10)===Number(d[10]);
+}
+function setColabMode(simplificado){
+  $('colabSimplificado').checked=simplificado;
+  $('colabEditGrid').classList.toggle('is-simplificado',simplificado);
+  document.querySelectorAll('[data-colab-padrao]').forEach(el=>{el.hidden=simplificado});
+  $('colabEditNote').textContent=simplificado
+    ?'No cadastro simplificado bastam CPF e nome. Os demais dados podem ser completados depois no cadastro padrão.'
+    :'No cadastro padrão, CPF, nome, matrícula e data de admissão são obrigatórios.';
+}
+function setColabMsg(text,isError=false){
+  $('colabEditMsg').textContent=text;
+  $('colabEditMsg').classList.toggle('is-error',isError);
+}
+function fillColabForm(c){
+  $('colabCpf').value=formatCpf(c?.cpf||'');
+  $('colabNome').value=c?.nome||'';
+  $('colabMatricula').value=c?.matricula||'';
+  $('colabAdmissao').value=c?.data_admissao||'';
+  $('colabCargo').value=c?.cargo||'';
+  $('colabSetor').value=c?.setor||'';
+  $('colabFuncao').value=c?.funcao||'';
+}
+function openColabEdit(id=null){
   if(!currentIsAdmin) return;
-  const nome=$('newColabNome').value.trim(),cargo=$('newColabCargo').value.trim(),setor=$('newColabSetor').value.trim();
-  if(!nome) return;
-  if(collaborators.some(x=>normalize(x.nome)===normalize(nome))){alert('Esse colaborador já está cadastrado.');return}
-  const {error}=await sb.from('colaboradores').insert({nome,cargo:cargo||null,setor:setor||null,ativo:true,origem:'Site Gestão EPI'});
-  if(error){alert(error.message);return}
-  $('newColabNome').value=''; $('newColabCargo').value=''; $('newColabSetor').value='';
-  await loadAll();
+  const c=id?collaborators.find(x=>x.id===id):null;
+  if(id&&!c) return;
+  editingColabId=c?.id||null;
+  $('colabEditKicker').textContent=c?'EDITAR FUNCIONÁRIO':'NOVO FUNCIONÁRIO';
+  $('colabEditTitle').textContent=c?c.nome:'Cadastro de funcionário';
+  $('colabEditSaveNew').hidden=Boolean(c);
+  for(const [list,key] of [['dlColabCargo','cargo'],['dlColabSetor','setor'],['dlColabFuncao','funcao']]){
+    $(list).innerHTML=unique(collaborators.map(x=>x[key])).map(v=>`<option value="${esc(v)}">`).join('');
+  }
+  fillColabForm(c);
+  setColabMode(c?.cadastro_simplificado===true);
+  setColabMsg('');
+  $('colabEditModal').classList.remove('hidden');
+  refreshIcons();
+  $('colabCpf').focus();
+}
+function closeColabEdit(){
+  editingColabId=null;
+  $('colabEditModal')?.classList.add('hidden');
+}
+async function saveColab(keepOpen=false){
+  if(!currentIsAdmin) return;
+  const simplificado=$('colabSimplificado').checked;
+  const cpf=onlyDigits($('colabCpf').value);
+  const nome=$('colabNome').value.trim();
+  const matricula=$('colabMatricula').value.trim();
+  const admissao=$('colabAdmissao').value;
+  if(!validCpf(cpf)) return setColabMsg('CPF inválido. Confira os 11 dígitos.',true);
+  if(!nome) return setColabMsg('Informe o nome do funcionário.',true);
+  if(!simplificado&&!matricula) return setColabMsg('Informe a matrícula.',true);
+  if(!simplificado&&!admissao) return setColabMsg('Informe a data de admissão.',true);
+  if(collaborators.some(x=>x.id!==editingColabId&&normalize(x.nome)===normalize(nome))) return setColabMsg('Já existe um funcionário com esse nome.',true);
+  if(collaborators.some(x=>x.id!==editingColabId&&x.cpf===cpf)) return setColabMsg('Esse CPF já está cadastrado em outro funcionário.',true);
+
+  const payload={
+    cpf,nome,
+    cadastro_simplificado:simplificado,
+    matricula:matricula||null,
+    data_admissao:admissao||null,
+    cargo:$('colabCargo').value.trim()||null,
+    setor:$('colabSetor').value.trim()||null,
+    funcao:$('colabFuncao').value.trim()||null,
+    updated_at:new Date().toISOString()
+  };
+  const buttons=[$('colabEditSave'),$('colabEditSaveNew')];
+  buttons.forEach(b=>{b.disabled=true});
+  setColabMsg('Salvando...');
+  try{
+    const {error}=editingColabId
+      ?await sb.from('colaboradores').update(payload).eq('id',editingColabId)
+      :await sb.from('colaboradores').insert({...payload,ativo:true,origem:'Site Gestão EPI'});
+    if(error){
+      setColabMsg(error.code==='23505'?'Esse CPF já está cadastrado em outro funcionário.':error.message,true);
+      return;
+    }
+    await loadAll(false);
+    if(keepOpen){
+      const manterSimplificado=simplificado;
+      openColabEdit(null);
+      setColabMode(manterSimplificado);
+      setColabMsg(`${nome} salvo. Pode cadastrar o próximo.`);
+    }else{
+      closeColabEdit();
+    }
+  }finally{
+    buttons.forEach(b=>{b.disabled=false});
+  }
+}
+
+$('addColab').addEventListener('click',()=>openColabEdit(null));
+$('colabCards').addEventListener('click',e=>{
+  const edit=e.target.closest('[data-colab-edit]');
+  if(edit) openColabEdit(edit.dataset.colabEdit);
 });
+$('colabCards').addEventListener('keydown',e=>{
+  const edit=e.target.closest('[data-colab-edit]');
+  if(edit&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openColabEdit(edit.dataset.colabEdit)}
+});
+$('colabSimplificado').addEventListener('change',e=>setColabMode(e.target.checked));
+$('colabCpf').addEventListener('input',e=>{e.target.value=formatCpf(e.target.value)});
+$('colabEditSave').addEventListener('click',()=>saveColab(false));
+$('colabEditSaveNew').addEventListener('click',()=>saveColab(true));
+$('colabEditCancel').addEventListener('click',closeColabEdit);
+$('colabEditClose').addEventListener('click',closeColabEdit);
+$('colabEditModal').addEventListener('click',e=>{if(e.target===$('colabEditModal')) closeColabEdit()});
 
 function epiVariantCount(epiId){
   return epiVariants.filter(v=>v.epi_id===epiId && v.ativo!==false).length;
@@ -1617,6 +1734,7 @@ document.addEventListener('keydown',e=>{
   if(e.key!=='Escape') return;
   if($('movementEditModal')&&!$('movementEditModal').classList.contains('hidden')) closeMovementEdit();
   if($('epiCatalogEditModal')&&!$('epiCatalogEditModal').classList.contains('hidden')) closeEpiCatalogEdit();
+  if($('colabEditModal')&&!$('colabEditModal').classList.contains('hidden')) closeColabEdit();
 });
 
 $('addEpi').addEventListener('click',async()=>{
