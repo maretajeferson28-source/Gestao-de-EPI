@@ -236,6 +236,26 @@
     if (hint.textContent !== text) hint.textContent = text;
   };
   new MutationObserver(() => { if (media.matches) labelTables(); adaptNoteHint(); }).observe(app.querySelector('.content'), { childList: true, subtree: true });
+  // Consulta C.A.: no celular a descrição vem recolhida (4 linhas, mobile.css);
+  // o botão só aparece quando há texto escondido.
+  const caDesc = document.getElementById('caDescricao');
+  if (caDesc) {
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'mobile-only ca-desc-more';
+    more.hidden = true;
+    caDesc.after(more);
+    const syncDesc = () => {
+      caDesc.classList.remove('is-open');
+      more.textContent = 'Ver descrição completa';
+      requestAnimationFrame(() => { more.hidden = !(media.matches && caDesc.scrollHeight > caDesc.clientHeight + 2); });
+    };
+    more.addEventListener('click', () => {
+      const open = caDesc.classList.toggle('is-open');
+      more.textContent = open ? 'Mostrar menos' : 'Ver descrição completa';
+    });
+    new MutationObserver(syncDesc).observe(caDesc, { childList: true, characterData: true, subtree: true });
+  }
   media.addEventListener('change', () => { closeMenu(); if (media.matches) labelTables(); adaptNoteHint(); syncNavigation(); });
   syncNavigation();
   if (media.matches) labelTables();

@@ -2289,3 +2289,76 @@ tr:hover td{background:#202020}
 .epi-compare-button.current:has(input:checked):hover{
   background:#1b1b1b;
 }
+
+/* Legibilidade (16/10/2026): a fonte Inter agora é carregada no index.html (até o peso 700,
+   então os 800/900 daqui saem em 700) e os textos de 8 a 10px sobem para 10-11,5px.
+   Gerado a partir das regras acima; o celular tem a própria camada no mobile.css. */
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+.brand small{font-size:11.5px}
+.field label{font-size:11.5px;color:#a6a6a6;letter-spacing:.06em}
+.kpi .sub{font-size:11.5px}
+.panel-head small{font-size:11.5px}
+.pill{font-size:11.5px}
+.collab-avatar{font-size:11.5px}
+.collab-info span{font-size:10.5px}
+.ca-visual-badge{font-size:11.5px;color:#a6a6a6;letter-spacing:.06em}
+.ca-search-note span{font-size:11.5px}
+.ca-mini-flow small{font-size:10.5px}
+.ca-eyebrow{font-size:10.5px}
+.ca-status{font-size:11.5px}
+.ca-hero-copy small,.ca-validity small{font-size:10.5px;color:#a6a6a6;letter-spacing:.06em}
+.ca-hero-copy span{font-size:11.5px}
+.ca-data-card span{font-size:10.5px;color:#a6a6a6;letter-spacing:.06em}
+.ca-stage-footer{font-size:10.5px}
+.authz-admin-badge{font-size:11.5px;color:#a6a6a6;letter-spacing:.06em}
+.authz-role{font-size:10.5px}
+.authz-status{font-size:11.5px}
+.authz-note{font-size:11.5px}
+.authz-flow-step small{font-size:10.5px}
+.authz-flow-note{font-size:11.5px}
+.access-wait-kicker{font-size:10.5px}
+.access-wait-account span{font-size:10.5px;color:#a6a6a6;letter-spacing:.06em}
+.access-wait-status{font-size:11.5px}
+.profile-modal-kicker{font-size:10.5px}
+.profile-modal-head p{font-size:11.5px}
+.profile-upload-box small{font-size:10.5px}
+.profile-file-name{font-size:10.5px}
+.epi-card-ca-count{font-size:10.5px}
+.epi-detail-kicker{font-size:10.5px}
+.epi-detail-head p{font-size:11.5px}
+.epi-detail-count{font-size:11.5px}
+.epi-detail-section-head p{font-size:11.5px}
+.epi-variant-top small{font-size:10.5px}
+.epi-variant-ca{font-size:11.5px}
+.epi-variant-state{font-size:10.5px}
+.epi-variant-meta b{font-size:11.5px}
+.epi-variant-features{font-size:10.5px}
+.epi-var-lookup-status{font-size:10.5px}
+.epi-card-category{font-size:10px;color:#a6a6a6;letter-spacing:.06em}
+.epi-card-ca-count{font-size:10.5px}
+.epi-card-maker{font-size:10px}
+.epi-card-open{font-size:10px}
+.epi-variant-thumb>span small{font-size:10px;color:#a6a6a6;letter-spacing:.06em}
+.epi-variant-image-empty strong{font-size:11.5px}
+.epi-variant-image-empty span{font-size:10px}
+.epi-variant-image-file strong{font-size:10.5px}
+.epi-variant-image-file span{font-size:10px}
+.epi-dossier-kicker{font-size:10px}
+.epi-dossier-image>span small{font-size:10px;color:#a6a6a6;letter-spacing:.06em}
+.epi-dossier-identity>span{font-size:10px}
+.epi-dossier-identity>small{font-size:11.5px}
+.epi-dossier-field-label{font-size:10px;color:#a6a6a6;letter-spacing:.06em}
+.epi-dossier-text>span{font-size:10px;color:#a6a6a6;letter-spacing:.06em}
+.epi-dossier-text p{font-size:11.5px}
+.epi-dossier-source{font-size:10px}
+.epi-ca-selector-value strong{font-size:11.5px}
+.epi-ca-selector-option-copy strong{font-size:11.5px}
+.dashboard-values-head span{font-size:10px}
+.dashboard-values-head p{font-size:11.5px}
+.spend-coverage{font-size:10.5px}
+.savings-total{font-size:10.5px}
+.epi-price-compare-row .field label, .epi-compare-label{font-size:10.5px;color:#a6a6a6;letter-spacing:.06em}
+.epi-compare-button span{font-size:11.5px}
+.data-edit-head span{font-size:10px}
+.data-edit-head p{font-size:10.5px}
+.data-edit-note{font-size:10.5px}

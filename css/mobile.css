@@ -138,6 +138,56 @@
   .ca-hero-copy strong{font-size:25px}
   .ca-data-card strong{font-size:13px;overflow-wrap:anywhere}
   .ca-stage-footer{font-size:10px}
+
+  /* Consulta C.A. no celular: busca compacta e ficha enxuta numa lista só,
+     sem repetir situação nem nome do equipamento; descrição recolhida */
+  [data-page-content="caepi"] .ca-section-title{margin-bottom:12px}
+  [data-page-content="caepi"] .ca-section-title p,
+  [data-page-content="caepi"] .ca-visual-badge{display:none}
+  [data-page-content="caepi"] .ca-section-title h2{font-size:22px}
+  [data-page-content="caepi"] .ca-search-panel{padding:12px;border-radius:18px}
+  [data-page-content="caepi"] .ca-search-head,
+  [data-page-content="caepi"] .ca-field>label{display:none}
+  [data-page-content="caepi"] .ca-field{margin:0}
+  [data-page-content="caepi"] .ca-input-row{grid-template-columns:minmax(0,1fr) 52px;gap:8px}
+  [data-page-content="caepi"] .ca-input-row input{height:52px;font-size:20px;letter-spacing:.06em;border-radius:14px}
+  [data-page-content="caepi"] .ca-input-row .btn{min-width:0;width:52px;height:52px;padding:0;border-radius:14px;font-size:0;gap:0;justify-content:center}
+  [data-page-content="caepi"] .ca-input-row .btn svg{width:22px;height:22px;margin:0}
+  [data-page-content="caepi"] .ca-search-note{margin-top:10px;padding:8px 10px;border-radius:12px}
+  [data-page-content="caepi"] .ca-search-note strong{display:none}
+  [data-page-content="caepi"] .ca-stage{margin-top:2px;padding:14px;border-radius:18px}
+  [data-page-content="caepi"] .ca-stage::after{display:none}
+  [data-page-content="caepi"] .ca-stage-top{padding-bottom:12px;gap:8px}
+  [data-page-content="caepi"] .ca-stage-top h3{font-size:16px;line-height:1.3}
+  [data-page-content="caepi"] .ca-hero{grid-template-columns:auto minmax(0,1fr);gap:12px;padding:12px 0}
+  [data-page-content="caepi"] .ca-hero-icon{width:46px;height:46px;border-radius:13px}
+  [data-page-content="caepi"] .ca-hero-icon svg{width:23px;height:23px}
+  [data-page-content="caepi"] .ca-hero-copy small{margin-bottom:2px}
+  [data-page-content="caepi"] .ca-hero-copy strong{font-size:24px}
+  [data-page-content="caepi"] .ca-hero-copy span,
+  [data-page-content="caepi"] .ca-validity,
+  [data-page-content="caepi"] .ca-data-card.wide{display:none}
+  [data-page-content="caepi"] .ca-data-grid{display:block;border:1px solid rgba(255,102,0,.40);border-radius:14px;background:#131313;overflow:hidden}
+  [data-page-content="caepi"] .ca-stage.ca-result-valid .ca-data-grid{border-color:rgba(56,180,123,.55)}
+  [data-page-content="caepi"] .ca-stage.ca-result-invalid .ca-data-grid,
+  [data-page-content="caepi"] .ca-stage.ca-result-error .ca-data-grid{border-color:rgba(255,92,92,.6)}
+  [data-page-content="caepi"] .ca-stage .ca-data-card{
+    display:flex;align-items:baseline;justify-content:space-between;gap:14px;min-height:0;
+    padding:11px 12px;border:0!important;border-top:1px solid #232323!important;border-radius:0;background:transparent;
+  }
+  [data-page-content="caepi"] .ca-stage .ca-data-card:nth-child(2){border-top:0!important}
+  [data-page-content="caepi"] .ca-data-card span{flex:0 0 auto;margin:0}
+  [data-page-content="caepi"] .ca-data-card strong{min-width:0;text-align:right;font-size:13px}
+  [data-page-content="caepi"] .ca-stage .ca-data-card.full{display:block}
+  [data-page-content="caepi"] .ca-stage .ca-data-card.wide{display:none}
+  [data-page-content="caepi"] .ca-data-card.full span{margin-bottom:6px}
+  [data-page-content="caepi"] .ca-data-card.full strong{
+    text-align:left;font-size:12px;line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  [data-page-content="caepi"] .ca-data-card.full strong.is-open{display:block;-webkit-line-clamp:unset}
+  .ca-desc-more{margin-top:8px;padding:0;border:0;background:none;color:#ff9a3f;font-size:12px;font-weight:800;cursor:pointer}
+  [data-page-content="caepi"] .ca-stage-footer{flex-direction:column;gap:6px;margin-top:12px;padding-top:10px}
   .nfe-import-panel{position:static}
   .nfe-dropzone{min-height:150px;padding:18px}
   .nfe-file-list{max-height:240px;overflow:auto;overscroll-behavior:contain}
@@ -217,4 +267,83 @@
 @media(max-width:720px) and (prefers-reduced-motion:no-preference){
   body.mobile-menu-open .sidebar{animation:mobile-menu-in .18s ease-out}
   @keyframes mobile-menu-in{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+}
+
+/* Legibilidade no celular (16/10/2026): os mesmos textos pequenos do style.css,
+   maiores do que no computador (8->11px, 9->11,5px, 10->12,5px). */
+@media(max-width:720px){
+  .brand small{font-size:12.5px}
+  .field label{font-size:12.5px;color:#a6a6a6;letter-spacing:.06em}
+  .kpi .sub{font-size:12.5px}
+  .panel-head small{font-size:12.5px}
+  .pill{font-size:12.5px}
+  .collab-info span{font-size:11.5px}
+  .ca-visual-badge{font-size:12.5px;color:#a6a6a6;letter-spacing:.06em}
+  .ca-search-note span{font-size:12.5px}
+  .ca-mini-flow small{font-size:11.5px}
+  .ca-eyebrow{font-size:11.5px}
+  .ca-status{font-size:12.5px}
+  .ca-hero-copy small,.ca-validity small{font-size:11.5px;color:#a6a6a6;letter-spacing:.06em}
+  .ca-hero-copy span{font-size:12.5px}
+  .ca-data-card span{font-size:11.5px;color:#a6a6a6;letter-spacing:.06em}
+  .ca-stage-footer{font-size:11.5px}
+  .authz-admin-badge{font-size:12.5px;color:#a6a6a6;letter-spacing:.06em}
+  .authz-role{font-size:11.5px}
+  .authz-status{font-size:12.5px}
+  .authz-note{font-size:12.5px}
+  .authz-flow-step small{font-size:11.5px}
+  .authz-flow-note{font-size:12.5px}
+  .access-wait-kicker{font-size:11.5px}
+  .access-wait-account span{font-size:11.5px;color:#a6a6a6;letter-spacing:.06em}
+  .access-wait-status{font-size:12.5px}
+  .profile-modal-kicker{font-size:11.5px}
+  .profile-modal-head p{font-size:12.5px}
+  .profile-upload-box small{font-size:11.5px}
+  .profile-file-name{font-size:11.5px}
+  .epi-card-ca-count{font-size:11.5px}
+  .epi-detail-kicker{font-size:11.5px}
+  .epi-detail-head p{font-size:12.5px}
+  .epi-detail-count{font-size:12.5px}
+  .epi-detail-section-head p{font-size:12.5px}
+  .epi-variant-top small{font-size:11.5px}
+  .epi-variant-ca{font-size:12.5px}
+  .epi-variant-state{font-size:11.5px}
+  .epi-variant-meta b{font-size:12.5px}
+  .epi-variant-features{font-size:11.5px}
+  .epi-var-lookup-status{font-size:11.5px}
+  .epi-card-category{font-size:11px;color:#a6a6a6;letter-spacing:.06em}
+  .epi-card-ca-count{font-size:11.5px}
+  .epi-card-maker{font-size:11px}
+  .epi-card-open{font-size:11px}
+  .epi-variant-thumb>span small{font-size:11px;color:#a6a6a6;letter-spacing:.06em}
+  .epi-variant-image-empty strong{font-size:12.5px}
+  .epi-variant-image-empty span{font-size:11px}
+  .epi-variant-image-file strong{font-size:11.5px}
+  .epi-variant-image-file span{font-size:11px}
+  .epi-dossier-kicker{font-size:11px}
+  .epi-dossier-image>span small{font-size:11px;color:#a6a6a6;letter-spacing:.06em}
+  .epi-dossier-identity>span{font-size:11px}
+  .epi-dossier-identity>small{font-size:12.5px}
+  .epi-dossier-field-label{font-size:11px;color:#a6a6a6;letter-spacing:.06em}
+  .epi-dossier-text>span{font-size:11px;color:#a6a6a6;letter-spacing:.06em}
+  .epi-dossier-text p{font-size:12.5px}
+  .epi-dossier-source{font-size:11px}
+  .epi-ca-selector-value strong{font-size:12.5px}
+  .epi-ca-selector-option-copy strong{font-size:12.5px}
+  .dashboard-values-head span{font-size:11px}
+  .dashboard-values-head p{font-size:12.5px}
+  .spend-coverage{font-size:11.5px}
+  .savings-total{font-size:11.5px}
+  .epi-price-compare-row .field label, .epi-compare-label{font-size:11.5px;color:#a6a6a6;letter-spacing:.06em}
+  .epi-compare-button span{font-size:12.5px}
+  .data-edit-head span{font-size:11px}
+  .data-edit-head p{font-size:11.5px}
+  .data-edit-note{font-size:11.5px}
+  /* Textos do próprio mobile.css (barra, Início) */
+  .mobile-tab{font-size:11px}
+  .mobile-home-stat span{font-size:11px;letter-spacing:.08em}
+  .mobile-home-stat small,.mobile-home-recent-info small{font-size:12px;color:#a0a0a0}
+  .mobile-home-recent-info strong{font-size:14px}
+  .mobile-home-head p,.mobile-home-empty{font-size:14px}
+  body{font-size:15px}
 }
