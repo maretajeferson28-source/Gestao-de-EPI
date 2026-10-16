@@ -1,6 +1,8 @@
 window.EPI_CONFIG = {
   SUPABASE_URL: "https://jrzviiaywfjaawwkwgze.supabase.co",
-  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_6dGPVd27-e8WkjMYOjaByQ_lXqp7Ool"
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_6dGPVd27-e8WkjMYOjaByQ_lXqp7Ool",
+  // Sem o serviço realtime no Railway: a tela recarrega após cada gravação.
+  REALTIME: false
 };
 
 document.title = "Gestão de EPI";

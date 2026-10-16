@@ -1738,6 +1738,7 @@ function scheduleReload(){
 }
 function startRealtime(){
   if(realtimeChannel) sb.removeChannel(realtimeChannel);
+  if(window.EPI_CONFIG?.REALTIME===false) return;
   realtimeChannel=sb.channel('gestao-epi-live')
     .on('postgres_changes',{event:'*',schema:'public',table:'movimentacoes_epi'},scheduleReload)
     .on('postgres_changes',{event:'*',schema:'public',table:'colaboradores'},scheduleReload)

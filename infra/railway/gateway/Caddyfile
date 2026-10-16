@@ -51,22 +51,9 @@
 		}
 	}
 
-	# O realtime descobre o tenant pelo subdomínio do Host (realtime-dev).
-	handle_path /realtime/v1/api/* {
-		import cors
-		rewrite * /api{uri}
-		reverse_proxy realtime.railway.internal:4000 {
-			header_up Host realtime-dev.supabase-realtime
-			header_down Access-Control-Allow-Origin "*"
-		}
-	}
-
-	handle_path /realtime/v1/* {
-		rewrite * /socket{uri}
-		reverse_proxy realtime.railway.internal:4000 {
-			header_up Host realtime-dev.supabase-realtime
-		}
-	}
+	# Sem serviço realtime (removido para economizar; o app tem REALTIME: false).
+	# Para religar: subir supabase/realtime e restaurar as rotas /realtime/v1
+	# (o tenant vem do Host: header_up Host realtime-dev.supabase-realtime).
 
 	handle {
 		respond "not found" 404
