@@ -18,7 +18,17 @@ const CURL = process.platform === 'win32' ? 'curl.exe' : 'curl';
 const MIN_ARCHIVE_BYTES = 1 * 1024 * 1024;
 const MAX_ARCHIVE_BYTES = 64 * 1024 * 1024;
 const MAX_TXT_BYTES = 256 * 1024 * 1024;
-const MAX_DB_BYTES = 450_000_000; // Margem abaixo da cota Free; não é espaço livre do disco/WAL.
+// Padrão: margem abaixo da cota Free do Supabase; não é espaço livre do disco/WAL.
+// No Railway (volume de 50 GB) o serviço define CAEPI_MAX_DB_BYTES maior.
+const MAX_DB_BYTES = (() => {
+  const raw = process.env.CAEPI_MAX_DB_BYTES;
+  if (!raw) return 450_000_000;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < 450_000_000 || value > 10_000_000_000) {
+    throw new Error('CAEPI_MAX_DB_BYTES deve ser um inteiro entre 450 MB e 10 GB.');
+  }
+  return value;
+})();
 const MIN_TXT_BYTES = 50 * 1024 * 1024;
 const MIN_ROWS = 80000;
 const MIN_DISTINCT_CA = 25000;
