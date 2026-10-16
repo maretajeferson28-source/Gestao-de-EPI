@@ -275,6 +275,22 @@
   .page[data-page-content="estoque"] .stock-kpi .sub{font-size:10px;line-height:1.35}
   /* Ficha do EPI: no celular só consulta os C.A. já cadastrados; adicionar,
      editar e excluir ficam no computador */
+  /* Entrada no estoque: cabeçalho de ponta a ponta, X menor e campos curtos lado a lado */
+  .data-edit-card.stock-entry-card{padding-left:0;padding-right:0}
+  .stock-entry-card .data-edit-head{min-height:0;padding:18px 60px 16px 20px}
+  .stock-entry-card .data-edit-icon{width:40px;height:40px;flex-basis:40px}
+  .stock-entry-card .data-edit-head p{font-size:11px;line-height:1.4}
+  .stock-entry-card .data-edit-close{width:36px;height:36px;top:16px;right:16px}
+  .stock-entry-card .data-edit-body{padding:16px 20px 0}
+  .stock-entry-card .stock-entry-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .stock-entry-card .stock-entry-grid .stock-col-full{grid-column:1/-1}
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryCa),
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryMotivo){grid-column:1/-1}
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryQtd){order:1}
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryData){order:2}
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryMotivo){order:3}
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryObs){order:4}
+  .stock-entry-card .stock-entry-grid .field label{margin-bottom:6px}
   #epiVariantEditor,
   #epiVariantList [data-variant-edit],
   #epiVariantList [data-variant-delete]{display:none!important}
