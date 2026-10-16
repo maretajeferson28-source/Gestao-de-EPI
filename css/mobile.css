@@ -260,6 +260,14 @@
   .mobile-install-dialog p{font-size:14px;line-height:1.7;color:#bbb}
   .mobile-install-dialog .btn{width:100%}
   button:focus-visible,a:focus-visible{outline:2px solid #ff9c48;outline-offset:3px}
+  /* Estoque: busca e cadastro em cima, indicadores em blocos 2×2 */
+  .page.active[data-page-content="estoque"]{display:flex;flex-direction:column}
+  .page[data-page-content="estoque"] .stock-filter-bar{order:-1;margin:0 0 14px}
+  .page[data-page-content="estoque"] .stock-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .page[data-page-content="estoque"] .stock-kpi{min-height:0;padding:12px 12px 12px 15px;border-radius:12px}
+  .page[data-page-content="estoque"] .stock-kpi .label{font-size:10px}
+  .page[data-page-content="estoque"] .stock-kpi .value{font-size:24px;margin-top:6px}
+  .page[data-page-content="estoque"] .stock-kpi .sub{font-size:10px;line-height:1.35}
 }
 @media(max-width:360px){
   .content{padding-left:12px;padding-right:12px}
