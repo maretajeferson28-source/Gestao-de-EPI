@@ -720,13 +720,13 @@ function renderColabs(){
     const detalhe=[c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
     const ativo=c.ativo!==false;
 
-    return `<article class="collab-card">
+    return `<article class="collab-card${ativo?'':' is-inactive'}">
       <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
       <div class="collab-info">
         <strong title="${esc(nome)}">${esc(nome)}</strong>
         <span title="${esc(detalhe)}">${esc(detalhe)}</span>
       </div>
-      ${currentIsAdmin?`<span class="epi-card-action-btn collab-edit-btn" role="button" tabindex="0" data-colab-edit="${esc(c.id)}" title="Editar funcionário" aria-label="Editar funcionário"><i data-lucide="pencil" aria-hidden="true"></i></span>`:''}
+      ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis-vertical" aria-hidden="true"></i></span>`:''}
       <span class="collab-dot ${ativo?'active':'inactive'}" title="${ativo?'Ativo':'Inativo'}"></span>
     </article>`;
   }).join('')||'<div class="empty">Nenhum colaborador.</div>';
@@ -840,15 +840,85 @@ async function saveColab(keepOpen=false){
   }
 }
 
+// Menu dos três pontinhos do card: alterar, termo (ainda indisponível),
+// desativar/reativar e excluir.
+let colabMenuId=null;
+let colabMenuTrigger=null;
+function closeColabMenu(){
+  $('colabMenu').classList.add('hidden');
+  colabMenuTrigger?.setAttribute('aria-expanded','false');
+  colabMenuId=null;
+  colabMenuTrigger=null;
+}
+function openColabMenu(trigger){
+  const c=collaborators.find(x=>x.id===trigger.dataset.colabMenu);
+  if(!c) return;
+  if(colabMenuId===c.id){closeColabMenu();return}
+  closeColabMenu();
+  colabMenuId=c.id;
+  colabMenuTrigger=trigger;
+  trigger.setAttribute('aria-expanded','true');
+  const ativo=c.ativo!==false;
+  const toggle=$('colabMenu').querySelector('[data-colab-action="ativo"]');
+  toggle.querySelector('span').textContent=ativo?'Desativar funcionário':'Reativar funcionário';
+  toggle.querySelector('i,svg').outerHTML=`<i data-lucide="${ativo?'user-x':'user-check'}" aria-hidden="true"></i>`;
+  const menu=$('colabMenu');
+  menu.classList.remove('hidden');
+  refreshIcons();
+  const r=trigger.getBoundingClientRect();
+  const w=menu.offsetWidth, h=menu.offsetHeight;
+  const left=Math.max(8,Math.min(r.right-w,window.innerWidth-w-8));
+  const top=r.bottom+6+h>window.innerHeight-8?Math.max(8,r.top-h-6):r.bottom+6;
+  menu.style.left=`${left}px`;
+  menu.style.top=`${top}px`;
+  menu.querySelector('button:not(:disabled)')?.focus({preventScroll:true});
+}
+async function toggleColabActive(c){
+  const ativo=c.ativo!==false;
+  if(ativo&&!confirm(`Desativar ${c.nome}? Ele deixa de aparecer na lista de colaboradores dos lançamentos, mas o histórico continua.`)) return;
+  const {error}=await sb.from('colaboradores').update({ativo:!ativo,updated_at:new Date().toISOString()}).eq('id',c.id);
+  if(error){alert(error.message);return}
+  await loadAll(false);
+}
+async function deleteColab(c){
+  const usos=movements.filter(m=>m.colaborador_id===c.id).length;
+  if(usos){
+    alert(`${c.nome} tem ${usos} movimentação(ões) registrada(s). Para não perder esse histórico, use "Desativar funcionário" em vez de excluir.`);
+    return;
+  }
+  if(!confirm(`Excluir ${c.nome} definitivamente?`)) return;
+  const {error}=await sb.from('colaboradores').delete().eq('id',c.id);
+  if(error){alert(error.message);return}
+  await loadAll(false);
+}
+
 $('addColab').addEventListener('click',()=>openColabEdit(null));
 $('colabCards').addEventListener('click',e=>{
-  const edit=e.target.closest('[data-colab-edit]');
-  if(edit) openColabEdit(edit.dataset.colabEdit);
+  const trigger=e.target.closest('[data-colab-menu]');
+  if(trigger){e.stopPropagation();openColabMenu(trigger)}
 });
 $('colabCards').addEventListener('keydown',e=>{
-  const edit=e.target.closest('[data-colab-edit]');
-  if(edit&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openColabEdit(edit.dataset.colabEdit)}
+  const trigger=e.target.closest('[data-colab-menu]');
+  if(trigger&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openColabMenu(trigger)}
 });
+$('colabMenu').addEventListener('click',async e=>{
+  const item=e.target.closest('[data-colab-action]');
+  if(!item||item.disabled) return;
+  const c=collaborators.find(x=>x.id===colabMenuId);
+  const trigger=colabMenuTrigger;
+  closeColabMenu();
+  if(!c) return;
+  if(item.dataset.colabAction==='editar') openColabEdit(c.id);
+  if(item.dataset.colabAction==='ativo') await toggleColabActive(c);
+  if(item.dataset.colabAction==='excluir') await deleteColab(c);
+  if(item.dataset.colabAction==='editar') return;
+  trigger?.focus?.();
+});
+document.addEventListener('click',e=>{
+  if(colabMenuId&&!e.target.closest('#colabMenu')&&!e.target.closest('[data-colab-menu]')) closeColabMenu();
+});
+window.addEventListener('resize',()=>{if(colabMenuId) closeColabMenu()});
+document.addEventListener('scroll',()=>{if(colabMenuId) closeColabMenu()},true);
 $('colabSimplificado').addEventListener('change',e=>setColabMode(e.target.checked));
 $('colabCpf').addEventListener('input',e=>{e.target.value=formatCpf(e.target.value)});
 $('colabEditSave').addEventListener('click',()=>saveColab(false));
@@ -1735,6 +1805,7 @@ document.addEventListener('keydown',e=>{
   if($('movementEditModal')&&!$('movementEditModal').classList.contains('hidden')) closeMovementEdit();
   if($('epiCatalogEditModal')&&!$('epiCatalogEditModal').classList.contains('hidden')) closeEpiCatalogEdit();
   if($('colabEditModal')&&!$('colabEditModal').classList.contains('hidden')) closeColabEdit();
+  if(colabMenuId) closeColabMenu();
 });
 
 $('addEpi').addEventListener('click',async()=>{

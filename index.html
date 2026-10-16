@@ -323,6 +323,13 @@
         </div>
       </div>
 
+      <div class="collab-menu hidden" id="colabMenu" role="menu" aria-label="Opções do funcionário">
+        <button type="button" role="menuitem" data-colab-action="editar"><i data-lucide="pencil" aria-hidden="true"></i><span>Alterar funcionário</span></button>
+        <button type="button" role="menuitem" data-colab-action="termo" disabled title="Em breve"><i data-lucide="file-text" aria-hidden="true"></i><span>Ver termo de autorização</span></button>
+        <button type="button" role="menuitem" data-colab-action="ativo"><i data-lucide="user-x" aria-hidden="true"></i><span>Desativar funcionário</span></button>
+        <button type="button" role="menuitem" data-colab-action="excluir" class="danger"><i data-lucide="trash-2" aria-hidden="true"></i><span>Excluir funcionário</span></button>
+      </div>
+
       <section class="page" data-page-content="epis">
         <div class="section-title"><div><h2>EPIs / Itens</h2><p>Catálogo usado no lançamento e nos filtros.</p></div></div>
         <div class="toolbar"><input id="newEpiNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do EPI / item"><input id="newEpiCat" class="btn" style="cursor:text" placeholder="Categoria"><button class="btn primary" id="addEpi"><i data-lucide="package-plus" aria-hidden="true"></i>Adicionar</button></div>
