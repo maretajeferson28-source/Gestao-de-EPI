@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gestão EPI">
 <link rel="manifest" href="/manifest.webmanifest">
-<title>Gestão de EPI — Supabase</title>
+<title>Gestão de EPI</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/app-brand/favicon-32.png?v=20261001" data-epi-favicon="true">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/app-brand/favicon-192.png?v=20261001">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/app-brand/apple-touch-icon.png?v=20261001">
@@ -32,7 +32,7 @@
   <div class="auth-card">
     <div class="auth-icon"><i data-lucide="shield-check" aria-hidden="true"></i></div>
     <h1>GESTÃO DE <span>EPI</span></h1>
-    <p>Entre para acessar a base centralizada no Supabase.</p>
+    <p>Entre para acessar a base centralizada.</p>
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input id="authEmail" type="email" autocomplete="email" required></div>
       <div class="field"><label>Senha</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div>
@@ -262,7 +262,7 @@
 
             <div class="data-edit-note">
               <i data-lucide="history" aria-hidden="true"></i>
-              <span>A edição corrige o registro salvo no Supabase e mantém a origem original da movimentação.</span>
+              <span>A edição corrige o registro salvo e mantém a origem original da movimentação.</span>
             </div>
 
             <div class="data-edit-actions">
@@ -501,7 +501,7 @@
         <div class="section-title ca-section-title">
           <div>
             <h2>Consulta de C.A.</h2>
-            <p>Consulta rápida na base oficial CAEPI sincronizada com o Supabase.</p>
+            <p>Consulta rápida na base oficial CAEPI.</p>
           </div>
           <span class="ca-visual-badge"><i data-lucide="shield-check" aria-hidden="true"></i> Base oficial</span>
         </div>
@@ -663,9 +663,9 @@
       <section class="page" data-page-content="dados">
         <div class="section-title"><div><h2>Dados e backup</h2><p>Exporte uma cópia ou restaure a carga inicial atualizada.</p></div></div>
         <div class="form-card">
-          <div class="toolbar"><button class="btn primary" id="exportJson"><i data-lucide="download" aria-hidden="true"></i>Exportar backup JSON</button><button class="btn" id="refreshData2"><i data-lucide="refresh-cw" aria-hidden="true"></i>Atualizar do Supabase</button></div>
-          <p style="color:var(--muted);font-size:12px;line-height:1.7">Os dados agora ficam no <strong>Supabase/PostgreSQL</strong>. Novos lançamentos, colaboradores e EPIs são gravados no banco central. Alterações feitas por outro computador podem atualizar esta tela automaticamente via Realtime.</p>
-          <div class="notice" id="dbInfo">Projeto Supabase: Gestao-EPI • acesso protegido por autenticação.</div>
+          <div class="toolbar"><button class="btn primary" id="exportJson"><i data-lucide="download" aria-hidden="true"></i>Exportar backup JSON</button><button class="btn" id="refreshData2"><i data-lucide="refresh-cw" aria-hidden="true"></i>Atualizar dados</button></div>
+          <p style="color:var(--muted);font-size:12px;line-height:1.7">Os dados agora ficam no <strong>banco central (PostgreSQL)</strong>. Novos lançamentos, colaboradores e EPIs são gravados no banco central. Alterações feitas por outro computador podem atualizar esta tela automaticamente via Realtime.</p>
+          <div class="notice" id="dbInfo">Gestão de EPI • acesso protegido por autenticação.</div>
         </div>
       </section>
     </div>

@@ -107,7 +107,7 @@
   async function saveNote(note) {
     if (state.saving) throw new Error('Aguarde o salvamento em andamento.');
     if (window.EPI_NFE_VIEWER?.isImporting?.()) throw new Error('Aguarde a leitura do XML terminar.');
-    if (!db()) throw new Error('Supabase ainda não está disponível.');
+    if (!db()) throw new Error('O banco ainda não está disponível.');
     if (!note?.items?.length) throw new Error('Importe uma NF-e antes de salvar.');
     totals(note);
     if (note.items.some((i) => i.stockQuantity!==null && (!Number.isFinite(i.stockQuantity) || i.stockQuantity<=0))) throw new Error('Confira as quantidades de estoque.');

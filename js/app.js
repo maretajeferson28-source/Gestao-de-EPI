@@ -122,11 +122,11 @@ async function loadAll(showBusy=true){
     renderMovs();
     renderColabs();
     renderEpis();
-    setStatus(`Supabase sincronizado • ${movements.length} movimentações`);
+    setStatus(`Sincronizado • ${movements.length} movimentações`);
     window.dispatchEvent(new CustomEvent('epi:data-loaded'));
   }catch(err){
     console.error(err);
-    setStatus('Erro ao carregar o Supabase', false);
+    setStatus('Erro ao carregar os dados', false);
     alert(`Erro ao carregar dados: ${err.message || err}`);
   }finally{
     if(showBusy) setBusy(false);
@@ -584,7 +584,7 @@ $('saidaForm').addEventListener('submit',async e=>{
     if(error) throw error;
     e.target.reset();
     $('nQtd').value=1; $('nResp').value='Jeferson'; $('nData').value=todayLocal();
-    $('saidaMsg').textContent='Movimentação salva no Supabase.';
+    $('saidaMsg').textContent='Movimentação salva.';
     await loadAll(false);
   }catch(err){
     console.error(err);
@@ -2259,7 +2259,7 @@ $('signupBtn').addEventListener('click',async()=>{
   const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl()}});
   if(error){$('authMsg').textContent=error.message;return}
   if(data.session){await showApp(data.session)}
-  else $('authMsg').textContent='Conta criada. Confirme o e-mail enviado pelo Supabase e depois entre.';
+  else $('authMsg').textContent='Conta criada. Confirme o e-mail enviado e depois entre.';
 });
 $('googleBtn').addEventListener('click',async()=>{
   $('authMsg').textContent='Abrindo o Google...';

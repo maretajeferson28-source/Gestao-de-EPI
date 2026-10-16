@@ -72,7 +72,7 @@
 
           <div class="nfe-help">
             <i data-lucide="shield-check"></i>
-            <span>O XML só é enviado ao Supabase quando você clica em Salvar entrada.</span>
+            <span>O XML só é salvo quando você clica em Salvar entrada.</span>
           </div>
 
           <div class="nfe-msg" id="nfeMsg"></div>
