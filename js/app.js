@@ -717,8 +717,8 @@ function renderColabs(){
     const nome=String(c.nome||'Colaborador').trim();
     const parts=nome.split(/\s+/).filter(Boolean);
     const initials=((parts[0]?.[0]||'')+(parts.length>1?(parts[parts.length-1]?.[0]||''):'')).toLocaleUpperCase('pt-BR')||'C';
-    const detalhe=[c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
     const ativo=c.ativo!==false;
+    const detalhe=[ativo?null:'Inativo',c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
 
     return `<article class="collab-card${ativo?'':' is-inactive'}">
       <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
@@ -727,7 +727,6 @@ function renderColabs(){
         <span title="${esc(detalhe)}">${esc(detalhe)}</span>
       </div>
       ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
-      <span class="collab-dot ${ativo?'active':'inactive'}" title="${ativo?'Ativo':'Inativo'}"></span>
     </article>`;
   }).join('')||'<div class="empty">Nenhum colaborador.</div>';
   refreshIcons();
