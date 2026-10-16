@@ -82,7 +82,7 @@ tr:hover td{background:#202020}
 .pill{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:10px;background:#242424;color:#dddddd}
 .good{color:var(--green)}.warn{color:var(--gold)}.bad{color:var(--red)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.btn{border:1px solid #3a3a3a;background:#1a1a1a;color:#ffffff;border-radius:9px;padding:9px 12px}
+.btn{border:1px solid #3a3a3a;background:#1a1a1a;color:#ffffff;border-radius:9px;padding:7px 12px}
 .btn.primary{background:linear-gradient(90deg,#ff9a00,#ff5500);border-color:#ff6600;color:#ffffff;font-weight:800;box-shadow:0 0 8px rgba(232,111,24,.18)}
 .btn.danger{border-color:#6a2f2f;color:#ff9b9b;background:#1a1111}
 .section-title{display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 14px}
@@ -213,7 +213,7 @@ tr:hover td{background:#202020}
 .ca-search-icon svg{width:22px;height:22px}
 .ca-field{margin-top:18px}
 .ca-input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
-.ca-input-row input{height:42px;font-size:15px;font-weight:700;letter-spacing:.04em}
+.ca-input-row input{height:36px;font-size:15px;font-weight:700;letter-spacing:.04em}
 .ca-input-row .btn{min-width:108px}
 .ca-search-note{display:flex;gap:10px;margin-top:16px;padding:12px;border-radius:11px;border:1px solid #303030;background:#161616}
 .ca-search-note>svg{width:18px;height:18px;color:var(--gold);flex:0 0 18px;margin-top:1px}

@@ -55,7 +55,7 @@
       }
       [data-page-content="estoque"] .stock-filter-bar input{
         width:100%;
-        height:40px;
+        height:36px;
         background:#262626;
         border:1px solid rgba(232,111,24,.18);
         color:#fff;
