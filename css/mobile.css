@@ -8,45 +8,62 @@
   .sidebar .nav [data-page="movimentacoes"],
   .sidebar .nav [data-page="notas"]{display:none!important}
 
-  /* Início do celular: mesma estrutura do app de entrega (cartões grandes +
-     "Outros"), nas cores do Gestão de EPI */
-  .mobile-home-hello{margin:6px 2px 18px;font-size:26px;letter-spacing:-.02em}
-  .mobile-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-  .mobile-home-tile{
-    position:relative;overflow:hidden;
-    display:flex;align-items:center;gap:12px;
-    min-height:122px;padding:16px 14px 30px;border:1px solid rgba(255,102,0,.30);border-radius:22px;
-    background:linear-gradient(160deg,#ff7a1a,#e85d00);
-    color:#fff;font-size:15px;font-weight:800;line-height:1.2;text-align:left;cursor:pointer;
-    box-shadow:0 10px 24px rgba(255,102,0,.16);
-  }
-  /* Onda decorativa no rodapé do cartão */
-  .mobile-home-tile::after{
-    content:"";position:absolute;left:-10%;right:-10%;bottom:-38px;height:70px;
-    border-radius:50% 50% 0 0;background:rgba(255,255,255,.14);pointer-events:none;
-  }
-  .mobile-home-tile .mobile-home-icon{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.18)}
-  .mobile-home-tile .mobile-home-icon svg{width:22px;height:22px;color:#fff;stroke:#fff}
-  .mobile-home-tile:active:not(:disabled){transform:scale(.98)}
+  /* Itens que no celular ficam na barra inferior saem do menu lateral */
+  .sidebar .nav [data-page="inicio"],
+  .sidebar .nav [data-page="nova"],
+  .sidebar .nav [data-page="caepi"],
+  .sidebar .nav [data-page="estoque"]{display:none!important}
 
-  .mobile-home-others{margin-top:18px;padding:16px 14px 18px;border:1px solid #2a2a2a;border-radius:22px;background:#151515}
-  .mobile-home-others h3{margin:0 0 12px;font-size:17px}
-  .mobile-home-others-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .mobile-home-chip{
-    position:relative;display:flex;align-items:center;gap:10px;min-height:62px;padding:10px 12px;
-    border:1px solid #2f2f2f;border-radius:18px;background:#1c1c1c;color:#f0f0f0;
-    font-size:13px;font-weight:700;line-height:1.2;text-align:left;cursor:pointer;
+  /* Barra inferior flutuante, com Entrega em destaque no centro */
+  .mobile-tabbar{
+    position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:80;
+    display:grid!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);align-items:end;
+    padding:9px 4px 8px;border:1px solid #2a2a2a;border-radius:24px;background:rgba(22,22,22,.96);
+    box-shadow:0 14px 32px rgba(0,0,0,.55);backdrop-filter:blur(14px);
   }
-  .mobile-home-chip .mobile-home-icon{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;border-radius:50%;background:#251a12}
-  .mobile-home-chip .mobile-home-icon svg{width:18px;height:18px;color:#ff7d17;stroke:#ff7d17}
+  /* Vence o display:flex genérico do .mobile-only */
+  .mobile-only.mobile-tabbar:not([hidden]){display:grid!important}
+  body.mobile-menu-open .mobile-only.mobile-tabbar{display:none!important}
+  .mobile-tab{
+    display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:2px 0;
+    border:0;background:transparent;color:#8a8a8a;font-size:10px;font-weight:700;line-height:1.1;cursor:pointer;
+  }
+  .mobile-tab[hidden]{display:none!important}
+  .mobile-tab-icon{display:grid;place-items:center}
+  .mobile-tab-icon svg{width:22px;height:22px;color:currentColor;stroke:currentColor}
+  .mobile-tab.active{color:#ff7d17}
+  .mobile-tab.is-soon{opacity:.38;cursor:default}
+  .mobile-tab.is-main{color:#ff9a3f;font-weight:800}
+  .mobile-tab.is-main .mobile-tab-icon{
+    width:58px;height:58px;margin-top:-32px;border-radius:50%;
+    background:radial-gradient(circle at 30% 25%,#ff9a3f,#e15500);border:4px solid #0d0d0d;
+    box-shadow:0 10px 22px rgba(255,102,0,.4);
+  }
+  .mobile-tab.is-main .mobile-tab-icon svg{width:26px;height:26px;color:#fff;stroke:#fff}
+  .mobile-tab.is-main.active .mobile-tab-icon{box-shadow:0 0 0 3px rgba(255,102,0,.35),0 10px 22px rgba(255,102,0,.4)}
+  .mobile-tab.is-main:active .mobile-tab-icon{transform:scale(.95)}
+  .content{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
 
-  /* Recurso que ainda não existe no app */
-  .mobile-home-tile.is-soon,.mobile-home-chip.is-soon{cursor:default}
-  .mobile-home-tile.is-soon{background:linear-gradient(160deg,#5a3418,#3c2412);border-color:#4a2c17;box-shadow:none;color:#e9d6c8}
-  .mobile-home-chip.is-soon{color:#9a9a9a}
-  .mobile-home-soon{position:absolute;top:8px;right:10px;padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.35);color:#ffd2ad;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-  .mobile-home-text{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
-  .mobile-home-chip .mobile-home-soon{position:static;background:#2a2a2a;color:#9a9a9a}
+  /* Início do celular: saudação e resumo das saídas */
+  .mobile-home-head{margin:4px 2px 16px}
+  .mobile-home-head h2{margin:0;font-size:26px;letter-spacing:-.02em}
+  .mobile-home-head p{margin:4px 0 0;color:#8a8a8a;font-size:13px;text-transform:capitalize}
+  .mobile-home-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .mobile-home-stat{display:flex;flex-direction:column;gap:4px;padding:16px;border:1px solid #2a2a2a;border-radius:20px;background:radial-gradient(circle at 100% 0%,rgba(255,102,0,.14),transparent 60%),#151515}
+  .mobile-home-stat span{color:#ff8500;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+  .mobile-home-stat strong{font-size:30px;line-height:1.1}
+  .mobile-home-stat small{color:#8a8a8a;font-size:11px}
+  .mobile-home-recent{margin-top:18px;padding:16px;border:1px solid #2a2a2a;border-radius:20px;background:#151515}
+  .mobile-home-recent h3{margin:0 0 10px;font-size:15px}
+  .mobile-home-recent ul{list-style:none;margin:0;padding:0;display:grid}
+  .mobile-home-recent li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #222}
+  .mobile-home-recent li:first-child{border-top:0}
+  .mobile-home-recent-date{flex:0 0 46px;padding:6px 0;border-radius:10px;background:#1d140c;color:#ff9a3f;font-size:12px;font-weight:800;text-align:center}
+  .mobile-home-recent-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+  .mobile-home-recent-info strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mobile-home-recent-info small{color:#8a8a8a;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mobile-home-recent-qty{flex:0 0 auto;min-width:30px;padding:4px 8px;border-radius:999px;background:#222;color:#e6e6e6;font-size:12px;font-weight:800;text-align:center}
+  .mobile-home-empty{margin:0;color:#8a8a8a;font-size:13px}
   html,body{min-height:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
   body{background:#0d0d0d}
   .app:not(.app-hidden){display:block;min-height:100dvh}

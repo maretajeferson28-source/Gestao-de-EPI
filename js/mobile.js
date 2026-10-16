@@ -91,57 +91,81 @@
   homePage.dataset.pageContent = 'inicio';
   app.querySelector('.content').prepend(homePage);
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  // Atalhos do Início. `page` é a página do menu que o atalho abre; sem
-  // `page` o recurso ainda não existe no app e o atalho aparece como "Em breve".
-  const HOME_MAIN = [
-    { label: 'Entrega', icon: 'clipboard-list', page: 'nova' },
-    { label: 'Consulta C.A.', icon: 'badge-check', page: 'caepi' },
-    { label: 'Termo de Autorização', icon: 'shield-check' },
-    { label: 'Solicitação de EPIs', icon: 'bookmark' }
+  // Barra inferior do celular: Início, C.A., Entrega (botão central), Termo e
+  // Estoque. Cada item aciona o botão correspondente do menu lateral, que no
+  // celular fica escondido (mobile.css). Sem `page`: recurso ainda não existe.
+  const TABS = [
+    { page: 'inicio', label: 'Início', icon: 'house' },
+    { page: 'caepi', label: 'C.A.', icon: 'search' },
+    { page: 'nova', label: 'Entrega', icon: 'clipboard-list', main: true },
+    { label: 'Termo', icon: 'shield-check' },
+    { page: 'estoque', label: 'Estoque', icon: 'warehouse' }
   ];
-  const HOME_OTHERS = [
-    { label: 'Advertências', icon: 'triangle-alert' },
-    { label: 'Treinamentos', icon: 'graduation-cap' },
-    { label: 'Situação do Colaborador', icon: 'contact' }
-  ];
-  function homeTile(item, kind) {
-    const target = item.page ? navList.querySelector(`[data-page="${item.page}"]`) : null;
-    // Página que existe mas a pessoa não pode abrir (ex.: Entrega para leitor): não mostra.
-    if (item.page && (!target || target.hidden)) return '';
-    const soon = !item.page;
-    return `
-      <button type="button" class="${kind}${soon ? ' is-soon' : ''}" ${soon ? 'disabled' : `data-home-go="${item.page}"`}>
-        <span class="mobile-home-icon">${icon(item.icon)}</span>
-        <span class="mobile-home-text">
-          <span class="mobile-home-label">${escapeHtml(item.label)}</span>
-          ${soon ? '<span class="mobile-home-soon">Em breve</span>' : ''}
-        </span>
-      </button>`;
+  const tabbar = document.createElement('nav');
+  tabbar.className = 'mobile-only mobile-tabbar';
+  tabbar.setAttribute('aria-label', 'Navegação principal');
+  tabbar.innerHTML = TABS.map((tab) => `
+    <button type="button" class="mobile-tab${tab.main ? ' is-main' : ''}${tab.page ? '' : ' is-soon'}"
+      ${tab.page ? `data-tab="${tab.page}"` : 'disabled aria-disabled="true" title="Em breve"'}>
+      <span class="mobile-tab-icon">${icon(tab.icon)}</span>
+      <span class="mobile-tab-label">${escapeHtml(tab.label)}</span>
+    </button>`).join('');
+  app.appendChild(tabbar);
+  tabbar.addEventListener('click', (event) => {
+    const tab = event.target.closest('[data-tab]');
+    if (tab) navList.querySelector(`[data-page="${CSS.escape(tab.dataset.tab)}"]`)?.click();
+  });
+  function syncTabbar() {
+    const active = sidebar.querySelector('[data-page].active')?.dataset.page;
+    tabbar.querySelectorAll('[data-tab]').forEach((tab) => {
+      // Item que a pessoa não pode abrir (ex.: Entrega para leitor) some da barra.
+      const target = navList.querySelector(`[data-page="${CSS.escape(tab.dataset.tab)}"]`);
+      tab.hidden = !target || target.hidden;
+      tab.classList.toggle('active', tab.dataset.tab === active);
+    });
   }
-  // Só redesenha quando o conteúdo muda: o createIcons troca também os ícones
-  // do menu, o que dispara o observador do menu e chamaria esta função de novo.
+
+  // Início: resumo rápido das saídas (os atalhos agora estão na barra).
+  const fmtDate = (iso) => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}` : '—'; };
   let lastHomeHtml = '';
   function renderHome() {
     if (!homePage.classList.contains('active')) return;
     const name = (document.getElementById('sideUserName')?.textContent || '').trim();
     const firstName = name && name !== 'Usuário' ? name.split(/\s+/)[0] : '';
+    const list = typeof movements !== 'undefined' && Array.isArray(movements) ? movements : [];
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const month = today.slice(0, 7);
+    const qty = (rows) => rows.reduce((sum, row) => sum + (Number(row.quantidade) || 0), 0);
+    const hoje = list.filter((row) => String(row.data || '').slice(0, 10) === today);
+    const mes = list.filter((row) => String(row.data || '').slice(0, 7) === month);
+    const ultimas = list.slice().sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')) || String(b.created_at || '').localeCompare(String(a.created_at || ''))).slice(0, 5);
     const html = `
-      <h2 class="mobile-home-hello">Olá${firstName ? `, ${escapeHtml(firstName)}` : ''}</h2>
-      <div class="mobile-home-grid">${HOME_MAIN.map((item) => homeTile(item, 'mobile-home-tile')).join('')}</div>
-      <section class="mobile-home-others">
-        <h3>Outros</h3>
-        <div class="mobile-home-others-grid">${HOME_OTHERS.map((item) => homeTile(item, 'mobile-home-chip')).join('')}</div>
+      <div class="mobile-home-head">
+        <h2>Olá${firstName ? `, ${escapeHtml(firstName)}` : ''}</h2>
+        <p>${escapeHtml(now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}</p>
+      </div>
+      <div class="mobile-home-stats">
+        <div class="mobile-home-stat"><span>Saídas hoje</span><strong>${qty(hoje)}</strong><small>${hoje.length} lançamento(s)</small></div>
+        <div class="mobile-home-stat"><span>Saídas no mês</span><strong>${qty(mes)}</strong><small>${mes.length} lançamento(s)</small></div>
+      </div>
+      <section class="mobile-home-recent">
+        <h3>Últimas entregas</h3>
+        ${ultimas.length ? `<ul>${ultimas.map((row) => `
+          <li>
+            <span class="mobile-home-recent-date">${fmtDate(row.data)}</span>
+            <span class="mobile-home-recent-info"><strong>${escapeHtml(row.epi || 'EPI')}</strong><small>${escapeHtml(row.colaborador || 'Sem colaborador')}</small></span>
+            <span class="mobile-home-recent-qty">${escapeHtml(row.quantidade ?? '—')}</span>
+          </li>`).join('')}</ul>` : '<p class="mobile-home-empty">Nenhuma entrega registrada ainda.</p>'}
       </section>`;
     if (html === lastHomeHtml && homePage.childElementCount) return;
     lastHomeHtml = html;
     homePage.innerHTML = html;
-    window.lucide?.createIcons();
   }
+  // Os números do resumo vêm do carregamento de dados do app.
+  window.addEventListener('epi:data-loaded', renderHome);
   homeButton.addEventListener('click', () => { window.nav?.('inicio'); renderHome(); });
-  homePage.addEventListener('click', (event) => {
-    const tile = event.target.closest('[data-home-go]');
-    if (tile) navList.querySelector(`[data-page="${CSS.escape(tile.dataset.homeGo)}"]`)?.click();
-  });
 
   // Páginas que o celular não mostra (o mobile.css esconde os botões). Se uma
   // delas estiver aberta — o app abre no Dashboard —, vai para a primeira
@@ -170,6 +194,7 @@
     // Tela que cresceu para computador com o Início aberto: volta ao Dashboard.
     if (!media.matches && homeButton.classList.contains('active')) navList.querySelector('[data-page="dashboard"]')?.click();
     renderHome();
+    syncTabbar();
     const active = sidebar.querySelector('[data-page].active')?.dataset.page;
     if (media.matches && active !== previousPage) {
       closeMenu();
