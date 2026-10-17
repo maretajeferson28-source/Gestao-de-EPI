@@ -1523,17 +1523,15 @@ async function lookupEpiVariantCi(ci){
     const {data,error}=await sb.from('ciepi_registros').select('*').eq('ci',ci).eq('ativo',true).maybeSingle();
     if(error) throw error;
     if(!data){$('epiVarLookupStatus').textContent='C.I. não encontrado na base CIEPI.';return}
-    // Mesmos campos do prontuário técnico: Peso, Material, Vida útil, Dimensões e Utilização.
+    // Mesmos campos que a busca do CAEPI preenche para um C.A.
     $('epiVarFabricante').value=data.fabricante||'';
-    $('epiVarCnpj').value=data.peso||'';
-    $('epiVarMarca').value=data.material||'';
+    $('epiVarCnpj').value=data.cnpj||'';
+    $('epiVarMarca').value=data.marca||'';
     $('epiVarReferencia').value=data.referencia||'';
     $('epiVarValidade').value=data.data_validade?String(data.data_validade).slice(0,10):'';
-    $('epiVarSituacao').value=data.vida_util||'';
+    $('epiVarSituacao').value=data.situacao||'';
     $('epiVarNorma').value=data.norma||'';
     $('epiVarDescricao').value=data.descricao||'';
-    $('epiVarCaracteristicas').value=data.dimensoes||'';
-    $('epiVarObservacao').value=data.utilizacao||'';
     $('epiVarLookupStatus').textContent=`Dados carregados da base CIEPI (${data.nome}).`;
     window.dispatchEvent(new CustomEvent('epi:ci-loaded'));
   }catch(err){

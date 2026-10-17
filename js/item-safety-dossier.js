@@ -166,8 +166,7 @@
       return;
     }
 
-    // Código da Base CIEPI (CI-0001) usa os mesmos campos do item técnico.
-    const technical = isTechnicalItem(epi) || /^CI-/i.test($('epiVarCa')?.value || '');
+    const technical = isTechnicalItem(epi);
     applyLabels(technical ? technicalLabels : normalLabels);
     applyPlaceholders(technical ? technicalPlaceholders : normalPlaceholders);
 
@@ -182,8 +181,6 @@
     new MutationObserver(() => {
       setTimeout(syncLabels, 0);
     }).observe(modal, { attributes: true, attributeFilter: ['class'] });
-
-    window.addEventListener('epi:ci-loaded', syncLabels);
 
     const title = $('epiDetailTitle');
     if (title) {

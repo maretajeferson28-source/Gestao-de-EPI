@@ -9,10 +9,9 @@
   const $ = (id) => document.getElementById(id);
   const BUCKET = 'ciepi-boletins';
   const FIELDS = {
-    nome: 'ciepiNome', fabricante: 'ciepiFabricante', referencia: 'ciepiReferencia',
-    peso: 'ciepiPeso', material: 'ciepiMaterial', data_validade: 'ciepiValidade',
-    vida_util: 'ciepiVidaUtil', norma: 'ciepiNorma', descricao: 'ciepiDescricao',
-    dimensoes: 'ciepiDimensoes', utilizacao: 'ciepiUtilizacao'
+    nome: 'ciepiNome', fabricante: 'ciepiFabricante', cnpj: 'ciepiCnpj', marca: 'ciepiMarca',
+    referencia: 'ciepiReferencia', data_validade: 'ciepiValidade', situacao: 'ciepiSituacao',
+    norma: 'ciepiNorma', descricao: 'ciepiDescricao'
   };
 
   let rows = [];
