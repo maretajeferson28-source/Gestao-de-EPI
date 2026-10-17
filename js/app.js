@@ -458,10 +458,59 @@ function renderCaSource(source){
   setCaValue('caSourceInfo',`Base: ${formatCaDateTime(source.importado_em)}`);
 }
 
+async function lookupCaCiepi(ci){
+  const button=$('caSearchBtn');
+  $('caInput').value=ci;
+  resetCaStage();
+  setCaValue('caStageNumber',ci);
+  setCaStatus('Consultando...','loading');
+  setCaValue('caStageHint','Consultando a base CIEPI...');
+  button.disabled=true;
+  try{
+    const {data,error}=await sb.from('ciepi_registros').select('*').eq('ci',ci).eq('ativo',true).maybeSingle();
+    if(error) throw error;
+    setCaValue('caBaseSummary','Base CIEPI (cadastro interno)');
+    if(!data){
+      setCaStatus('Não encontrado','error');
+      setCaValue('caStageHint','C.I. não encontrado na base CIEPI.');
+      setCaValue('caHistoryInfo','Histórico: N/A');
+      setCaValue('caSourceInfo','Base: CIEPI');
+      return;
+    }
+    const situation=String(data.situacao||'').trim()||'N/A';
+    const upper=situation.toLocaleUpperCase('pt-BR');
+    const statusKind=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'result');
+    setCaValue('caStageTitle',data.nome,'N/A');
+    setCaValue('caStageNumber',data.ci);
+    setCaValue('caStageHint','Registro localizado na base CIEPI (código interno).');
+    setCaValue('caSituation',situation);
+    setCaValue('caEquipamento',data.nome,'N/A');
+    setCaValue('caFabricante',data.fabricante,'N/A');
+    setCaValue('caCnpj',data.cnpj,'N/A');
+    setCaValue('caMarca',data.marca,'N/A');
+    setCaValue('caReferencia',data.referencia,'N/A');
+    setCaValue('caValidade',data.data_validade?formatCaDate(String(data.data_validade).slice(0,10)):'N/A');
+    setCaValue('caNorma',data.norma,'N/A');
+    setCaValue('caDescricao',data.descricao,'N/A');
+    setCaValue('caHistoryInfo','Histórico: N/A');
+    setCaValue('caSourceInfo',`Base: CIEPI • ${formatCaDateTime(data.updated_at)}`);
+    setCaStatus(situation,statusKind);
+  }catch(err){
+    console.error('[CIEPI]',err);
+    setCaStatus('Erro na consulta','error');
+    setCaValue('caStageHint','Não foi possível consultar a base CIEPI agora.');
+  }finally{
+    button.disabled=false;
+    refreshIcons();
+  }
+}
+
 async function lookupCaepi(){
   const input=$('caInput');
   const button=$('caSearchBtn');
   if(!input||!button) return;
+  const ci=ciCode(input.value);
+  if(ci) return lookupCaCiepi(ci);
 
   const ca=String(input.value||'').replace(/\D+/g,'').slice(0,8);
   input.value=ca;
@@ -532,7 +581,7 @@ async function lookupCaepi(){
 
 if($('caInput')){
   $('caInput').addEventListener('input',()=>{
-    const cleaned=$('caInput').value.replace(/\D+/g,'').slice(0,8);
+    const cleaned=cleanCaTyping($('caInput').value);
     if($('caInput').value!==cleaned) $('caInput').value=cleaned;
   });
   $('caInput').addEventListener('keydown',e=>{

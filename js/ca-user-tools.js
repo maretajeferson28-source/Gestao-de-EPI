@@ -5,7 +5,11 @@
   window.__EPI_CA_USER_TOOLS__ = true;
 
   const byId = (id) => document.getElementById(id);
-  const normalizeCa = (value) => String(value || '').replace(/\D+/g, '').replace(/^0+/, '');
+  // C.A. compara só os dígitos; C.I. da Base CIEPI (CI-0001) mantém o prefixo.
+  const normalizeCa = (value) => {
+    const digits = String(value || '').replace(/\D+/g, '').replace(/^0+/, '');
+    return /^\s*C\s*I/i.test(String(value || '')) ? `CI-${digits}` : digits;
+  };
 
   function isAdminUser() {
     try {
@@ -203,7 +207,7 @@
     if (!situation || situation === '—') return '';
 
     const numberText = String(byId('caStageNumber')?.textContent || '');
-    return numberText.replace(/\D+/g, '');
+    return normalizeCa(numberText.replace(/^\s*C\.A\.\s*/i, ''));
   }
 
   function ensureViewButton() {

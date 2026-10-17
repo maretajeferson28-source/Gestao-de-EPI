@@ -116,7 +116,7 @@ document.title = "Gestão de EPI";
 window.addEventListener('load', () => {
   if (!document.querySelector('script[data-ca-user-tools]')) {
     const script = document.createElement('script');
-    script.src = 'js/ca-user-tools.js';
+    script.src = 'js/ca-user-tools.js?v=20261017-ci';
     script.dataset.caUserTools = 'true';
     document.body.appendChild(script);
   }
