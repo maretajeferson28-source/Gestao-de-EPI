@@ -382,7 +382,7 @@ function renderDashboard(){
 }
 
 function nav(page){
-  if(!currentIsAdmin && ['nova','colaboradores','epis','autorizacoes','dados'].includes(page)) return;
+  if(!currentIsAdmin && ['nova','colaboradores','epis','ciepi','autorizacoes','dados'].includes(page)) return;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.pageContent===page));
   if(page==='dashboard') renderDashboard();
@@ -1132,7 +1132,7 @@ function clearEpiVariantForm(){
   if($('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=false;
   if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=false;
   if($('epiVariantMsg')) $('epiVariantMsg').textContent='';
-  if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. para buscar os dados oficiais.';
+  if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. ou um C.I. (ex.: CI-0001) para buscar os dados.';
   if($('epiVariantEditorTitle')) $('epiVariantEditorTitle').textContent='Adicionar C.A.';
   if($('epiVariantSave')) $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar C.A.';
   if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').classList.add('hidden');
@@ -1511,7 +1511,41 @@ function fillEpiVariantForm(v){
   renderVariantImageEditor(v);
   refreshIcons();
 }
+// C.A. só tem dígitos; C.I. da Base CIEPI é "CI-0001" (aceita "ci1", "CI 12"...).
+function ciCode(v){const m=String(v||'').match(/^\s*c\s*i\s*-?\s*(\d{1,6})\s*$/i);return m?'CI-'+m[1].padStart(4,'0'):null}
+function cleanCaTyping(v){const s=String(v||'');if(/^\s*c/i.test(s)) return s.toUpperCase().replace(/[^CI0-9 -]/g,'').trimStart().slice(0,10);return s.replace(/\D+/g,'').slice(0,8)}
+async function lookupEpiVariantCi(ci){
+  $('epiVarCa').value=ci;
+  const btn=$('epiVarLookup');
+  btn.disabled=true;
+  $('epiVarLookupStatus').textContent='Consultando a base CIEPI...';
+  try{
+    const {data,error}=await sb.from('ciepi_registros').select('*').eq('ci',ci).eq('ativo',true).maybeSingle();
+    if(error) throw error;
+    if(!data){$('epiVarLookupStatus').textContent='C.I. não encontrado na base CIEPI.';return}
+    // Mesmos campos do prontuário técnico: Peso, Material, Vida útil, Dimensões e Utilização.
+    $('epiVarFabricante').value=data.fabricante||'';
+    $('epiVarCnpj').value=data.peso||'';
+    $('epiVarMarca').value=data.material||'';
+    $('epiVarReferencia').value=data.referencia||'';
+    $('epiVarValidade').value=data.data_validade?String(data.data_validade).slice(0,10):'';
+    $('epiVarSituacao').value=data.vida_util||'';
+    $('epiVarNorma').value=data.norma||'';
+    $('epiVarDescricao').value=data.descricao||'';
+    $('epiVarCaracteristicas').value=data.dimensoes||'';
+    $('epiVarObservacao').value=data.utilizacao||'';
+    $('epiVarLookupStatus').textContent=`Dados carregados da base CIEPI (${data.nome}).`;
+    window.dispatchEvent(new CustomEvent('epi:ci-loaded'));
+  }catch(err){
+    console.error('[EPI CIEPI]',err);
+    $('epiVarLookupStatus').textContent='Falha ao consultar a base CIEPI. Tente novamente.';
+  }finally{
+    btn.disabled=false;
+  }
+}
 async function lookupEpiVariantCa(){
+  const ci=ciCode($('epiVarCa').value);
+  if(ci) return lookupEpiVariantCi(ci);
   const ca=String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
   $('epiVarCa').value=ca;
   if(!ca){$('epiVarLookupStatus').textContent='Informe o número do C.A.';return}
@@ -1547,8 +1581,8 @@ async function saveEpiVariant(){
   if(!currentIsAdmin||!selectedEpi) return;
 
   const previous=editingVariantId ? epiVariants.find(v=>v.id===editingVariantId)||null : null;
-  const typedCa=String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
-  const ca=typedCa || String(previous?.ca||'').replace(/\D+/g,'').slice(0,8);
+  const typedCa=ciCode($('epiVarCa').value) || String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
+  const ca=typedCa || ciCode(previous?.ca) || String(previous?.ca||'').replace(/\D+/g,'').slice(0,8);
 
   if(!ca){
     $('epiVariantMsg').textContent='Informe o C.A.';
@@ -1745,7 +1779,7 @@ document.addEventListener('keydown',e=>{
 if($('epiDetailClose')) $('epiDetailClose').addEventListener('click',closeEpiDetail);
 if($('epiDetailModal')) $('epiDetailModal').addEventListener('click',e=>{if(e.target===$('epiDetailModal')) closeEpiDetail();});
 if($('epiVarLookup')) $('epiVarLookup').addEventListener('click',lookupEpiVariantCa);
-if($('epiVarCa')) $('epiVarCa').addEventListener('input',()=>{$('epiVarCa').value=$('epiVarCa').value.replace(/\D+/g,'').slice(0,8);});
+if($('epiVarCa')) $('epiVarCa').addEventListener('input',()=>{$('epiVarCa').value=cleanCaTyping($('epiVarCa').value);});
 if($('epiVariantImageSelect')) $('epiVariantImageSelect').addEventListener('click',chooseVariantImage);
 if($('epiVariantImageChange')) $('epiVariantImageChange').addEventListener('click',chooseVariantImage);
 if($('epiVariantImageRemove')) $('epiVariantImageRemove').addEventListener('click',markVariantImageForRemoval);

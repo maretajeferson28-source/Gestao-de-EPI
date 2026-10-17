@@ -6,7 +6,8 @@
      (continuam no computador). A troca de página fica no js/mobile.js. */
   .sidebar .nav [data-page="dashboard"],
   .sidebar .nav [data-page="movimentacoes"],
-  .sidebar .nav [data-page="notas"]{display:none!important}
+  .sidebar .nav [data-page="notas"],
+  .sidebar .nav [data-page="ciepi"]{display:none!important}
 
   /* Itens que no celular ficam na barra inferior saem do menu lateral */
   .sidebar .nav [data-page="inicio"],

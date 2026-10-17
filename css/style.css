@@ -2311,3 +2311,21 @@ tr:hover td{background:#202020}
   .stock-entry-grid{grid-template-columns:1fr}
   .stock-entry-grid .stock-col-full{grid-column:auto}
 }
+
+/* Base CIEPI (ciepi.js) */
+.ciepi-toolbar input{flex:1 1 280px;min-width:0;height:36px;background:#262626;border:1px solid rgba(232,111,24,.18);color:#fff;border-radius:9px;padding:0 12px;outline:none}
+.ciepi-toolbar input:focus{border-color:var(--gold)}
+.ciepi-table{width:100%}
+.ciepi-code{color:#ff8a24;white-space:nowrap}
+.ciepi-muted{color:#6f6f6f}
+.ciepi-actions{white-space:nowrap}
+.ciepi-actions .btn{width:32px;height:32px;padding:0;margin-left:4px}
+.ciepi-card{width:min(720px,calc(100vw - 28px))}
+.ciepi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ciepi-grid .ciepi-col-full{grid-column:1/-1}
+.ciepi-boletim{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ciepi-boletim span{font-size:12px;color:#a9a9a9;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px}
+.ciepi-boletim label.btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;margin:0;text-transform:none;letter-spacing:0;font-size:inherit;color:#fff}
+.ciepi-grid textarea{width:100%;resize:vertical;min-height:62px;background:#262626;color:#fff;border:1px solid #393939;border-radius:8px;padding:9px 10px;line-height:1.5;outline:none}
+.ciepi-grid textarea:focus{border-color:var(--gold);box-shadow:0 0 10px rgba(232,111,24,.18)}
+.ciepi-boletim [hidden]{display:none!important}

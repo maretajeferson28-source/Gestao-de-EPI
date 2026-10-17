@@ -170,7 +170,7 @@
   // Páginas que o celular não mostra (o mobile.css esconde os botões). Se uma
   // delas estiver aberta — o app abre no Dashboard —, vai para a primeira
   // página permitida, que é o Início (primeiro botão do menu).
-  const MOBILE_HIDDEN_PAGES = ['dashboard', 'movimentacoes', 'notas'];
+  const MOBILE_HIDDEN_PAGES = ['dashboard', 'movimentacoes', 'notas', 'ciepi'];
   let autoPage = null;
   function leaveHiddenPage() {
     if (!media.matches || app.classList.contains('app-hidden')) return;

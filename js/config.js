@@ -137,7 +137,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-item-safety-dossier]')) {
     const itemDossierScript = document.createElement('script');
-    itemDossierScript.src = 'js/item-safety-dossier.js?v=20261002-5';
+    itemDossierScript.src = 'js/item-safety-dossier.js?v=20261017-ci';
     itemDossierScript.dataset.itemSafetyDossier = 'true';
     document.body.appendChild(itemDossierScript);
   }
@@ -161,5 +161,12 @@ window.addEventListener('load', () => {
     stockEntryScript.src = 'js/stock-entry.js?v=20261016-1';
     stockEntryScript.dataset.stockEntry = 'true';
     document.body.appendChild(stockEntryScript);
+  }
+
+  if (!document.querySelector('script[data-ciepi]')) {
+    const ciepiScript = document.createElement('script');
+    ciepiScript.src = 'js/ciepi.js?v=20261017-1';
+    ciepiScript.dataset.ciepi = 'true';
+    document.body.appendChild(ciepiScript);
   }
 }, { once: true });
