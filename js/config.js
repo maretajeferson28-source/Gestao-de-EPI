@@ -135,20 +135,6 @@ window.addEventListener('load', () => {
     document.body.appendChild(spendOrderScript);
   }
 
-  if (!document.querySelector('script[data-item-safety-dossier]')) {
-    const itemDossierScript = document.createElement('script');
-    itemDossierScript.src = 'js/item-safety-dossier.js?v=20261017-ci';
-    itemDossierScript.dataset.itemSafetyDossier = 'true';
-    document.body.appendChild(itemDossierScript);
-  }
-
-  if (!document.querySelector('script[data-item-safety-save]')) {
-    const itemSafetySaveScript = document.createElement('script');
-    itemSafetySaveScript.src = 'js/item-safety-save.js?v=20261002-1';
-    itemSafetySaveScript.dataset.itemSafetySave = 'true';
-    document.body.appendChild(itemSafetySaveScript);
-  }
-
   if (!document.querySelector('script[data-stock-nav]')) {
     const stockNavScript = document.createElement('script');
     stockNavScript.src = 'js/stock-nav.js?v=20261002-stock-5';
