@@ -154,6 +154,7 @@
     bucket: BUCKET,
     temTermo: (colaboradorId) => termos.has(colaboradorId) || ehExemplo(colaboradorId),
     temAssinatura: (colaboradorId) => termos.has(colaboradorId),
+    termoDe: (colaboradorId) => termos.get(colaboradorId) || null,
     abrir,
     recarregar: carregar
   };

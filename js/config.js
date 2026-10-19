@@ -165,7 +165,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-termo]')) {
     const termoScript = document.createElement('script');
-    termoScript.src = 'js/termo.js?v=20261019-7';
+    termoScript.src = 'js/termo.js?v=20261019-8';
     termoScript.dataset.termo = 'true';
     document.body.appendChild(termoScript);
   }
@@ -182,5 +182,12 @@ window.addEventListener('load', () => {
     historicoScript.src = 'js/historico-colab.js?v=20261019-1';
     historicoScript.dataset.historico = 'true';
     document.body.appendChild(historicoScript);
+  }
+
+  if (!document.querySelector('script[data-face]')) {
+    const faceScript = document.createElement('script');
+    faceScript.src = 'js/face-compare.js?v=20261019-1';
+    faceScript.dataset.face = 'true';
+    document.body.appendChild(faceScript);
   }
 }, { once: true });

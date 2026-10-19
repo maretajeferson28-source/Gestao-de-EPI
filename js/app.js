@@ -184,7 +184,11 @@ async function sincronizar(){
       if(item.imagens){
         try{
           const paraBlob=async d=>d?await (await fetch(d)).blob():null;
-          await enviarValidacao(item.payload,{selfie:await paraBlob(item.imagens.selfie),assinatura:await paraBlob(item.imagens.assinatura)});
+          if(item.imagens.selfie&&item.payload.validacao_facial_ok==null){
+            const r=await window.EPI_FACE?.comparar(item.payload.colaborador_id,await paraBlob(item.imagens.selfie));
+            if(r&&!r.erro&&!r.pendente) aplicarFacial(item.payload,{ok:r.ok,semelhanca:r.semelhanca,termoId:r.termoId});
+          }
+          await enviarValidacao(item.payload,{assinatura:await paraBlob(item.imagens.assinatura)});
         }catch(err){falha=err;break}
       }
       const {error}=await sb.from('movimentacoes_epi').upsert(item.payload,{onConflict:'id',ignoreDuplicates:true});
@@ -770,16 +774,18 @@ function findCollaborator(nome){
   return collaborators.find(x=>normalize(x.nome)===normalize(nome)) || null;
 }
 
-// Validação opcional da entrega: biometria facial e/ou assinatura do
-// colaborador (mesma captura do termo, js/termo-captura.js).
-const validacaoEntrega={selfie:null,assinatura:null};
+// Validação opcional da entrega (mesma captura do termo, js/termo-captura.js):
+// - Facial: o rosto é comparado com a foto do termo no aparelho
+//   (js/face-compare.js) e só o resultado fica guardado — a foto não.
+// - Assinatura: a imagem é guardada, sem comparação automática.
+const validacaoEntrega={facial:null,selfie:null,assinatura:null};
 function marcarValidacao(){
   const marca=(id,ok,txt)=>{const b=$(id); if(!b) return; b.classList.toggle('is-ok',ok); b.innerHTML=`<i data-lucide="${ok?'check':(id==='nFacial'?'scan-face':'signature')}" aria-hidden="true"></i>${txt}`;};
-  marca('nFacial',Boolean(validacaoEntrega.selfie),'Facial');
+  marca('nFacial',Boolean(validacaoEntrega.facial?.ok||validacaoEntrega.selfie),'Facial');
   marca('nAssinatura',Boolean(validacaoEntrega.assinatura),'Assinatura');
   refreshIcons();
 }
-function limparValidacao(){validacaoEntrega.selfie=null;validacaoEntrega.assinatura=null;marcarValidacao()}
+function limparValidacao(){validacaoEntrega.facial=null;validacaoEntrega.selfie=null;validacaoEntrega.assinatura=null;validacaoEntrega.colaboradorId=null;marcarValidacao()}
 async function validarEntrega(tipo){
   $('saidaMsg').classList.remove('is-error');
   const nome=$('nColab').value.trim();
@@ -787,20 +793,46 @@ async function validarEntrega(tipo){
   if(!col){$('saidaMsg').textContent='Escolha o colaborador antes de validar a entrega.';$('saidaMsg').classList.add('is-error');return}
   const blob=tipo==='face'?await window.EPI_TERMO_CAPTURA?.face(col):await window.EPI_TERMO_CAPTURA?.assinatura(col);
   if(!blob) return;
-  if(tipo==='face') validacaoEntrega.selfie=blob; else validacaoEntrega.assinatura=blob;
+  if(validacaoEntrega.colaboradorId&&validacaoEntrega.colaboradorId!==col.id) limparValidacao();
   validacaoEntrega.colaboradorId=col.id;
+  if(tipo==='assinatura'){
+    validacaoEntrega.assinatura=blob;
+    marcarValidacao();
+    $('saidaMsg').textContent='Assinatura registrada para esta entrega.';
+    return;
+  }
+  $('saidaMsg').textContent='Comparando com a foto do termo…';
+  const r=await window.EPI_FACE?.comparar(col.id,blob);
+  const pct=r?.semelhanca!=null?Math.round(r.semelhanca*100):null;
+  if(r?.pendente){
+    // Sem internet e sem a referência no aparelho: compara ao sincronizar e depois descarta a foto.
+    validacaoEntrega.selfie=blob; validacaoEntrega.facial=null;
+    $('saidaMsg').textContent='Sem internet: o rosto será comparado com o termo ao sincronizar.';
+  }else if(r?.ok){
+    validacaoEntrega.facial={ok:true,semelhanca:r.semelhanca,termoId:r.termoId}; validacaoEntrega.selfie=null;
+    $('saidaMsg').textContent=`Rosto confere com o termo (semelhança ${pct}%).`;
+  }else{
+    validacaoEntrega.facial=null; validacaoEntrega.selfie=null;
+    $('saidaMsg').textContent=r?.erro||(pct==null?'Não foi possível comparar agora. Tente de novo.':null)||`Rosto não confere com o termo (semelhança ${pct}%). Tente de novo com mais luz e o rosto centralizado.`;
+    $('saidaMsg').classList.add('is-error');
+  }
   marcarValidacao();
-  $('saidaMsg').textContent=tipo==='face'?'Biometria facial registrada para esta entrega.':'Assinatura registrada para esta entrega.';
+}
+function aplicarFacial(payload,facial){
+  if(!facial) return;
+  payload.validacao_facial_ok=facial.ok===true;
+  payload.validacao_facial_semelhanca=facial.semelhanca??null;
+  payload.validacao_termo_id=facial.termoId||null;
 }
 $('nFacial').addEventListener('click',()=>validarEntrega('face'));
+document.querySelector('.nav [data-page="nova"]')?.addEventListener('click',()=>{if(navigator.onLine) window.EPI_FACE?.preparar()});
 $('nAssinatura').addEventListener('click',()=>validarEntrega('assinatura'));
 $('saidaForm').addEventListener('reset',()=>setTimeout(limparValidacao,0));
 // Para guardar na fila offline (localStorage só aceita texto).
 const blobParaTexto=b=>new Promise(ok=>{if(!b) return ok(null); const r=new FileReader(); r.onload=()=>ok(r.result); r.onerror=()=>ok(null); r.readAsDataURL(b)});
-async function enviarValidacao(payload,{selfie,assinatura}){
+async function enviarValidacao(payload,{assinatura}){
   const base=`entregas/${payload.colaborador_id}/${payload.id}`;
   const pasta=sb.storage.from('termos-epi');
-  if(selfie){const {error}=await pasta.upload(`${base}-selfie.jpg`,selfie,{contentType:'image/jpeg',upsert:true}); if(error) throw error; payload.validacao_selfie_path=`${base}-selfie.jpg`}
   if(assinatura){const {error}=await pasta.upload(`${base}-assinatura.png`,assinatura,{contentType:'image/png',upsert:true}); if(error) throw error; payload.validacao_assinatura_path=`${base}-assinatura.png`}
 }
 
@@ -846,6 +878,7 @@ $('saidaForm').addEventListener('submit',async e=>{
     };
     if(semInternet) throw new TypeError('Failed to fetch');
     if(validacaoEntrega.colaboradorId&&validacaoEntrega.colaboradorId!==payload.colaborador_id){limparValidacao()} // validou outro colaborador
+    aplicarFacial(payload,validacaoEntrega.facial);
     await enviarValidacao(payload,validacaoEntrega);
     const {error}=await sb.from('movimentacoes_epi').insert(payload);
     if(error) throw error;
@@ -857,7 +890,9 @@ $('saidaForm').addEventListener('submit',async e=>{
     console.error(err);
     if(payload&&erroDeRede(err)){
       // Sem internet (ou caiu na hora): guarda no aparelho para sincronizar depois.
-      delete payload.validacao_selfie_path; delete payload.validacao_assinatura_path;
+      delete payload.validacao_assinatura_path;
+      aplicarFacial(payload,validacaoEntrega.facial);
+      // A foto só vai para a fila quando ainda falta comparar; é descartada depois.
       const imagens={selfie:await blobParaTexto(validacaoEntrega.selfie),assinatura:await blobParaTexto(validacaoEntrega.assinatura)};
       enfileirar(payload,epiNomeFinal,imagens);
       e.target.reset();
