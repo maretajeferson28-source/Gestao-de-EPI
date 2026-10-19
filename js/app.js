@@ -790,8 +790,8 @@ function renderColabs(){
     return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}">
       <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
       <div class="collab-info">
-        <div class="collab-name-row"><strong title="${esc(nome)}">${esc(nome)}</strong>${inativoTag||afastadoTag?`<div class="collab-tags">${inativoTag}${afastadoTag}</div>`:''}</div>
-        <span title="${esc(detalhe)}">${esc(detalhe)}</span>
+        <strong title="${esc(nome)}">${esc(nome)}</strong>
+        <div class="collab-name-row"><span title="${esc(detalhe)}">${esc(detalhe)}</span>${inativoTag||afastadoTag?`<div class="collab-tags">${inativoTag}${afastadoTag}</div>`:''}</div>
       </div>
       ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
     </article>`;

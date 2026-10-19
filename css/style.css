@@ -2368,7 +2368,7 @@ tr:hover td{background:#202020}
 .colab-status-badge input{height:26px;padding:0 8px;border-radius:999px;border:1px solid #3a3a3a;background:#121212;color:#fff;font-size:12px;font-weight:600;color-scheme:dark}
 .colab-status-badge input:focus{outline:none;border-color:var(--gold)}
 
-/* Badges ao lado do nome, à direita, para o cartão não ficar mais alto */
+/* Badges na linha de baixo, à direita do cargo, para o cartão não ficar mais alto */
 .collab-name-row{display:flex;align-items:center;gap:8px;min-width:0}
-.collab-name-row strong{flex:1 1 auto}
+.collab-name-row>span{flex:1 1 auto}
 .collab-tags{flex:0 0 auto;display:flex;gap:4px}
