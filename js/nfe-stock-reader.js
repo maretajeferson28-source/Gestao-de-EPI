@@ -172,7 +172,8 @@
     if (!$('nfeSaveEntryBtn')) {
       const button=document.createElement('button');button.id='nfeSaveEntryBtn';button.type='button';button.className='btn primary compact';
       button.addEventListener('click',async()=>{
-        try {await saveNote(currentNote());}
+        // Salvou: a mensagem de confirmação fica e a tela volta ao estado vazio.
+        try {await saveNote(currentNote());window.EPI_NFE_VIEWER?.clear?.();}
         catch(error){console.error('[NF-e]',error);message('Não foi possível salvar: '+(error.message || error),true);}
       });title.append(button);
     }

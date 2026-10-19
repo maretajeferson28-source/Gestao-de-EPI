@@ -92,7 +92,7 @@ document.title = "Gestão de EPI";
 
   if (!document.querySelector('script[data-nfe-module]')) {
     const script = document.createElement('script');
-    script.src = 'js/nfe.js?v=20261002-stock-1';
+    script.src = 'js/nfe.js?v=20261019-1';
     script.dataset.nfeModule = 'true';
     document.body.appendChild(script);
   }
@@ -106,7 +106,7 @@ document.title = "Gestão de EPI";
 
   if (!document.querySelector('script[data-nfe-stock-reader]')) {
     const stockReaderScript = document.createElement('script');
-    stockReaderScript.src = 'js/nfe-stock-reader.js?v=20261002-stock-1';
+    stockReaderScript.src = 'js/nfe-stock-reader.js?v=20261019-1';
     stockReaderScript.dataset.nfeStockReader = 'true';
     document.body.appendChild(stockReaderScript);
   }

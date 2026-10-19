@@ -759,7 +759,16 @@
     }
   }
 
-  window.EPI_NFE_VIEWER = { getCurrent: () => state.notes[state.selected] || null, getNotes: () => [...state.notes], isImporting: () => state.importing, importFiles };
+  // Volta a tela ao estado vazio (usado depois que a entrada é salva).
+  function clear() {
+    state.notes = [];
+    state.selected = -1;
+    if ($('nfeFileInput')) $('nfeFileInput').value = '';
+    renderFileList();
+    renderSelectedNote();
+  }
+
+  window.EPI_NFE_VIEWER = { getCurrent: () => state.notes[state.selected] || null, getNotes: () => [...state.notes], isImporting: () => state.importing, importFiles, clear };
   if (!injectUi()) {
     const observer = new MutationObserver(() => {
       if (injectUi()) observer.disconnect();
