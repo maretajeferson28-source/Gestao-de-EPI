@@ -172,7 +172,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-termo-captura]')) {
     const termoCapturaScript = document.createElement('script');
-    termoCapturaScript.src = 'js/termo-captura.js?v=20261019-5';
+    termoCapturaScript.src = 'js/termo-captura.js?v=20261019-6';
     termoCapturaScript.dataset.termoCaptura = 'true';
     document.body.appendChild(termoCapturaScript);
   }

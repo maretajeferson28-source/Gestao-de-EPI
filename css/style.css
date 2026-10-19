@@ -2438,8 +2438,18 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .tc-texto li{margin:0 0 6px}
 .tc-aceite{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:14px;cursor:pointer}
 .tc-aceite input{width:20px;height:20px;accent-color:#ff7a00}
-.tc-assinatura-topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#aaa;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.tc-assinatura{width:100%;height:180px;border-radius:12px;background:#fff;touch-action:none;display:block}
+.tc-pad{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;gap:10px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));background:#0b0b0b}
+.tc-pad[hidden]{display:none!important}
+.tc-pad.is-girado{inset:auto;top:0;left:0;transform-origin:top left;transform:rotate(90deg) translateY(-100%)}
+.tc-pad-topo{display:flex;align-items:baseline;justify-content:space-between;gap:10px;color:#aaa;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.tc-pad-topo small{color:#f1f1f1;font-size:13px;letter-spacing:0;text-transform:none;font-weight:600}
+.tc-pad-area{position:relative;flex:1;min-height:0}
+.tc-assinatura{width:100%;height:100%;border-radius:14px;background:#fff;touch-action:none;display:block}
+.tc-pad-linha{position:absolute;left:8%;right:8%;bottom:26%;border-bottom:1px dashed #b5b5b5;pointer-events:none}
+.tc-pad .tc-msg{margin:0;min-height:0}
+.tc-pad-acoes{display:flex;gap:10px}
+.tc-pad-acoes .btn{flex:1;min-height:44px;font-size:14px}
+.tc-pad-acoes .btn:disabled{opacity:.45}
 .tc-concluir{width:100%;margin-top:14px;min-height:46px;font-size:15px}
 .tc-concluir:disabled{opacity:.45}
 .tc-msg{margin:10px 0 0;text-align:center;font-size:13px;min-height:18px;color:#aaa}

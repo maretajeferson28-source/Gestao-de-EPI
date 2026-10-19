@@ -64,10 +64,18 @@
         <div class="tc-termo-quem"><img id="tcSelfie" alt="Foto capturada"><div><strong id="tcNome"></strong><small>Biometria facial registrada</small></div></div>
         <div class="tc-texto" id="tcTexto"></div>
         <label class="tc-aceite"><input type="checkbox" id="tcAceite"><span>Li e concordo com o termo acima</span></label>
-        <div class="tc-assinatura-topo"><span>Assine com o dedo</span><button type="button" class="btn compact" id="tcLimpar">Limpar</button></div>
-        <canvas class="tc-assinatura" id="tcAssinatura"></canvas>
-        <button type="button" class="btn primary tc-concluir" id="tcConcluir" disabled><i data-lucide="pen-line"></i>Assinar termo</button>
+        <button type="button" class="btn primary tc-concluir" id="tcAssinar" disabled><i data-lucide="pen-line"></i>Assinar</button>
+      </section>
+
+      <section class="tc-pad" id="tcPad" hidden>
+        <div class="tc-pad-topo"><span>Assine com o dedo</span><small id="tcPadNome"></small></div>
+        <div class="tc-pad-area"><canvas class="tc-assinatura" id="tcAssinatura"></canvas><span class="tc-pad-linha" aria-hidden="true"></span></div>
         <p class="tc-msg" id="tcMsg"></p>
+        <div class="tc-pad-acoes">
+          <button type="button" class="btn" id="tcLimpar"><i data-lucide="eraser"></i>Limpar</button>
+          <button type="button" class="btn" id="tcCancelar"><i data-lucide="x"></i>Cancelar</button>
+          <button type="button" class="btn primary" id="tcConfirmar" disabled><i data-lucide="check"></i>Confirmar</button>
+        </div>
       </section>`;
     document.body.appendChild(tela);
 
@@ -79,8 +87,11 @@
     });
     $('tcBusca').addEventListener('input', renderLista);
     $('tcAceite').addEventListener('change', validar);
+    $('tcAssinar').addEventListener('click', abrirPad);
     $('tcLimpar').addEventListener('click', () => { assinatura.limpar(); validar(); });
-    $('tcConcluir').addEventListener('click', salvar);
+    $('tcCancelar').addEventListener('click', fecharPad);
+    $('tcConfirmar').addEventListener('click', salvar);
+    window.addEventListener('resize', () => { if (!$('tcPad').hidden) ajustarPad(); });
     $('tcGirar').addEventListener('click', () => {
       cameraFrente = !cameraFrente;
       pararCamera();
@@ -108,6 +119,7 @@
   }
 
   function fechar() {
+    if (tela && !$('tcPad').hidden) fecharPad();
     pararCamera();
     if (tela) tela.hidden = true;
     document.documentElement.classList.remove('tc-aberto');
@@ -265,10 +277,17 @@
 
   // ---------- 3. termo e assinatura ----------
   const assinatura = {
-    canvas: null, ctx: null, vazio: true, desenhando: false,
+    canvas: null, ctx: null, vazio: true, desenhando: false, girado: false,
     iniciar(canvas) {
       this.canvas = canvas;
-      const pos = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+      // Com o quadro girado 90° por CSS, o ponto da tela (x, y) vira (y, largura − x)
+      // no quadro; depois desconta a posição do canvas dentro dele.
+      const pos = (e) => {
+        if (!this.girado) { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+        let ox = 0, oy = 0;
+        for (let el = canvas; el && el !== $('tcPad'); el = el.offsetParent) { ox += el.offsetLeft; oy += el.offsetTop; }
+        return [e.clientY - ox, window.innerWidth - e.clientX - oy];
+      };
       canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); canvas.setPointerCapture(e.pointerId); this.desenhando = true; const [x, y] = pos(e); this.ctx.beginPath(); this.ctx.moveTo(x, y); this.ctx.lineTo(x + 0.1, y + 0.1); this.ctx.stroke(); });
       canvas.addEventListener('pointermove', (e) => { if (!this.desenhando) return; e.preventDefault(); const [x, y] = pos(e); this.ctx.lineTo(x, y); this.ctx.stroke(); if (this.vazio) { this.vazio = false; validar(); } });
       const fim = () => { this.desenhando = false; };
@@ -276,16 +295,14 @@
       canvas.addEventListener('pointercancel', fim);
     },
     preparar() {
-      const r = this.canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      this.canvas.width = Math.round(r.width * dpr);
-      this.canvas.height = Math.round(r.height * dpr);
+      this.canvas.width = Math.round(this.canvas.clientWidth * dpr);
+      this.canvas.height = Math.round(this.canvas.clientHeight * dpr);
       this.ctx = this.canvas.getContext('2d');
       this.ctx.scale(dpr, dpr);
       this.limpar();
     },
     limpar() {
-      const r = this.canvas.getBoundingClientRect();
       this.ctx.save();
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.fillStyle = '#ffffff';
@@ -293,7 +310,6 @@
       this.ctx.restore();
       Object.assign(this.ctx, { strokeStyle: '#111111', lineWidth: 2.4, lineCap: 'round', lineJoin: 'round' });
       this.vazio = true;
-      void r;
     },
     blob() { return new Promise((ok) => this.canvas.toBlob(ok, 'image/png')); }
   };
@@ -313,20 +329,52 @@
     $('tcSelfie').classList.toggle('is-traseira', !cameraFrente);
     $('tcTexto').innerHTML = textoHtml(window.EPI_TERMO?.texto || '');
     $('tcAceite').checked = false;
-    $('tcMsg').textContent = '';
-    setTimeout(() => assinatura.preparar(), 30);
     validar();
   }
 
   function validar() {
-    $('tcConcluir').disabled = !($('tcAceite').checked && !assinatura.vazio && selfie && colaborador);
+    $('tcAssinar').disabled = !($('tcAceite').checked && selfie && colaborador);
+    $('tcConfirmar').disabled = !(assinatura.ctx && !assinatura.vazio && $('tcAceite').checked);
+  }
+
+  // Quadro de assinatura deitado: tenta virar a tela de verdade (tela cheia +
+  // trava em paisagem, no Android); se o aparelho continuar em pé, gira o quadro
+  // 90° por CSS para a assinatura ocupar o lado comprido da tela.
+  async function abrirPad() {
+    if ($('tcAssinar').disabled) return;
+    $('tcPadNome').textContent = colaborador?.nome || '';
+    $('tcMsg').textContent = '';
+    $('tcPad').hidden = false;
+    try { if (!document.fullscreenElement) await tela.requestFullscreen?.(); } catch (_) {}
+    try { await screen.orientation?.lock?.('landscape'); } catch (_) {}
+    setTimeout(() => { ajustarPad(true); validar(); }, 120);
+  }
+
+  function ajustarPad(limpar = false) {
+    const pad = $('tcPad');
+    const girar = window.innerWidth < window.innerHeight;
+    pad.classList.toggle('is-girado', girar);
+    pad.style.width = girar ? `${window.innerHeight}px` : '';
+    pad.style.height = girar ? `${window.innerWidth}px` : '';
+    if (limpar || girar !== assinatura.girado || assinatura.vazio) {
+      assinatura.girado = girar;
+      assinatura.preparar();
+    }
+  }
+
+  function fecharPad() {
+    $('tcPad').hidden = true;
+    try { screen.orientation?.unlock?.(); } catch (_) {}
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    if (assinatura.ctx) assinatura.limpar();
+    validar();
   }
 
   // ---------- 4. salvar ----------
   async function salvar() {
     const client = db();
     const bucket = window.EPI_TERMO?.bucket || 'termos-epi';
-    const botao = $('tcConcluir');
+    const botao = $('tcConfirmar');
     const msg = $('tcMsg');
     botao.disabled = true;
     msg.textContent = 'Salvando o termo…';
@@ -352,7 +400,7 @@
       await window.EPI_TERMO?.recarregar?.();
       msg.textContent = `Termo de ${colaborador.nome} assinado.`;
       msg.dataset.tipo = 'ok';
-      setTimeout(fechar, 1400);
+      setTimeout(fechar, 1600);
     } catch (err) {
       console.error('[TERMO SALVAR]', err);
       if (enviados.length) await client.storage.from(bucket).remove(enviados);
