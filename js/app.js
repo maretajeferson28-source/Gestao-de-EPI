@@ -784,7 +784,10 @@ if($('movementEditModal')) $('movementEditModal').addEventListener('click',e=>{
 });
 
 function renderColabs(){
-  const arr=collaborators.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  // Filtro por nome ignora acentos e maiúsculas ("goncalves" acha "Gonçalves").
+  const semAcento=v=>normalize(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const filtro=semAcento($('colabSearch')?.value||'');
+  const arr=collaborators.filter(c=>!filtro||semAcento(c.nome).includes(filtro)).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
   $('colabCards').innerHTML=arr.map(c=>{
     const nome=String(c.nome||'Colaborador').trim();
     const parts=nome.split(/\s+/).filter(Boolean);
@@ -803,7 +806,7 @@ function renderColabs(){
       </div>
       ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
     </article>`;
-  }).join('')||'<div class="empty">Nenhum colaborador.</div>';
+  }).join('')||`<div class="empty">${filtro?'Nenhum colaborador encontrado com esse nome.':'Nenhum colaborador.'}</div>`;
   refreshIcons();
 }
 
@@ -991,6 +994,7 @@ async function deleteColab(c){
 }
 
 $('addColab').addEventListener('click',()=>openColabEdit(null));
+$('colabSearch').addEventListener('input',renderColabs);
 $('colabCards').addEventListener('click',e=>{
   const trigger=e.target.closest('[data-colab-menu]');
   if(trigger){e.stopPropagation();openColabMenu(trigger)}
