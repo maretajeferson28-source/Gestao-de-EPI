@@ -300,6 +300,11 @@
               <span>Cadastro simplificado</span>
             </label>
 
+            <div class="colab-status-badges" id="colabStatusBadges" hidden>
+              <label class="colab-status-badge is-leave" id="colabAfastadoBadge" hidden><i data-lucide="heart-pulse" aria-hidden="true"></i><span>Afastado desde</span><input type="date" id="colabAfastadoDesde" aria-label="Data do afastamento"></label>
+              <label class="colab-status-badge is-off" id="colabDesativadoBadge" hidden><i data-lucide="user-x" aria-hidden="true"></i><span>Desativado desde</span><input type="date" id="colabDesativadoDesde" aria-label="Data da desativação"></label>
+            </div>
+
             <div class="data-edit-grid colab-edit-grid" id="colabEditGrid">
               <div class="field colab-col-half" data-colab-basico><label for="colabCpf">CPF*</label><input id="colabCpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off"></div>
               <div class="field colab-col-half" data-colab-basico><label for="colabNome">Nome*</label><input id="colabNome" placeholder="Nome completo" autocomplete="off"></div>

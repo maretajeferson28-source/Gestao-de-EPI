@@ -82,7 +82,7 @@ async function loadAll(showBusy=true){
   setStatus('Atualizando dados...');
   try{
     const [cRes,eRes,vRes,mRes] = await Promise.all([
-      sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado,afastado,afastado_desde').order('nome'),
+      sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado,afastado,afastado_desde,desativado_desde').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
         .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
@@ -783,7 +783,8 @@ function renderColabs(){
     const initials=((parts[0]?.[0]||'')+(parts.length>1?(parts[parts.length-1]?.[0]||''):'')).toLocaleUpperCase('pt-BR')||'C';
     const ativo=c.ativo!==false;
     const afastado=c.afastado===true;
-    const detalhe=[ativo?null:'Inativo',c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
+    const detalhe=[c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
+    const inativoTag=ativo?'':`<span class="collab-leave-tag is-off" title="Funcionário desativado"><i data-lucide="user-x" aria-hidden="true"></i>Desativado${c.desativado_desde?` desde ${esc(isoToBR(c.desativado_desde))}`:''}</span>`;
     const afastadoTag=afastado?`<span class="collab-leave-tag" title="Funcionário afastado"><i data-lucide="heart-pulse" aria-hidden="true"></i>Afastado${c.afastado_desde?` desde ${esc(isoToBR(c.afastado_desde))}`:''}</span>`:'';
 
     return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}">
@@ -791,7 +792,7 @@ function renderColabs(){
       <div class="collab-info">
         <strong title="${esc(nome)}">${esc(nome)}</strong>
         <span title="${esc(detalhe)}">${esc(detalhe)}</span>
-        ${afastadoTag}
+        ${inativoTag}${afastadoTag}
       </div>
       ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
     </article>`;
@@ -834,6 +835,13 @@ function fillColabForm(c){
   $('colabCargo').value=c?.cargo||'';
   $('colabSetor').value=c?.setor||'';
   $('colabFuncao').value=c?.funcao||'';
+  // Situação do funcionário: só aparece quando está afastado e/ou desativado.
+  const afastado=c?.afastado===true, inativo=Boolean(c)&&c.ativo===false;
+  $('colabAfastadoBadge').hidden=!afastado;
+  $('colabDesativadoBadge').hidden=!inativo;
+  $('colabStatusBadges').hidden=!afastado&&!inativo;
+  $('colabAfastadoDesde').value=afastado?(c.afastado_desde||''):'';
+  $('colabDesativadoDesde').value=inativo?(c.desativado_desde||''):'';
 }
 function openColabEdit(id=null){
   if(!currentIsAdmin) return;
@@ -881,6 +889,9 @@ async function saveColab(keepOpen=false){
     funcao:$('colabFuncao').value.trim()||null,
     updated_at:new Date().toISOString()
   };
+  const editing=editingColabId?collaborators.find(x=>x.id===editingColabId):null;
+  if(editing?.afastado===true) payload.afastado_desde=$('colabAfastadoDesde').value||null;
+  if(editing&&editing.ativo===false) payload.desativado_desde=$('colabDesativadoDesde').value||null;
   const buttons=[$('colabEditSave'),$('colabEditSaveNew')];
   buttons.forEach(b=>{b.disabled=true});
   setColabMsg('Salvando...');
@@ -944,7 +955,7 @@ function openColabMenu(trigger){
 async function toggleColabActive(c){
   const ativo=c.ativo!==false;
   if(ativo&&!confirm(`Desativar ${c.nome}? Ele deixa de aparecer na lista de colaboradores dos lançamentos, mas o histórico continua.`)) return;
-  const {error}=await sb.from('colaboradores').update({ativo:!ativo,updated_at:new Date().toISOString()}).eq('id',c.id);
+  const {error}=await sb.from('colaboradores').update({ativo:!ativo,desativado_desde:ativo?todayLocal():null,updated_at:new Date().toISOString()}).eq('id',c.id);
   if(error){alert(error.message);return}
   await loadAll(false);
 }
