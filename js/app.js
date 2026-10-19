@@ -2305,8 +2305,10 @@ async function registerCurrentUserAccess(){
   return row||null;
 }
 
+let ultimoErroAcessoRede=false;
 async function userIsAuthorized(){
   const {data,error}=await sb.rpc('epi_user_is_authorized');
+  ultimoErroAcessoRede=Boolean(error&&erroDeRede(error));
   if(error){
     console.error('[AUTORIZAÇÕES] Falha ao verificar acesso:',error);
     return false;
@@ -2528,6 +2530,7 @@ async function showApp(session){
   if(!navigator.onLine&&showAppOffline(session)) return;
   await registerCurrentUserAccess();
   const authorized=await userIsAuthorized();
+  if(!authorized&&ultimoErroAcessoRede&&showAppOffline(session)) return;
 
   if(!authorized){
     showWaitingAccess(session);
@@ -2607,9 +2610,14 @@ sb.auth.onAuthStateChange((event,session)=>{
   $('nQtd').value=1;
   $('nResp').value='Jeferson';
   refreshIcons();
-  let session=null;
-  try{({data:{session}}=await sb.auth.getSession())}catch(err){console.warn('[OFFLINE] Sessão indisponível:',err)}
+  let session=null, falhaRede=!navigator.onLine;
+  try{
+    const {data,error}=await sb.auth.getSession();
+    session=data?.session||null;
+    if(error&&erroDeRede(error)) falhaRede=true;
+  }catch(err){console.warn('[OFFLINE] Sessão indisponível:',err);falhaRede=true}
   if(session) await showApp(session);
-  else if(!navigator.onLine&&showAppOffline(null)) return;
+  // Sem internet (ou sinal fraco que não responde): abre com a cópia do aparelho.
+  else if(falhaRede&&showAppOffline(null)) return;
   else showAuth();
 })();
