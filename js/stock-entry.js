@@ -76,7 +76,7 @@
     editandoId = null;
     $('stockEntrySave').innerHTML = '<i data-lucide="save" aria-hidden="true"></i>Salvar entrada';
     $('stockEntryCancel').textContent = 'Cancelar';
-    document.querySelectorAll('.stock-entry-row.is-editando').forEach((r) => r.classList.remove('is-editando'));
+    document.querySelectorAll('.stock-entry-row.is-editando, .stock-ca-card.is-editando').forEach((r) => r.classList.remove('is-editando'));
     icons();
   }
 
@@ -94,6 +94,7 @@
     $('stockEntrySave').innerHTML = '<i data-lucide="save" aria-hidden="true"></i>Salvar alteração';
     $('stockEntryCancel').textContent = 'Cancelar edição';
     document.querySelectorAll('.stock-entry-row').forEach((row) => row.classList.toggle('is-editando', row.dataset.id === id));
+    document.querySelectorAll('.stock-ca-card').forEach((card) => card.classList.toggle('is-editando', card.dataset.entrada === id));
     setMsg(`Editando: ${fmtQtd(r.quantidade)} × ${r.epis?.nome || 'EPI'}. Altere e clique em Salvar alteração.`);
     icons();
     document.querySelector('.stock-entry-card')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -134,7 +135,10 @@
       // Modelo: a observação da entrada mais recente desse C.A.; senão a referência do prontuário.
       const modelo = recentes.find((r) => norm(r.ca) === c && String(r.observacao || '').trim())?.observacao?.trim()
         || v?.referencia || epi.nome;
-      return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}">
+      // Lápis: edita a entrada sem nota mais recente desse C.A. (só se houver).
+      const entrada = recentes.find((r) => norm(r.ca) === c);
+      return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${entrada && entrada.id === editandoId ? ' is-editando' : ''}"${entrada ? ` data-entrada="${escHtml(entrada.id)}"` : ''}>
+        ${entrada ? `<button class="stock-entry-del stock-entry-edit stock-ca-editar" type="button" data-stock-entry-edit="${escHtml(entrada.id)}" title="Editar cadastro" aria-label="Editar cadastro"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}
         <div class="stock-ca-foto"${v?.imagem_path ? ` data-foto="${escHtml(v.imagem_path)}"` : ''}><i data-lucide="image" aria-hidden="true"></i></div>
         <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>
         <span class="stock-ca-codigo">${escHtml(codigo)}</span>
@@ -307,6 +311,10 @@
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
     $('stockEntryEpi').addEventListener('input', fillCaOptions);
     $('stockEntryEpi').addEventListener('change', fillCaOptions);
+    $('stockEntryCas').addEventListener('click', (e) => {
+      const edit = e.target.closest('[data-stock-entry-edit]');
+      if (edit) editar(edit.dataset.stockEntryEdit);
+    });
     $('stockEntryList').addEventListener('click', (e) => {
       const edit = e.target.closest('[data-stock-entry-edit]');
       if (edit) { editar(edit.dataset.stockEntryEdit); return; }

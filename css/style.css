@@ -2575,9 +2575,9 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 
 /* Janela do item no Estoque: foto, nome, C.A. e saldo de cada C.A. */
 .stock-entry-cas[hidden]{display:none!important}
-.stock-ca-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-.stock-ca-card{display:flex;flex-direction:column;gap:3px;min-width:0;padding:8px 8px 10px;border-radius:12px;border:1px solid #2b2b2b;background:#151515}
-.stock-ca-foto{height:96px;margin-bottom:5px;border-radius:9px;background:#fff;display:grid;place-items:center;overflow:hidden;color:#bbb}
+.stock-ca-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+.stock-ca-card{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 9px 12px;border-radius:12px;border:1px solid #2b2b2b;background:#151515}
+.stock-ca-foto{height:118px;margin-bottom:5px;border-radius:9px;background:#fff;display:grid;place-items:center;overflow:hidden;color:#bbb}
 .stock-ca-foto:not(:has(img)){background:#1c1c1c;color:#555}
 .stock-ca-foto img{width:100%;height:100%;object-fit:contain}
 .stock-ca-foto svg{width:26px;height:26px}
@@ -2587,3 +2587,7 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-ca-saldo small{margin-left:4px;font-size:10px;font-weight:500;color:#8f8f8f}
 .stock-ca-card.is-zerado .stock-ca-saldo{color:#ef7777}
 .stock-entry-recent[hidden]{display:none!important}
+.stock-ca-nome{font-size:13px}
+.stock-ca-saldo{font-size:20px}
+.stock-ca-editar{position:absolute;top:14px;right:14px;width:30px!important;height:30px!important;background:rgba(17,17,17,.85)!important;z-index:1}
+.stock-ca-card.is-editando{border-color:#ff7a00;box-shadow:0 0 0 1px rgba(255,122,0,.35)}
