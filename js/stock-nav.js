@@ -109,7 +109,12 @@
 
     if (stockValue) stockValue.textContent = stockSummary ? formatNumber(stockSummary.saldo) : '—';
     if (outValue) outValue.textContent = stockSummary ? formatNumber(stockSummary.saidas) : '—';
-    if (minValue) minValue.textContent = '—';
+    // Mínimo: quantos itens estão acima de zero mas no mínimo ou abaixo dele.
+    const comMinimo = Array.isArray(stockItens) ? stockItens.filter((i) => i.minimo != null) : [];
+    const baixos = comMinimo.filter((i) => Number(i.saldo) > 0 && Number(i.saldo) <= Number(i.minimo)).length;
+    if (minValue) minValue.textContent = comMinimo.length ? formatNumber(baixos) : '—';
+    const minSub = minValue?.parentElement?.querySelector('.sub');
+    if (minSub) minSub.textContent = comMinimo.length ? 'no mínimo ou abaixo' : 'ainda não configurado';
     if (criticalValue) criticalValue.textContent = stockSummary ? formatNumber(stockSummary.criticos) : '—';
   }
 
@@ -123,11 +128,12 @@
     const busca = page.querySelector('#stockSearchInput')?.value.trim();
     const cards = stockItens.map((i) => {
       const critico = Number(i.saldo) <= 0;
-      return `<article class="stock-item${critico ? ' is-critico' : ''}">
+      const baixo = !critico && i.minimo != null && Number(i.saldo) <= Number(i.minimo);
+      return `<article class="stock-item${critico ? ' is-critico' : baixo ? ' is-baixo' : ''}"${i.minimo != null ? ` title="Mínimo: ${formatNumber(i.minimo)}"` : ''}>
         <strong class="stock-item-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong>
         <span class="stock-item-saldo">${formatNumber(i.saldo)}<small>em estoque</small></span>
         <span class="stock-item-mov"><span class="stock-item-mov-saldo" title="Em estoque"><i data-lucide="package" aria-hidden="true"></i><span class="rot">Estoque </span>${formatNumber(i.saldo)}</span><span class="stock-item-mov-entrou" title="Entrou"><i data-lucide="arrow-up" aria-hidden="true"></i><span class="rot">Entrou </span>${formatNumber(i.entradas)}</span><span class="stock-item-mov-saiu" title="Saiu"><i data-lucide="arrow-down" aria-hidden="true"></i><span class="rot">Saiu </span>${formatNumber(i.saidas)}</span></span>
-        <span class="stock-item-tag">${critico ? 'Crítico' : 'OK'}</span>
+        <span class="stock-item-tag">${critico ? 'Crítico' : baixo ? 'Baixo' : 'OK'}</span>
       </article>`;
     }).join('');
     box.innerHTML = `<h3 class="stock-itens-titulo">Saldo por item</h3>${cards ? `<div class="stock-itens-grade">${cards}</div>` : `<p class="stock-itens-vazio">${busca ? 'Nenhum EPI com estoque para essa busca.' : 'Nenhum EPI com entrada de estoque ainda. Lance uma nota fiscal ou use o Cadastro.'}</p>`}`;

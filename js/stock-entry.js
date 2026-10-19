@@ -40,7 +40,25 @@
     return nome ? activeEpis().find((e) => norm(e.nome) === nome) || null : null;
   }
 
+  // Estoque mínimo de cada EPI (epis.estoque_minimo); null = sem mínimo.
+  let minimos = {};
+  async function loadMinimos() {
+    const client = db();
+    if (!client) return;
+    const { data, error } = await client.from('epis').select('id,estoque_minimo');
+    if (error) { console.error('[Estoque] Falha ao carregar mínimos', error); return; }
+    minimos = Object.fromEntries((data || []).map((e) => [e.id, e.estoque_minimo == null ? null : Number(e.estoque_minimo)]));
+    fillMinimo();
+  }
+  function fillMinimo() {
+    const epi = selectedEpi();
+    const min = epi ? minimos[epi.id] : null;
+    $('stockEntryMin').value = min == null ? '' : String(min);
+    $('stockEntryMin').disabled = !epi;
+  }
+
   function fillCaOptions() {
+    fillMinimo();
     const select = $('stockEntryCa');
     const epi = selectedEpi();
     const list = epi ? variants().filter((v) => v.epi_id === epi.id && v.ativo !== false) : [];
@@ -131,6 +149,7 @@
     $('stockEntryModal').classList.remove('hidden');
     icons();
     loadRecent();
+    loadMinimos();
     setTimeout(() => $('stockEntryEpi').focus(), 50);
   }
 
@@ -140,9 +159,16 @@
     if (!isAdmin()) return;
     const client = db();
     const epi = selectedEpi();
-    const qtd = Number(String($('stockEntryQtd').value).replace(',', '.'));
+    const qtdTxt = String($('stockEntryQtd').value).trim();
+    const qtd = Number(qtdTxt.replace(',', '.'));
     const data = $('stockEntryData').value;
     if (!epi) return setMsg('Escolha um EPI da lista.', true);
+    const minTxt = String($('stockEntryMin').value).trim();
+    const minimo = minTxt === '' ? null : Number(minTxt.replace(',', '.'));
+    if (minimo !== null && (!Number.isFinite(minimo) || minimo < 0)) return setMsg('O estoque mínimo não pode ser negativo.', true);
+    const mudouMinimo = minimo !== (minimos[epi.id] ?? null);
+    // Só o mínimo: salva sem lançar entrada.
+    if (!qtdTxt && !editandoId && mudouMinimo) return salvarMinimo(epi, minimo);
     if (!Number.isFinite(qtd) || qtd <= 0) return setMsg('Informe uma quantidade maior que zero.', true);
     if (!data) return setMsg('Informe a data.', true);
 
@@ -166,6 +192,7 @@
       : await client.from('estoque_entradas_manuais').insert(dados);
     button.disabled = false;
     if (error) return setMsg('Não foi possível salvar: ' + error.message, true);
+    if (mudouMinimo && !(await gravarMinimo(epi, minimo))) return;
 
     sairEdicao();
     setMsg(alterando ? `Entrada alterada: ${fmtQtd(qtd)} × ${epi.nome}.` : `Entrada salva: ${fmtQtd(qtd)} × ${epi.nome}.`);
@@ -173,6 +200,26 @@
     $('stockEntryEpi').focus();
     window.dispatchEvent(new CustomEvent('epi:stock-changed'));
     loadRecent();
+  }
+
+  async function gravarMinimo(epi, minimo) {
+    const { error } = await db().from('epis').update({ estoque_minimo: minimo }).eq('id', epi.id);
+    if (error) { setMsg('Não foi possível salvar o mínimo: ' + error.message, true); return false; }
+    minimos[epi.id] = minimo;
+    return true;
+  }
+
+  async function salvarMinimo(epi, minimo) {
+    const button = $('stockEntrySave');
+    button.disabled = true;
+    setMsg('Salvando…');
+    const ok = await gravarMinimo(epi, minimo);
+    button.disabled = false;
+    if (!ok) return;
+    setMsg(minimo === null ? `Mínimo removido: ${epi.nome}.` : `Mínimo salvo: ${fmtQtd(minimo)} × ${epi.nome}.`);
+    resetItemFields();
+    $('stockEntryEpi').focus();
+    window.dispatchEvent(new CustomEvent('epi:stock-changed'));
   }
 
   async function remove(id) {

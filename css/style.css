@@ -2542,3 +2542,8 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-entry-acoes{display:flex;gap:6px;flex:0 0 auto}
 .stock-entry-edit:hover,.stock-entry-edit:focus-visible{border-color:rgba(255,138,36,.6)!important;color:#ff9a3f!important}
 .stock-entry-row.is-editando{background:rgba(255,122,0,.06);box-shadow:inset 3px 0 0 #ff7a00;padding-left:8px}
+
+/* Estoque: abaixo do mínimo (amarelo) */
+.stock-item.is-baixo{border-color:rgba(255,184,0,.6)}
+.stock-item.is-baixo .stock-item-tag{border-color:rgba(255,184,0,.6);color:#ffb800}
+.stock-item.is-baixo .stock-item-saldo{color:#ffb800}

@@ -289,6 +289,7 @@
   .page[data-page-content="estoque"] .stock-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"nome mov tag";align-items:center;column-gap:10px;row-gap:3px;min-height:0;padding:12px 14px;border:0;border-radius:0;border-top:1px solid #232323;background:none}
   .page[data-page-content="estoque"] .stock-item:first-child{border-top:0}
   .page[data-page-content="estoque"] .stock-item.is-critico{border-left:3px solid #ff6b6b;padding-left:11px}
+  .page[data-page-content="estoque"] .stock-item.is-baixo{border-left:3px solid #ffb800;padding-left:11px}
   .page[data-page-content="estoque"] .stock-item-nome{grid-area:nome;display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:13px}
   .page[data-page-content="estoque"] .stock-item-saldo{display:none}
   .page[data-page-content="estoque"] .stock-item-saldo small{display:none}
@@ -326,7 +327,8 @@
   .stock-entry-card .stock-entry-grid .field:has(#stockEntryQtd){order:1}
   .stock-entry-card .stock-entry-grid .field:has(#stockEntryData){order:2}
   .stock-entry-card .stock-entry-grid .field:has(#stockEntryMotivo){order:3}
-  .stock-entry-card .stock-entry-grid .field:has(#stockEntryObs){order:4}
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryMin){order:4}
+  .stock-entry-card .stock-entry-grid .field:has(#stockEntryObs){order:5}
   .stock-entry-card .stock-entry-grid .field label{margin-bottom:6px}
   #epiVariantEditor,
   #epiVariantList [data-variant-edit],
