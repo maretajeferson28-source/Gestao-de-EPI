@@ -74,12 +74,12 @@
           </div>
         </div>
         <div class="data-edit-body">
-          <div class="termo-acoes"><button class="btn primary" id="termoPdf" type="button" hidden><i data-lucide="download" aria-hidden="true"></i>Baixar PDF</button></div>
           <div class="termo-texto" id="termoTexto"></div>
           <div class="termo-provas">
             <figure><figcaption><i data-lucide="scan-face" aria-hidden="true"></i>Biometria facial</figcaption><div class="termo-img" id="termoSelfie"></div></figure>
             <figure><figcaption><i data-lucide="signature" aria-hidden="true"></i>Assinatura digital</figcaption><div class="termo-img termo-assinatura" id="termoAssinatura"></div></figure>
           </div>
+          <div class="termo-acoes"><button class="btn primary compact" id="termoPdf" type="button" hidden><i data-lucide="download" aria-hidden="true"></i>Baixar PDF</button></div>
         </div>
       </div>`;
     document.body.appendChild(modal);
