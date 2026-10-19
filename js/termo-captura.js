@@ -28,6 +28,7 @@
   let detector = null;
   let loop = 0;
   let selfie = null; // Blob JPEG
+  let cameraFrente = true; // câmera da frente (selfie) ou de trás
 
   // ---------- estrutura ----------
   function montar() {
@@ -45,7 +46,7 @@
 
       <section class="tc-passo tc-camera" data-passo="face">
         <header class="tc-topo"><button type="button" class="tc-x" data-tc-voltar aria-label="Voltar"><i data-lucide="x"></i></button><h2>Captura de face</h2></header>
-        <div class="tc-cam-icone"><i data-lucide="camera"></i></div>
+        <button type="button" class="tc-cam-icone" id="tcGirar" aria-label="Girar câmera" title="Girar câmera"><i data-lucide="switch-camera"></i></button>
         <p class="tc-instrucao">Encaixe seu rosto no formato abaixo</p>
         <div class="tc-oval-area">
           <div class="tc-oval"><video id="tcVideo" playsinline muted autoplay></video></div>
@@ -80,6 +81,11 @@
     $('tcAceite').addEventListener('change', validar);
     $('tcLimpar').addEventListener('click', () => { assinatura.limpar(); validar(); });
     $('tcConcluir').addEventListener('click', salvar);
+    $('tcGirar').addEventListener('click', () => {
+      cameraFrente = !cameraFrente;
+      pararCamera();
+      iniciarCamera();
+    });
     assinatura.iniciar($('tcAssinatura'));
     icons();
   }
@@ -152,8 +158,9 @@
     status('Abrindo a câmera…');
     selfie = null;
     try {
-      if (!stream) stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 960 } }, audio: false });
+      if (!stream) stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: cameraFrente ? 'user' : 'environment', width: { ideal: 720 }, height: { ideal: 960 } }, audio: false });
       const video = $('tcVideo');
+      video.classList.toggle('is-traseira', !cameraFrente); // só a da frente aparece espelhada
       video.srcObject = stream;
       await video.play().catch(() => {});
       status('Carregando a leitura facial…');
@@ -303,6 +310,7 @@
   function abrirTermo() {
     $('tcNome').textContent = colaborador?.nome || '';
     if (selfie) $('tcSelfie').src = URL.createObjectURL(selfie);
+    $('tcSelfie').classList.toggle('is-traseira', !cameraFrente);
     $('tcTexto').innerHTML = textoHtml(window.EPI_TERMO?.texto || '');
     $('tcAceite').checked = false;
     $('tcMsg').textContent = '';
