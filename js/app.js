@@ -469,34 +469,44 @@ async function lookupCaCiepi(ci){
   setCaValue('caStageHint','Consultando a base CIEPI...');
   button.disabled=true;
   try{
-    const {data,error}=await sb.from('ciepi_registros').select('*').eq('ci',ci).eq('ativo',true).maybeSingle();
-    if(error) throw error;
-    setCaValue('caBaseSummary','Base CIEPI (cadastro interno)');
-    if(!data){
+    // O prontuário vem primeiro (lá entram ajustes feitos à mão); a Base CIEPI
+    // completa o que estiver vazio, e o resto fica N/A.
+    const [base,pront]=await Promise.all([
+      sb.from('ciepi_registros').select('*').eq('ci',ci).eq('ativo',true).maybeSingle(),
+      sb.from('epi_variantes').select('*,epis(nome)').eq('ca',ci).eq('ativo',true).order('updated_at',{ascending:false}).limit(1)
+    ]);
+    if(base.error) throw base.error;
+    if(pront.error) throw pront.error;
+    const b=base.data||{}, p=pront.data?.[0]||null;
+    setCaValue('caBaseSummary',p?'Prontuário + base CIEPI':'Base CIEPI (cadastro interno)');
+    if(!base.data&&!p){
       setCaStatus('Não encontrado','error');
       setCaValue('caStageHint','C.I. não encontrado na base CIEPI.');
       setCaValue('caHistoryInfo','Histórico: N/A');
       setCaValue('caSourceInfo','Base: CIEPI');
       return;
     }
-    const situation=String(data.situacao||'').trim()||'N/A';
+    const pick=(key)=>{const v=p?.[key];return v!=null&&String(v).trim()!==''?v:b[key]};
+    const nome=relationName(p?.epis)||b.nome;
+    const validade=pick('data_validade');
+    const situation=String(pick('situacao')||'').trim()||'N/A';
     const upper=situation.toLocaleUpperCase('pt-BR');
     const statusKind=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'result');
-    setCaValue('caStageTitle',data.nome,'N/A');
-    setCaValue('caStageNumber',data.ci);
+    setCaValue('caStageTitle',nome,'N/A');
+    setCaValue('caStageNumber',ci);
     setCaValue('caStageKind','Certificado Interno');
-    setCaValue('caStageHint','Registro localizado na base CIEPI (código interno).');
+    setCaValue('caStageHint',p?'Dados do prontuário do item, completados pela base CIEPI.':'Registro localizado na base CIEPI (código interno).');
     setCaValue('caSituation',situation);
-    setCaValue('caEquipamento',data.nome,'N/A');
-    setCaValue('caFabricante',data.fabricante,'N/A');
-    setCaValue('caCnpj',data.cnpj,'N/A');
-    setCaValue('caMarca',data.marca,'N/A');
-    setCaValue('caReferencia',data.referencia,'N/A');
-    setCaValue('caValidade',data.data_validade?formatCaDate(String(data.data_validade).slice(0,10)):'N/A');
-    setCaValue('caNorma',data.norma,'N/A');
-    setCaValue('caDescricao',data.descricao,'N/A');
+    setCaValue('caEquipamento',nome,'N/A');
+    setCaValue('caFabricante',pick('fabricante'),'N/A');
+    setCaValue('caCnpj',pick('cnpj'),'N/A');
+    setCaValue('caMarca',pick('marca'),'N/A');
+    setCaValue('caReferencia',pick('referencia'),'N/A');
+    setCaValue('caValidade',validade?formatCaDate(String(validade).slice(0,10)):'N/A');
+    setCaValue('caNorma',pick('norma'),'N/A');
+    setCaValue('caDescricao',pick('descricao'),'N/A');
     setCaValue('caHistoryInfo','Histórico: N/A');
-    setCaValue('caSourceInfo',`Base: CIEPI • ${formatCaDateTime(data.updated_at)}`);
+    setCaValue('caSourceInfo',`Base: ${p?'prontuário':'CIEPI'} • ${formatCaDateTime((p||b).updated_at)}`);
     setCaStatus(situation,statusKind);
   }catch(err){
     console.error('[CIEPI]',err);
