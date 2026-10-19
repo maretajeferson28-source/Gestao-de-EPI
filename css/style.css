@@ -2586,3 +2586,4 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-ca-saldo{margin-top:3px;font-size:18px;font-weight:800;line-height:1;color:#45bd83}
 .stock-ca-saldo small{margin-left:4px;font-size:10px;font-weight:500;color:#8f8f8f}
 .stock-ca-card.is-zerado .stock-ca-saldo{color:#ef7777}
+.stock-entry-recent[hidden]{display:none!important}

@@ -131,9 +131,12 @@
       const v = vars.find((x) => norm(x.ca) === c);
       const saldo = saldos.get(c) || 0;
       const codigo = !c ? 'Sem C.A.' : ci(c) ? c : 'C.A. ' + c;
+      // Modelo: a observação da entrada mais recente desse C.A.; senão a referência do prontuário.
+      const modelo = recentes.find((r) => norm(r.ca) === c && String(r.observacao || '').trim())?.observacao?.trim()
+        || v?.referencia || epi.nome;
       return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}">
         <div class="stock-ca-foto"${v?.imagem_path ? ` data-foto="${escHtml(v.imagem_path)}"` : ''}><i data-lucide="image" aria-hidden="true"></i></div>
-        <strong class="stock-ca-nome" title="${escHtml(epi.nome)}">${escHtml(epi.nome)}</strong>
+        <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>
         <span class="stock-ca-codigo">${escHtml(codigo)}</span>
         <span class="stock-ca-saldo">${fmtQtd(saldo)}<small>em estoque</small></span>
       </article>`;
@@ -154,17 +157,17 @@
     const box = $('stockEntryList');
     const client = db();
     if (!box || !client) return;
-    renderCas();
     let query = client.from('estoque_entradas_manuais')
       .select('id,epi_id,variante_id,quantidade,motivo,data,ca,observacao,epis(nome)')
       .order('created_at', { ascending: false });
     query = itemFixo ? query.eq('epi_id', itemFixo.id).limit(30) : query.limit(8);
     const { data, error } = await query;
+    recentes = error ? [] : (data || []);
+    renderCas(); // usa a observação das entradas como modelo
     if (error) {
       box.innerHTML = `<p class="stock-entry-empty">Não foi possível carregar: ${escHtml(error.message)}</p>`;
       return;
     }
-    recentes = data || [];
     if (!data.length) {
       box.innerHTML = `<p class="stock-entry-empty">${itemFixo ? 'Nenhuma entrada sem nota deste EPI. As entradas por nota fiscal ficam em Notas Fiscais.' : 'Nenhuma entrada sem nota ainda.'}</p>`;
       return;
@@ -197,6 +200,9 @@
     const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
     if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';
     $('stockEntryEpi').readOnly = !!itemFixo;
+    // Na janela do item os cartões por C.A. já mostram as entradas: some a lista.
+    const lista = $('stockEntryList')?.closest('.stock-entry-recent');
+    if (lista) lista.hidden = !!itemFixo;
     $('dlStockEntryEpi').innerHTML = activeEpis()
       .map((e) => `<option value="${escHtml(e.nome)}">`).join('');
     sairEdicao();
