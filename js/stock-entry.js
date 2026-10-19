@@ -107,37 +107,54 @@
     fillCaOptions();
   }
 
-  // Janela do item: um cartãozinho com o resumo do prontuário de cada C.A./C.I.
-  // ativo do EPI (dados de epi_variantes, já carregados pelo app).
-  function renderCas() {
+  // Janela do item: um cartãozinho por C.A./C.I. com a foto do prontuário,
+  // o nome, o código e o saldo daquele C.A. (epi_stock_por_ca).
+  let casPedido = 0;
+  async function renderCas() {
     const box = $('stockEntryCas');
     if (!box) return;
-    const lista = itemFixo ? variants().filter((v) => v.epi_id === itemFixo.id && v.ativo !== false) : [];
-    box.hidden = !lista.length;
-    if (!lista.length) { box.innerHTML = ''; return; }
-    const ci = (v) => /^\s*CI-/i.test(String(v || ''));
-    const todosCi = lista.every((v) => ci(v.ca));
-    const cards = lista.map((v) => {
-      const sit = String(v.situacao || '').trim();
-      const up = sit.toLocaleUpperCase('pt-BR');
-      const tipo = up.includes('VÁLID') ? 'ok' : (up.includes('VENC') || up.includes('CANCEL') || up.includes('SUSP')) ? 'ruim' : '';
-      const linha = (rot, val) => val ? `<div><span>${rot}</span><strong title="${escHtml(val)}">${escHtml(val)}</strong></div>` : '';
-      return `<article class="stock-ca-card${tipo ? ' is-' + tipo : ''}">
-        <header><strong>${ci(v.ca) ? escHtml(v.ca) : 'C.A. ' + escHtml(v.ca || '—')}</strong><span class="stock-ca-sit">${escHtml(sit || 'Sem situação')}</span></header>
-        ${linha('Validade', v.data_validade ? brDate(String(v.data_validade).slice(0, 10)) : '')}
-        ${linha('Fabricante', v.fabricante)}
-        ${linha('Marca', v.marca)}
-        ${linha('Referência', v.referencia)}
-        ${v.descricao ? `<p title="${escHtml(v.descricao)}">${escHtml(v.descricao)}</p>` : ''}
+    const pedido = ++casPedido;
+    if (!itemFixo) { box.hidden = true; box.innerHTML = ''; return; }
+    const epi = itemFixo;
+    const norm = (c) => { const t = String(c || '').trim(); if (!t) return ''; return /^CI-/i.test(t) ? t.toUpperCase() : t.replace(/\D+/g, ''); };
+    const vars = variants().filter((v) => v.epi_id === epi.id && v.ativo !== false);
+    const { data, error } = await db().rpc('epi_stock_por_ca', { p_epi: epi.id });
+    if (pedido !== casPedido) return;
+    if (error) console.error('[Estoque] Falha ao carregar o saldo por C.A.', error);
+    const saldos = new Map((data || []).map((r) => [r.ca || '', Number(r.saldo) || 0]));
+    // Todos os C.A. ativos do prontuário, mais os que só aparecem nas movimentações.
+    const codigos = [...new Set([...vars.map((v) => norm(v.ca)), ...saldos.keys()])];
+    if (!codigos.length) { box.hidden = true; box.innerHTML = ''; return; }
+    const ci = (c) => /^CI-/i.test(c);
+    const todosCi = codigos.filter(Boolean).every(ci) && codigos.some(Boolean);
+    const cards = codigos.map((c) => {
+      const v = vars.find((x) => norm(x.ca) === c);
+      const saldo = saldos.get(c) || 0;
+      const codigo = !c ? 'Sem C.A.' : ci(c) ? c : 'C.A. ' + c;
+      return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}">
+        <div class="stock-ca-foto"${v?.imagem_path ? ` data-foto="${escHtml(v.imagem_path)}"` : ''}><i data-lucide="image" aria-hidden="true"></i></div>
+        <strong class="stock-ca-nome" title="${escHtml(epi.nome)}">${escHtml(epi.nome)}</strong>
+        <span class="stock-ca-codigo">${escHtml(codigo)}</span>
+        <span class="stock-ca-saldo">${fmtQtd(saldo)}<small>em estoque</small></span>
       </article>`;
     }).join('');
+    box.hidden = false;
     box.innerHTML = `<h4>${todosCi ? 'C.I.' : 'C.A.'} deste EPI</h4><div class="stock-ca-grade">${cards}</div>`;
+    icons();
+    // Fotos do prontuário (URL assinada, a mesma função do app).
+    box.querySelectorAll('[data-foto]').forEach(async (el) => {
+      try {
+        const url = typeof variantImageUrl === 'function' ? await variantImageUrl(el.dataset.foto) : null;
+        if (url && pedido === casPedido) el.innerHTML = `<img src="${escHtml(url)}" alt="" loading="lazy">`;
+      } catch (_) { /* fica o ícone */ }
+    });
   }
 
   async function loadRecent() {
     const box = $('stockEntryList');
     const client = db();
     if (!box || !client) return;
+    renderCas();
     let query = client.from('estoque_entradas_manuais')
       .select('id,epi_id,variante_id,quantidade,motivo,data,ca,observacao,epis(nome)')
       .order('created_at', { ascending: false });
@@ -180,7 +197,6 @@
     const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
     if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';
     $('stockEntryEpi').readOnly = !!itemFixo;
-    renderCas();
     $('dlStockEntryEpi').innerHTML = activeEpis()
       .map((e) => `<option value="${escHtml(e.nome)}">`).join('');
     sairEdicao();

@@ -2573,18 +2573,16 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-item.is-critico[data-stock-epi]:hover,.stock-item.is-critico[data-stock-epi]:focus-visible{border-color:rgba(255,107,107,.8)}
 #stockEntryEpi[readonly]{opacity:.75;cursor:default}
 
-/* Janela do item no Estoque: resumo do prontuário de cada C.A. */
+/* Janela do item no Estoque: foto, nome, C.A. e saldo de cada C.A. */
 .stock-entry-cas[hidden]{display:none!important}
-.stock-ca-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-.stock-ca-card{display:flex;flex-direction:column;gap:5px;min-width:0;padding:11px 12px;border-radius:12px;border:1px solid #2b2b2b;background:#151515;font-size:12px}
-.stock-ca-card.is-ok{border-color:rgba(56,180,123,.4)}
-.stock-ca-card.is-ruim{border-color:rgba(228,95,95,.45)}
-.stock-ca-card header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
-.stock-ca-card header strong{font-size:13px;color:#f1f1f1;white-space:nowrap}
-.stock-ca-sit{padding:1px 8px;border-radius:999px;border:1px solid #3a3a3a;color:#a9a9a9;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
-.stock-ca-card.is-ok .stock-ca-sit{border-color:rgba(56,180,123,.55);color:#45bd83}
-.stock-ca-card.is-ruim .stock-ca-sit{border-color:rgba(228,95,95,.55);color:#ef7777}
-.stock-ca-card>div{display:flex;justify-content:space-between;gap:10px;min-width:0}
-.stock-ca-card>div span{color:#8f8f8f;flex:0 0 auto}
-.stock-ca-card>div strong{font-weight:600;color:#ddd;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
-.stock-ca-card p{margin:3px 0 0;color:#9a9a9a;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.stock-ca-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.stock-ca-card{display:flex;flex-direction:column;gap:3px;min-width:0;padding:8px 8px 10px;border-radius:12px;border:1px solid #2b2b2b;background:#151515}
+.stock-ca-foto{height:96px;margin-bottom:5px;border-radius:9px;background:#fff;display:grid;place-items:center;overflow:hidden;color:#bbb}
+.stock-ca-foto:not(:has(img)){background:#1c1c1c;color:#555}
+.stock-ca-foto img{width:100%;height:100%;object-fit:contain}
+.stock-ca-foto svg{width:26px;height:26px}
+.stock-ca-nome{font-size:12px;font-weight:700;color:#f1f1f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stock-ca-codigo{font-size:11px;color:#9a9a9a}
+.stock-ca-saldo{margin-top:3px;font-size:18px;font-weight:800;line-height:1;color:#45bd83}
+.stock-ca-saldo small{margin-left:4px;font-size:10px;font-weight:500;color:#8f8f8f}
+.stock-ca-card.is-zerado .stock-ca-saldo{color:#ef7777}
