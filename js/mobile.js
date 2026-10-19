@@ -130,7 +130,9 @@
   }
 
   // Início: resumo rápido das saídas (os atalhos agora estão na barra).
-  const fmtDate = (iso) => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}` : '—'; };
+  // As movimentações chegam com a data em "dd/mm/aaaa" (app.js); aceita também "aaaa-mm-dd".
+  const toIso = (v) => { const s = String(v || ''); const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/); return br ? `${br[3]}-${br[2]}-${br[1]}` : s.slice(0, 10); };
+  const fmtDate = (v) => { const m = toIso(v).match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}` : '—'; };
   let lastHomeHtml = '';
   function renderHome() {
     if (!homePage.classList.contains('active')) return;
@@ -142,9 +144,9 @@
     const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const month = today.slice(0, 7);
     const qty = (rows) => rows.reduce((sum, row) => sum + (Number(row.quantidade) || 0), 0);
-    const hoje = list.filter((row) => String(row.data || '').slice(0, 10) === today);
-    const mes = list.filter((row) => String(row.data || '').slice(0, 7) === month);
-    const ultimas = list.slice().sort((a, b) => String(b.data || '').localeCompare(String(a.data || '')) || String(b.created_at || '').localeCompare(String(a.created_at || ''))).slice(0, 5);
+    const hoje = list.filter((row) => toIso(row.data) === today);
+    const mes = list.filter((row) => toIso(row.data).slice(0, 7) === month);
+    const ultimas = list.slice().sort((a, b) => toIso(b.data).localeCompare(toIso(a.data)) || (b._order ?? 0) - (a._order ?? 0)).slice(0, 5);
     const html = `
       <div class="mobile-home-head">
         <h2>Olá${firstName ? `, ${escapeHtml(firstName)}` : ''}</h2>
