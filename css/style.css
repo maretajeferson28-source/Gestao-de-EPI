@@ -2551,3 +2551,7 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 /* Colaborador: o cartão abre o histórico */
 .collab-card.is-clicavel{cursor:pointer;transition:border-color .15s}
 .collab-card.is-clicavel:hover,.collab-card.is-clicavel:focus-visible{border-color:rgba(255,122,0,.55);outline:none}
+
+/* Cartão do EPI: borda do hover na cor do estado (laranja só sem C.A./C.I.) */
+.epi-card.has-valid:hover{border-color:rgba(56,180,123,.55)}
+.epi-card.has-invalid:hover{border-color:rgba(228,95,95,.5)}
