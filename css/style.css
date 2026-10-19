@@ -1731,6 +1731,19 @@ tr:hover td{background:#202020}
   border-color:#3b3b3b!important;
 }
 
+/* Lista de C.A.: o selecionado não vira caixa (fica o ✓, o texto laranja e a
+   faixinha à esquerda) e o mouse só clareia o fundo, sem borda nem deslocar,
+   para as duas marcações não se encavalarem. */
+.epi-ca-selector-menu{display:flex;flex-direction:column;gap:2px}
+.epi-ca-selector-option,
+.epi-ca-selector-option:hover,
+.epi-ca-selector-option.selected,
+.epi-ca-selector-option.selected:hover{border-color:transparent!important;transform:none!important}
+.epi-ca-selector-option.selected{background:transparent!important;box-shadow:inset 3px 0 0 #ff7a00!important}
+.epi-ca-selector-option:hover,
+.epi-ca-selector-option.selected:hover{background:#202020!important}
+.epi-ca-selector-option.selected .epi-ca-selector-option-copy strong{color:#ff9a3f}
+
 
 /* Dashboard financeiro baseado em preço por C.A. */
 .dashboard-values-section{
