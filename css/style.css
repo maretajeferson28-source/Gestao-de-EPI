@@ -2352,7 +2352,7 @@ tr:hover td{background:#202020}
 @media(max-width:720px){.mp-switch,.mp-overlay{display:none!important}}
 
 /* Funcionário afastado (menu dos 3 pontinhos) */
-.collab-info .collab-leave-tag{justify-self:start;display:inline-flex;align-items:center;gap:5px;margin-top:2px;padding:2px 8px;border-radius:999px;border:1px solid rgba(245,197,66,.55);background:transparent;color:#f5c542;font-size:10px;font-weight:700;white-space:nowrap}
+.collab-info .collab-leave-tag{display:inline-flex;align-items:center;gap:4px;padding:0 7px;height:17px;line-height:15px;border-radius:999px;border:1px solid rgba(245,197,66,.55);background:transparent;color:#f5c542;font-size:10px;font-weight:700;white-space:nowrap}
 .collab-leave-tag svg{width:12px;height:12px;flex:0 0 auto}
 
 .collab-info .collab-leave-tag.is-off{border-color:rgba(255,107,107,.55);background:transparent;color:#ff6b6b}
@@ -2367,3 +2367,8 @@ tr:hover td{background:#202020}
 .colab-status-badge svg{width:13px;height:13px;flex:0 0 auto}
 .colab-status-badge input{height:26px;padding:0 8px;border-radius:999px;border:1px solid #3a3a3a;background:#121212;color:#fff;font-size:12px;font-weight:600;color-scheme:dark}
 .colab-status-badge input:focus{outline:none;border-color:var(--gold)}
+
+/* Badges ao lado do nome, à direita, para o cartão não ficar mais alto */
+.collab-name-row{display:flex;align-items:center;gap:8px;min-width:0}
+.collab-name-row strong{flex:1 1 auto}
+.collab-tags{flex:0 0 auto;display:flex;gap:4px}
