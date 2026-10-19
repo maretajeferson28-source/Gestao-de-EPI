@@ -2,8 +2,9 @@
   'use strict';
 
   // Termo de responsabilidade do EPI. No computador é só consulta: o menu do
-  // colaborador ("Ver termo de autorização") fica ativo para quem já assinou no
-  // celular e abre a declaração com a biometria facial e a assinatura digital.
+  // colaborador ("Ver termo de autorização") abre a declaração com a biometria
+  // facial e a assinatura digital. Enquanto a assinatura no celular não existe,
+  // fica ativo também para o colaborador de exemplo (EXEMPLO), como pendente.
   if (window.__EPI_TERMO__) return;
   window.__EPI_TERMO__ = true;
 
@@ -18,12 +19,17 @@
 * Declaro, ainda que recebi treinamento referente ao uso adequado do EPI e as Normas de Segurança do Trabalho.`;
 
   const BUCKET = 'termos-epi';
+  const EXEMPLO = 'jeferson dos santos';
   const $ = (id) => document.getElementById(id);
   let termos = new Map(); // colaborador_id -> termo mais recente
 
   function db() { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } }
   function isAdmin() { try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
   function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function norm(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase(); }
+  function ehExemplo(colaboradorId) {
+    try { return collaborators.some((c) => c.id === colaboradorId && norm(c.nome) === EXEMPLO); } catch (_) { return false; }
+  }
   function icons() { if (window.lucide?.createIcons) window.lucide.createIcons({ attrs: { 'aria-hidden': 'true' } }); }
 
   // Texto em parágrafos; linhas com "*" viram lista.
@@ -92,13 +98,20 @@
 
   async function abrir(colaborador) {
     const termo = termos.get(colaborador?.id);
-    if (!termo) return;
+    if (!termo && !ehExemplo(colaborador?.id)) return;
     montarModal();
     $('termoTitle').textContent = colaborador.nome;
-    $('termoSub').textContent = `Assinado no celular em ${new Date(termo.assinado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`;
-    $('termoTexto').innerHTML = textoHtml(termo.texto || TEXTO);
+    $('termoSub').textContent = termo
+      ? `Assinado no celular em ${new Date(termo.assinado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`
+      : 'Ainda não assinado no celular';
+    $('termoTexto').innerHTML = textoHtml(termo?.texto || TEXTO);
     $('termoModal').classList.remove('hidden');
     icons();
+    if (!termo) {
+      $('termoSelfie').innerHTML = '<span>Aguardando assinatura no celular</span>';
+      $('termoAssinatura').innerHTML = '<span>Aguardando assinatura no celular</span>';
+      return;
+    }
     imagem('termoSelfie', termo.selfie_path, `Foto de ${colaborador.nome}`);
     imagem('termoAssinatura', termo.assinatura_path, `Assinatura de ${colaborador.nome}`);
   }
@@ -106,7 +119,7 @@
   window.EPI_TERMO = {
     texto: TEXTO,
     bucket: BUCKET,
-    temTermo: (colaboradorId) => termos.has(colaboradorId),
+    temTermo: (colaboradorId) => termos.has(colaboradorId) || ehExemplo(colaboradorId),
     abrir,
     recarregar: carregar
   };
