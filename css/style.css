@@ -2555,3 +2555,13 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 /* Cartão do EPI: borda do hover na cor do estado (laranja só sem C.A./C.I.) */
 .epi-card.has-valid:hover{border-color:rgba(56,180,123,.55)}
 .epi-card.has-invalid:hover{border-color:rgba(228,95,95,.5)}
+
+/* Estoque: cartão com ícone do EPI e número menor */
+.stock-item{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:10px;row-gap:8px;align-items:center;min-height:0}
+.stock-item>*:not(.stock-item-icone):not(.stock-item-nome){grid-column:1/-1}
+.stock-item-icone{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:#111;border:1px solid rgba(56,180,123,.34);color:#45bd83}
+.stock-item-icone svg{width:17px;height:17px}
+.stock-item.is-baixo .stock-item-icone{border-color:rgba(255,184,0,.4);color:#ffb800}
+.stock-item.is-critico .stock-item-icone{border-color:rgba(255,107,107,.4);color:#ff6b6b}
+.stock-item-saldo{margin-top:4px;font-size:22px}
+.stock-item-tag{justify-self:start}

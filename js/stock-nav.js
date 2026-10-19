@@ -130,6 +130,7 @@
       const critico = Number(i.saldo) <= 0;
       const baixo = !critico && i.minimo != null && Number(i.saldo) <= Number(i.minimo);
       return `<article class="stock-item${critico ? ' is-critico' : baixo ? ' is-baixo' : ''}"${i.minimo != null ? ` title="Mínimo: ${formatNumber(i.minimo)}"` : ''}>
+        <span class="stock-item-icone" aria-hidden="true"><i data-lucide="${esc(typeof epiCardIcon === 'function' ? epiCardIcon({ nome: i.nome }) : 'package')}"></i></span>
         <strong class="stock-item-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong>
         <span class="stock-item-saldo">${formatNumber(i.saldo)}<small>em estoque</small></span>
         <span class="stock-item-mov"><span class="stock-item-mov-saldo" title="Em estoque"><i data-lucide="package" aria-hidden="true"></i><span class="rot">Estoque </span>${formatNumber(i.saldo)}</span><span class="stock-item-mov-entrou" title="Entrou"><i data-lucide="arrow-up" aria-hidden="true"></i><span class="rot">Entrou </span>${formatNumber(i.entradas)}</span><span class="stock-item-mov-saiu" title="Saiu"><i data-lucide="arrow-down" aria-hidden="true"></i><span class="rot">Saiu </span>${formatNumber(i.saidas)}</span></span>

@@ -292,6 +292,7 @@
   .page[data-page-content="estoque"] .stock-item.is-baixo{border-left:3px solid #ffb800;padding-left:11px}
   .page[data-page-content="estoque"] .stock-item-nome{grid-area:nome;display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:13px}
   .page[data-page-content="estoque"] .stock-item-saldo{display:none}
+  .page[data-page-content="estoque"] .stock-item-icone{display:none}
   .page[data-page-content="estoque"] .stock-item-saldo small{display:none}
   .page[data-page-content="estoque"] .stock-item-mov{grid-area:mov;justify-content:flex-end;gap:8px;white-space:nowrap}
   /* Mesmo texto pequeno para os três; a cor diz o que é: estoque laranja, entrou verde, saiu vermelho */
