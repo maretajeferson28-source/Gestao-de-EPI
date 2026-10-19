@@ -126,11 +126,12 @@
       return `<article class="stock-item${critico ? ' is-critico' : ''}">
         <strong class="stock-item-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong>
         <span class="stock-item-saldo">${formatNumber(i.saldo)}<small>em estoque</small></span>
-        <span class="stock-item-mov"><span class="stock-item-mov-saldo">Estoque ${formatNumber(i.saldo)}</span><span class="stock-item-mov-entrou">Entrou ${formatNumber(i.entradas)}</span><span class="stock-item-mov-saiu">Saiu ${formatNumber(i.saidas)}</span></span>
+        <span class="stock-item-mov"><span class="stock-item-mov-saldo" title="Em estoque"><i data-lucide="package" aria-hidden="true"></i><span class="rot">Estoque </span>${formatNumber(i.saldo)}</span><span class="stock-item-mov-entrou" title="Entrou"><i data-lucide="arrow-up" aria-hidden="true"></i><span class="rot">Entrou </span>${formatNumber(i.entradas)}</span><span class="stock-item-mov-saiu" title="Saiu"><i data-lucide="arrow-down" aria-hidden="true"></i><span class="rot">Saiu </span>${formatNumber(i.saidas)}</span></span>
         <span class="stock-item-tag">${critico ? 'Crítico' : 'OK'}</span>
       </article>`;
     }).join('');
     box.innerHTML = `<h3 class="stock-itens-titulo">Saldo por item</h3>${cards ? `<div class="stock-itens-grade">${cards}</div>` : `<p class="stock-itens-vazio">${busca ? 'Nenhum EPI com estoque para essa busca.' : 'Nenhum EPI com entrada de estoque ainda. Lance uma nota fiscal ou use o Cadastro.'}</p>`}`;
+    refreshIcons();
   }
 
   async function refreshStockFromSupabase(page) {

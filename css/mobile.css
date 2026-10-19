@@ -294,7 +294,11 @@
   .page[data-page-content="estoque"] .stock-item-saldo small{display:none}
   .page[data-page-content="estoque"] .stock-item-mov{grid-area:mov;justify-content:flex-end;gap:8px;white-space:nowrap}
   /* Mesmo texto pequeno para os três; a cor diz o que é: estoque laranja, entrou verde, saiu vermelho */
-  .page[data-page-content="estoque"] .stock-item-mov-saldo{display:inline;color:#ff9a3f}
+  .page[data-page-content="estoque"] .stock-item-mov{gap:10px;font-size:14px;font-weight:600}
+  .page[data-page-content="estoque"] .stock-item-mov>span{display:inline-flex;align-items:center;gap:3px}
+  .page[data-page-content="estoque"] .stock-item-mov .rot{display:none}
+  .page[data-page-content="estoque"] .stock-item-mov svg{display:block;width:14px;height:14px;stroke-width:2.4}
+  .page[data-page-content="estoque"] .stock-item-mov-saldo{color:#ff9a3f}
   .page[data-page-content="estoque"] .stock-item-mov-entrou{color:#35c98b}
   .page[data-page-content="estoque"] .stock-item-mov-saiu{color:#ff6b6b}
   .page[data-page-content="estoque"] .stock-item-tag{grid-area:tag;justify-self:end;align-self:center;padding:2px 8px}
