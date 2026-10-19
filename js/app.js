@@ -375,10 +375,6 @@ function renderDashboard(){
 
   const topR=aggregate(arr,'responsavel');
   makeChart('cResp','bar',{labels:topR.map(x=>x[0]),datasets:[{label:'Qtd',data:topR.map(x=>x[1]),backgroundColor:'#ff5a00',borderRadius:4}]},{plugins:{legend:{display:false}}});
-
-  const last=[...arr].sort((a,b)=>parseBR(b.data)-parseBR(a.data)||String(b.id).localeCompare(String(a.id))).slice(0,15);
-  $('latestCount').textContent=`${arr.length} registros filtrados`;
-  $('latestBody').innerHTML=last.map(x=>`<tr><td>${esc(x.data)}</td><td>${esc(x.colaborador||'—')}</td><td>${esc(x.epi)}</td><td>${esc(x.quantidade??'—')}</td><td>${esc(x.ca||'N/A')}</td><td>${esc(x.tamanho||'N/A')}</td><td>${esc(x.responsavel)}</td></tr>`).join('');
 }
 
 function nav(page){
