@@ -49,9 +49,18 @@
     const client = db();
     if (!client || !isAdmin()) { termos = new Map(); return; }
     const { data, error } = await client.from('termos_epi').select('id,colaborador_id,texto,selfie_path,assinatura_path,assinado_em').order('assinado_em', { ascending: false });
-    if (error) { console.warn('[TERMO]', error); return; }
+    if (error) {
+      console.warn('[TERMO]', error);
+      // Sem internet: usa a última lista guardada (só quem assinou e quando).
+      try {
+        const salvos = JSON.parse(localStorage.getItem('epi-termos-v1') || '[]');
+        if (salvos.length && !termos.size) termos = new Map(salvos.map((t) => [t.colaborador_id, t]));
+      } catch (_) {}
+      return;
+    }
     termos = new Map();
     for (const t of data || []) if (!termos.has(t.colaborador_id)) termos.set(t.colaborador_id, t);
+    try { localStorage.setItem('epi-termos-v1', JSON.stringify([...termos.values()].map(({ colaborador_id, assinado_em }) => ({ colaborador_id, assinado_em })))); } catch (_) {}
   }
 
   function montarModal() {

@@ -165,7 +165,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-termo]')) {
     const termoScript = document.createElement('script');
-    termoScript.src = 'js/termo.js?v=20261019-6';
+    termoScript.src = 'js/termo.js?v=20261019-7';
     termoScript.dataset.termo = 'true';
     document.body.appendChild(termoScript);
   }

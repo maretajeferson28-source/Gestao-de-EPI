@@ -77,6 +77,62 @@ function relationName(v){
   return v.nome || null;
 }
 
+// Cópia dos dados no aparelho para abrir e consultar sem internet (modo offline).
+// Fica no localStorage deste navegador; não guarda CPF nem matrícula.
+const OFFLINE_KEY='epi-copia-v1';
+let modoOffline=false;
+function erroDeRede(err){return !navigator.onLine||/failed to fetch|networkerror|load failed|network request failed|fetch failed/i.test(String(err?.message||err||''))}
+function salvarCopia(email){
+  try{
+    const copia={
+      salvoEm:new Date().toISOString(),email:email||$('userEmail')?.textContent||'',isAdmin:currentIsAdmin===true,
+      colaboradores:collaborators.map(({cpf,matricula,...c})=>c),
+      epis:epiCatalog,variantes:epiVariants,movimentos:movements
+    };
+    localStorage.setItem(OFFLINE_KEY,JSON.stringify(copia));
+  }catch(err){console.warn('[OFFLINE] Não foi possível guardar a cópia:',err)}
+}
+function lerCopia(){try{return JSON.parse(localStorage.getItem(OFFLINE_KEY)||'null')}catch(_){return null}}
+function usarCopia(copia){
+  collaborators=copia.colaboradores||[];
+  epiCatalog=copia.epis||[];
+  epiVariants=copia.variantes||[];
+  movements=copia.movimentos||[];
+  modoOffline=true;
+  rebuildLists();
+  renderDashboard();
+  renderMovs();
+  renderColabs();
+  renderEpis();
+  const quando=new Date(copia.salvoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+  setStatus(`Sem internet • dados de ${quando}`,false);
+  window.dispatchEvent(new CustomEvent('epi:data-loaded',{detail:{offline:true}}));
+}
+// Abre o app com a cópia quando não há internet (sessão já usada neste aparelho).
+function showAppOffline(session){
+  const copia=lerCopia();
+  if(!copia) return false;
+  const email=session?.user?.email||copia.email;
+  if(session?.user?.email&&copia.email&&session.user.email!==copia.email) return false;
+  currentIsAdmin=copia.isAdmin===true;
+  document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=!currentIsAdmin});
+  if($('authzNavBtn')) $('authzNavBtn').hidden=true; // autorizações precisam de internet
+  $('accessWaitScreen').classList.add('hidden');
+  $('authScreen').classList.add('hidden');
+  $('epiApp').classList.remove('app-hidden');
+  $('userEmail').textContent=email||'';
+  try{renderSideUserProfile(session||{user:{email}})}catch(_){}
+  usarCopia(copia);
+  refreshIcons();
+  return true;
+}
+// Voltou a internet com o app aberto pela cópia: recarrega uma vez do banco.
+window.addEventListener('online',async()=>{
+  if(!modoOffline) return;
+  const {data:{session}}=await sb.auth.getSession();
+  if(session) await showApp(session);
+});
+
 async function loadAll(showBusy=true){
   if(showBusy) setBusy(true);
   setStatus('Atualizando dados...');
@@ -123,9 +179,13 @@ async function loadAll(showBusy=true){
     renderColabs();
     renderEpis();
     setStatus(`Sincronizado • ${movements.length} movimentações`);
+    modoOffline=false;
+    salvarCopia();
     window.dispatchEvent(new CustomEvent('epi:data-loaded'));
   }catch(err){
     console.error(err);
+    const copia=erroDeRede(err)?lerCopia():null;
+    if(copia){usarCopia(copia);return}
     setStatus('Erro ao carregar os dados', false);
     alert(`Erro ao carregar dados: ${err.message || err}`);
   }finally{
@@ -2355,6 +2415,7 @@ if($('profileForm')) $('profileForm').addEventListener('submit',async e=>{
 });
 
 async function showApp(session){
+  if(!navigator.onLine&&showAppOffline(session)) return;
   await registerCurrentUserAccess();
   const authorized=await userIsAuthorized();
 
@@ -2436,7 +2497,9 @@ sb.auth.onAuthStateChange((event,session)=>{
   $('nQtd').value=1;
   $('nResp').value='Jeferson';
   refreshIcons();
-  const {data:{session}}=await sb.auth.getSession();
+  let session=null;
+  try{({data:{session}}=await sb.auth.getSession())}catch(err){console.warn('[OFFLINE] Sessão indisponível:',err)}
   if(session) await showApp(session);
+  else if(!navigator.onLine&&showAppOffline(null)) return;
   else showAuth();
 })();
