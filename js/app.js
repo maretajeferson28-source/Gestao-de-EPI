@@ -784,8 +784,8 @@ function renderColabs(){
     const ativo=c.ativo!==false;
     const afastado=c.afastado===true;
     const detalhe=[c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
-    const inativoTag=ativo?'':`<span class="collab-leave-tag is-off" title="Funcionário desativado"><i data-lucide="user-x" aria-hidden="true"></i>Desativado${c.desativado_desde?` desde ${esc(isoToBR(c.desativado_desde))}`:''}</span>`;
-    const afastadoTag=afastado?`<span class="collab-leave-tag" title="Funcionário afastado"><i data-lucide="heart-pulse" aria-hidden="true"></i>Afastado${c.afastado_desde?` desde ${esc(isoToBR(c.afastado_desde))}`:''}</span>`:'';
+    const inativoTag=ativo?'':`<span class="collab-leave-tag is-off" title="Funcionário desativado"><i data-lucide="user-x" aria-hidden="true"></i>Desativado${c.desativado_desde?` ${esc(isoToBR(c.desativado_desde))}`:''}</span>`;
+    const afastadoTag=afastado?`<span class="collab-leave-tag" title="Funcionário afastado"><i data-lucide="heart-pulse" aria-hidden="true"></i>Afastado${c.afastado_desde?` ${esc(isoToBR(c.afastado_desde))}`:''}</span>`:'';
 
     return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}">
       <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
