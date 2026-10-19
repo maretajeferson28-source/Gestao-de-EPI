@@ -176,4 +176,11 @@ window.addEventListener('load', () => {
     termoCapturaScript.dataset.termoCaptura = 'true';
     document.body.appendChild(termoCapturaScript);
   }
+
+  if (!document.querySelector('script[data-historico]')) {
+    const historicoScript = document.createElement('script');
+    historicoScript.src = 'js/historico-colab.js?v=20261019-1';
+    historicoScript.dataset.historico = 'true';
+    document.body.appendChild(historicoScript);
+  }
 }, { once: true });

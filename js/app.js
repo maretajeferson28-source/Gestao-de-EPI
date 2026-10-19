@@ -624,7 +624,15 @@ $('saidaForm').addEventListener('submit',async e=>{
   if(!currentIsAdmin) return;
   $('saidaMsg').textContent='';
   const epiNome=$('nEpi').value.trim(), resp=$('nResp').value.trim(), qtd=Number($('nQtd').value), colNome=$('nColab').value.trim();
+  $('saidaMsg').classList.remove('is-error');
   if(!epiNome||!resp||!Number.isInteger(qtd)||qtd<1){$('saidaMsg').textContent='Confira EPI, quantidade e responsável.';return}
+  if(colNome&&colNome!=='Bolsa Reserva'){
+    const alvo=findCollaborator(colNome);
+    const bloqueio=!alvo
+      ?`"${colNome}" não é um colaborador cadastrado. Cadastre o colaborador e colete o termo antes da entrega.`
+      :(!window.EPI_TERMO?.temAssinatura?.(alvo.id)?`${alvo.nome} ainda não assinou o termo de autorização. Peça para assinar no celular (botão Termo) antes da entrega.`:'');
+    if(bloqueio){$('saidaMsg').textContent=bloqueio;$('saidaMsg').classList.add('is-error');return}
+  }
   try{
     setBusy(true);
     const epi=await ensureEpi(epiNome);
@@ -999,6 +1007,7 @@ $('colabMenu').addEventListener('click',async e=>{
   closeColabMenu();
   if(!c) return;
   if(item.dataset.colabAction==='editar') openColabEdit(c.id);
+  if(item.dataset.colabAction==='historico') return window.EPI_HISTORICO?.abrir(c);
   if(item.dataset.colabAction==='termo') return window.EPI_TERMO?.abrir(c);
   if(item.dataset.colabAction==='afastar') await toggleColabLeave(c);
   if(item.dataset.colabAction==='ativo') await toggleColabActive(c);
