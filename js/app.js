@@ -82,7 +82,7 @@ async function loadAll(showBusy=true){
   setStatus('Atualizando dados...');
   try{
     const [cRes,eRes,vRes,mRes] = await Promise.all([
-      sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado').order('nome'),
+      sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado,afastado,afastado_desde').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
         .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
@@ -782,13 +782,16 @@ function renderColabs(){
     const parts=nome.split(/\s+/).filter(Boolean);
     const initials=((parts[0]?.[0]||'')+(parts.length>1?(parts[parts.length-1]?.[0]||''):'')).toLocaleUpperCase('pt-BR')||'C';
     const ativo=c.ativo!==false;
+    const afastado=c.afastado===true;
     const detalhe=[ativo?null:'Inativo',c.cargo,c.setor].filter(Boolean).join(' • ')||'Sem informações adicionais';
+    const afastadoTag=afastado?`<span class="collab-leave-tag" title="Funcionário afastado"><i data-lucide="heart-pulse" aria-hidden="true"></i>Afastado${c.afastado_desde?` desde ${esc(isoToBR(c.afastado_desde))}`:''}</span>`:'';
 
-    return `<article class="collab-card${ativo?'':' is-inactive'}">
+    return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}">
       <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
       <div class="collab-info">
         <strong title="${esc(nome)}">${esc(nome)}</strong>
         <span title="${esc(detalhe)}">${esc(detalhe)}</span>
+        ${afastadoTag}
       </div>
       ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
     </article>`;
@@ -925,6 +928,8 @@ function openColabMenu(trigger){
   const toggle=$('colabMenu').querySelector('[data-colab-action="ativo"]');
   toggle.querySelector('span').textContent=ativo?'Desativar funcionário':'Reativar funcionário';
   toggle.querySelector('i,svg').outerHTML=`<i data-lucide="${ativo?'user-x':'user-check'}" aria-hidden="true"></i>`;
+  const leave=$('colabMenu').querySelector('[data-colab-action="afastar"]');
+  leave.querySelector('span').textContent=c.afastado===true?'Encerrar afastamento':'Afastar funcionário';
   const menu=$('colabMenu');
   menu.classList.remove('hidden');
   refreshIcons();
@@ -940,6 +945,15 @@ async function toggleColabActive(c){
   const ativo=c.ativo!==false;
   if(ativo&&!confirm(`Desativar ${c.nome}? Ele deixa de aparecer na lista de colaboradores dos lançamentos, mas o histórico continua.`)) return;
   const {error}=await sb.from('colaboradores').update({ativo:!ativo,updated_at:new Date().toISOString()}).eq('id',c.id);
+  if(error){alert(error.message);return}
+  await loadAll(false);
+}
+// Afastamento: o funcionário continua ativo e com o histórico; só fica marcado.
+async function toggleColabLeave(c){
+  const afastado=c.afastado===true;
+  if(!afastado&&!confirm(`Afastar ${c.nome} a partir de hoje?`)) return;
+  if(afastado&&!confirm(`Encerrar o afastamento de ${c.nome}?`)) return;
+  const {error}=await sb.from('colaboradores').update({afastado:!afastado,afastado_desde:afastado?null:todayLocal(),updated_at:new Date().toISOString()}).eq('id',c.id);
   if(error){alert(error.message);return}
   await loadAll(false);
 }
@@ -972,6 +986,7 @@ $('colabMenu').addEventListener('click',async e=>{
   closeColabMenu();
   if(!c) return;
   if(item.dataset.colabAction==='editar') openColabEdit(c.id);
+  if(item.dataset.colabAction==='afastar') await toggleColabLeave(c);
   if(item.dataset.colabAction==='ativo') await toggleColabActive(c);
   if(item.dataset.colabAction==='excluir') await deleteColab(c);
   if(item.dataset.colabAction==='editar') return;

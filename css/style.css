@@ -2350,3 +2350,7 @@ tr:hover td{background:#202020}
 .mp-phone{flex:0 0 auto;width:410px;height:864px;transform-origin:top center;border:10px solid #050505;border-radius:36px;overflow:hidden;background:#0d0d0d;box-shadow:0 0 0 1px #333}
 .mp-phone iframe{width:390px;height:844px;border:0;display:block}
 @media(max-width:720px){.mp-switch,.mp-overlay{display:none!important}}
+
+/* Funcionário afastado (menu dos 3 pontinhos) */
+.collab-info .collab-leave-tag{justify-self:start;display:inline-flex;align-items:center;gap:5px;margin-top:2px;padding:2px 8px;border-radius:999px;border:1px solid rgba(255,138,36,.35);background:#21160d;color:#ffb066;font-size:10px;font-weight:700;white-space:nowrap}
+.collab-leave-tag svg{width:12px;height:12px;flex:0 0 auto}
