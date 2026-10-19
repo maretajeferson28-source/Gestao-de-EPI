@@ -299,6 +299,10 @@
   .page[data-page-content="estoque"] .stock-item-mov{display:grid;grid-template-columns:repeat(3,46px);gap:2px;font-size:14px;font-weight:600;color:#f1f1f1}
   .page[data-page-content="estoque"] .stock-item-mov>span{display:inline-flex;align-items:center;gap:4px;color:#f1f1f1!important}
   .page[data-page-content="estoque"] .stock-item-mov .rot{display:none}
+  /* Ordem: entrou, saiu, estoque (e a situação no fim da linha) */
+  .page[data-page-content="estoque"] .stock-item-mov-entrou{order:1}
+  .page[data-page-content="estoque"] .stock-item-mov-saiu{order:2}
+  .page[data-page-content="estoque"] .stock-item-mov-saldo{order:3}
   .page[data-page-content="estoque"] .stock-item-mov svg{display:block;width:14px;height:14px;stroke-width:2.4}
 
   .page[data-page-content="estoque"] .stock-item-tag{grid-area:tag;justify-self:end;align-self:center;min-width:52px;padding:2px 6px;text-align:center}
