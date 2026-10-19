@@ -916,7 +916,7 @@ async function saveColab(keepOpen=false){
   }
 }
 
-// Menu dos três pontinhos do card: alterar, termo (ainda indisponível),
+// Menu dos três pontinhos do card: alterar, termo (ativo só com termo assinado no celular),
 // desativar/reativar e excluir.
 let colabMenuId=null;
 let colabMenuTrigger=null;
@@ -938,6 +938,9 @@ function openColabMenu(trigger){
   const toggle=$('colabMenu').querySelector('[data-colab-action="ativo"]');
   toggle.querySelector('span').textContent=ativo?'Desativar funcionário':'Reativar funcionário';
   toggle.querySelector('i,svg').outerHTML=`<i data-lucide="${ativo?'user-x':'user-check'}" aria-hidden="true"></i>`;
+  const termo=$('colabMenu').querySelector('[data-colab-action="termo"]');
+  termo.disabled=!window.EPI_TERMO?.temTermo(c.id);
+  termo.title=termo.disabled?'Ainda não assinou o termo no celular':'';
   const leave=$('colabMenu').querySelector('[data-colab-action="afastar"]');
   leave.querySelector('span').textContent=c.afastado===true?'Encerrar afastamento':'Afastar funcionário';
   const menu=$('colabMenu');
@@ -996,6 +999,7 @@ $('colabMenu').addEventListener('click',async e=>{
   closeColabMenu();
   if(!c) return;
   if(item.dataset.colabAction==='editar') openColabEdit(c.id);
+  if(item.dataset.colabAction==='termo') return window.EPI_TERMO?.abrir(c);
   if(item.dataset.colabAction==='afastar') await toggleColabLeave(c);
   if(item.dataset.colabAction==='ativo') await toggleColabActive(c);
   if(item.dataset.colabAction==='excluir') await deleteColab(c);

@@ -162,4 +162,11 @@ window.addEventListener('load', () => {
     mobilePreviewScript.dataset.mobilePreview = 'true';
     document.body.appendChild(mobilePreviewScript);
   }
+
+  if (!document.querySelector('script[data-termo]')) {
+    const termoScript = document.createElement('script');
+    termoScript.src = 'js/termo.js?v=20261019-1';
+    termoScript.dataset.termo = 'true';
+    document.body.appendChild(termoScript);
+  }
 }, { once: true });
