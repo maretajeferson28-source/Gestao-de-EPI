@@ -97,7 +97,7 @@ function usarCopia(copia){
   collaborators=copia.colaboradores||[];
   epiCatalog=copia.epis||[];
   epiVariants=copia.variantes||[];
-  movements=copia.movimentos||[];
+  movements=juntarFila(copia.movimentos||[]);
   modoOffline=true;
   rebuildLists();
   renderDashboard();
@@ -105,7 +105,8 @@ function usarCopia(copia){
   renderColabs();
   renderEpis();
   const quando=new Date(copia.salvoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
-  setStatus(`Sem internet • dados de ${quando}`,false);
+  const pend=lerFila().length;
+  setStatus(`Sem internet • dados de ${quando}${pend?` • ${pend} entrega(s) na fila`:''}`,false);
   window.dispatchEvent(new CustomEvent('epi:data-loaded',{detail:{offline:true}}));
 }
 // Abre o app com a cópia quando não há internet (sessão já usada neste aparelho).
@@ -126,6 +127,92 @@ function showAppOffline(session){
   refreshIcons();
   return true;
 }
+// Fila de entregas feitas sem internet: ficam no aparelho até tocar em
+// "Sincronizar". Cada entrega já nasce com o id definitivo (UUID), então
+// reenviar não duplica (o banco ignora o id que já existe).
+const FILA_KEY='epi-fila-v1', SYNC_KEY='epi-sync-em';
+function lerFila(){try{return JSON.parse(localStorage.getItem(FILA_KEY)||'[]')}catch(_){return []}}
+function gravarFila(fila){try{localStorage.setItem(FILA_KEY,JSON.stringify(fila))}catch(err){console.warn('[FILA]',err)} atualizarSyncBtn()}
+function movDaFila(item,i){
+  const p=item.payload;
+  return {id:p.id,data:isoToBR(p.data),colaborador:p.colaborador_nome_informado||null,colaborador_id:p.colaborador_id,
+    epi:item.epiNome||p.epi_nome_original,epi_id:p.epi_id,epi_raw:p.epi_nome_original,quantidade:Number(p.quantidade)||0,
+    ca:p.ca||'N/A',tamanho:p.tamanho||'N/A',responsavel:p.responsavel||'—',observacao:p.observacao||'',origem:p.origem||'',
+    custom:true,pendente:true,_order:1e9+i};
+}
+// Junta às movimentações (do banco ou da cópia) as que ainda estão na fila.
+function juntarFila(lista){
+  const ids=new Set(lista.map(m=>m.id));
+  return lista.filter(m=>!m.pendente).concat(lerFila().filter(it=>!ids.has(it.payload.id)||lista.find(m=>m.id===it.payload.id)?.pendente).map(movDaFila));
+}
+function enfileirar(payload,epiNome){
+  const fila=lerFila();
+  fila.push({payload,epiNome,criadoEm:new Date().toISOString()});
+  gravarFila(fila);
+  movements=juntarFila(movements);
+  rebuildLists(); renderDashboard(); renderMovs(); renderColabs();
+  salvarCopia();
+  window.dispatchEvent(new CustomEvent('epi:data-loaded',{detail:{offline:true}}));
+}
+function textoSync(){
+  const em=localStorage.getItem(SYNC_KEY);
+  return em?`Última sincronização: ${new Date(em).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}`:'Ainda não sincronizado neste aparelho';
+}
+function atualizarSyncBtn(){
+  const n=lerFila().length;
+  document.querySelectorAll('[data-sync-btn]').forEach(b=>{
+    const badge=b.querySelector('.sync-badge');
+    if(badge){badge.textContent=n;badge.hidden=!n}
+    b.classList.toggle('has-pending',n>0);
+    b.title=(n?`${n} entrega(s) aguardando envio • `:'')+textoSync();
+  });
+}
+let sincronizando=false;
+async function sincronizar(){
+  if(sincronizando) return;
+  if(!navigator.onLine){
+    const n=lerFila().length;
+    setStatus(n?`Sem internet • ${n} entrega(s) guardada(s) no aparelho`:'Sem internet • conecte para sincronizar',false);
+    return;
+  }
+  sincronizando=true;
+  document.querySelectorAll('[data-sync-btn]').forEach(b=>{b.disabled=true;b.classList.add('is-busy')});
+  let enviados=0, falha=null;
+  try{
+    // Sobe: envia a fila, uma entrega por vez, tirando da fila só o que o banco aceitou.
+    for(const item of lerFila()){
+      const {error}=await sb.from('movimentacoes_epi').upsert(item.payload,{onConflict:'id',ignoreDuplicates:true});
+      if(error){falha=error;break}
+      enviados++;
+      gravarFila(lerFila().filter(x=>x.payload.id!==item.payload.id));
+    }
+    // Baixa: atualiza tudo do banco (e a cópia do aparelho).
+    await loadAll(false);
+    if(!modoOffline&&!falha) localStorage.setItem(SYNC_KEY,new Date().toISOString());
+    const resto=lerFila().length;
+    if(falha) setStatus(`Enviadas ${enviados}; ${resto} ainda na fila: ${falha.message}`,false);
+    else if(!modoOffline) setStatus(`Sincronizado • ${movements.length} movimentações${enviados?` • ${enviados} entrega(s) enviada(s)`:''}`);
+  }finally{
+    sincronizando=false;
+    document.querySelectorAll('[data-sync-btn]').forEach(b=>{b.disabled=false;b.classList.remove('is-busy')});
+    atualizarSyncBtn();
+  }
+}
+function montarSyncBtn(){
+  if(document.querySelector('[data-sync-btn]')) return;
+  const html='<i data-lucide="refresh-cw" aria-hidden="true"></i><span class="sync-label">Sincronizar</span><span class="sync-badge" hidden>0</span>';
+  const noTopo=document.createElement('button');
+  noTopo.type='button'; noTopo.className='btn compact sync-btn'; noTopo.dataset.syncBtn='pc'; noTopo.innerHTML=html;
+  $('userEmail')?.insertAdjacentElement('beforebegin',noTopo);
+  const noCelular=document.createElement('button');
+  noCelular.type='button'; noCelular.className='mobile-only sync-btn sync-btn-mobile'; noCelular.dataset.syncBtn='celular'; noCelular.innerHTML=html; noCelular.setAttribute('aria-label','Sincronizar');
+  document.querySelector('.topbar')?.appendChild(noCelular);
+  document.querySelectorAll('[data-sync-btn]').forEach(b=>b.addEventListener('click',sincronizar));
+  atualizarSyncBtn();
+  refreshIcons();
+}
+montarSyncBtn();
+
 // Voltou a internet com o app aberto pela cópia: recarrega uma vez do banco.
 window.addEventListener('online',async()=>{
   if(!modoOffline) return;
@@ -173,12 +260,14 @@ async function loadAll(showBusy=true){
       custom:(r.origem || '').startsWith('Site Gestão EPI'),
       _order:idx
     }));
+    movements=juntarFila(movements);
     rebuildLists();
     renderDashboard();
     renderMovs();
     renderColabs();
     renderEpis();
-    setStatus(`Sincronizado • ${movements.length} movimentações`);
+    const pendentes=lerFila().length;
+    setStatus(pendentes?`${pendentes} entrega(s) aguardando envio • toque em Sincronizar`:`Sincronizado • ${movements.length} movimentações`,!pendentes);
     modoOffline=false;
     salvarCopia();
     window.dispatchEvent(new CustomEvent('epi:data-loaded'));
@@ -689,11 +778,20 @@ $('saidaForm').addEventListener('submit',async e=>{
       :(!window.EPI_TERMO?.temAssinatura?.(alvo.id)?`${alvo.nome} ainda não assinou o termo de autorização. Peça para assinar no celular (botão Termo) antes da entrega.`:'');
     if(bloqueio){$('saidaMsg').textContent=bloqueio;$('saidaMsg').classList.add('is-error');return}
   }
+  const semInternet=!navigator.onLine;
+  if(semInternet&&!epiCatalog.find(x=>normalize(x.nome)===normalize(epiNome))){
+    $('saidaMsg').textContent='Sem internet: só dá para entregar EPI já cadastrado. Cadastrar EPI novo precisa de internet.';
+    $('saidaMsg').classList.add('is-error');
+    return;
+  }
+  let payload=null, epiNomeFinal=epiNome;
   try{
     setBusy(true);
     const epi=await ensureEpi(epiNome);
+    epiNomeFinal=epi.nome;
     const col=(colNome && colNome!=='Bolsa Reserva') ? findCollaborator(colNome) : null;
-    const payload={
+    payload={
+      id:crypto.randomUUID(),
       data:$('nData').value,
       colaborador_id:col?.id || null,
       colaborador_nome_informado:colNome || null,
@@ -706,6 +804,7 @@ $('saidaForm').addEventListener('submit',async e=>{
       observacao:$('nObs').value.trim()||null,
       origem:'Site Gestão EPI'
     };
+    if(semInternet) throw new TypeError('Failed to fetch');
     const {error}=await sb.from('movimentacoes_epi').insert(payload);
     if(error) throw error;
     e.target.reset();
@@ -714,7 +813,16 @@ $('saidaForm').addEventListener('submit',async e=>{
     await loadAll(false);
   }catch(err){
     console.error(err);
-    $('saidaMsg').textContent=`Erro: ${err.message || err}`;
+    if(payload&&erroDeRede(err)){
+      // Sem internet (ou caiu na hora): guarda no aparelho para sincronizar depois.
+      enfileirar(payload,epiNomeFinal);
+      e.target.reset();
+      $('nQtd').value=1; $('nResp').value='Jeferson'; $('nData').value=todayLocal();
+      $('saidaMsg').textContent='Sem internet: entrega guardada no celular. Toque em Sincronizar quando tiver sinal.';
+    }else{
+      $('saidaMsg').textContent=`Erro: ${err.message || err}`;
+      $('saidaMsg').classList.add('is-error');
+    }
   }finally{setBusy(false)}
 });
 
@@ -725,7 +833,9 @@ function renderMovs(){
     .filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)));
 
   $('movBody').innerHTML=arr.map(x=>{
-    const actions=currentIsAdmin
+    const actions=x.pendente
+      ? '<span class="mov-pendente" title="Guardada no aparelho; vai para o banco ao sincronizar">Pendente</span>'
+      : currentIsAdmin
       ? `<div class="table-action-group">
           <button class="btn movement-action-btn movement-edit-btn" data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
           <button class="btn movement-action-btn movement-delete-btn" data-del="${esc(x.id)}" title="Excluir movimentação" aria-label="Excluir movimentação"><i data-lucide="trash-2" aria-hidden="true"></i></button>
