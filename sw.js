@@ -3,10 +3,11 @@
 // código, ícones) e as bibliotecas das CDNs, para o app abrir sem internet.
 // Nunca guarda respostas do banco/gateway, da autenticação ou da /api.
 const SHELL = 'epi-app-v3';     // arquivos do próprio app (rede primeiro, cópia se cair)
-const LIBS = 'epi-libs-v2';     // bibliotecas das CDNs (cópia na hora, atualiza por trás)
+const LIBS = 'epi-libs-v3';     // bibliotecas das CDNs (cópia na hora, atualiza por trás)
 const OFFLINE = '/offline.html';
 const FIXOS = ['/', OFFLINE, '/assets/app-brand/favicon-192.png', '/assets/app-brand/pwa-512.png', '/assets/app-brand/pwa-maskable-512.png'];
-const CDN = ['cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+// storage.googleapis.com: modelo da leitura facial (MediaPipe), para validar entrega sem internet.
+const CDN = ['cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'storage.googleapis.com'];
 
 // Na instalação já guarda TUDO que a página usa: lê o index.html e o
 // js/config.js (que carrega os módulos) e baixa cada arquivo citado. Assim o

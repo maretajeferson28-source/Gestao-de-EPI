@@ -145,9 +145,9 @@ function juntarFila(lista){
   const ids=new Set(lista.map(m=>m.id));
   return lista.filter(m=>!m.pendente).concat(lerFila().filter(it=>!ids.has(it.payload.id)||lista.find(m=>m.id===it.payload.id)?.pendente).map(movDaFila));
 }
-function enfileirar(payload,epiNome){
+function enfileirar(payload,epiNome,imagens=null){
   const fila=lerFila();
-  fila.push({payload,epiNome,criadoEm:new Date().toISOString()});
+  fila.push({payload,epiNome,imagens:imagens&&(imagens.selfie||imagens.assinatura)?imagens:null,criadoEm:new Date().toISOString()});
   gravarFila(fila);
   movements=juntarFila(movements);
   rebuildLists(); renderDashboard(); renderMovs(); renderColabs();
@@ -181,6 +181,12 @@ async function sincronizar(){
   try{
     // Sobe: envia a fila, uma entrega por vez, tirando da fila só o que o banco aceitou.
     for(const item of lerFila()){
+      if(item.imagens){
+        try{
+          const paraBlob=async d=>d?await (await fetch(d)).blob():null;
+          await enviarValidacao(item.payload,{selfie:await paraBlob(item.imagens.selfie),assinatura:await paraBlob(item.imagens.assinatura)});
+        }catch(err){falha=err;break}
+      }
       const {error}=await sb.from('movimentacoes_epi').upsert(item.payload,{onConflict:'id',ignoreDuplicates:true});
       if(error){falha=error;break}
       enviados++;
@@ -764,6 +770,40 @@ function findCollaborator(nome){
   return collaborators.find(x=>normalize(x.nome)===normalize(nome)) || null;
 }
 
+// Validação opcional da entrega: biometria facial e/ou assinatura do
+// colaborador (mesma captura do termo, js/termo-captura.js).
+const validacaoEntrega={selfie:null,assinatura:null};
+function marcarValidacao(){
+  const marca=(id,ok,txt)=>{const b=$(id); if(!b) return; b.classList.toggle('is-ok',ok); b.innerHTML=`<i data-lucide="${ok?'check':(id==='nFacial'?'scan-face':'signature')}" aria-hidden="true"></i>${txt}`;};
+  marca('nFacial',Boolean(validacaoEntrega.selfie),'Facial');
+  marca('nAssinatura',Boolean(validacaoEntrega.assinatura),'Assinatura');
+  refreshIcons();
+}
+function limparValidacao(){validacaoEntrega.selfie=null;validacaoEntrega.assinatura=null;marcarValidacao()}
+async function validarEntrega(tipo){
+  $('saidaMsg').classList.remove('is-error');
+  const nome=$('nColab').value.trim();
+  const col=nome&&nome!=='Bolsa Reserva'?findCollaborator(nome):null;
+  if(!col){$('saidaMsg').textContent='Escolha o colaborador antes de validar a entrega.';$('saidaMsg').classList.add('is-error');return}
+  const blob=tipo==='face'?await window.EPI_TERMO_CAPTURA?.face(col):await window.EPI_TERMO_CAPTURA?.assinatura(col);
+  if(!blob) return;
+  if(tipo==='face') validacaoEntrega.selfie=blob; else validacaoEntrega.assinatura=blob;
+  validacaoEntrega.colaboradorId=col.id;
+  marcarValidacao();
+  $('saidaMsg').textContent=tipo==='face'?'Biometria facial registrada para esta entrega.':'Assinatura registrada para esta entrega.';
+}
+$('nFacial').addEventListener('click',()=>validarEntrega('face'));
+$('nAssinatura').addEventListener('click',()=>validarEntrega('assinatura'));
+$('saidaForm').addEventListener('reset',()=>setTimeout(limparValidacao,0));
+// Para guardar na fila offline (localStorage só aceita texto).
+const blobParaTexto=b=>new Promise(ok=>{if(!b) return ok(null); const r=new FileReader(); r.onload=()=>ok(r.result); r.onerror=()=>ok(null); r.readAsDataURL(b)});
+async function enviarValidacao(payload,{selfie,assinatura}){
+  const base=`entregas/${payload.colaborador_id}/${payload.id}`;
+  const pasta=sb.storage.from('termos-epi');
+  if(selfie){const {error}=await pasta.upload(`${base}-selfie.jpg`,selfie,{contentType:'image/jpeg',upsert:true}); if(error) throw error; payload.validacao_selfie_path=`${base}-selfie.jpg`}
+  if(assinatura){const {error}=await pasta.upload(`${base}-assinatura.png`,assinatura,{contentType:'image/png',upsert:true}); if(error) throw error; payload.validacao_assinatura_path=`${base}-assinatura.png`}
+}
+
 $('saidaForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(!currentIsAdmin) return;
@@ -805,6 +845,8 @@ $('saidaForm').addEventListener('submit',async e=>{
       origem:'Site Gestão EPI'
     };
     if(semInternet) throw new TypeError('Failed to fetch');
+    if(validacaoEntrega.colaboradorId&&validacaoEntrega.colaboradorId!==payload.colaborador_id){limparValidacao()} // validou outro colaborador
+    await enviarValidacao(payload,validacaoEntrega);
     const {error}=await sb.from('movimentacoes_epi').insert(payload);
     if(error) throw error;
     e.target.reset();
@@ -815,7 +857,9 @@ $('saidaForm').addEventListener('submit',async e=>{
     console.error(err);
     if(payload&&erroDeRede(err)){
       // Sem internet (ou caiu na hora): guarda no aparelho para sincronizar depois.
-      enfileirar(payload,epiNomeFinal);
+      delete payload.validacao_selfie_path; delete payload.validacao_assinatura_path;
+      const imagens={selfie:await blobParaTexto(validacaoEntrega.selfie),assinatura:await blobParaTexto(validacaoEntrega.assinatura)};
+      enfileirar(payload,epiNomeFinal,imagens);
       e.target.reset();
       $('nQtd').value=1; $('nResp').value='Jeferson'; $('nData').value=todayLocal();
       $('saidaMsg').textContent='Sem internet: entrega guardada no celular. Toque em Sincronizar quando tiver sinal.';

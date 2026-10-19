@@ -29,6 +29,10 @@
   let loop = 0;
   let selfie = null; // Blob JPEG
   let cameraFrente = true; // câmera da frente (selfie) ou de trás
+  // Pedido avulso da tela de entrega: só a face ou só a assinatura, devolvida
+  // por uma Promise (EPI_TERMO_CAPTURA.face / .assinatura), sem salvar termo.
+  let pedido = null; // { tipo: 'face' | 'assinatura', resolve }
+  function responder(valor) { const p = pedido; pedido = null; if (p) p.resolve(valor); }
 
   // ---------- estrutura ----------
   function montar() {
@@ -81,7 +85,7 @@
 
     tela.addEventListener('click', (e) => {
       if (e.target.closest('[data-tc-fechar]')) fechar();
-      if (e.target.closest('[data-tc-voltar]')) passo(tela.dataset.passo === 'termo' ? 'face' : 'colaborador');
+      if (e.target.closest('[data-tc-voltar]')) { if (pedido) { fechar(); return; } passo(tela.dataset.passo === 'termo' ? 'face' : 'colaborador'); }
       const item = e.target.closest('[data-tc-colab]');
       if (item) { colaborador = colaboradores().find((c) => c.id === item.dataset.tcColab) || null; if (colaborador) passo('face'); }
     });
@@ -89,8 +93,11 @@
     $('tcAceite').addEventListener('change', validar);
     $('tcAssinar').addEventListener('click', abrirPad);
     $('tcLimpar').addEventListener('click', () => { assinatura.limpar(); validar(); });
-    $('tcCancelar').addEventListener('click', fecharPad);
-    $('tcConfirmar').addEventListener('click', salvar);
+    $('tcCancelar').addEventListener('click', () => { if (pedido) fechar(); else fecharPad(); });
+    $('tcConfirmar').addEventListener('click', async () => {
+      if (pedido?.tipo === 'assinatura') { const blob = await assinatura.blob(); responder(blob); fechar(); return; }
+      salvar();
+    });
     window.addEventListener('resize', () => { if (!$('tcPad').hidden) ajustarPad(); });
     $('tcGirar').addEventListener('click', () => {
       cameraFrente = !cameraFrente;
@@ -119,6 +126,7 @@
   }
 
   function fechar() {
+    responder(null); // pedido da entrega cancelado
     if (tela && !$('tcPad').hidden) fecharPad();
     pararCamera();
     if (tela) tela.hidden = true;
@@ -272,7 +280,10 @@
     c.height = Math.round(video.videoHeight * k);
     c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
     status('Rosto capturado', 'ok');
-    c.toBlob((blob) => { selfie = blob; passo('termo'); }, 'image/jpeg', 0.88);
+    c.toBlob((blob) => {
+      if (pedido?.tipo === 'face') { responder(blob); fechar(); return; }
+      selfie = blob; passo('termo');
+    }, 'image/jpeg', 0.88);
   }
 
   // ---------- 3. termo e assinatura ----------
@@ -334,14 +345,14 @@
 
   function validar() {
     $('tcAssinar').disabled = !($('tcAceite').checked && selfie && colaborador);
-    $('tcConfirmar').disabled = !(assinatura.ctx && !assinatura.vazio && $('tcAceite').checked);
+    $('tcConfirmar').disabled = !(assinatura.ctx && !assinatura.vazio && (pedido || $('tcAceite').checked));
   }
 
   // Quadro de assinatura deitado: tenta virar a tela de verdade (tela cheia +
   // trava em paisagem, no Android); se o aparelho continuar em pé, gira o quadro
   // 90° por CSS para a assinatura ocupar o lado comprido da tela.
   async function abrirPad() {
-    if ($('tcAssinar').disabled) return;
+    if (!pedido && $('tcAssinar').disabled) return;
     $('tcPadNome').textContent = colaborador?.nome || '';
     $('tcMsg').textContent = '';
     $('tcPad').hidden = false;
@@ -410,6 +421,33 @@
     }
   }
 
-  window.EPI_TERMO_CAPTURA = { abrir, fechar };
+  // Para a entrega: abre direto a captura de face ou o quadro de assinatura do
+  // colaborador e devolve a imagem (Blob) — ou null se cancelar.
+  function capturarFace(colab) {
+    montar();
+    responder(null);
+    return new Promise((resolve) => {
+      pedido = { tipo: 'face', resolve };
+      colaborador = colab || null;
+      tela.hidden = false;
+      document.documentElement.classList.add('tc-aberto');
+      passo('face');
+    });
+  }
+  function capturarAssinatura(colab) {
+    montar();
+    responder(null);
+    return new Promise((resolve) => {
+      pedido = { tipo: 'assinatura', resolve };
+      colaborador = colab || null;
+      tela.hidden = false;
+      document.documentElement.classList.add('tc-aberto');
+      tela.querySelectorAll('.tc-passo').forEach((p) => { p.hidden = true; });
+      pararCamera();
+      abrirPad();
+    });
+  }
+
+  window.EPI_TERMO_CAPTURA = { abrir, fechar, face: capturarFace, assinatura: capturarAssinatura };
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tela && !tela.hidden) fechar(); });
 })();
