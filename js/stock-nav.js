@@ -184,6 +184,12 @@
       event.preventDefault();
       refreshStockFromSupabase(page);
     });
+    // Filtra enquanto digita (espera a pessoa parar de digitar para consultar uma vez só).
+    let filtroTimer = 0;
+    page.querySelector('#stockSearchInput')?.addEventListener('input', () => {
+      clearTimeout(filtroTimer);
+      filtroTimer = setTimeout(() => refreshStockFromSupabase(page), 450);
+    });
 
     page.querySelector('#stockRegisterBtn')?.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('epi:stock-register-request'));
