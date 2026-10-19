@@ -129,7 +129,7 @@
     const cards = stockItens.map((i) => {
       const critico = Number(i.saldo) <= 0;
       const baixo = !critico && i.minimo != null && Number(i.saldo) <= Number(i.minimo);
-      return `<article class="stock-item${critico ? ' is-critico' : baixo ? ' is-baixo' : ''}"${i.minimo != null ? ` title="Mínimo: ${formatNumber(i.minimo)}"` : ''}>
+      return `<article class="stock-item${critico ? ' is-critico' : baixo ? ' is-baixo' : ''}" data-stock-epi="${esc(i.epi_id)}" data-stock-nome="${esc(i.nome)}" tabindex="0" role="button" title="${i.minimo != null ? `Mínimo: ${formatNumber(i.minimo)} • ` : ''}Clique para editar">
         <span class="stock-item-icone" aria-hidden="true"><i data-lucide="${esc(typeof epiCardIcon === 'function' ? epiCardIcon({ nome: i.nome }) : 'package')}"></i></span>
         <strong class="stock-item-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong>
         <span class="stock-item-saldo">${formatNumber(i.saldo)}<small>em estoque</small></span>
@@ -140,6 +140,18 @@
     box.innerHTML = `<h3 class="stock-itens-titulo">Saldo por item</h3>${cards ? `<div class="stock-itens-grade">${cards}</div>` : `<p class="stock-itens-vazio">${busca ? 'Nenhum EPI com estoque para essa busca.' : 'Nenhum EPI com entrada de estoque ainda. Lance uma nota fiscal ou use o Cadastro.'}</p>`}`;
     refreshIcons();
   }
+
+  function abrirItem(card) {
+    window.dispatchEvent(new CustomEvent('epi:stock-register-request', { detail: { epiId: card.dataset.stockEpi, nome: card.dataset.stockNome } }));
+  }
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('#stockItens [data-stock-epi]');
+    if (card) abrirItem(card);
+  });
+  document.addEventListener('keydown', (e) => {
+    const card = e.target.closest?.('#stockItens [data-stock-epi]');
+    if (card && e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); abrirItem(card); }
+  });
 
   async function refreshStockFromSupabase(page) {
     const client = db();

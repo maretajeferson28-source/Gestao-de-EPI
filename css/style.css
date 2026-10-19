@@ -2565,3 +2565,10 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-item.is-critico .stock-item-icone{border-color:rgba(255,107,107,.4);color:#ff6b6b}
 .stock-item-saldo{margin-top:4px;font-size:22px}
 .stock-item-tag{justify-self:start}
+
+/* Estoque: o cartão abre a janela do item */
+.stock-item[data-stock-epi]{cursor:pointer;transition:border-color .15s}
+.stock-item[data-stock-epi]:hover,.stock-item[data-stock-epi]:focus-visible{border-color:rgba(56,180,123,.55);outline:none}
+.stock-item.is-baixo[data-stock-epi]:hover,.stock-item.is-baixo[data-stock-epi]:focus-visible{border-color:rgba(255,184,0,.75)}
+.stock-item.is-critico[data-stock-epi]:hover,.stock-item.is-critico[data-stock-epi]:focus-visible{border-color:rgba(255,107,107,.8)}
+#stockEntryEpi[readonly]{opacity:.75;cursor:default}

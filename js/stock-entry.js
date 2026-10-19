@@ -70,6 +70,7 @@
 
   let recentes = [];
   let editandoId = null; // entrada da lista que está sendo alterada
+  let itemFixo = null; // aberto pelo cartão do Estoque: { id, nome } do EPI
 
   function sairEdicao() {
     editandoId = null;
@@ -100,7 +101,7 @@
   }
 
   function resetItemFields() {
-    $('stockEntryEpi').value = '';
+    $('stockEntryEpi').value = itemFixo ? itemFixo.nome : '';
     $('stockEntryQtd').value = '';
     $('stockEntryObs').value = '';
     fillCaOptions();
@@ -110,17 +111,18 @@
     const box = $('stockEntryList');
     const client = db();
     if (!box || !client) return;
-    const { data, error } = await client.from('estoque_entradas_manuais')
+    let query = client.from('estoque_entradas_manuais')
       .select('id,epi_id,variante_id,quantidade,motivo,data,ca,observacao,epis(nome)')
-      .order('created_at', { ascending: false })
-      .limit(8);
+      .order('created_at', { ascending: false });
+    query = itemFixo ? query.eq('epi_id', itemFixo.id).limit(30) : query.limit(8);
+    const { data, error } = await query;
     if (error) {
       box.innerHTML = `<p class="stock-entry-empty">Não foi possível carregar: ${escHtml(error.message)}</p>`;
       return;
     }
     recentes = data || [];
     if (!data.length) {
-      box.innerHTML = '<p class="stock-entry-empty">Nenhuma entrada sem nota ainda.</p>';
+      box.innerHTML = `<p class="stock-entry-empty">${itemFixo ? 'Nenhuma entrada sem nota deste EPI. As entradas por nota fiscal ficam em Notas Fiscais.' : 'Nenhuma entrada sem nota ainda.'}</p>`;
       return;
     }
     box.innerHTML = data.map((r) => `
@@ -137,8 +139,20 @@
     icons();
   }
 
-  function open() {
+  // Sem detalhe: Cadastro geral. Com { epiId, nome }: janela daquele EPI
+  // (vinda do clique no cartão do Estoque), com o EPI fixo e só as entradas dele.
+  function open(e) {
     if (!isAdmin()) return;
+    const det = e?.detail;
+    itemFixo = det?.epiId ? { id: det.epiId, nome: det.nome || '' } : null;
+    $('stockEntryTitle').textContent = itemFixo ? itemFixo.nome : 'Entrada no estoque';
+    const sub = document.querySelector('#stockEntryModal .data-edit-head p');
+    if (sub) sub.textContent = itemFixo
+      ? 'Defina o estoque mínimo, lance uma entrada sem nota ou edite as entradas abaixo.'
+      : 'Para itens que entram sem nota fiscal. Campos com * são obrigatórios.';
+    const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
+    if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';
+    $('stockEntryEpi').readOnly = !!itemFixo;
     $('dlStockEntryEpi').innerHTML = activeEpis()
       .map((e) => `<option value="${escHtml(e.nome)}">`).join('');
     sairEdicao();
@@ -150,7 +164,7 @@
     icons();
     loadRecent();
     loadMinimos();
-    setTimeout(() => $('stockEntryEpi').focus(), 50);
+    setTimeout(() => $(itemFixo ? 'stockEntryQtd' : 'stockEntryEpi').focus(), 50);
   }
 
   function close() { $('stockEntryModal')?.classList.add('hidden'); }
@@ -197,7 +211,7 @@
     sairEdicao();
     setMsg(alterando ? `Entrada alterada: ${fmtQtd(qtd)} × ${epi.nome}.` : `Entrada salva: ${fmtQtd(qtd)} × ${epi.nome}.`);
     resetItemFields();
-    $('stockEntryEpi').focus();
+    $(itemFixo ? 'stockEntryQtd' : 'stockEntryEpi').focus();
     window.dispatchEvent(new CustomEvent('epi:stock-changed'));
     loadRecent();
   }
@@ -218,7 +232,7 @@
     if (!ok) return;
     setMsg(minimo === null ? `Mínimo removido: ${epi.nome}.` : `Mínimo salvo: ${fmtQtd(minimo)} × ${epi.nome}.`);
     resetItemFields();
-    $('stockEntryEpi').focus();
+    $(itemFixo ? 'stockEntryQtd' : 'stockEntryEpi').focus();
     window.dispatchEvent(new CustomEvent('epi:stock-changed'));
   }
 
