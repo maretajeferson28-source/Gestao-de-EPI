@@ -1043,7 +1043,7 @@ function renderColabs(){
     const inativoTag=ativo?'':`<span class="collab-leave-tag is-off" title="Funcionário desativado"><i data-lucide="user-x" aria-hidden="true"></i>Desativado${c.desativado_desde?` ${esc(isoToBR(c.desativado_desde))}`:''}</span>`;
     const afastadoTag=afastado?`<span class="collab-leave-tag" title="Funcionário afastado"><i data-lucide="heart-pulse" aria-hidden="true"></i>Afastado${c.afastado_desde?` ${esc(isoToBR(c.afastado_desde))}`:''}</span>`:'';
 
-    return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}">
+    return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}${currentIsAdmin?' is-clicavel':''}"${currentIsAdmin?` data-colab-historico="${esc(c.id)}" tabindex="0" title="Ver histórico"`:''}>
       <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
       <div class="collab-info">
         <strong title="${esc(nome)}">${esc(nome)}</strong>
@@ -1242,11 +1242,17 @@ $('addColab').addEventListener('click',()=>openColabEdit(null));
 $('colabSearch').addEventListener('input',renderColabs);
 $('colabCards').addEventListener('click',e=>{
   const trigger=e.target.closest('[data-colab-menu]');
-  if(trigger){e.stopPropagation();openColabMenu(trigger)}
+  if(trigger){e.stopPropagation();openColabMenu(trigger);return}
+  // Clicar no cartão abre o histórico do funcionário.
+  const card=e.target.closest('[data-colab-historico]');
+  const c=card&&collaborators.find(x=>x.id===card.dataset.colabHistorico);
+  if(c) window.EPI_HISTORICO?.abrir(c);
 });
 $('colabCards').addEventListener('keydown',e=>{
   const trigger=e.target.closest('[data-colab-menu]');
-  if(trigger&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openColabMenu(trigger)}
+  if(trigger&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openColabMenu(trigger);return}
+  const card=e.target.closest('[data-colab-historico]');
+  if(card&&e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();card.click()}
 });
 $('colabMenu').addEventListener('click',async e=>{
   const item=e.target.closest('[data-colab-action]');
@@ -1256,7 +1262,6 @@ $('colabMenu').addEventListener('click',async e=>{
   closeColabMenu();
   if(!c) return;
   if(item.dataset.colabAction==='editar') openColabEdit(c.id);
-  if(item.dataset.colabAction==='historico') return window.EPI_HISTORICO?.abrir(c);
   if(item.dataset.colabAction==='termo') return window.EPI_TERMO?.abrir(c);
   if(item.dataset.colabAction==='afastar') await toggleColabLeave(c);
   if(item.dataset.colabAction==='ativo') await toggleColabActive(c);

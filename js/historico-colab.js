@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  // "Histórico" no menu dos 3 pontinhos do colaborador: tudo que ele recebeu
+  // "Histórico" ao clicar no cartão do colaborador: tudo que ele recebeu
   // (resumo por item e cada entrega com data, quantidade, C.A., tamanho e
   // responsável), mais a situação do cadastro e do termo.
   if (window.__EPI_HISTORICO__) return;
