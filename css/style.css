@@ -1257,9 +1257,10 @@ tr:hover td{background:#202020}
 }
 
 .epi-dossier-field-label svg{
-  width:12px;
-  height:12px;
-  color:#777;
+  flex:0 0 auto;
+  width:14px;
+  height:14px;
+  color:#ff8a24;
 }
 
 .epi-dossier-field strong{

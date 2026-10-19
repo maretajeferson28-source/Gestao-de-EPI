@@ -1224,6 +1224,7 @@ function renderEpiVariantList(){
       selectorMenu.hidden=true;
       selectorMenu.innerHTML='';
       selectorValue.innerHTML='<strong>Nenhum C.A.</strong><small>Sem certificado vinculado</small>';
+      if($('epiCaSelectorLabel')) $('epiCaSelectorLabel').textContent='C.A. EM EXIBIÇÃO';
     }else{
       if(!selectedVariantId || !rows.some(v=>v.id===selectedVariantId)){
         selectedVariantId=rows[0].id;
@@ -1234,6 +1235,7 @@ function renderEpiVariantList(){
 
       selectorButton.disabled=false;
       selectorValue.innerHTML=`<strong>${esc(codeTitle(selectedForHeader.ca))}</strong><small>${esc(selectedMaker)}</small>`;
+      if($('epiCaSelectorLabel')) $('epiCaSelectorLabel').textContent=`${codeTerm(selectedForHeader.ca)} EM EXIBIÇÃO`;
 
       selectorMenu.innerHTML=rows.map(v=>{
         const maker=String(v.fabricante||'Fabricante não informado').trim();
@@ -1309,12 +1311,12 @@ function renderEpiVariantList(){
 
       <div class="epi-dossier-grid">
         ${field('CNPJ',v.cnpj,'building-2')}
-        ${field('Marca',v.marca,'badge')}
-        ${field('Referência / modelo',v.referencia,'package-search')}
-        ${field(`Validade do ${codeTerm(v.ca)}`,dateBR(v.data_validade),'calendar-days')}
-        ${field('Norma',v.norma,'book-open-check')}
-        ${field('Preço',moneyBR(v.preco),'badge-dollar-sign')}
-        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passado':'—'),'git-compare-arrows')}
+        ${field('Marca',v.marca,'tag')}
+        ${field('Referência / modelo',v.referencia,'hash')}
+        ${field(`Validade do ${codeTerm(v.ca)}`,dateBR(v.data_validade),'calendar-check')}
+        ${field('Norma',v.norma,'scale')}
+        ${field('Preço',moneyBR(v.preco),'banknote')}
+        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passado':'—'),'arrow-left-right')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
 
