@@ -126,7 +126,7 @@
       return `<article class="stock-item${critico ? ' is-critico' : ''}">
         <strong class="stock-item-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong>
         <span class="stock-item-saldo">${formatNumber(i.saldo)}<small>em estoque</small></span>
-        <span class="stock-item-mov"><span>Entrou ${formatNumber(i.entradas)}</span><span>Saiu ${formatNumber(i.saidas)}</span></span>
+        <span class="stock-item-mov"><span class="stock-item-mov-saldo">Estoque <b>${formatNumber(i.saldo)}</b></span><span>Entrou ${formatNumber(i.entradas)}</span><span>Saiu ${formatNumber(i.saidas)}</span></span>
         <span class="stock-item-tag">${critico ? 'Crítico' : 'OK'}</span>
       </article>`;
     }).join('');
