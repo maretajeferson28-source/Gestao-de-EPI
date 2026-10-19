@@ -158,7 +158,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-mobile-preview]')) {
     const mobilePreviewScript = document.createElement('script');
-    mobilePreviewScript.src = 'js/mobile-preview.js?v=20261019-2';
+    mobilePreviewScript.src = 'js/mobile-preview.js?v=20261019-3';
     mobilePreviewScript.dataset.mobilePreview = 'true';
     document.body.appendChild(mobilePreviewScript);
   }

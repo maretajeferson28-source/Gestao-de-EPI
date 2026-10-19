@@ -2341,11 +2341,10 @@ tr:hover td{background:#202020}
 .mp-switch input:checked+.mp-track{background:#ff6a00;border-color:#ff6a00}
 .mp-switch input:checked+.mp-track::after{transform:translateX(13px);background:#fff}
 .mp-switch input:focus-visible+.mp-track{outline:2px solid #ff9c48;outline-offset:2px}
-.mp-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.55);display:flex;justify-content:flex-end}
+.mp-overlay{position:fixed;inset:0;z-index:150;background:#0b0b0b;display:flex;justify-content:center}
 .mp-overlay[hidden]{display:none}
-.mp-side{height:100%;display:flex;flex-direction:column;gap:12px;padding:14px 22px 18px;background:#121212;border-left:1px solid #2b2b2b}
-.mp-bar{display:flex;align-items:center;gap:8px}
-.mp-bar strong{flex:1;font-size:13px;color:#f1f1f1}
+.mp-side{height:100%;display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px 22px 18px}
+.mp-bar{display:flex;align-items:center;justify-content:center;gap:14px}
 .mp-bar .btn svg{width:14px;height:14px}
 .mp-stage{flex:1;min-height:0;display:flex;justify-content:center}
 .mp-phone{flex:0 0 auto;width:410px;height:864px;transform-origin:top center;border:10px solid #050505;border-radius:36px;overflow:hidden;background:#0d0d0d;box-shadow:0 0 0 1px #333}

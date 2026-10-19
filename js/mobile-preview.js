@@ -1,8 +1,9 @@
 (() => {
   'use strict';
 
-  // Botão "Celular" no topo (só computador e só administrador): abre o próprio
-  // app numa moldura de 390 px, onde as regras de css/mobile.css passam a valer.
+  // Botão "Celular" no topo (só computador e só administrador): troca a tela do
+  // computador pelo próprio app numa moldura de 390 px, no meio da tela, onde as
+  // regras de css/mobile.css passam a valer. Desligar volta para o computador.
   if (window.__EPI_MOBILE_PREVIEW__) return;
   window.__EPI_MOBILE_PREVIEW__ = true;
   if (window.top !== window) return; // dentro da própria moldura não aparece
@@ -21,15 +22,14 @@
     panel.innerHTML = `
       <div class="mp-side" role="dialog" aria-label="Prévia do celular">
         <div class="mp-bar">
-          <strong>Prévia do celular</strong>
           <button class="btn compact" type="button" data-mp-reload title="Recarregar a prévia"><i data-lucide="refresh-cw"></i>Recarregar</button>
-          <button class="btn compact" type="button" data-mp-close aria-label="Fechar prévia"><i data-lucide="x"></i></button>
+          <label class="mp-switch" title="Voltar para a versão do computador"><input type="checkbox" checked data-mp-off><span class="mp-track" aria-hidden="true"></span><i data-lucide="smartphone"></i><span>Celular</span></label>
         </div>
         <div class="mp-stage"><div class="mp-phone"><iframe title="App em tamanho de celular"></iframe></div></div>
       </div>`;
     document.body.appendChild(panel);
+    panel.querySelector('[data-mp-off]').addEventListener('change', () => setOpen(false));
     panel.addEventListener('click', (e) => {
-      if (e.target === panel || e.target.closest('[data-mp-close]')) setOpen(false);
       if (e.target.closest('[data-mp-reload]')) panel.querySelector('iframe').contentWindow?.location.reload();
     });
     icons();
@@ -48,6 +48,7 @@
   function setOpen(open) {
     if (!panel) buildPanel();
     toggle.querySelector('input').checked = open;
+    panel.querySelector('[data-mp-off]').checked = true;
     panel.hidden = !open;
     const frame = panel.querySelector('iframe');
     if (open && !frame.src) frame.src = location.origin + location.pathname;
