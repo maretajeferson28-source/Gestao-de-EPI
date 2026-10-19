@@ -107,6 +107,9 @@
     const moneyBR = options.moneyBR || ((value) => safe(value));
 
     if (!variant) throw new Error('C.A. não encontrado.');
+    // Registro da Base CIEPI (CI-0001): o PDF fala em C.I. / Certificado Interno.
+    const isCi = /^\s*CI-/i.test(String(variant.ca || ''));
+    const term = isCi ? 'C.I.' : 'C.A.';
     if (!window.jspdf?.jsPDF) throw new Error('Gerador de PDF não carregado.');
 
     const { jsPDF } = window.jspdf;
@@ -196,7 +199,7 @@
 
       setText([210, 210, 210]);
       doc.setFontSize(7);
-      doc.text('PRONTUÁRIO TÉCNICO DO C.A.', pageW - margin, 13, { align: 'right' });
+      doc.text('PRONTUÁRIO TÉCNICO DO ' + term, pageW - margin, 13, { align: 'right' });
       doc.text('Gerado em ' + generatedAt, pageW - margin, 18, { align: 'right' });
 
       if (firstPage) {
@@ -415,11 +418,11 @@
     setText(orange);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
-    doc.text('CERTIFICADO DE APROVAÇÃO', heroX, y + 8);
+    doc.text(isCi ? 'CERTIFICADO INTERNO' : 'CERTIFICADO DE APROVAÇÃO', heroX, y + 8);
 
     setText(dark);
     doc.setFontSize(17);
-    doc.text('C.A. ' + safe(variant.ca), heroX, y + 16);
+    doc.text(isCi ? safe(variant.ca) : 'C.A. ' + safe(variant.ca), heroX, y + 16);
 
     setText([95, 95, 95]);
     doc.setFontSize(6.5);
@@ -448,7 +451,7 @@
     y += 21;
 
     fieldCard('Referência / modelo', variant.referencia, margin, col);
-    fieldCard('Validade do C.A.', dateBR(variant.data_validade), margin + col + gap, col);
+    fieldCard('Validade do ' + term, dateBR(variant.data_validade), margin + col + gap, col);
     y += 21;
 
     fieldCard('Situação', status, margin, col);
@@ -466,7 +469,7 @@
 
     sectionTitle('Informações técnicas');
 
-    textSection('Descrição oficial', variant.descricao);
+    textSection(isCi ? 'Descrição' : 'Descrição oficial', variant.descricao);
     textSection('Características / especificação interna', variant.caracteristicas);
     textSection('Observações', variant.observacao);
 
@@ -486,7 +489,7 @@
       doc.text('Página ' + page + ' de ' + totalPages, pageW - margin, pageH - 6, { align: 'right' });
     }
 
-    const filename = 'Prontuario_CA_' + cleanFilename(variant.ca) + '_' + cleanFilename(epiName) + '.pdf';
+    const filename = (isCi ? 'Prontuario_' : 'Prontuario_CA_') + cleanFilename(variant.ca) + '_' + cleanFilename(epiName) + '.pdf';
     doc.save(filename);
   }
 

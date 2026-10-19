@@ -412,6 +412,7 @@ function setCaValue(id,value,fallback='—'){
 }
 
 function resetCaStage(ca=''){
+  setCaValue('caStageKind','Certificado de Aprovação');
   setCaValue('caStageTitle','Informações do EPI');
   setCaValue('caStageNumber',ca?`C.A. ${ca}`:'C.A. —');
   setCaValue('caStageHint','Digite um número ao lado para consultar a base oficial.');
@@ -463,6 +464,7 @@ async function lookupCaCiepi(ci){
   $('caInput').value=ci;
   resetCaStage();
   setCaValue('caStageNumber',ci);
+  setCaValue('caStageKind','Certificado Interno');
   setCaStatus('Consultando...','loading');
   setCaValue('caStageHint','Consultando a base CIEPI...');
   button.disabled=true;
@@ -482,6 +484,7 @@ async function lookupCaCiepi(ci){
     const statusKind=upper.includes('VÁLID')?'valid':(upper.includes('VENC')||upper.includes('CANCEL')||upper.includes('SUSP')?'invalid':'result');
     setCaValue('caStageTitle',data.nome,'N/A');
     setCaValue('caStageNumber',data.ci);
+    setCaValue('caStageKind','Certificado Interno');
     setCaValue('caStageHint','Registro localizado na base CIEPI (código interno).');
     setCaValue('caSituation',situation);
     setCaValue('caEquipamento',data.nome,'N/A');
@@ -1043,7 +1046,8 @@ function renderEpis(){
     const hasInvalid=epiCardHasInvalidCa(c.id);
     const icon=epiCardIcon(c);
     const stateClass=hasValid?'has-valid':(hasInvalid?'has-invalid':(count?'has-ca':'no-ca'));
-    const caLabel=`${count} ${count===1?'C.A.':'C.A.s'}`;
+    const allCi=count>0&&epiVariants.filter(v=>v.epi_id===c.id&&v.ativo!==false).every(v=>isCiCode(v.ca));
+    const caLabel=`${count} ${allCi?(count===1?'C.I.':'C.I.s'):(count===1?'C.A.':'C.A.s')}`;
 
     return `<button class="mini-card epi-card ${stateClass}" type="button" data-epi-id="${esc(c.id)}">
       <span class="epi-card-accent" aria-hidden="true"></span>
@@ -1199,7 +1203,8 @@ function renderEpiVariantList(){
     .filter(v=>v.epi_id===selectedEpi.id && v.ativo!==false)
     .sort((a,b)=>String(a.ca||'').localeCompare(String(b.ca||''),'pt-BR',{numeric:true}));
 
-  $('epiDetailCount').textContent=`${rows.length} ${rows.length===1?'C.A. vinculado':'C.A.s vinculados'}`;
+  const onlyCi=rows.length>0&&rows.every(v=>isCiCode(v.ca));
+  $('epiDetailCount').textContent=`${rows.length} ${onlyCi?(rows.length===1?'C.I. vinculado':'C.I.s vinculados'):(rows.length===1?'C.A. vinculado':'C.A.s vinculados')}`;
 
   if(selectorButton&&selectorValue&&selectorMenu){
     if(!rows.length){
@@ -1218,7 +1223,7 @@ function renderEpiVariantList(){
       const selectedMaker=String(selectedForHeader.fabricante||'Fabricante não informado').trim();
 
       selectorButton.disabled=false;
-      selectorValue.innerHTML=`<strong>C.A. ${esc(selectedForHeader.ca||'—')}</strong><small>${esc(selectedMaker)}</small>`;
+      selectorValue.innerHTML=`<strong>${esc(codeTitle(selectedForHeader.ca))}</strong><small>${esc(selectedMaker)}</small>`;
 
       selectorMenu.innerHTML=rows.map(v=>{
         const maker=String(v.fabricante||'Fabricante não informado').trim();
@@ -1230,7 +1235,7 @@ function renderEpiVariantList(){
         return `<button class="epi-ca-selector-option ${state}${active}" type="button" role="option" aria-selected="${v.id===selectedVariantId?'true':'false'}" data-ca-select-id="${esc(v.id)}">
           <span class="epi-ca-selector-option-mark"><span class="epi-ca-selector-status-dot"></span></span>
           <span class="epi-ca-selector-option-copy">
-            <strong>C.A. ${esc(v.ca||'—')}</strong>
+            <strong>${esc(codeTitle(v.ca))}</strong>
             <small>${esc(maker)}</small>
           </span>
           <span class="epi-ca-selector-option-side">
@@ -1270,15 +1275,15 @@ function renderEpiVariantList(){
     return `<article class="epi-ca-dossier ${state}">
       <div class="epi-dossier-head">
         <div>
-          <span class="epi-dossier-kicker">PRONTUÁRIO DO C.A.</span>
-          <h3>C.A. ${esc(v.ca||'—')}</h3>
+          <span class="epi-dossier-kicker">PRONTUÁRIO DO ${codeTerm(v.ca)}</span>
+          <h3>${esc(codeTitle(v.ca))}</h3>
         </div>
         <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
       </div>
 
       <div class="epi-dossier-hero">
         <div class="epi-dossier-image ${v.imagem_path?'has-image':''}">
-          <img data-variant-image="${esc(v.id)}" alt="Imagem do modelo C.A. ${esc(v.ca||'')}" hidden>
+          <img data-variant-image="${esc(v.id)}" alt="Imagem do modelo ${esc(codeTitle(v.ca))}" hidden>
           <span data-variant-image-empty="${esc(v.id)}">
             <i data-lucide="image" aria-hidden="true"></i>
             <small>Sem imagem do modelo</small>
@@ -1296,7 +1301,7 @@ function renderEpiVariantList(){
         ${field('CNPJ',v.cnpj,'building-2')}
         ${field('Marca',v.marca,'badge')}
         ${field('Referência / modelo',v.referencia,'package-search')}
-        ${field('Validade do C.A.',dateBR(v.data_validade),'calendar-days')}
+        ${field(`Validade do ${codeTerm(v.ca)}`,dateBR(v.data_validade),'calendar-days')}
         ${field('Norma',v.norma,'book-open-check')}
         ${field('Preço',moneyBR(v.preco),'badge-dollar-sign')}
         ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passado':'—'),'git-compare-arrows')}
@@ -1304,7 +1309,7 @@ function renderEpiVariantList(){
       </div>
 
       <div class="epi-dossier-texts">
-        ${textBlock('Descrição oficial',v.descricao)}
+        ${textBlock(isCiCode(v.ca)?'Descrição':'Descrição oficial',v.descricao)}
         ${textBlock('Características / especificação interna',v.caracteristicas)}
         ${textBlock('Observações',v.observacao)}
       </div>
@@ -1312,7 +1317,7 @@ function renderEpiVariantList(){
       <div class="epi-dossier-footer">
         <div class="epi-dossier-source">
           <i data-lucide="shield-check" aria-hidden="true"></i>
-          <span>Dados técnicos e comerciais cadastrados para este C.A.</span>
+          <span>Dados técnicos e comerciais cadastrados para este ${codeTerm(v.ca)}</span>
         </div>
         <div class="epi-variant-actions">
           <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
@@ -1553,7 +1558,7 @@ function fillEpiVariantForm(v){
   $('epiVarFornecedor').value=v.fornecedor||'';
   $('epiVarObservacao').value=v.observacao||'';
   $('epiVarCa').readOnly=false;
-  $('epiVariantEditorTitle').textContent='Editar C.A.';
+  $('epiVariantEditorTitle').textContent=`Editar ${codeTerm(v.ca)}`;
   $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar alterações';
   $('epiVariantCancelEdit').classList.remove('hidden');
   $('epiVarLookupStatus').textContent='Registro carregado para edição.';
@@ -1561,6 +1566,10 @@ function fillEpiVariantForm(v){
   refreshIcons();
 }
 // C.A. só tem dígitos; C.I. da Base CIEPI é "CI-0001" (aceita "ci1", "CI 12"...).
+// Registro de C.I. (Base CIEPI) aparece como "C.I." / "Certificado Interno" em vez de C.A.
+function isCiCode(v){return /^\s*CI-/i.test(String(v||''))}
+function codeTerm(v){return isCiCode(v)?'C.I.':'C.A.'}
+function codeTitle(v){return isCiCode(v)?String(v).trim():`C.A. ${v||'—'}`}
 function ciCode(v){const m=String(v||'').match(/^\s*c\s*i\s*-?\s*(\d{1,6})\s*$/i);return m?'CI-'+m[1].padStart(4,'0'):null}
 function cleanCaTyping(v){const s=String(v||'');if(/^\s*c/i.test(s)) return s.toUpperCase().replace(/[^CI0-9 -]/g,'').trimStart().slice(0,10);return s.replace(/\D+/g,'').slice(0,8)}
 async function lookupEpiVariantCi(ci){
@@ -1692,7 +1701,7 @@ async function saveEpiVariant(){
   }
 
   if(result.error){
-    $('epiVariantMsg').textContent=result.error.code==='23505'?'Este C.A. já está vinculado a este item.':result.error.message;
+    $('epiVariantMsg').textContent=result.error.code==='23505'?`Este ${codeTerm(ca)} já está vinculado a este item.`:result.error.message;
     return;
   }
 
@@ -1702,7 +1711,7 @@ async function saveEpiVariant(){
     saved=await persistVariantImage(saved,previous);
   }catch(err){
     console.error('[VARIANT IMAGE SAVE]',err);
-    $('epiVariantMsg').textContent=`C.A. salvo, mas a imagem falhou: ${err.message||err}`;
+    $('epiVariantMsg').textContent=`${codeTerm(ca)} salvo, mas a imagem falhou: ${err.message||err}`;
   }
 
   const idx=epiVariants.findIndex(v=>v.id===saved.id);
@@ -1710,8 +1719,8 @@ async function saveEpiVariant(){
   else epiVariants.push(saved);
   selectedVariantId=saved.id;
 
-  const imageFailed=$('epiVariantMsg').textContent.startsWith('C.A. salvo, mas');
-  if(!imageFailed) $('epiVariantMsg').textContent='C.A. salvo.';
+  const imageFailed=/^C\.[AI]\. salvo, mas/.test($('epiVariantMsg').textContent);
+  if(!imageFailed) $('epiVariantMsg').textContent=`${codeTerm(ca)} salvo.`;
 
   clearEpiVariantForm();
   renderEpiVariantList();
@@ -1722,7 +1731,7 @@ async function deleteEpiVariant(id){
   if(!currentIsAdmin) return;
   const row=epiVariants.find(v=>v.id===id);
   if(!row) return;
-  if(!confirm(`Excluir o C.A. ${row.ca} deste item?`)) return;
+  if(!confirm(`Excluir o ${codeTerm(row.ca)} ${row.ca} deste item?`)) return;
   const {error}=await sb.from('epi_variantes').delete().eq('id',id);
   if(error){alert(error.message);return}
   if(row.imagem_path){
@@ -1826,7 +1835,13 @@ document.addEventListener('keydown',e=>{
 if($('epiDetailClose')) $('epiDetailClose').addEventListener('click',closeEpiDetail);
 if($('epiDetailModal')) $('epiDetailModal').addEventListener('click',e=>{if(e.target===$('epiDetailModal')) closeEpiDetail();});
 if($('epiVarLookup')) $('epiVarLookup').addEventListener('click',lookupEpiVariantCa);
-if($('epiVarCa')) $('epiVarCa').addEventListener('input',()=>{$('epiVarCa').value=cleanCaTyping($('epiVarCa').value);});
+if($('epiVarCa')) $('epiVarCa').addEventListener('input',()=>{
+  $('epiVarCa').value=cleanCaTyping($('epiVarCa').value);
+  if(editingVariantId) return;
+  const term=/^\s*C/i.test($('epiVarCa').value)?'C.I.':'C.A.';
+  $('epiVariantEditorTitle').textContent=`Adicionar ${term}`;
+  $('epiVariantSave').innerHTML=`<i data-lucide="save" aria-hidden="true"></i>Salvar ${term}`;
+});
 if($('epiVariantImageSelect')) $('epiVariantImageSelect').addEventListener('click',chooseVariantImage);
 if($('epiVariantImageChange')) $('epiVariantImageChange').addEventListener('click',chooseVariantImage);
 if($('epiVariantImageRemove')) $('epiVariantImageRemove').addEventListener('click',markVariantImageForRemoval);
