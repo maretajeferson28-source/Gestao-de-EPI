@@ -50,6 +50,37 @@
     if (list.length === 1) select.value = list[0].id;
   }
 
+  let recentes = [];
+  let editandoId = null; // entrada da lista que está sendo alterada
+
+  function sairEdicao() {
+    editandoId = null;
+    $('stockEntrySave').innerHTML = '<i data-lucide="save" aria-hidden="true"></i>Salvar entrada';
+    $('stockEntryCancel').textContent = 'Cancelar';
+    document.querySelectorAll('.stock-entry-row.is-editando').forEach((r) => r.classList.remove('is-editando'));
+    icons();
+  }
+
+  function editar(id) {
+    const r = recentes.find((x) => x.id === id);
+    if (!r) return;
+    editandoId = id;
+    $('stockEntryEpi').value = r.epis?.nome || '';
+    fillCaOptions();
+    $('stockEntryCa').value = r.variante_id || '';
+    $('stockEntryQtd').value = r.quantidade;
+    $('stockEntryMotivo').value = r.motivo;
+    $('stockEntryData').value = String(r.data || '').slice(0, 10);
+    $('stockEntryObs').value = r.observacao || '';
+    $('stockEntrySave').innerHTML = '<i data-lucide="save" aria-hidden="true"></i>Salvar alteração';
+    $('stockEntryCancel').textContent = 'Cancelar edição';
+    document.querySelectorAll('.stock-entry-row').forEach((row) => row.classList.toggle('is-editando', row.dataset.id === id));
+    setMsg(`Editando: ${fmtQtd(r.quantidade)} × ${r.epis?.nome || 'EPI'}. Altere e clique em Salvar alteração.`);
+    icons();
+    document.querySelector('.stock-entry-card')?.scrollTo({ top: 0, behavior: 'smooth' });
+    $('stockEntryQtd').focus();
+  }
+
   function resetItemFields() {
     $('stockEntryEpi').value = '';
     $('stockEntryQtd').value = '';
@@ -62,24 +93,28 @@
     const client = db();
     if (!box || !client) return;
     const { data, error } = await client.from('estoque_entradas_manuais')
-      .select('id,quantidade,motivo,data,ca,observacao,epis(nome)')
+      .select('id,epi_id,variante_id,quantidade,motivo,data,ca,observacao,epis(nome)')
       .order('created_at', { ascending: false })
       .limit(8);
     if (error) {
       box.innerHTML = `<p class="stock-entry-empty">Não foi possível carregar: ${escHtml(error.message)}</p>`;
       return;
     }
+    recentes = data || [];
     if (!data.length) {
       box.innerHTML = '<p class="stock-entry-empty">Nenhuma entrada sem nota ainda.</p>';
       return;
     }
     box.innerHTML = data.map((r) => `
-      <div class="stock-entry-row">
+      <div class="stock-entry-row${r.id === editandoId ? ' is-editando' : ''}" data-id="${escHtml(r.id)}">
         <div class="stock-entry-row-copy">
           <strong>${fmtQtd(r.quantidade)} × ${escHtml(r.epis?.nome || 'EPI removido')}${r.ca ? ` <span>C.A. ${escHtml(r.ca)}</span>` : ''}</strong>
           <small>${escHtml(MOTIVOS[r.motivo] || r.motivo)} • ${brDate(r.data)}${r.observacao ? ' • ' + escHtml(r.observacao) : ''}</small>
         </div>
-        <button class="stock-entry-del" type="button" data-stock-entry-del="${escHtml(r.id)}" title="Excluir entrada" aria-label="Excluir entrada"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+        <div class="stock-entry-acoes">
+          <button class="stock-entry-del stock-entry-edit" type="button" data-stock-entry-edit="${escHtml(r.id)}" title="Editar entrada" aria-label="Editar entrada"><i data-lucide="pencil" aria-hidden="true"></i></button>
+          <button class="stock-entry-del" type="button" data-stock-entry-del="${escHtml(r.id)}" title="Excluir entrada" aria-label="Excluir entrada"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+        </div>
       </div>`).join('');
     icons();
   }
@@ -88,6 +123,7 @@
     if (!isAdmin()) return;
     $('dlStockEntryEpi').innerHTML = activeEpis()
       .map((e) => `<option value="${escHtml(e.nome)}">`).join('');
+    sairEdicao();
     resetItemFields();
     $('stockEntryMotivo').value = 'saldo_inicial';
     $('stockEntryData').value = today();
@@ -115,7 +151,7 @@
     const button = $('stockEntrySave');
     button.disabled = true;
     setMsg('Salvando…');
-    const { error } = await client.from('estoque_entradas_manuais').insert({
+    const dados = {
       epi_id: epi.id,
       variante_id: varianteId,
       ca: variante?.ca || null,
@@ -123,11 +159,16 @@
       motivo: $('stockEntryMotivo').value,
       data,
       observacao: $('stockEntryObs').value.trim() || null
-    });
+    };
+    const alterando = editandoId;
+    const { error } = alterando
+      ? await client.from('estoque_entradas_manuais').update({ ...dados, updated_at: new Date().toISOString() }).eq('id', alterando)
+      : await client.from('estoque_entradas_manuais').insert(dados);
     button.disabled = false;
     if (error) return setMsg('Não foi possível salvar: ' + error.message, true);
 
-    setMsg(`Entrada salva: ${fmtQtd(qtd)} × ${epi.nome}.`);
+    sairEdicao();
+    setMsg(alterando ? `Entrada alterada: ${fmtQtd(qtd)} × ${epi.nome}.` : `Entrada salva: ${fmtQtd(qtd)} × ${epi.nome}.`);
     resetItemFields();
     $('stockEntryEpi').focus();
     window.dispatchEvent(new CustomEvent('epi:stock-changed'));
@@ -138,6 +179,7 @@
     if (!isAdmin() || !confirm('Excluir esta entrada? O saldo do estoque será recalculado.')) return;
     const { error } = await db().from('estoque_entradas_manuais').delete().eq('id', id);
     if (error) return setMsg('Não foi possível excluir: ' + error.message, true);
+    if (editandoId === id) { sairEdicao(); resetItemFields(); }
     setMsg('Entrada excluída.');
     window.dispatchEvent(new CustomEvent('epi:stock-changed'));
     loadRecent();
@@ -148,12 +190,15 @@
     if (!modal) return;
     window.addEventListener('epi:stock-register-request', open);
     $('stockEntryClose').addEventListener('click', close);
-    $('stockEntryCancel').addEventListener('click', close);
+    // Em edição, "Cancelar edição" só sai da edição; senão fecha a janela.
+    $('stockEntryCancel').addEventListener('click', () => { if (editandoId) { sairEdicao(); resetItemFields(); setMsg(''); } else close(); });
     $('stockEntrySave').addEventListener('click', save);
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
     $('stockEntryEpi').addEventListener('input', fillCaOptions);
     $('stockEntryEpi').addEventListener('change', fillCaOptions);
     $('stockEntryList').addEventListener('click', (e) => {
+      const edit = e.target.closest('[data-stock-entry-edit]');
+      if (edit) { editar(edit.dataset.stockEntryEdit); return; }
       const btn = e.target.closest('[data-stock-entry-del]');
       if (btn) remove(btn.dataset.stockEntryDel);
     });
