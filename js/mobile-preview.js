@@ -25,7 +25,7 @@
           <button class="btn compact" type="button" data-mp-reload title="Recarregar a prévia"><i data-lucide="refresh-cw"></i>Recarregar</button>
           <label class="mp-switch" title="Voltar para a versão do computador"><input type="checkbox" checked data-mp-off><span class="mp-track" aria-hidden="true"></span><i data-lucide="smartphone"></i><span>Celular</span></label>
         </div>
-        <div class="mp-stage"><div class="mp-phone"><iframe title="App em tamanho de celular"></iframe></div></div>
+        <div class="mp-stage"><div class="mp-phone"><iframe title="App em tamanho de celular" allow="camera"></iframe></div></div>
       </div>`;
     document.body.appendChild(panel);
     panel.querySelector('[data-mp-off]').addEventListener('change', () => setOpen(false));

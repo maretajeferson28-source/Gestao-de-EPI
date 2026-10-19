@@ -158,15 +158,22 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-mobile-preview]')) {
     const mobilePreviewScript = document.createElement('script');
-    mobilePreviewScript.src = 'js/mobile-preview.js?v=20261019-3';
+    mobilePreviewScript.src = 'js/mobile-preview.js?v=20261019-4';
     mobilePreviewScript.dataset.mobilePreview = 'true';
     document.body.appendChild(mobilePreviewScript);
   }
 
   if (!document.querySelector('script[data-termo]')) {
     const termoScript = document.createElement('script');
-    termoScript.src = 'js/termo.js?v=20261019-3';
+    termoScript.src = 'js/termo.js?v=20261019-4';
     termoScript.dataset.termo = 'true';
     document.body.appendChild(termoScript);
+  }
+
+  if (!document.querySelector('script[data-termo-captura]')) {
+    const termoCapturaScript = document.createElement('script');
+    termoCapturaScript.src = 'js/termo-captura.js?v=20261019-4';
+    termoCapturaScript.dataset.termoCaptura = 'true';
+    document.body.appendChild(termoCapturaScript);
   }
 }, { once: true });

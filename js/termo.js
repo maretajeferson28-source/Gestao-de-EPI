@@ -120,6 +120,7 @@
     texto: TEXTO,
     bucket: BUCKET,
     temTermo: (colaboradorId) => termos.has(colaboradorId) || ehExemplo(colaboradorId),
+    temAssinatura: (colaboradorId) => termos.has(colaboradorId),
     abrir,
     recarregar: carregar
   };

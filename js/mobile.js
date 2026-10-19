@@ -93,25 +93,27 @@
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   // Barra inferior do celular: Início, C.A., Entrega (botão central), Termo e
   // Estoque. Cada item aciona o botão correspondente do menu lateral, que no
-  // celular fica escondido (mobile.css). Sem `page`: recurso ainda não existe.
+  // celular fica escondido (mobile.css). `action` abre um fluxo próprio (Termo:
+  // js/termo-captura.js, só administrador). Sem `page` nem `action`: em breve.
   const TABS = [
     { page: 'inicio', label: 'Início', icon: 'house' },
     { page: 'caepi', label: 'C.A.', icon: 'search' },
     { page: 'nova', label: 'Entrega', icon: 'clipboard-list', main: true },
-    { label: 'Termo', icon: 'shield-check' },
+    { action: 'termo', label: 'Termo', icon: 'shield-check' },
     { page: 'estoque', label: 'Estoque', icon: 'warehouse' }
   ];
   const tabbar = document.createElement('nav');
   tabbar.className = 'mobile-only mobile-tabbar';
   tabbar.setAttribute('aria-label', 'Navegação principal');
   tabbar.innerHTML = TABS.map((tab) => `
-    <button type="button" class="mobile-tab${tab.main ? ' is-main' : ''}${tab.page ? '' : ' is-soon'}"
-      ${tab.page ? `data-tab="${tab.page}"` : 'disabled aria-disabled="true" title="Em breve"'}>
+    <button type="button" class="mobile-tab${tab.main ? ' is-main' : ''}${tab.page || tab.action ? '' : ' is-soon'}"
+      ${tab.page ? `data-tab="${tab.page}"` : tab.action ? `data-action="${tab.action}"` : 'disabled aria-disabled="true" title="Em breve"'}>
       <span class="mobile-tab-icon">${icon(tab.icon)}</span>
       <span class="mobile-tab-label">${escapeHtml(tab.label)}</span>
     </button>`).join('');
   app.appendChild(tabbar);
   tabbar.addEventListener('click', (event) => {
+    if (event.target.closest('[data-action="termo"]')) { window.EPI_TERMO_CAPTURA?.abrir(); return; }
     const tab = event.target.closest('[data-tab]');
     if (tab) navList.querySelector(`[data-page="${CSS.escape(tab.dataset.tab)}"]`)?.click();
   });
@@ -123,6 +125,8 @@
       tab.hidden = !target || target.hidden;
       tab.classList.toggle('active', tab.dataset.tab === active);
     });
+    const termo = tabbar.querySelector('[data-action="termo"]');
+    if (termo) { let admin = false; try { admin = currentIsAdmin === true; } catch (_) {} termo.hidden = !admin; }
   }
 
   // Início: resumo rápido das saídas (os atalhos agora estão na barra).

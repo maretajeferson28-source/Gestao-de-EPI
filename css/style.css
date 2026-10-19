@@ -2388,3 +2388,58 @@ tr:hover td{background:#202020}
 .termo-assinatura{background:#f4f4f4}
 .termo-assinatura span{color:#666}
 @media(max-width:720px){.termo-provas{grid-template-columns:1fr}}
+
+/* Assinatura do termo no celular (termo-captura.js) */
+html.tc-aberto,html.tc-aberto body{overflow:hidden}
+.tc-tela{position:fixed;inset:0;z-index:200;background:#0b0b0b;color:#f1f1f1;overflow-y:auto;overscroll-behavior:contain}
+.tc-tela[hidden],.tc-passo[hidden]{display:none!important}
+.tc-passo{min-height:100%;display:flex;flex-direction:column;padding:12px 18px calc(24px + env(safe-area-inset-bottom))}
+.tc-topo{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center;min-height:44px;margin-bottom:6px}
+.tc-topo h2{margin:0;font-size:16px;font-weight:700}
+.tc-x{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;border:0;background:none;color:#fff;cursor:pointer}
+.tc-x svg{width:22px;height:22px}
+.tc-ajuda{margin:4px 0 12px;color:#9a9a9a;font-size:13px;text-align:center}
+.tc-busca{width:100%;height:42px;border-radius:12px;border:1px solid #333;background:#171717;color:#fff;padding:0 14px;font-size:16px;outline:none}
+.tc-busca:focus{border-color:var(--gold)}
+.tc-lista{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.tc-item{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border:1px solid #2b2b2b;border-radius:12px;background:#151515;color:#f1f1f1;text-align:left;cursor:pointer}
+.tc-item svg{width:18px;height:18px;color:#ff8a24;flex:0 0 auto}
+.tc-item-nome{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-item-nome small{display:block;margin-top:2px;font-size:11px;font-weight:400;color:#8f8f8f;overflow:hidden;text-overflow:ellipsis}
+.tc-item-ok{display:inline-flex;align-items:center;gap:4px;color:#35c98b;font-size:11px;font-weight:700}
+.tc-item-ok svg{color:#35c98b;width:14px;height:14px}
+.tc-camera{align-items:center;text-align:center}
+.tc-cam-icone{width:44px;height:44px;margin:6px auto 10px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center}
+.tc-cam-icone svg{width:22px;height:22px}
+.tc-instrucao{margin:0 0 18px;font-size:14px;font-weight:600}
+.tc-oval-area{position:relative;width:min(72vw,280px);aspect-ratio:280/360}
+.tc-oval{position:absolute;inset:3.5%;border-radius:50%;overflow:hidden;background:#2a2a2a}
+.tc-oval video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.tc-anel{position:absolute;inset:0;width:100%;height:100%}
+.tc-anel ellipse,.tc-anel path{fill:none;stroke-width:6}
+.tc-anel-base{stroke:#ffffff}
+.tc-anel-prog{stroke:transparent;stroke-dasharray:0 100;stroke-linecap:round;transition:stroke .2s}
+.tc-anel-prog[data-cor="laranja"]{stroke:#ff7a00}
+.tc-anel-prog[data-cor="vermelho"]{stroke:#ef4444}
+.tc-status{margin:22px 0 4px;font-size:14px;font-weight:700;min-height:20px}
+.tc-status[data-tipo="erro"]{color:#f1f1f1}
+.tc-status[data-tipo="lendo"]{color:#ff9a3f}
+.tc-status[data-tipo="ok"]{color:#35c98b}
+.tc-quem{margin:0;color:#8f8f8f;font-size:12px}
+.tc-termo-quem{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
+.tc-termo-quem img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #ff7a00;transform:scaleX(-1)}
+.tc-termo-quem strong{display:block;font-size:15px}
+.tc-termo-quem small{color:#35c98b;font-size:12px}
+.tc-texto{font-size:13px;line-height:1.6;color:#dcdcdc;background:#151515;border:1px solid #2b2b2b;border-radius:12px;padding:12px 14px}
+.tc-texto p{margin:0 0 8px}
+.tc-texto ul{margin:0;padding-left:18px}
+.tc-texto li{margin:0 0 6px}
+.tc-aceite{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:14px;cursor:pointer}
+.tc-aceite input{width:20px;height:20px;accent-color:#ff7a00}
+.tc-assinatura-topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;color:#aaa;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.tc-assinatura{width:100%;height:180px;border-radius:12px;background:#fff;touch-action:none;display:block}
+.tc-concluir{width:100%;margin-top:14px;min-height:46px;font-size:15px}
+.tc-concluir:disabled{opacity:.45}
+.tc-msg{margin:10px 0 0;text-align:center;font-size:13px;min-height:18px;color:#aaa}
+.tc-msg[data-tipo="ok"]{color:#35c98b}
+.tc-msg[data-tipo="erro"]{color:#ff6b6b}
