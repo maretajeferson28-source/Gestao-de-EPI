@@ -155,4 +155,11 @@ window.addEventListener('load', () => {
     ciepiScript.dataset.ciepi = 'true';
     document.body.appendChild(ciepiScript);
   }
+
+  if (!document.querySelector('script[data-mobile-preview]')) {
+    const mobilePreviewScript = document.createElement('script');
+    mobilePreviewScript.src = 'js/mobile-preview.js?v=20261019-2';
+    mobilePreviewScript.dataset.mobilePreview = 'true';
+    document.body.appendChild(mobilePreviewScript);
+  }
 }, { once: true });
