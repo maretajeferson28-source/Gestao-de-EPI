@@ -107,6 +107,33 @@
     fillCaOptions();
   }
 
+  // Janela do item: um cartãozinho com o resumo do prontuário de cada C.A./C.I.
+  // ativo do EPI (dados de epi_variantes, já carregados pelo app).
+  function renderCas() {
+    const box = $('stockEntryCas');
+    if (!box) return;
+    const lista = itemFixo ? variants().filter((v) => v.epi_id === itemFixo.id && v.ativo !== false) : [];
+    box.hidden = !lista.length;
+    if (!lista.length) { box.innerHTML = ''; return; }
+    const ci = (v) => /^\s*CI-/i.test(String(v || ''));
+    const todosCi = lista.every((v) => ci(v.ca));
+    const cards = lista.map((v) => {
+      const sit = String(v.situacao || '').trim();
+      const up = sit.toLocaleUpperCase('pt-BR');
+      const tipo = up.includes('VÁLID') ? 'ok' : (up.includes('VENC') || up.includes('CANCEL') || up.includes('SUSP')) ? 'ruim' : '';
+      const linha = (rot, val) => val ? `<div><span>${rot}</span><strong title="${escHtml(val)}">${escHtml(val)}</strong></div>` : '';
+      return `<article class="stock-ca-card${tipo ? ' is-' + tipo : ''}">
+        <header><strong>${ci(v.ca) ? escHtml(v.ca) : 'C.A. ' + escHtml(v.ca || '—')}</strong><span class="stock-ca-sit">${escHtml(sit || 'Sem situação')}</span></header>
+        ${linha('Validade', v.data_validade ? brDate(String(v.data_validade).slice(0, 10)) : '')}
+        ${linha('Fabricante', v.fabricante)}
+        ${linha('Marca', v.marca)}
+        ${linha('Referência', v.referencia)}
+        ${v.descricao ? `<p title="${escHtml(v.descricao)}">${escHtml(v.descricao)}</p>` : ''}
+      </article>`;
+    }).join('');
+    box.innerHTML = `<h4>${todosCi ? 'C.I.' : 'C.A.'} deste EPI</h4><div class="stock-ca-grade">${cards}</div>`;
+  }
+
   async function loadRecent() {
     const box = $('stockEntryList');
     const client = db();
@@ -153,6 +180,7 @@
     const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
     if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';
     $('stockEntryEpi').readOnly = !!itemFixo;
+    renderCas();
     $('dlStockEntryEpi').innerHTML = activeEpis()
       .map((e) => `<option value="${escHtml(e.nome)}">`).join('');
     sairEdicao();
