@@ -2534,3 +2534,6 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-itens-vazio{margin:0;color:#8f8f8f;font-size:13px}
 .stock-item-mov-saldo{display:none}
 .stock-item-mov svg{display:none}
+/* Lista de C.A.: sem a bolinha de situação (a borda da ficha já mostra se é válido) */
+.epi-ca-selector-option{grid-template-columns:minmax(0,1fr) 18px!important;padding-left:12px!important}
+.epi-ca-selector-option-mark{display:none!important}
