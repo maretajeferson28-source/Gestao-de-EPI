@@ -283,6 +283,17 @@
   .page[data-page-content="estoque"] .stock-kpis{grid-row:2;grid-column:1/-1;margin-top:14px;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .page[data-page-content="estoque"] .stock-register-btn{grid-row:3;grid-column:1/-1;margin-top:12px;width:100%}
   .page[data-page-content="estoque"] #stockStatus{grid-row:4;grid-column:1/-1}
+  /* Saldo por item no celular: lista de linhas (sem rolar para o lado) */
+  .page[data-page-content="estoque"] .stock-itens{grid-row:5;grid-column:1/-1;margin-top:18px;min-width:0}
+  .page[data-page-content="estoque"] .stock-itens-grade{display:flex;flex-direction:column;gap:0;border:1px solid #2b2b2b;border-radius:14px;overflow:hidden;background:#151515}
+  .page[data-page-content="estoque"] .stock-item{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"nome saldo" "mov tag";column-gap:12px;row-gap:3px;min-height:0;padding:12px 14px;border:0;border-radius:0;border-top:1px solid #232323;background:none}
+  .page[data-page-content="estoque"] .stock-item:first-child{border-top:0}
+  .page[data-page-content="estoque"] .stock-item.is-critico{border-left:3px solid #ff6b6b;padding-left:11px}
+  .page[data-page-content="estoque"] .stock-item-nome{grid-area:nome;display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-size:13px}
+  .page[data-page-content="estoque"] .stock-item-saldo{grid-area:saldo;margin:0;font-size:20px;text-align:right}
+  .page[data-page-content="estoque"] .stock-item-saldo small{display:none}
+  .page[data-page-content="estoque"] .stock-item-mov{grid-area:mov;justify-content:flex-start;gap:12px}
+  .page[data-page-content="estoque"] .stock-item-tag{grid-area:tag;justify-self:end;align-self:center}
   .page[data-page-content="estoque"] .stock-kpi{min-height:0;padding:12px 12px 12px 15px;border-radius:12px}
   .page[data-page-content="estoque"] .stock-kpi .label{font-size:10px}
   .page[data-page-content="estoque"] .stock-kpi .value{font-size:24px;margin-top:6px}

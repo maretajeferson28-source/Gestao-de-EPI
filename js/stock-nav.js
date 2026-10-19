@@ -5,6 +5,7 @@
   window.__EPI_STOCK_NAV__ = true;
 
   let stockSummary = null;
+  let stockItens = null; // saldo de cada EPI (epi_stock_por_item)
   let refreshId = 0;
 
   function isAdmin() {
@@ -112,32 +113,61 @@
     if (criticalValue) criticalValue.textContent = stockSummary ? formatNumber(stockSummary.criticos) : '—';
   }
 
+  // Saldo por EPI: cartões no computador e lista no celular (css/mobile.css).
+  function renderStockItens(page) {
+    const box = page?.querySelector('#stockItens');
+    if (!box) return;
+    if (!isAdmin() || !Array.isArray(stockItens)) { box.hidden = true; return; }
+    box.hidden = false;
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const busca = page.querySelector('#stockSearchInput')?.value.trim();
+    const cards = stockItens.map((i) => {
+      const critico = Number(i.saldo) <= 0;
+      return `<article class="stock-item${critico ? ' is-critico' : ''}">
+        <strong class="stock-item-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong>
+        <span class="stock-item-saldo">${formatNumber(i.saldo)}<small>em estoque</small></span>
+        <span class="stock-item-mov"><span>Entrou ${formatNumber(i.entradas)}</span><span>Saiu ${formatNumber(i.saidas)}</span></span>
+        <span class="stock-item-tag">${critico ? 'Crítico' : 'OK'}</span>
+      </article>`;
+    }).join('');
+    box.innerHTML = `<h3 class="stock-itens-titulo">Saldo por item</h3>${cards ? `<div class="stock-itens-grade">${cards}</div>` : `<p class="stock-itens-vazio">${busca ? 'Nenhum EPI com estoque para essa busca.' : 'Nenhum EPI com entrada de estoque ainda. Lance uma nota fiscal ou use o Cadastro.'}</p>`}`;
+  }
+
   async function refreshStockFromSupabase(page) {
     const client = db();
     const request = ++refreshId;
     if (!client || !isAdmin()) {
       stockSummary = null;
+      stockItens = null;
       renderStockKpis(page);
+      renderStockItens(page);
       return;
     }
 
     try {
       const busca = page.querySelector('#stockSearchInput')?.value.trim() || '';
-      const { data, error } = await client.rpc('epi_stock_summary', { p_busca: busca });
-      if (error) throw error;
+      const [resumo, itens] = await Promise.all([
+        client.rpc('epi_stock_summary', { p_busca: busca }),
+        client.rpc('epi_stock_por_item', { p_busca: busca })
+      ]);
+      if (resumo.error) throw resumo.error;
       if (request !== refreshId || !isAdmin()) return;
-      stockSummary = data;
+      stockSummary = resumo.data;
+      stockItens = itens.error ? null : (itens.data || []);
+      if (itens.error) console.error('[Estoque] Falha ao carregar o saldo por item', itens.error);
       const msg = page.querySelector('#stockStatus');
       if (msg) { msg.textContent = ''; msg.hidden = true; }
     } catch (error) {
       if (request !== refreshId) return;
       stockSummary = null;
+      stockItens = null;
       console.error('[Estoque] Falha ao carregar entradas de NF-e', error);
       const msg = page.querySelector('#stockStatus');
       if (msg) { msg.textContent = 'Não foi possível consultar o saldo: ' + (error.message || error); msg.hidden = false; }
     }
 
     renderStockKpis(page);
+    renderStockItens(page);
   }
 
   function buildStockStage(page) {
@@ -177,7 +207,8 @@
           <i data-lucide="package-plus" aria-hidden="true"></i><span>Cadastro</span>
         </button>
       </form>
-      <p id="stockStatus" role="status" hidden style="font-size:12px;color:var(--muted);line-height:1.6"></p>`;
+      <p id="stockStatus" role="status" hidden style="font-size:12px;color:var(--muted);line-height:1.6"></p>
+      <section class="stock-itens" id="stockItens" aria-live="polite" hidden></section>`;
 
     const filterForm = page.querySelector('#stockFilterForm');
     filterForm?.addEventListener('submit', (event) => {
