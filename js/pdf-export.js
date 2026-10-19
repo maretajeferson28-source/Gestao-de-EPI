@@ -24,14 +24,13 @@
       .slice(0, 90) || 'arquivo';
   }
 
-  function blobToPngDataUrl(blob) {
+  function blobToPngDataUrl(blob, max = 1400) {
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(blob);
       const img = new Image();
 
       img.onload = () => {
         try {
-          const max = 1400;
           const width = img.naturalWidth || 1;
           const height = img.naturalHeight || 1;
           const scale = Math.min(1, max / Math.max(width, height));
@@ -69,7 +68,7 @@
           if (!response.ok) throw new Error('Logo do PDF não encontrada.');
           return response.blob();
         })
-        .then(blobToPngDataUrl)
+        .then((blob) => blobToPngDataUrl(blob, 320)) // a logo ocupa ~21 mm no PDF; 320 px basta para imprimir nítido
         .catch((error) => {
           console.warn('[EPI PDF BRAND]', error);
           return null;
@@ -493,7 +492,128 @@
     doc.save(filename);
   }
 
+  // Termo de responsabilidade assinado no celular: declaração, biometria facial
+  // e assinatura digital, no mesmo cabeçalho do prontuário.
+  // jpeg=true para foto (arquivo leve); assinatura fica em PNG (traço nítido).
+  async function signedImage(supabase, bucket, path, jpeg = false) {
+    if (!path || !supabase) return null;
+    try {
+      const signed = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+      if (signed.error || !signed.data?.signedUrl) return null;
+      const response = await fetch(signed.data.signedUrl);
+      if (!response.ok) return null;
+      let dataUrl = await blobToPngDataUrl(await response.blob());
+      if (jpeg) dataUrl = await new Promise((ok) => { const i = new Image(); i.onload = () => { const c = document.createElement('canvas'); const k = Math.min(1, 900 / Math.max(i.naturalWidth, i.naturalHeight)); c.width = Math.round(i.naturalWidth * k); c.height = Math.round(i.naturalHeight * k); c.getContext('2d').drawImage(i, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', 0.82)); }; i.onerror = () => ok(dataUrl); i.src = dataUrl; });
+      const size = await new Promise((ok) => { const i = new Image(); i.onload = () => ok([i.naturalWidth, i.naturalHeight]); i.onerror = () => ok([1, 1]); i.src = dataUrl; });
+      return { dataUrl, w: size[0], h: size[1], fmt: jpeg ? 'JPEG' : 'PNG' };
+    } catch (error) {
+      console.warn('[EPI PDF TERMO IMAGE]', error);
+      return null;
+    }
+  }
+
+  async function downloadTermo(options = {}) {
+    const termo = options.termo;
+    const colaborador = options.colaborador || {};
+    const supabase = options.supabase;
+    const bucket = options.bucket || 'termos-epi';
+    if (!termo) throw new Error('Termo não encontrado.');
+    if (!window.jspdf?.jsPDF) throw new Error('Gerador de PDF não carregado.');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+    const pageW = mm.pageW, pageH = mm.pageH, margin = mm.margin, contentW = pageW - margin * 2;
+    const orange = [255, 102, 0], dark = [17, 17, 17], gray = [105, 105, 105], border = [224, 224, 224];
+    const setText = (rgb) => doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+    const setFill = (rgb) => doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+    const setDraw = (rgb) => doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+
+    const [logo, selfie, assinatura] = await Promise.all([
+      getBrandLogoDataUrl(),
+      signedImage(supabase, bucket, termo.selfie_path, true),
+      signedImage(supabase, bucket, termo.assinatura_path)
+    ]);
+    const assinadoEm = new Date(termo.assinado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    const generatedAt = new Date().toLocaleString('pt-BR');
+
+    function header() {
+      setFill([250, 250, 250]); doc.rect(0, 0, pageW, pageH, 'F');
+      setFill(dark); doc.rect(0, 0, pageW, 31, 'F');
+      setFill(orange); doc.rect(0, 0, 4, 31, 'F');
+      if (logo) { try { doc.addImage(logo, 'PNG', 10.365, 4.4, 20.8, 20.8, 'EPI_TERMO_BRAND'); } catch (_) {} }
+      setText([255, 255, 255]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text('GESTÃO DE EPI', 36.8, 13);
+      setText([175, 175, 175]); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.text('CONTROLE OPERACIONAL', 36.8, 18);
+      setText([210, 210, 210]); doc.setFontSize(7);
+      doc.text('TERMO DE RESPONSABILIDADE DO EPI', pageW - margin, 13, { align: 'right' });
+      doc.text('Gerado em ' + generatedAt, pageW - margin, 18, { align: 'right' });
+    }
+
+    header();
+    let y = 42;
+    setText(orange); doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.text('TERMO DE AUTORIZAÇÃO', margin, y);
+    setText(dark); doc.setFontSize(16); doc.text(doc.splitTextToSize(safe(colaborador.nome, 'Colaborador'), contentW).slice(0, 2), margin, y + 8);
+    y += 15;
+    setText(gray); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+    const ident = [colaborador.cpf ? 'CPF ' + String(colaborador.cpf).replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4') : null,
+      colaborador.matricula ? 'Matrícula ' + colaborador.matricula : null, colaborador.cargo, colaborador.setor].filter(Boolean).join('  •  ');
+    if (ident) { doc.text(doc.splitTextToSize(ident, contentW), margin, y); y += 5; }
+    doc.text('Assinado no celular em ' + assinadoEm, margin, y);
+    y += 8;
+
+    // Declaração: parágrafos e itens com marcador.
+    const linhas = String(termo.texto || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const boxTop = y;
+    y += 6;
+    doc.setFontSize(9.5); setText([40, 40, 40]);
+    const lineH = 4.6;
+    const blocos = linhas.map((l) => {
+      const item = l.startsWith('*');
+      const texto = item ? l.replace(/^\*\s*/, '') : l;
+      return { item, partes: doc.splitTextToSize(texto, contentW - (item ? 16 : 10)) };
+    });
+    const alturaTexto = blocos.reduce((h, b) => h + b.partes.length * lineH + 1.6, 0) + 4;
+    setFill([255, 255, 255]); setDraw(border); doc.setLineWidth(0.3);
+    doc.roundedRect(margin, boxTop, contentW, alturaTexto + 4, 3, 3, 'FD');
+    for (const b of blocos) {
+      if (b.item) { setFill(orange); doc.circle(margin + 7, y - 1.2, 0.8, 'F'); }
+      doc.text(b.partes, margin + (b.item ? 10 : 5), y);
+      y += b.partes.length * lineH + 1.6;
+    }
+    y = boxTop + alturaTexto + 12;
+
+    // Biometria facial e assinatura lado a lado.
+    const gap = 6, col = (contentW - gap) / 2, boxH = 62;
+    if (y + boxH + 10 > pageH - 16) { doc.addPage(); header(); y = 42; }
+    const caixa = (x, titulo, img, fundo) => {
+      setText(gray); doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.text(titulo, x, y);
+      setFill(fundo); setDraw(border); doc.roundedRect(x, y + 3, col, boxH, 3, 3, 'FD');
+      if (!img) { setText([150, 150, 150]); doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.text('Não registrada', x + col / 2, y + 3 + boxH / 2, { align: 'center' }); return; }
+      const pad = 3, maxW = col - pad * 2, maxH = boxH - pad * 2;
+      const k = Math.min(maxW / img.w, maxH / img.h);
+      const w = img.w * k, h = img.h * k;
+      try { doc.addImage(img.dataUrl, img.fmt, x + (col - w) / 2, y + 3 + (boxH - h) / 2, w, h); } catch (e) { console.warn('[EPI PDF TERMO]', e); }
+    };
+    caixa(margin, 'BIOMETRIA FACIAL', selfie, [245, 245, 245]);
+    caixa(margin + col + gap, 'ASSINATURA DIGITAL', assinatura, [255, 255, 255]);
+    y += boxH + 10;
+    setText(dark); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.text(safe(colaborador.nome, ''), margin + col + gap + col / 2, y, { align: 'center' });
+
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page += 1) {
+      doc.setPage(page);
+      setDraw([225, 225, 225]); doc.setLineWidth(0.25); doc.line(margin, pageH - 11, pageW - margin, pageH - 11);
+      setText([120, 120, 120]); doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+      doc.text('Gestão de EPI - Controle Operacional  •  Registro ' + String(termo.id || '').slice(0, 8), margin, pageH - 6);
+      doc.text('Página ' + page + ' de ' + totalPages, pageW - margin, pageH - 6, { align: 'right' });
+    }
+
+    const dia = String(termo.assinado_em || '').slice(0, 10);
+    doc.save('Termo_EPI_' + cleanFilename(colaborador.nome) + (dia ? '_' + dia : '') + '.pdf');
+  }
+
   window.EPI_PDF = {
-    downloadVariantDossier
+    downloadVariantDossier,
+    downloadTermo
   };
 })();

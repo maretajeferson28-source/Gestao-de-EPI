@@ -2455,3 +2455,5 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .tc-msg{margin:10px 0 0;text-align:center;font-size:13px;min-height:18px;color:#aaa}
 .tc-msg[data-tipo="ok"]{color:#35c98b}
 .tc-msg[data-tipo="erro"]{color:#ff6b6b}
+.termo-acoes{display:flex;justify-content:flex-end;margin:0 0 12px}
+.termo-acoes [hidden]{display:none!important}

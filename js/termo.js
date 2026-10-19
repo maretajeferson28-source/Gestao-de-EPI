@@ -74,6 +74,7 @@
           </div>
         </div>
         <div class="data-edit-body">
+          <div class="termo-acoes"><button class="btn primary" id="termoPdf" type="button" hidden><i data-lucide="download" aria-hidden="true"></i>Baixar PDF</button></div>
           <div class="termo-texto" id="termoTexto"></div>
           <div class="termo-provas">
             <figure><figcaption><i data-lucide="scan-face" aria-hidden="true"></i>Biometria facial</figcaption><div class="termo-img" id="termoSelfie"></div></figure>
@@ -84,6 +85,7 @@
     document.body.appendChild(modal);
     const fechar = () => modal.classList.add('hidden');
     $('termoClose').addEventListener('click', fechar);
+    $('termoPdf').addEventListener('click', baixarPdf);
     modal.addEventListener('click', (e) => { if (e.target === modal) fechar(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) fechar(); });
   }
@@ -96,6 +98,26 @@
     box.innerHTML = error || !data?.signedUrl ? '<span>Não foi possível carregar</span>' : `<img src="${escHtml(data.signedUrl)}" alt="${escHtml(alt)}">`;
   }
 
+  let aberto = null; // { termo, colaborador } da janela aberta
+
+  async function baixarPdf() {
+    if (!aberto?.termo) return;
+    const botao = $('termoPdf');
+    const html = botao.innerHTML;
+    botao.disabled = true;
+    botao.textContent = 'Gerando PDF…';
+    try {
+      await window.EPI_PDF.downloadTermo({ termo: aberto.termo, colaborador: aberto.colaborador, supabase: db(), bucket: BUCKET });
+    } catch (err) {
+      console.error('[TERMO PDF]', err);
+      alert('Não foi possível gerar o PDF: ' + (err.message || err));
+    } finally {
+      botao.disabled = false;
+      botao.innerHTML = html;
+      icons();
+    }
+  }
+
   async function abrir(colaborador) {
     const termo = termos.get(colaborador?.id);
     if (!termo && !ehExemplo(colaborador?.id)) return;
@@ -105,6 +127,8 @@
       ? `Assinado no celular em ${new Date(termo.assinado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}`
       : 'Ainda não assinado no celular';
     $('termoTexto').innerHTML = textoHtml(termo?.texto || TEXTO);
+    aberto = { termo, colaborador };
+    $('termoPdf').hidden = !termo; // PDF só de termo assinado
     $('termoModal').classList.remove('hidden');
     icons();
     if (!termo) {
