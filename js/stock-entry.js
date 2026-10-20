@@ -132,9 +132,8 @@
       const v = vars.find((x) => norm(x.ca) === c);
       const saldo = saldos.get(c) || 0;
       const codigo = !c ? 'Sem C.A.' : ci(c) ? c : 'C.A. ' + c;
-      // Modelo: a observação da entrada mais recente desse C.A.; senão a referência do prontuário.
-      const modelo = recentes.find((r) => norm(r.ca) === c && String(r.observacao || '').trim())?.observacao?.trim()
-        || v?.referencia || epi.nome;
+      // Nome do cartão: a referência do prontuário desse C.A.; senão o nome do EPI.
+      const modelo = String(v?.referencia || '').trim() || epi.nome;
       // Lápis: edita a entrada sem nota mais recente desse C.A. (só se houver).
       const entrada = recentes.find((r) => norm(r.ca) === c);
       return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${entrada && entrada.id === editandoId ? ' is-editando' : ''}"${entrada ? ` data-entrada="${escHtml(entrada.id)}"` : ''}>
@@ -167,7 +166,7 @@
     query = itemFixo ? query.eq('epi_id', itemFixo.id).limit(30) : query.limit(8);
     const { data, error } = await query;
     recentes = error ? [] : (data || []);
-    renderCas(); // usa a observação das entradas como modelo
+    renderCas(); // o lápis dos cartões usa as entradas carregadas aqui
     if (error) {
       box.innerHTML = `<p class="stock-entry-empty">Não foi possível carregar: ${escHtml(error.message)}</p>`;
       return;
