@@ -144,6 +144,7 @@
         <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>
         <span class="stock-ca-codigo">${escHtml(codigo)}</span>
         <span class="stock-ca-saldo">${fmtQtd(saldo)}<small>em estoque</small></span>
+        ${entrada ? `<button class="stock-entry-del stock-ca-excluir" type="button" data-stock-entry-del="${escHtml(entrada.id)}" title="Excluir cadastro" aria-label="Excluir cadastro"><i data-lucide="trash-2" aria-hidden="true"></i></button>` : ''}
       </article>`;
     }).join('');
     box.hidden = false;
@@ -314,7 +315,9 @@
     $('stockEntryEpi').addEventListener('change', fillCaOptions);
     $('stockEntryCas').addEventListener('click', (e) => {
       const edit = e.target.closest('[data-stock-entry-edit]');
-      if (edit) editar(edit.dataset.stockEntryEdit);
+      if (edit) { editar(edit.dataset.stockEntryEdit); return; }
+      const del = e.target.closest('[data-stock-entry-del]');
+      if (del) remove(del.dataset.stockEntryDel);
     });
     $('stockEntryList').addEventListener('click', (e) => {
       const edit = e.target.closest('[data-stock-entry-edit]');
