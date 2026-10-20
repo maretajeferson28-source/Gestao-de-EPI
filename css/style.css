@@ -2610,3 +2610,5 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .epi-ca-inativo{margin-left:6px;vertical-align:middle}
 .epi-dossier-badges{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .epi-dossier-badges .epi-ca-inativo{margin-left:0}
+.stock-ca-card[data-var]{cursor:pointer}
+.stock-ca-card[data-var]:not(.is-editando):hover{border-color:#444}

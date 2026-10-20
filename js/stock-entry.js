@@ -92,13 +92,41 @@
     $('stockEntryData').value = String(r.data || '').slice(0, 10);
     $('stockEntryObs').value = r.observacao || '';
     $('stockEntrySave').innerHTML = '<i data-lucide="save" aria-hidden="true"></i>Salvar alteração';
-    $('stockEntryCancel').textContent = 'Cancelar edição';
+    $('stockEntryCancel').textContent = itemFixo ? 'Cancelar' : 'Cancelar edição';
     document.querySelectorAll('.stock-entry-row').forEach((row) => row.classList.toggle('is-editando', row.dataset.id === id));
     document.querySelectorAll('.stock-ca-card').forEach((card) => card.classList.toggle('is-editando', card.dataset.entrada === id));
     setMsg(`Editando: ${fmtQtd(r.quantidade)} × ${r.epis?.nome || 'EPI'}. Altere e clique em Salvar alteração.`);
     icons();
     document.querySelector('.stock-entry-card')?.scrollTo({ top: 0, behavior: 'smooth' });
     $('stockEntryQtd').focus();
+  }
+
+  // Janela do item: o formulário traz a entrada sem nota do C.A. escolhido
+  // (a mais recente) e salvar altera essa entrada, para somar ou tirar itens.
+  // C.A. sem entrada sem nota: o formulário fica vazio para lançar uma nova.
+  let caDoItem = null; // id da variante escolhida ('' = sem C.A.; null = escolher sozinho)
+
+  function marcarCardCa() {
+    document.querySelectorAll('.stock-ca-card').forEach((c) =>
+      c.classList.toggle('is-editando', !!itemFixo && !!caDoItem && c.dataset.var === caDoItem));
+  }
+
+  function carregarCa(varId) {
+    if (!itemFixo) return;
+    caDoItem = varId || '';
+    const r = recentes.find((x) => (x.variante_id || '') === caDoItem);
+    if (r) {
+      editar(r.id);
+    } else {
+      sairEdicao();
+      $('stockEntryCa').value = caDoItem;
+      $('stockEntryQtd').value = '';
+      $('stockEntryObs').value = '';
+      $('stockEntryMotivo').value = 'saldo_inicial';
+      $('stockEntryData').value = today();
+      setMsg(caDoItem ? 'Este C.A. ainda não tem entrada sem nota. Preencha e salve para lançar.' : '');
+    }
+    marcarCardCa();
   }
 
   function resetItemFields() {
@@ -142,7 +170,7 @@
       const modelo = [v?.fornecedor, v?.fabricante].map((x) => String(x || '').trim()).find(Boolean) || epi.nome;
       // O cartão não edita nada (o prontuário se edita em EPIs / Itens); só
       // desativa ou reativa o C.A., que some das entregas e entradas.
-      return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${off ? ' is-inativo' : ''}">
+      return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${off ? ' is-inativo' : ''}"${v && !off ? ` data-var="${escHtml(v.id)}" title="Ver a entrada deste C.A."` : ''}>
         ${off ? '<span class="stock-ca-inativo">Inativo</span>' : ''}
         <div class="stock-ca-foto"${v?.imagem_path ? ` data-foto="${escHtml(v.imagem_path)}"` : ''}><i data-lucide="image" aria-hidden="true"></i></div>
         <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>
@@ -154,6 +182,7 @@
     box.hidden = false;
     box.innerHTML = `<h4>${todosCi ? 'C.I.' : 'C.A.'} deste EPI</h4><div class="stock-ca-grade">${cards}</div>`;
     icons();
+    marcarCardCa();
     // Fotos do prontuário (URL assinada, a mesma função do app).
     box.querySelectorAll('[data-foto]').forEach(async (el) => {
       try {
@@ -194,7 +223,19 @@
     query = itemFixo ? query.eq('epi_id', itemFixo.id).limit(30) : query.limit(8);
     const { data, error } = await query;
     recentes = error ? [] : (data || []);
-    renderCas(); // o lápis dos cartões usa as entradas carregadas aqui
+    renderCas();
+    if (itemFixo) {
+      // Ao abrir: o C.A. da entrada mais recente (que ainda esteja ativo).
+      const opcoes = [...$('stockEntryCa').options].map((o) => o.value);
+      let alvo = caDoItem;
+      if (alvo === null || !opcoes.includes(alvo)) {
+        const r = recentes.find((x) => opcoes.includes(x.variante_id || ''));
+        alvo = r ? (r.variante_id || '') : $('stockEntryCa').value;
+      }
+      const aviso = $('stockEntryMsg').textContent; // ex.: "Entrada alterada…" logo após salvar
+      carregarCa(alvo);
+      if (aviso) setMsg(aviso);
+    }
     if (error) {
       box.innerHTML = `<p class="stock-entry-empty">Não foi possível carregar: ${escHtml(error.message)}</p>`;
       return;
@@ -223,10 +264,11 @@
     if (!isAdmin()) return;
     const det = e?.detail;
     itemFixo = det?.epiId ? { id: det.epiId, nome: det.nome || '' } : null;
+    caDoItem = null;
     $('stockEntryTitle').textContent = itemFixo ? itemFixo.nome : 'Entrada no estoque';
     const sub = document.querySelector('#stockEntryModal .data-edit-head p');
     if (sub) sub.textContent = itemFixo
-      ? 'Defina o estoque mínimo, lance uma entrada sem nota ou edite as entradas abaixo.'
+      ? 'Escolha o C.A. (no campo ou no cartão) para ver e alterar a quantidade lançada. O mínimo vale para o EPI todo.'
       : 'Para itens que entram sem nota fiscal. Campos com * são obrigatórios.';
     const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
     if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';
@@ -258,6 +300,7 @@
     const qtd = Number(qtdTxt.replace(',', '.'));
     const data = $('stockEntryData').value;
     if (!epi) return setMsg('Escolha um EPI da lista.', true);
+    if (itemFixo) caDoItem = $('stockEntryCa').value;
     const minTxt = String($('stockEntryMin').value).trim();
     const minimo = minTxt === '' ? null : Number(minTxt.replace(',', '.'));
     if (minimo !== null && (!Number.isFinite(minimo) || minimo < 0)) return setMsg('O estoque mínimo não pode ser negativo.', true);
@@ -333,14 +376,21 @@
     window.addEventListener('epi:stock-register-request', open);
     $('stockEntryClose').addEventListener('click', close);
     // Em edição, "Cancelar edição" só sai da edição; senão fecha a janela.
-    $('stockEntryCancel').addEventListener('click', () => { if (editandoId) { sairEdicao(); resetItemFields(); setMsg(''); } else close(); });
+    $('stockEntryCancel').addEventListener('click', () => { if (editandoId && !itemFixo) { sairEdicao(); resetItemFields(); setMsg(''); } else close(); });
+    $('stockEntryCa').addEventListener('change', () => { if (itemFixo) carregarCa($('stockEntryCa').value); });
     $('stockEntrySave').addEventListener('click', save);
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
     $('stockEntryEpi').addEventListener('input', fillCaOptions);
     $('stockEntryEpi').addEventListener('change', fillCaOptions);
     $('stockEntryCas').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-ca-ativo]');
-      if (btn) alternarAtivo(btn.dataset.caAtivo, btn);
+      if (btn) { alternarAtivo(btn.dataset.caAtivo, btn); return; }
+      // Clicar no cartão escolhe esse C.A. no formulário.
+      const card = e.target.closest('.stock-ca-card[data-var]');
+      if (card && itemFixo && [...$('stockEntryCa').options].some((o) => o.value === card.dataset.var)) {
+        $('stockEntryCa').value = card.dataset.var;
+        carregarCa(card.dataset.var);
+      }
     });
     $('stockEntryList').addEventListener('click', (e) => {
       const edit = e.target.closest('[data-stock-entry-edit]');
