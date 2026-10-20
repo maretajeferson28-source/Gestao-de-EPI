@@ -144,7 +144,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-stock-entry]')) {
     const stockEntryScript = document.createElement('script');
-    stockEntryScript.src = 'js/stock-entry.js?v=20261020-5';
+    stockEntryScript.src = 'js/stock-entry.js?v=20261020-6';
     stockEntryScript.dataset.stockEntry = 'true';
     document.body.appendChild(stockEntryScript);
   }

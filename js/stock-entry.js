@@ -231,9 +231,9 @@
     const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
     if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';
     $('stockEntryEpi').readOnly = !!itemFixo;
-    // Na janela do item os cartões por C.A. já mostram as entradas: some a lista.
+    // A janela fica só com o formulário: a lista de entradas sem nota não aparece.
     const lista = $('stockEntryList')?.closest('.stock-entry-recent');
-    if (lista) lista.hidden = !!itemFixo;
+    if (lista) lista.hidden = true;
     $('dlStockEntryEpi').innerHTML = activeEpis()
       .map((e) => `<option value="${escHtml(e.nome)}">`).join('');
     sairEdicao();
