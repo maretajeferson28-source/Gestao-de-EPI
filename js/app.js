@@ -1501,9 +1501,10 @@ function renderEpiVariantList(){
   const selectorMenu=$('epiCaSelectorMenu');
   if(!list||!selectedEpi) return;
 
+  // Os desativados (no Estoque) também aparecem, por último e com o badge "Inativo".
   const rows=epiVariants
-    .filter(v=>v.epi_id===selectedEpi.id && v.ativo!==false)
-    .sort((a,b)=>String(a.ca||'').localeCompare(String(b.ca||''),'pt-BR',{numeric:true}));
+    .filter(v=>v.epi_id===selectedEpi.id)
+    .sort((a,b)=>(a.ativo===false)-(b.ativo===false)||String(a.ca||'').localeCompare(String(b.ca||''),'pt-BR',{numeric:true}));
 
   const onlyCi=rows.length>0&&rows.every(v=>isCiCode(v.ca));
   $('epiDetailCount').textContent=`${rows.length} ${onlyCi?(rows.length===1?'C.I. vinculado':'C.I.s vinculados'):(rows.length===1?'C.A. vinculado':'C.A.s vinculados')}`;
@@ -1539,7 +1540,7 @@ function renderEpiVariantList(){
         return `<button class="epi-ca-selector-option ${state}${active}" type="button" role="option" aria-selected="${v.id===selectedVariantId?'true':'false'}" data-ca-select-id="${esc(v.id)}">
           <span class="epi-ca-selector-option-mark"><span class="epi-ca-selector-status-dot"></span></span>
           <span class="epi-ca-selector-option-copy">
-            <strong>${esc(codeTitle(v.ca))}</strong>
+            <strong>${esc(codeTitle(v.ca))}${v.ativo===false?' <span class="epi-ca-inativo">Inativo</span>':''}</strong>
             <small>${esc(maker)}</small>
           </span>
           <span class="epi-ca-selector-option-side">
@@ -1582,7 +1583,7 @@ function renderEpiVariantList(){
           <span class="epi-dossier-kicker">PRONTUÁRIO DO ${codeTerm(v.ca)}</span>
           <h3>${esc(codeTitle(v.ca))}</h3>
         </div>
-        <span class="epi-variant-state">${esc(situacao||'Sem situação')}</span>
+        <span class="epi-dossier-badges">${v.ativo===false?'<span class="epi-ca-inativo" title="Desativado no Estoque">Inativo</span>':''}<span class="epi-variant-state">${esc(situacao||'Sem situação')}</span></span>
       </div>
 
       <div class="epi-dossier-hero">

@@ -2598,3 +2598,15 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .ciepi-table .btn.compact[data-ciepi-edit]:hover,.ciepi-table .btn.compact[data-ciepi-edit]:focus-visible{border-color:rgba(255,102,0,.62)!important;color:#ff9a3f!important;outline:none}
 .ciepi-table .btn.compact[data-ciepi-del]:hover,.ciepi-table .btn.compact[data-ciepi-del]:focus-visible{border-color:#7a3434!important;color:#ff8f8f!important;outline:none}
 .stock-ca-excluir{position:absolute;right:10px;bottom:10px;width:30px!important;height:30px!important}
+/* Estoque: C.A. desativado fica apagado; o botão liga/desliga fica no canto */
+.stock-ca-ativo{position:absolute;right:10px;bottom:10px;width:30px!important;height:30px!important}
+.stock-ca-ativo:hover,.stock-ca-ativo:focus-visible{border-color:#7a3434!important;color:#ff8f8f!important}
+.stock-ca-ativo.is-off:hover,.stock-ca-ativo.is-off:focus-visible{border-color:rgba(56,180,123,.6)!important;color:#45bd83!important}
+.stock-ca-card.is-inativo>*:not(.stock-ca-ativo){opacity:.4}
+.stock-ca-card.is-inativo .stock-ca-foto{filter:grayscale(1)}
+.stock-ca-card.is-inativo .stock-ca-inativo{opacity:1}
+.stock-ca-inativo{position:absolute;top:14px;left:14px;z-index:1}
+.stock-ca-inativo,.epi-ca-inativo{padding:1px 8px;border-radius:999px;border:1px solid #555;background:#1b1b1b;color:#bbb;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.epi-ca-inativo{margin-left:6px;vertical-align:middle}
+.epi-dossier-badges{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.epi-dossier-badges .epi-ca-inativo{margin-left:0}

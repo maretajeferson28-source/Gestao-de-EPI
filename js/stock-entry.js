@@ -118,33 +118,37 @@
     if (!itemFixo) { box.hidden = true; box.innerHTML = ''; return; }
     const epi = itemFixo;
     const norm = (c) => { const t = String(c || '').trim(); if (!t) return ''; return /^CI-/i.test(t) ? t.toUpperCase() : t.replace(/\D+/g, ''); };
-    const vars = variants().filter((v) => v.epi_id === epi.id && v.ativo !== false);
+    // Todos os C.A. do EPI, inclusive os desativados (aparecem apagados, no fim).
+    const vars = variants().filter((v) => v.epi_id === epi.id);
     const { data, error } = await db().rpc('epi_stock_por_ca', { p_epi: epi.id });
     if (pedido !== casPedido) return;
     if (error) console.error('[Estoque] Falha ao carregar o saldo por C.A.', error);
     const saldos = new Map((data || []).map((r) => [r.ca || '', Number(r.saldo) || 0]));
     // Todos os C.A. ativos do prontuário, mais os que só aparecem nas movimentações.
-    const codigos = [...new Set([...vars.map((v) => norm(v.ca)), ...saldos.keys()])];
+    const inativo = (c) => { const v = vars.find((x) => norm(x.ca) === c); return !!v && v.ativo === false; };
+    const codigos = [...new Set([...vars.map((v) => norm(v.ca)), ...saldos.keys()])]
+      .sort((a, b) => inativo(a) - inativo(b));
     if (!codigos.length) { box.hidden = true; box.innerHTML = ''; return; }
     const ci = (c) => /^CI-/i.test(c);
     const todosCi = codigos.filter(Boolean).every(ci) && codigos.some(Boolean);
     const cards = codigos.map((c) => {
-      const v = vars.find((x) => norm(x.ca) === c);
+      const v = vars.find((x) => norm(x.ca) === c && x.ativo !== false) || vars.find((x) => norm(x.ca) === c);
+      const off = v?.ativo === false;
       const saldo = saldos.get(c) || 0;
       const codigo = !c ? 'Sem C.A.' : ci(c) ? c : 'C.A. ' + c;
       // Nome do cartão: o fornecedor do prontuário desse C.A. (senão o
       // fabricante e, por último, o nome do EPI). A marca do CAEPI costuma
       // vir como "Na etiqueta", por isso fica de fora.
       const modelo = [v?.fornecedor, v?.fabricante].map((x) => String(x || '').trim()).find(Boolean) || epi.nome;
-      // Lápis: edita a entrada sem nota mais recente desse C.A. (só se houver).
-      const entrada = recentes.find((r) => norm(r.ca) === c);
-      return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${entrada && entrada.id === editandoId ? ' is-editando' : ''}"${entrada ? ` data-entrada="${escHtml(entrada.id)}"` : ''}>
-        ${entrada ? `<button class="stock-entry-del stock-entry-edit stock-ca-editar" type="button" data-stock-entry-edit="${escHtml(entrada.id)}" title="Editar cadastro" aria-label="Editar cadastro"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}
+      // O cartão não edita nada (o prontuário se edita em EPIs / Itens); só
+      // desativa ou reativa o C.A., que some das entregas e entradas.
+      return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${off ? ' is-inativo' : ''}">
+        ${off ? '<span class="stock-ca-inativo">Inativo</span>' : ''}
         <div class="stock-ca-foto"${v?.imagem_path ? ` data-foto="${escHtml(v.imagem_path)}"` : ''}><i data-lucide="image" aria-hidden="true"></i></div>
         <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>
         <span class="stock-ca-codigo">${escHtml(codigo)}</span>
         <span class="stock-ca-saldo">${fmtQtd(saldo)}<small>em estoque</small></span>
-        ${entrada ? `<button class="stock-entry-del stock-ca-excluir" type="button" data-stock-entry-del="${escHtml(entrada.id)}" title="Excluir cadastro" aria-label="Excluir cadastro"><i data-lucide="trash-2" aria-hidden="true"></i></button>` : ''}
+        ${v ? `<button class="stock-entry-del stock-ca-ativo${off ? ' is-off' : ''}" type="button" data-ca-ativo="${escHtml(v.id)}" title="${off ? 'Reativar' : 'Desativar'} ${escHtml(codigo)}" aria-label="${off ? 'Reativar' : 'Desativar'} ${escHtml(codigo)}"><i data-lucide="${off ? 'power' : 'power-off'}" aria-hidden="true"></i></button>` : ''}
       </article>`;
     }).join('');
     box.hidden = false;
@@ -157,6 +161,31 @@
         if (url && pedido === casPedido) el.innerHTML = `<img src="${escHtml(url)}" alt="" loading="lazy">`;
       } catch (_) { /* fica o ícone */ }
     });
+  }
+
+  // Desativa / reativa um C.A. do prontuário (epi_variantes.ativo). Nada é
+  // apagado: foto, prontuário e histórico continuam.
+  async function alternarAtivo(id, btn) {
+    if (!isAdmin()) return;
+    const v = variants().find((x) => x.id === id);
+    if (!v) return;
+    const desativar = v.ativo !== false;
+    const nome = (/^\s*CI-/i.test(String(v.ca || '')) ? '' : 'C.A. ') + v.ca;
+    const saldo = btn.closest('.stock-ca-card')?.querySelector('.stock-ca-saldo')?.firstChild?.textContent || '0';
+    const aviso = desativar
+      ? `Desativar o ${nome}?\n\nEle fica marcado como inativo e sai da escolha de C.A. nas entradas. O prontuário, a foto e o histórico continuam guardados, e dá para reativar depois.${saldo !== '0' ? `\n\nAinda tem ${saldo} em estoque desse C.A.` : ''}`
+      : `Reativar o ${nome}?`;
+    if (!confirm(aviso)) return;
+    btn.disabled = true;
+    const { error } = await db().from('epi_variantes').update({ ativo: !desativar }).eq('id', id);
+    btn.disabled = false;
+    if (error) return setMsg('Não foi possível ' + (desativar ? 'desativar' : 'reativar') + ': ' + error.message, true);
+    v.ativo = !desativar;
+    setMsg(`${nome} ${desativar ? 'desativado' : 'reativado'}.`);
+    fillCaOptions();
+    try { if (typeof renderEpis === 'function') renderEpis(); } catch (_) { /* tela de EPIs fechada */ }
+    try { if (typeof renderEpiVariantList === 'function') renderEpiVariantList(); } catch (_) { /* idem */ }
+    renderCas();
   }
 
   async function loadRecent() {
@@ -314,10 +343,8 @@
     $('stockEntryEpi').addEventListener('input', fillCaOptions);
     $('stockEntryEpi').addEventListener('change', fillCaOptions);
     $('stockEntryCas').addEventListener('click', (e) => {
-      const edit = e.target.closest('[data-stock-entry-edit]');
-      if (edit) { editar(edit.dataset.stockEntryEdit); return; }
-      const del = e.target.closest('[data-stock-entry-del]');
-      if (del) remove(del.dataset.stockEntryDel);
+      const btn = e.target.closest('[data-ca-ativo]');
+      if (btn) alternarAtivo(btn.dataset.caAtivo, btn);
     });
     $('stockEntryList').addEventListener('click', (e) => {
       const edit = e.target.closest('[data-stock-entry-edit]');
