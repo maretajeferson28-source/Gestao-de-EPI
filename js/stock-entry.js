@@ -164,18 +164,14 @@
   }
 
   // Desativa / reativa um C.A. do prontuário (epi_variantes.ativo). Nada é
-  // apagado: foto, prontuário e histórico continuam.
+  // apagado: foto, prontuário e histórico continuam. Sem confirmação, porque
+  // o mesmo botão desfaz.
   async function alternarAtivo(id, btn) {
     if (!isAdmin()) return;
     const v = variants().find((x) => x.id === id);
     if (!v) return;
     const desativar = v.ativo !== false;
     const nome = (/^\s*CI-/i.test(String(v.ca || '')) ? '' : 'C.A. ') + v.ca;
-    const saldo = btn.closest('.stock-ca-card')?.querySelector('.stock-ca-saldo')?.firstChild?.textContent || '0';
-    const aviso = desativar
-      ? `Desativar o ${nome}?\n\nEle fica marcado como inativo e sai da escolha de C.A. nas entradas. O prontuário, a foto e o histórico continuam guardados, e dá para reativar depois.${saldo !== '0' ? `\n\nAinda tem ${saldo} em estoque desse C.A.` : ''}`
-      : `Reativar o ${nome}?`;
-    if (!confirm(aviso)) return;
     btn.disabled = true;
     const { error } = await db().from('epi_variantes').update({ ativo: !desativar }).eq('id', id);
     btn.disabled = false;
