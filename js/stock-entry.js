@@ -132,8 +132,10 @@
       const v = vars.find((x) => norm(x.ca) === c);
       const saldo = saldos.get(c) || 0;
       const codigo = !c ? 'Sem C.A.' : ci(c) ? c : 'C.A. ' + c;
-      // Nome do cartão: a referência do prontuário desse C.A.; senão o nome do EPI.
-      const modelo = String(v?.referencia || '').trim() || epi.nome;
+      // Nome do cartão: o fornecedor do prontuário desse C.A. (senão o
+      // fabricante e, por último, o nome do EPI). A marca do CAEPI costuma
+      // vir como "Na etiqueta", por isso fica de fora.
+      const modelo = [v?.fornecedor, v?.fabricante].map((x) => String(x || '').trim()).find(Boolean) || epi.nome;
       // Lápis: edita a entrada sem nota mais recente desse C.A. (só se houver).
       const entrada = recentes.find((r) => norm(r.ca) === c);
       return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${entrada && entrada.id === editandoId ? ' is-editando' : ''}"${entrada ? ` data-entrada="${escHtml(entrada.id)}"` : ''}>
