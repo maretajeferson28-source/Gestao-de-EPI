@@ -2610,5 +2610,18 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .epi-ca-inativo{margin-left:6px;vertical-align:middle}
 .epi-dossier-badges{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .epi-dossier-badges .epi-ca-inativo{margin-left:0}
-.stock-ca-card[data-var]{cursor:pointer}
-.stock-ca-card[data-var]:not(.is-editando):hover{border-color:#444}
+/* Janela do item: total do EPI e − / + na quantidade */
+.stock-entry-total[hidden]{display:none!important}
+.stock-entry-total{display:flex;align-items:baseline;gap:8px;margin:0 0 16px;padding:12px 14px;border-radius:12px;border:1px solid rgba(56,180,123,.4);background:#151515}
+.stock-entry-total span{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a9a9a9}
+.stock-entry-total strong{font-size:24px;font-weight:800;line-height:1;color:#45bd83}
+.stock-entry-total small{font-size:12px;color:#8f8f8f}
+.stock-entry-total.is-baixo{border-color:rgba(255,184,0,.55)}
+.stock-entry-total.is-baixo strong{color:#ffb800}
+.stock-entry-total.is-critico{border-color:rgba(255,107,107,.6)}
+.stock-entry-total.is-critico strong{color:#ff6b6b}
+.stock-qtd-passo{display:flex;gap:6px;align-items:stretch}
+.stock-qtd-passo input{flex:1 1 auto;min-width:0;text-align:center}
+.stock-qtd-btn{flex:0 0 40px;display:grid;place-items:center;border:1px solid #333;border-radius:9px;background:#181818;color:#b8b8b8;cursor:pointer;transition:border-color .14s ease,color .14s ease}
+.stock-qtd-btn svg{width:16px;height:16px}
+.stock-qtd-btn:hover,.stock-qtd-btn:focus-visible{border-color:rgba(255,102,0,.62);color:#ff9a3f;outline:none}

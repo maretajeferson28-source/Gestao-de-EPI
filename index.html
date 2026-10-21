@@ -342,10 +342,11 @@
           </div>
 
           <div class="data-edit-body">
+            <div class="stock-entry-total" id="stockEntryTotal" hidden></div>
             <div class="data-edit-grid stock-entry-grid">
               <div class="field stock-col-full"><label for="stockEntryEpi">EPI*</label><input id="stockEntryEpi" list="dlStockEntryEpi" placeholder="Digite para buscar" autocomplete="off"></div>
               <div class="field stock-col-half"><label for="stockEntryCa">C.A.</label><select id="stockEntryCa"><option value="">Sem C.A. definido</option></select></div>
-              <div class="field stock-col-half"><label for="stockEntryQtd">Quantidade*</label><input id="stockEntryQtd" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+              <div class="field stock-col-half"><label for="stockEntryQtd">Quantidade*</label><div class="stock-qtd-passo"><button class="stock-qtd-btn" id="stockEntryMenos" type="button" aria-label="Diminuir 1"><i data-lucide="minus" aria-hidden="true"></i></button><input id="stockEntryQtd" type="number" inputmode="decimal" min="0" step="any" placeholder="0"><button class="stock-qtd-btn" id="stockEntryMais" type="button" aria-label="Aumentar 1"><i data-lucide="plus" aria-hidden="true"></i></button></div></div>
               <div class="field stock-col-half"><label for="stockEntryMotivo">Motivo*</label>
                 <select id="stockEntryMotivo">
                   <option value="saldo_inicial">Saldo inicial</option>
