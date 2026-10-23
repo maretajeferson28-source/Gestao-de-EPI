@@ -2384,7 +2384,14 @@ function clearAuthorizationWatch(){
 
 // Avisos de acesso por e-mail (servidor do app, infra/railway/app/avisos.mjs):
 // 'pedido' avisa o administrador; 'liberado' avisa a pessoa. Não trava a tela.
+const avisosPedidos=new Set(); // a tela de espera repete o showApp a cada 30 s: o pedido sai uma vez
 async function avisarAcesso(tipo,email){
+  if(tipo==='pedido'){
+    const {data:{session}}=await sb.auth.getSession();
+    const quem=session?.user?.email||'';
+    if(avisosPedidos.has(quem)) return false;
+    avisosPedidos.add(quem);
+  }
   try{
     const {data:{session}}=await sb.auth.getSession();
     if(!session?.access_token) return;

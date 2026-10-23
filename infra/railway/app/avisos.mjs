@@ -40,7 +40,7 @@ function conversa(sock) {
   });
 }
 
-async function enviarEmail(para, assunto, html) {
+export async function enviarEmail(para, assunto, html) {
   // Teste local: AVISOS_SIMULAR=1 só registra, sem enviar.
   if (process.env.AVISOS_SIMULAR === '1') { console.log(`[AVISOS] simulado para ${para}: ${assunto} (${html.length} bytes)`); return; }
   const b64 = (s) => Buffer.from(s).toString('base64');
@@ -62,18 +62,35 @@ async function enviarEmail(para, assunto, html) {
     await falar(`MAIL FROM:<${SMTP_USER}>`, ['250']);
     await falar(`RCPT TO:<${para}>`, ['250', '251']);
     await falar('DATA', ['354']);
-    const corpo = b64(html).replace(/.{1,76}/g, '$&\r\n');
+    // Texto simples + HTML (multipart/alternative) ajuda a não cair no Spam.
+    // Sem Message-ID: o próprio Gmail coloca um no padrão dele.
+    const linhas = (s) => b64(s).replace(/.{1,76}/g, '$&\r\n');
+    const texto = html
+      .replace(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g, '$2: $1')
+      .replace(/<\/(p|h2|div)>/g, '\n').replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+      .split('\n').map((l) => l.trim().replace(/\s+/g, ' ')).filter(Boolean).join('\n\n');
+    const fronteira = 'gestao-epi-' + Math.random().toString(36).slice(2);
     const msg = [
       `From: =?UTF-8?B?${b64('Gestão de EPI')}?= <${SMTP_USER}>`,
       `To: <${para}>`,
       `Subject: =?UTF-8?B?${b64(assunto)}?=`,
       `Date: ${new Date().toUTCString()}`,
-      `Message-ID: <${Date.now()}.${Math.random().toString(36).slice(2)}@gestao-epi>`,
       'MIME-Version: 1.0',
+      `Content-Type: multipart/alternative; boundary="${fronteira}"`,
+      '',
+      `--${fronteira}`,
+      'Content-Type: text/plain; charset=UTF-8',
+      'Content-Transfer-Encoding: base64',
+      '',
+      linhas(texto),
+      `--${fronteira}`,
       'Content-Type: text/html; charset=UTF-8',
       'Content-Transfer-Encoding: base64',
       '',
-      corpo + '.'
+      linhas(html),
+      `--${fronteira}--`,
+      '.'
     ].join('\r\n');
     await falar(msg, ['250']);
     await falar('QUIT', ['221']).catch(() => {});
@@ -84,7 +101,7 @@ async function enviarEmail(para, assunto, html) {
 
 // ---- Modelos (email-templates/) ----
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
-async function modelo(nome, campos) {
+export async function modelo(nome, campos) {
   let html = await readFile(join(ROOT, 'email-templates', nome), 'utf8');
   for (const [k, v] of Object.entries(campos)) html = html.replaceAll(`{{ .${k} }}`, esc(v));
   return html.replace(/^<!--.*?-->\s*/s, '');
