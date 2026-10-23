@@ -170,7 +170,9 @@
     if (tot) {
       const min = minimos[epi.id];
       tot.hidden = false;
-      tot.innerHTML = `<span>Total do EPI</span><strong>${fmtQtd(total)}</strong><small>em estoque${min != null ? ` • mínimo ${fmtQtd(min)}` : ''}</small>`;
+      const editando = document.activeElement?.id === 'stockItemMin';
+      if (!editando) tot.innerHTML = `<span class="stock-tot-num"><strong>${fmtQtd(total)}</strong> em estoque</span><span class="stock-tot-sep">·</span><label class="stock-tot-min" for="stockItemMin">mínimo <input id="stockItemMin" type="number" inputmode="decimal" min="0" step="any" placeholder="sem" value="${min == null ? '' : escHtml(min)}"></label><button class="stock-tot-salvar" id="stockItemMinSalvar" type="button" hidden>Salvar mínimo</button>`;
+      else tot.querySelector('.stock-tot-num').innerHTML = `<strong>${fmtQtd(total)}</strong> em estoque`;
       tot.classList.toggle('is-critico', total <= 0);
       tot.classList.toggle('is-baixo', total > 0 && min != null && total <= min);
     }
@@ -275,11 +277,12 @@
     $('stockEntryTitle').textContent = itemFixo ? itemFixo.nome : 'Entrada no estoque';
     const sub = document.querySelector('#stockEntryModal .data-edit-head p');
     if (sub) sub.textContent = itemFixo
-      ? 'Lance uma entrada nova ou use o lápis de um C.A. para somar ou tirar itens. O mínimo vale para o EPI todo.'
+      ? 'Lance uma entrada nova ou use o lápis de um C.A. para somar ou tirar itens.'
       : 'Para itens que entram sem nota fiscal. Campos com * são obrigatórios.';
     const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
     if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';
     $('stockEntryEpi').readOnly = !!itemFixo;
+    $('stockEntryModal').classList.toggle('is-item', !!itemFixo);
     if (!itemFixo) { $('stockEntryTotal').hidden = true; $('stockEntryTotal').innerHTML = ''; }
     // A janela fica só com o formulário: a lista de entradas sem nota não aparece.
     const lista = $('stockEntryList')?.closest('.stock-entry-recent');
@@ -356,6 +359,7 @@
     const { error } = await db().from('epis').update({ estoque_minimo: minimo }).eq('id', epi.id);
     if (error) { setMsg('Não foi possível salvar o mínimo: ' + error.message, true); return false; }
     minimos[epi.id] = minimo;
+    fillMinimo();
     if (itemFixo) renderCas();
     return true;
   }
@@ -415,6 +419,30 @@
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
     $('stockEntryEpi').addEventListener('input', fillCaOptions);
     $('stockEntryEpi').addEventListener('change', fillCaOptions);
+    const minTopo = () => {
+      const v = String($('stockItemMin')?.value ?? '').trim();
+      return v === '' ? null : Number(v.replace(',', '.'));
+    };
+    const salvarMinTopo = async () => {
+      const epi = selectedEpi();
+      const minimo = minTopo();
+      if (!epi) return;
+      if (minimo !== null && (!Number.isFinite(minimo) || minimo < 0)) return setMsg('O estoque mínimo não pode ser negativo.', true);
+      $('stockItemMin').blur();
+      if (await gravarMinimo(epi, minimo)) {
+        setMsg(minimo === null ? 'Mínimo removido.' : `Mínimo salvo: ${fmtQtd(minimo)}.`);
+        window.dispatchEvent(new CustomEvent('epi:stock-changed'));
+      }
+    };
+    $('stockEntryTotal').addEventListener('input', (e) => {
+      if (e.target.id !== 'stockItemMin') return;
+      const epi = selectedEpi();
+      $('stockItemMinSalvar').hidden = !epi || minTopo() === (minimos[epi.id] ?? null);
+    });
+    $('stockEntryTotal').addEventListener('click', (e) => { if (e.target.closest('#stockItemMinSalvar')) salvarMinTopo(); });
+    $('stockEntryTotal').addEventListener('keydown', (e) => {
+      if (e.target.id === 'stockItemMin' && e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); salvarMinTopo(); }
+    });
     $('stockEntryCas').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-ca-ativo]');
       if (btn) { alternarAtivo(btn.dataset.caAtivo, btn); return; }
