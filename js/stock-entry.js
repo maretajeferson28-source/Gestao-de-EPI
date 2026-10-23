@@ -26,11 +26,16 @@
   function fmtQtd(n) { return new Intl.NumberFormat('pt-BR').format(Number(n) || 0); }
   function icons() { if (window.lucide?.createIcons) window.lucide.createIcons({ attrs: { 'aria-hidden': 'true' } }); }
 
+  let msgTimer = null;
   function setMsg(text, isError = false) {
     const el = $('stockEntryMsg');
     if (!el) return;
     el.textContent = text;
     el.classList.toggle('is-error', isError);
+    clearTimeout(msgTimer);
+    if (text && !isError && !/^(Editando|O C\.A\.|Salvando)/.test(text)) {
+      msgTimer = setTimeout(() => { if (el.textContent === text) el.textContent = ''; }, 6000);
+    }
   }
 
   function activeEpis() { return catalog().filter((e) => e.ativo !== false); }
@@ -72,6 +77,12 @@
   let editandoId = null; // entrada da lista que está sendo alterada
   let itemFixo = null; // aberto pelo cartão do Estoque: { id, nome } do EPI
 
+  function atualizarFormItem() {
+    const travado = !!itemFixo && !caDoItem;
+    ['stockEntryQtd', 'stockEntryMenos', 'stockEntryMais', 'stockEntryData', 'stockEntryObs', 'stockEntrySave'].forEach((id) => { if ($(id)) $(id).disabled = travado; });
+    $('stockEntryModal').classList.toggle('aguardando-ca', travado);
+  }
+
   function sairEdicao() {
     editandoId = null;
     $('stockEntrySave').innerHTML = '<i data-lucide="save" aria-hidden="true"></i>Salvar entrada';
@@ -80,6 +91,7 @@
     const sel = $('stockEntryCa');
     if (sel) sel.disabled = !selectedEpi() || sel.options.length <= 1;
     document.querySelectorAll('.stock-entry-row.is-editando, .stock-ca-card.is-editando').forEach((r) => r.classList.remove('is-editando'));
+    atualizarFormItem();
     icons();
   }
 
@@ -97,6 +109,7 @@
     $('stockEntrySave').innerHTML = '<i data-lucide="save" aria-hidden="true"></i>Salvar alteração';
     $('stockEntryCancel').textContent = 'Cancelar edição';
     $('stockEntryCa').disabled = !!itemFixo;
+    if (itemFixo) { caDoItem = r.variante_id || ''; atualizarFormItem(); }
     document.querySelectorAll('.stock-entry-row').forEach((row) => row.classList.toggle('is-editando', row.dataset.id === id));
     setMsg(itemFixo
       ? `Editando ${r.ca ? 'C.A. ' + r.ca : 'a entrada sem C.A.'}: ${fmtQtd(r.quantidade)} lançado sem nota. Use − e + (ou digite) e salve.`
@@ -136,6 +149,7 @@
     }
     caDoItem = varId;
     marcarCardCa();
+    atualizarFormItem();
   }
 
   function resetItemFields() {
@@ -279,7 +293,7 @@
     $('stockEntryTitle').textContent = itemFixo ? itemFixo.nome : 'Entrada no estoque';
     const sub = document.querySelector('#stockEntryModal .data-edit-head p');
     if (sub) sub.textContent = itemFixo
-      ? 'Lance uma entrada nova ou use o lápis de um C.A. para somar ou tirar itens.'
+      ? 'Use o lápis de um C.A. para somar ou tirar itens do que já está no depósito.'
       : 'Para itens que entram sem nota fiscal. Campos com * são obrigatórios.';
     const h4 = document.querySelector('#stockEntryModal .stock-entry-recent h4');
     if (h4) h4.textContent = itemFixo ? 'Entradas sem nota deste EPI' : 'Últimas entradas sem nota';

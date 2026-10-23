@@ -2633,3 +2633,10 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-qtd-btn:hover,.stock-qtd-btn:focus-visible{border-color:rgba(255,102,0,.62);color:#ff9a3f;outline:none}
 .stock-ca-forn{font-size:11px;color:#8f8f8f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-2px}
 .epi-dossier-apelido{font-weight:600;color:#ff9a3f}
+/* Janela do item: sem C.A. e Motivo (o item já está no depósito); o lápis do cartão escolhe o C.A. */
+#stockEntryModal.is-item .stock-entry-grid .field:has(#stockEntryCa),
+#stockEntryModal.is-item .stock-entry-grid .field:has(#stockEntryMotivo){display:none}
+.stock-item-dica{display:none;align-items:center;gap:8px;margin:0 0 14px;padding:10px 12px;border-radius:10px;border:1px dashed #3a3a3a;color:#b8b8b8;font-size:13px}
+.stock-item-dica svg{width:15px;height:15px;color:#ff9a3f;flex:0 0 auto}
+#stockEntryModal.is-item.aguardando-ca .stock-item-dica{display:flex}
+#stockEntryModal.aguardando-ca .stock-entry-grid,#stockEntryModal.aguardando-ca .data-edit-actions{opacity:.45}
