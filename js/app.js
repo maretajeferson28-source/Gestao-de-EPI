@@ -238,7 +238,7 @@ async function loadAll(showBusy=true){
       sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado,afastado,afastado_desde,desativado_desde').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
-        .select('id,epi_id,ca,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
+        .select('id,epi_id,ca,apelido,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
         .order('created_at',{ascending:true}),
       sb.from('movimentacoes_epi')
         .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,colaboradores(nome),epis(nome)')
@@ -1482,7 +1482,7 @@ function dateBR(v){
 }
 function clearEpiVariantForm(){
   editingVariantId=null;
-  ['epiVarCa','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
+  ['epiVarCa','epiVarApelido','epiVarFabricante','epiVarCnpj','epiVarMarca','epiVarReferencia','epiVarValidade','epiVarSituacao','epiVarNorma','epiVarDescricao','epiVarCaracteristicas','epiVarPreco','epiVarFornecedor','epiVarObservacao'].forEach(id=>{if($(id)) $(id).value='';});
   if($('epiVarCa')) $('epiVarCa').readOnly=false;
   if($('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=false;
   if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').checked=false;
@@ -1581,7 +1581,7 @@ function renderEpiVariantList(){
       <div class="epi-dossier-head">
         <div>
           <span class="epi-dossier-kicker">PRONTUÁRIO DO ${codeTerm(v.ca)}</span>
-          <h3>${esc(codeTitle(v.ca))}</h3>
+          <h3>${esc(codeTitle(v.ca))}${v.apelido?` <span class="epi-dossier-apelido">· ${esc(v.apelido)}</span>`:''}</h3>
         </div>
         <span class="epi-dossier-badges">${v.ativo===false?'<span class="epi-ca-inativo" title="Desativado no Estoque">Inativo</span>':''}<span class="epi-variant-state">${esc(situacao||'Sem situação')}</span></span>
       </div>
@@ -1848,6 +1848,7 @@ async function persistVariantImage(saved,previous){
 function fillEpiVariantForm(v){
   editingVariantId=v.id;
   $('epiVarCa').value=v.ca||'';
+  $('epiVarApelido').value=v.apelido||'';
   $('epiVarFabricante').value=v.fabricante||'';
   $('epiVarCnpj').value=v.cnpj||'';
   $('epiVarMarca').value=v.marca||'';
@@ -1954,6 +1955,7 @@ async function saveEpiVariant(){
   const payload={
     epi_id:selectedEpi.id,
     ca,
+    apelido:$('epiVarApelido').value.trim()||null,
     fabricante:$('epiVarFabricante').value.trim()||null,
     cnpj:$('epiVarCnpj').value.trim()||null,
     marca:$('epiVarMarca').value.trim()||null,
@@ -1968,7 +1970,7 @@ async function saveEpiVariant(){
     fornecedor:$('epiVarFornecedor').value.trim()||null,
     unidade:'un',
     observacao:$('epiVarObservacao').value.trim()||null,
-    ativo:true,
+    ativo:previous?previous.ativo!==false:true,
     origem:'Site Gestão EPI',
     updated_at:new Date().toISOString()
   };

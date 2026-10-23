@@ -187,7 +187,10 @@
       // Nome do cartão: o fornecedor do prontuário desse C.A. (senão o
       // fabricante e, por último, o nome do EPI). A marca do CAEPI costuma
       // vir como "Na etiqueta", por isso fica de fora.
-      const modelo = [v?.fornecedor, v?.fabricante].map((x) => String(x || '').trim()).find(Boolean) || epi.nome;
+      const fornecedor = [v?.fornecedor, v?.fabricante].map((x) => String(x || '').trim()).find(Boolean) || '';
+      // Apelido do prontuário em destaque; sem apelido, o fornecedor (e por último o nome do EPI).
+      const apelido = String(v?.apelido || '').trim();
+      const modelo = apelido || fornecedor || epi.nome;
       // Lápis: edita a quantidade lançada sem nota desse C.A. Liga/desliga:
       // desativa ou reativa o C.A. (o prontuário se edita em EPIs / Itens).
       return `<article class="stock-ca-card${saldo <= 0 ? ' is-zerado' : ''}${off ? ' is-inativo' : ''}"${v && !off ? ` data-var="${escHtml(v.id)}"` : ''}>
@@ -195,6 +198,7 @@
         ${v && !off ? `<button class="stock-entry-del stock-entry-edit stock-ca-editar" type="button" data-ca-edit="${escHtml(v.id)}" title="Editar quantidade do ${escHtml(codigo)}" aria-label="Editar quantidade do ${escHtml(codigo)}"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}
         <div class="stock-ca-foto"${v?.imagem_path ? ` data-foto="${escHtml(v.imagem_path)}"` : ''}><i data-lucide="image" aria-hidden="true"></i></div>
         <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>
+        ${apelido && fornecedor ? `<span class="stock-ca-forn" title="${escHtml(fornecedor)}">${escHtml(fornecedor)}</span>` : ''}
         <span class="stock-ca-codigo">${escHtml(codigo)}</span>
         <span class="stock-ca-saldo">${fmtQtd(saldo)}<small>em estoque</small></span>
         ${v ? `<button class="stock-entry-del stock-ca-ativo${off ? ' is-off' : ''}" type="button" data-ca-ativo="${escHtml(v.id)}" title="${off ? 'Reativar' : 'Desativar'} ${escHtml(codigo)}" aria-label="${off ? 'Reativar' : 'Desativar'} ${escHtml(codigo)}"><i data-lucide="${off ? 'power' : 'power-off'}" aria-hidden="true"></i></button>` : ''}

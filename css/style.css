@@ -2631,3 +2631,5 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-qtd-btn{flex:0 0 40px;display:grid;place-items:center;border:1px solid #333;border-radius:9px;background:#181818;color:#b8b8b8;cursor:pointer;transition:border-color .14s ease,color .14s ease}
 .stock-qtd-btn svg{width:16px;height:16px}
 .stock-qtd-btn:hover,.stock-qtd-btn:focus-visible{border-color:rgba(255,102,0,.62);color:#ff9a3f;outline:none}
+.stock-ca-forn{font-size:11px;color:#8f8f8f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-2px}
+.epi-dossier-apelido{font-weight:600;color:#ff9a3f}
