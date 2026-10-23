@@ -2274,6 +2274,7 @@ function renderAuthorizedUsers(){
     btn.disabled=true;
     const {error}=await sb.rpc('epi_admin_set_active',{p_email:email,p_ativo:nextActive});
     if(error){alert(error.message);btn.disabled=false;return}
+    if(nextActive) avisarAcesso('liberado',email);
     await loadAuthorizedUsers();
   }));
 
@@ -2336,6 +2337,7 @@ if($('authzForm')) $('authzForm').addEventListener('submit',async e=>{
 
   e.target.reset();
   msg.textContent='Usuário autorizado com sucesso.';
+  avisarAcesso('liberado',email).then(ok=>{if(ok) msg.textContent='Usuário autorizado e avisado por e-mail.'});
   await loadAuthorizedUsers();
 });
 
@@ -2380,6 +2382,18 @@ function clearAuthorizationWatch(){
   authorizationCheckBusy=false;
 }
 
+// Avisos de acesso por e-mail (servidor do app, infra/railway/app/avisos.mjs):
+// 'pedido' avisa o administrador; 'liberado' avisa a pessoa. Não trava a tela.
+async function avisarAcesso(tipo,email){
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session?.access_token) return;
+    const r=await fetch('/api/avisos',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({tipo,email})});
+    const j=await r.json().catch(()=>({}));
+    if(tipo==='liberado'&&j.resultado==='enviado') return true;
+  }catch(err){console.warn('[AVISOS]',err)}
+  return false;
+}
 async function registerCurrentUserAccess(){
   const {data,error}=await sb.rpc('epi_register_access_request');
   if(error){
@@ -2618,6 +2632,7 @@ async function showApp(session){
   if(!authorized&&ultimoErroAcessoRede&&showAppOffline(session)) return;
 
   if(!authorized){
+    avisarAcesso('pedido');
     showWaitingAccess(session);
     return;
   }
