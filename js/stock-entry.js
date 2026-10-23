@@ -197,9 +197,7 @@
         ${off ? '<span class="stock-ca-inativo">Inativo</span>' : ''}
         ${v && !off ? `<button class="stock-entry-del stock-entry-edit stock-ca-editar" type="button" data-ca-edit="${escHtml(v.id)}" title="Editar quantidade do ${escHtml(codigo)}" aria-label="Editar quantidade do ${escHtml(codigo)}"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}
         <div class="stock-ca-foto"${v?.imagem_path ? ` data-foto="${escHtml(v.imagem_path)}"` : ''}><i data-lucide="image" aria-hidden="true"></i></div>
-        <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>
-        ${apelido && fornecedor ? `<span class="stock-ca-forn" title="${escHtml(fornecedor)}">${escHtml(fornecedor)}</span>` : ''}
-        <span class="stock-ca-codigo">${escHtml(codigo)}</span>
+        <strong class="stock-ca-nome" title="${escHtml(modelo)}">${escHtml(modelo)}</strong>        <span class="stock-ca-codigo">${escHtml(codigo)}</span>
         <span class="stock-ca-saldo">${fmtQtd(saldo)}<small>em estoque</small></span>
         ${v ? `<button class="stock-entry-del stock-ca-ativo${off ? ' is-off' : ''}" type="button" data-ca-ativo="${escHtml(v.id)}" title="${off ? 'Reativar' : 'Desativar'} ${escHtml(codigo)}" aria-label="${off ? 'Reativar' : 'Desativar'} ${escHtml(codigo)}"><i data-lucide="${off ? 'power' : 'power-off'}" aria-hidden="true"></i></button>` : ''}
       </article>`;
