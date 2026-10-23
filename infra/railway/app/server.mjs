@@ -7,6 +7,7 @@ import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { queryCaepi } from '../../../api/caepi.js';
 import { handleAvisos } from './avisos.mjs';
+import { handleRotina } from './rotina.mjs';
 
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -75,6 +76,7 @@ async function handleCaepi(url, res, head) {
 
 createServer(async (req, res) => {
   if (req.method === 'POST' && req.url === '/api/avisos') return handleAvisos(req, res, send);
+  if (req.method === 'POST' && req.url === '/api/rotina') return handleRotina(req, res, send);
   const head = req.method === 'HEAD';
   if (req.method !== 'GET' && !head) {
     return send(res, 405, { Allow: 'GET, HEAD', 'Content-Type': 'text/plain; charset=utf-8' }, 'Método não permitido.');

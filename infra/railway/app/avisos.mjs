@@ -42,7 +42,11 @@ function conversa(sock) {
 
 export async function enviarEmail(para, assunto, html) {
   // Teste local: AVISOS_SIMULAR=1 só registra, sem enviar.
-  if (process.env.AVISOS_SIMULAR === '1') { console.log(`[AVISOS] simulado para ${para}: ${assunto} (${html.length} bytes)`); return; }
+  if (process.env.AVISOS_SIMULAR === '1') {
+    console.log(`[AVISOS] simulado para ${para}: ${assunto} (${html.length} bytes)`);
+    if (process.env.AVISOS_SIMULAR_DIR) (await import('node:fs')).writeFileSync(`${process.env.AVISOS_SIMULAR_DIR}/${Date.now()}.html`, `<meta charset="utf-8"><title>${assunto}</title>${html}`);
+    return;
+  }
   const b64 = (s) => Buffer.from(s).toString('base64');
   const s = net.connect(Number(SMTP_PORT), SMTP_HOST);
   s.setTimeout(20000, () => s.destroy(new Error('SMTP sem resposta')));
@@ -67,7 +71,7 @@ export async function enviarEmail(para, assunto, html) {
     const linhas = (s) => b64(s).replace(/.{1,76}/g, '$&\r\n');
     const texto = html
       .replace(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g, '$2: $1')
-      .replace(/<\/(p|h2|div)>/g, '\n').replace(/<[^>]+>/g, '')
+      .replace(/<\/(p|h2|div|tr)>/g, '\n').replace(/<br\s*\/?>/g, ' - ').replace(/<\/t[dh]>/g, '  ').replace(/<[^>]+>/g, '')
       .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
       .split('\n').map((l) => l.trim().replace(/\s+/g, ' ')).filter(Boolean).join('\n\n');
     const fronteira = 'gestao-epi-' + Math.random().toString(36).slice(2);
