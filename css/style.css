@@ -2644,33 +2644,76 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 /* Programar entrega (js/programar.js). No PC a entrega vira programação; o
    "Entregar" fica só no celular (a barra de baixo aciona o botão escondido). */
 @media (min-width:721px){ .sidebar .nav [data-page="nova"]{display:none!important} }
-.prog-layout{display:grid;grid-template-columns:minmax(0,1000px);gap:16px;align-items:start}
-.prog-form,.prog-fila-card{max-width:none}
-.prog-topo{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:13px}
-.prog-termo{display:block;margin-top:6px;font-size:12px;min-height:16px}
+.prog-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start;max-width:1240px}
+.prog-main{display:grid;gap:16px;min-width:0}
+.prog-bloco{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.prog-bloco-titulo{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:15px;font-weight:700;color:#f1f1f1}
+.prog-num{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:rgba(255,102,0,.15);color:#ff8a24;font-size:12px;font-weight:800}
+.prog-topo{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.prog-colab{flex:1 1 360px;display:flex;align-items:center;gap:12px;min-width:0}
+.prog-avatar{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;flex:0 0 44px;background:#1f1f1f;border:1px solid #333;color:#8f8f8f;font-weight:800;font-size:15px}
+.prog-avatar.is-ok{background:rgba(255,102,0,.14);border-color:rgba(255,102,0,.5);color:#ff9a3f}
+.prog-avatar svg{width:20px;height:20px}
+.prog-colab-campo{flex:1;min-width:0;display:grid;gap:5px}
+.prog-colab-campo input{height:44px;font-size:15px}
+.prog-termo{font-size:12px;display:inline-flex;align-items:center;gap:6px;min-height:16px}
 .prog-termo.is-ok{color:#45bd83}.prog-termo.is-ruim{color:#ffb800}
-.prog-titulo{margin:18px 0 10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a9a9a9}
-.prog-fila-card .prog-titulo{margin-top:0}
-.prog-item{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1.6fr) 80px 110px 36px;gap:10px;align-items:end;padding:10px 0;border-top:1px solid #262626}
-.prog-item:first-child{border-top:0;padding-top:0}
-.prog-item .field{margin:0}
-.prog-item select:disabled{opacity:.55}
-.prog-remover{width:36px;height:38px;padding:0!important;justify-content:center}
-.prog-remover:hover{border-color:#7a3434!important;color:#ff8f8f!important}
-.prog-aviso{grid-column:1/-1;margin:0;font-size:12px;color:#ffb800}
+.prog-data-campo{display:grid;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a9a9a9}
+.prog-data-campo input{height:44px;width:180px;text-transform:none;letter-spacing:0;font-weight:400}
+.prog-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:14px;border:1px solid #2b2b2b;border-radius:14px;background:#151515;margin-bottom:10px}
+.prog-item-icone{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:#111;border:1px solid #2f2f2f;color:#777}
+.prog-item.tem-epi .prog-item-icone{border-color:rgba(255,102,0,.35);color:#ff8a24}
+.prog-item-icone svg{width:20px;height:20px}
+.prog-item-corpo{min-width:0;display:grid;gap:10px}
+.prog-item-linha{display:grid;grid-template-columns:minmax(0,1fr) 128px 110px 38px;gap:10px;align-items:center}
+.prog-item-linha input{height:42px}
+.prog-qtd{display:flex;align-items:center;height:42px;border:1px solid #333;border-radius:10px;background:#1c1c1c;overflow:hidden}
+.prog-qtd button{width:36px;height:100%;border:0;background:none;color:#b8b8b8;cursor:pointer;display:grid;place-items:center}
+.prog-qtd button:hover{color:#ff9a3f;background:#222}
+.prog-qtd button svg{width:15px;height:15px}
+.prog-qtd input{flex:1;min-width:0;height:100%!important;border:0!important;background:none!important;text-align:center;font-weight:700;padding:0!important}
+.prog-remover{width:38px;height:42px;border-radius:10px;border:1px solid #333;background:#181818;color:#8f8f8f;cursor:pointer;display:grid;place-items:center}
+.prog-remover:hover{border-color:#7a3434;color:#ff8f8f}
+.prog-remover svg{width:16px;height:16px}
+.prog-cas{display:flex;flex-wrap:wrap;gap:8px}
+.prog-cas:empty{display:none}
+.prog-ca{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:1px solid #333;background:#1b1b1b;color:#d4d4d4;font-size:13px;cursor:pointer;transition:border-color .14s,background .14s}
+.prog-ca small{color:#8f8f8f;font-size:11px}
+.prog-ca:hover{border-color:#555}
+.prog-ca.is-sel{border-color:#ff7a00;background:rgba(255,122,0,.12);color:#fff}
+.prog-ca.is-sel small{color:#ffb070}
+.prog-ca.is-zero small{color:#ff8f8f}
+.prog-ca.is-vencido{border-style:dashed}
+.prog-cas-rotulo{font-size:11px;color:#8f8f8f;align-self:center;margin-right:2px}
+.prog-aviso{margin:0;font-size:12px;color:#ffb800;display:flex;gap:6px;align-items:flex-start}
 .prog-aviso[hidden]{display:none}
-.prog-add{margin-top:10px}
-.prog-obs-campo{margin-top:16px}
-.prog-vazio{margin:0;color:#8f8f8f;font-size:13px}
-.prog-card{padding:12px;border:1px solid #2b2b2b;border-radius:12px;background:#151515;margin-bottom:10px}
-.prog-card header{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:8px}
-.prog-card header strong{font-size:14px;color:#f1f1f1}
-.prog-data{font-size:12px;color:#9a9a9a;white-space:nowrap}.prog-data.is-atrasada{color:#ffb800}
-.prog-card ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
-.prog-card li{display:flex;flex-direction:column;font-size:13px}
-.prog-card li span{font-size:11px;color:#8f8f8f}
-.prog-obs{margin:8px 0 0;font-size:12px;color:#b8b8b8;font-style:italic}
-.prog-cancelar{margin-top:10px}
-.prog-cancelar:hover{border-color:#7a3434!important;color:#ff8f8f!important}
-@media (max-width:1100px){ .prog-layout{grid-template-columns:1fr} }
+.prog-add{width:100%;height:46px;border-radius:12px;border:1px dashed #3a3a3a;background:none;color:#b8b8b8;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.prog-add:hover{border-color:rgba(255,102,0,.6);color:#ff9a3f}
+.prog-add svg{width:16px;height:16px}
+.prog-resumo{position:sticky;top:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:14px}
+.prog-resumo-titulo{display:flex;align-items:center;gap:8px;margin:0;font-size:15px;color:#f1f1f1}
+.prog-resumo-titulo svg{width:18px;height:18px;color:#ff8a24}
+.prog-res-quem{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#b8b8b8;padding-bottom:12px;border-bottom:1px solid #262626}
+.prog-res-quem strong{color:#f1f1f1;font-size:14px}
+.prog-res-lista{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.prog-res-lista li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;font-size:13px;color:#d4d4d4}
+.prog-res-lista li b{color:#ff9a3f;text-align:right}
+.prog-res-lista li span small{display:block;color:#8f8f8f;font-size:11px}
+.prog-res-total{display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid #262626;font-size:13px;color:#b8b8b8}
+.prog-res-total strong{color:#fff;font-size:16px}
+.prog-res-vazio{margin:0;color:#8f8f8f;font-size:13px}
+.prog-res-avisos{margin:0;font-size:12px;color:#ffb800}
+.prog-obs-campo{display:grid;gap:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a9a9a9}
+.prog-obs-campo textarea{text-transform:none;letter-spacing:0;font-weight:400;resize:vertical;min-height:58px}
+.prog-concluir{width:100%;height:48px;justify-content:center;font-size:15px}
+.prog-limpar{background:none;border:0;color:#8f8f8f;font-size:13px;cursor:pointer;justify-self:center}
+.prog-limpar:hover{color:#ff8f8f}
+@media (max-width:1100px){ .prog-layout{grid-template-columns:1fr} .prog-resumo{position:static} }
 @media (max-width:720px){ .sidebar .nav [data-page="programar"]{display:none!important} }
+/* Programar: campos no mesmo visual escuro do app */
+.prog-colab-campo input,.prog-data-campo input,.prog-item-linha input,.prog-obs-campo textarea{width:100%;background:#262626;border:1px solid #393939;color:#fff;border-radius:10px;padding:0 12px;outline:none}
+.prog-obs-campo textarea{padding:10px 12px}
+.prog-colab-campo input:hover,.prog-data-campo input:hover,.prog-item-linha input:hover,.prog-obs-campo textarea:hover{border-color:rgba(232,111,24,.30)}
+.prog-colab-campo input:focus,.prog-data-campo input:focus,.prog-item-linha input:focus,.prog-obs-campo textarea:focus{border-color:var(--gold);box-shadow:0 0 10px rgba(232,111,24,.18)}
+.prog-data-campo input{color-scheme:dark}
+.prog-termo svg{width:15px;height:15px}

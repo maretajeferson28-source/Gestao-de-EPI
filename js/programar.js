@@ -1,9 +1,10 @@
 (() => {
   'use strict';
 
-  // Programar entrega (PC): colaborador + EPIs com C.A., quantidade e tamanho.
-  // Ao concluir, a programação vai para a fila do celular (status 'programada'),
-  // onde a entrega é confirmada com facial e assinatura. Nada baixa do estoque aqui.
+  // Programar entrega (PC): monta o pedido (colaborador + EPIs com C.A.,
+  // quantidade e tamanho) com um resumo ao lado. Ao concluir, a programação vai
+  // para a fila do celular (status 'programada'), onde a entrega é confirmada
+  // com facial e assinatura. Nada baixa do estoque aqui.
   if (window.__EPI_PROGRAMAR__) return;
   window.__EPI_PROGRAMAR__ = true;
 
@@ -23,6 +24,8 @@
   const hoje = () => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
   const dataBR = (iso) => { const [y, m, d] = String(iso || '').slice(0, 10).split('-'); return d ? `${d}/${m}/${y}` : ''; };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
+  const iconeEpi = (nome) => { try { return typeof epiCardIcon === 'function' ? epiCardIcon({ nome }) : 'package'; } catch (_) { return 'package'; } };
+  const codigo = (ca) => (/^CI-/i.test(String(ca)) ? String(ca) : 'C.A. ' + ca);
 
   const colaboradores = () => lista('collaborators').filter((c) => c.ativo !== false);
   const epis = () => lista('epiCatalog').filter((e) => e.ativo !== false);
@@ -45,8 +48,9 @@
     saldos.set(epiId, mapa);
     return mapa;
   }
+  const saldoCa = (epiId, v) => saldos.get(epiId)?.get(normCa(v?.ca)) || 0;
 
-  // ---- Linhas de EPI ----
+  // ---- Cartão de cada EPI ----
   let seq = 0;
   function novaLinha() {
     const id = ++seq;
@@ -54,40 +58,59 @@
     div.className = 'prog-item';
     div.dataset.linha = id;
     div.innerHTML = `
-      <div class="field prog-epi"><label>EPI*</label><input data-campo="epi" list="dlProgEpi" placeholder="Digite para buscar" autocomplete="off"></div>
-      <div class="field prog-ca"><label>C.A.</label><select data-campo="ca" disabled><option value="">Escolha o EPI</option></select></div>
-      <div class="field prog-qtd"><label>Qtd*</label><input data-campo="qtd" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
-      <div class="field prog-tam"><label>Tamanho</label><input data-campo="tam" list="dlProgTam${id}" placeholder="Se houver" autocomplete="off"><datalist id="dlProgTam${id}"></datalist></div>
-      <button class="btn compact prog-remover" type="button" data-remover title="Tirar este EPI" aria-label="Tirar este EPI"><i data-lucide="x"></i></button>
-      <p class="prog-aviso" data-aviso></p>`;
+      <div class="prog-item-icone" data-icone><i data-lucide="package"></i></div>
+      <div class="prog-item-corpo">
+        <div class="prog-item-linha">
+          <input data-campo="epi" list="dlProgEpi" placeholder="Qual EPI? Digite para buscar" autocomplete="off" aria-label="EPI">
+          <div class="prog-qtd" title="Quantidade">
+            <button type="button" data-passo="-1" aria-label="Diminuir"><i data-lucide="minus"></i></button>
+            <input data-campo="qtd" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantidade">
+            <button type="button" data-passo="1" aria-label="Aumentar"><i data-lucide="plus"></i></button>
+          </div>
+          <input data-campo="tam" list="dlProgTam${id}" placeholder="Tamanho" autocomplete="off" aria-label="Tamanho (se houver)"><datalist id="dlProgTam${id}"></datalist>
+          <button class="prog-remover" type="button" data-remover title="Tirar este EPI" aria-label="Tirar este EPI"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div class="prog-cas" data-cas></div>
+        <p class="prog-aviso" data-aviso hidden></p>
+      </div>`;
     $('progItens').appendChild(div);
     icons();
     return div;
   }
 
-  async function preencherCas(linha) {
+  async function escolherEpi(linha) {
     const epi = acharEpi(linha.querySelector('[data-campo="epi"]').value);
-    const sel = linha.querySelector('[data-campo="ca"]');
+    const box = linha.querySelector('[data-cas]');
     const dlTam = linha.querySelector('datalist');
+    if ((linha.dataset.epi || '') === (epi?.id || '')) return avisar(linha);
     linha.dataset.epi = epi?.id || '';
-    if (!epi) {
-      sel.innerHTML = '<option value="">Escolha o EPI</option>';
-      sel.disabled = true;
-      dlTam.innerHTML = '';
-      return avisar(linha);
+    linha.dataset.var = '';
+    linha.classList.toggle('tem-epi', !!epi);
+    linha.querySelector('[data-icone]').innerHTML = `<i data-lucide="${esc(epi ? iconeEpi(epi.nome) : 'package')}"></i>`;
+    box.innerHTML = '';
+    dlTam.innerHTML = '';
+    if (epi) {
+      const vars = variantes(epi.id);
+      await saldoDoEpi(epi.id);
+      if (vars.length) {
+        box.innerHTML = '<span class="prog-cas-rotulo">C.A.:</span>' + vars.map((v) => {
+          const s = saldoCa(epi.id, v);
+          const vencido = v.data_validade && String(v.data_validade).slice(0, 10) < hoje();
+          return `<button type="button" class="prog-ca${s <= 0 ? ' is-zero' : ''}${vencido ? ' is-vencido' : ''}" data-var="${esc(v.id)}">
+            ${esc(v.apelido || codigo(v.ca))}<small>${v.apelido ? esc(codigo(v.ca)) + ' · ' : ''}${fmt(s)} em estoque</small></button>`;
+        }).join('');
+        if (vars.length === 1) marcarCa(linha, vars[0].id);
+      }
+      const tams = [...new Set(lista('movements').filter((m) => m.epi_id === epi.id).map((m) => String(m.tamanho || '').trim()).filter((t) => t && t !== 'N/A'))];
+      dlTam.innerHTML = tams.map((t) => `<option value="${esc(t)}">`).join('');
     }
-    const vars = variantes(epi.id);
-    const mapa = await saldoDoEpi(epi.id);
-    sel.innerHTML = `<option value="">Sem C.A.</option>` + vars.map((v) => {
-      const s = mapa.get(normCa(v.ca)) || 0;
-      const nome = (/^CI-/i.test(v.ca) ? v.ca : 'C.A. ' + v.ca) + (v.apelido ? ' · ' + v.apelido : '');
-      return `<option value="${esc(v.id)}">${esc(nome)} — ${fmt(s)} em estoque</option>`;
-    }).join('');
-    sel.disabled = false;
-    if (vars.length === 1) sel.value = vars[0].id;
-    // Tamanhos já usados nesse EPI viram sugestão.
-    const tams = [...new Set(lista('movements').filter((m) => m.epi_id === epi.id).map((m) => String(m.tamanho || '').trim()).filter((t) => t && t !== 'N/A'))];
-    dlTam.innerHTML = tams.map((t) => `<option value="${esc(t)}">`).join('');
+    icons();
+    avisar(linha);
+  }
+
+  function marcarCa(linha, varId) {
+    linha.dataset.var = varId;
+    linha.querySelectorAll('.prog-ca').forEach((b) => b.classList.toggle('is-sel', b.dataset.var === varId));
     avisar(linha);
   }
 
@@ -95,30 +118,65 @@
     const el = linha.querySelector('[data-aviso]');
     const epiId = linha.dataset.epi;
     const nomeEpi = linha.querySelector('[data-campo="epi"]').value.trim();
+    const varId = linha.dataset.var;
+    const qtd = Number(linha.querySelector('[data-campo="qtd"]').value) || 0;
     const avisos = [];
     if (nomeEpi && !epiId) avisos.push('EPI não cadastrado. Escolha um da lista.');
-    const varId = linha.querySelector('[data-campo="ca"]').value;
-    const qtd = Number(linha.querySelector('[data-campo="qtd"]').value) || 0;
     if (epiId && varId) {
       const v = lista('epiVariants').find((x) => x.id === varId);
-      const s = saldos.get(epiId)?.get(normCa(v?.ca)) || 0;
+      const s = saldoCa(epiId, v);
       if (qtd > s) avisos.push(s > 0 ? `Só tem ${fmt(s)} em estoque deste C.A.` : 'Este C.A. está sem estoque.');
       if (v?.data_validade && String(v.data_validade).slice(0, 10) < hoje()) avisos.push(`C.A. vencido em ${dataBR(v.data_validade)}.`);
     }
-    if (epiId && !varId && variantes(epiId).length) avisos.push('Escolha o C.A. que vai ser entregue.');
+    if (epiId && !varId && variantes(epiId).length) avisos.push('Toque no C.A. que vai ser entregue.');
     el.textContent = avisos.join(' ');
     el.hidden = !avisos.length;
+    resumo();
   }
 
-  function mostrarTermo() {
+  function mostrarColab() {
     const el = $('progTermo');
+    const av = $('progAvatar');
     const nome = $('progColab').value.trim();
     const c = acharColab(nome);
-    if (!nome) { el.textContent = ''; el.className = 'prog-termo'; return; }
-    if (!c) { el.textContent = 'Colaborador não cadastrado.'; el.className = 'prog-termo is-ruim'; return; }
-    const ok = window.EPI_TERMO?.temAssinatura?.(c.id);
-    el.textContent = ok ? 'Termo assinado.' : 'Sem termo assinado: no celular, a entrega só libera depois do termo.';
-    el.className = 'prog-termo ' + (ok ? 'is-ok' : 'is-ruim');
+    av.classList.toggle('is-ok', !!c);
+    if (c) {
+      const p = c.nome.trim().split(/\s+/);
+      av.textContent = ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+    } else av.innerHTML = '<i data-lucide="user"></i>';
+    if (!nome) { el.textContent = ''; el.className = 'prog-termo'; }
+    else if (!c) { el.textContent = 'Colaborador não cadastrado. Escolha um da lista.'; el.className = 'prog-termo is-ruim'; }
+    else {
+      const ok = window.EPI_TERMO?.temAssinatura?.(c.id);
+      el.innerHTML = ok ? '<i data-lucide="shield-check"></i>Termo assinado'
+        : '<i data-lucide="triangle-alert"></i>Sem termo assinado: no celular, a entrega só libera depois do termo';
+      el.className = 'prog-termo ' + (ok ? 'is-ok' : 'is-ruim');
+    }
+    icons();
+    resumo();
+  }
+
+  // ---- Resumo ao lado ----
+  function resumo() {
+    const box = $('progResumo');
+    if (!box) return;
+    const c = acharColab($('progColab').value);
+    const itens = [...$('progItens').querySelectorAll('.prog-item')].map((l) => {
+      const epi = epis().find((e) => e.id === l.dataset.epi);
+      if (!epi) return null;
+      const v = lista('epiVariants').find((x) => x.id === l.dataset.var);
+      const tam = l.querySelector('[data-campo="tam"]').value.trim();
+      return { nome: epi.nome, qtd: Number(l.querySelector('[data-campo="qtd"]').value) || 0, ca: v ? (v.apelido ? `${v.apelido} · ${codigo(v.ca)}` : codigo(v.ca)) : '', tam, aviso: !l.querySelector('[data-aviso]').hidden };
+    }).filter(Boolean);
+    const total = itens.reduce((a, i) => a + i.qtd, 0);
+    const comAviso = itens.filter((i) => i.aviso).length;
+    box.innerHTML = `
+      <div class="prog-res-quem"><div><span>Para</span><br><strong>${c ? esc(c.nome) : '—'}</strong></div>
+        <div style="text-align:right"><span>Em</span><br><strong>${esc(dataBR($('progData').value) || '—')}</strong></div></div>
+      ${itens.length ? `<ul class="prog-res-lista">${itens.map((i) => `<li><b>${fmt(i.qtd)}×</b><span>${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span></li>`).join('')}</ul>
+        <div class="prog-res-total"><span>Total</span><strong>${fmt(total)} ${total === 1 ? 'item' : 'itens'}</strong></div>
+        ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
+        : '<p class="prog-res-vazio">Escolha os EPIs ao lado.</p>'}`;
   }
 
   function limpar() {
@@ -127,7 +185,7 @@
     $('progObs').value = '';
     $('progItens').innerHTML = '';
     novaLinha();
-    mostrarTermo();
+    mostrarColab();
   }
 
   async function concluir() {
@@ -144,7 +202,7 @@
       if (!Number.isInteger(qtd) || qtd < 1) return setMsg(`Confira a quantidade de ${epi.nome}.`, true);
       itens.push({
         epi_id: epi.id,
-        variante_id: linha.querySelector('[data-campo="ca"]').value || null,
+        variante_id: linha.dataset.var || null,
         quantidade: qtd,
         tamanho: linha.querySelector('[data-campo="tam"]').value.trim() || null
       });
@@ -158,47 +216,8 @@
     });
     botao.disabled = false;
     if (error) return setMsg('Não foi possível programar: ' + error.message, true);
-    setMsg(`Entrega de ${colab.nome} programada e enviada para a fila do celular.`);
     limpar();
-    carregarFila();
-  }
-
-  // ---- Fila (programações ainda não entregues) ----
-  async function carregarFila() {
-    const box = $('progFila');
-    if (!box) return;
-    const { data, error } = await db().from('entregas_programadas')
-      .select('id,data_prevista,observacao,created_at,colaboradores(nome),entregas_programadas_itens(ordem,quantidade,tamanho,ca,epis(nome),epi_variantes(apelido))')
-      .eq('status', 'programada')
-      .order('data_prevista', { ascending: true })
-      .order('created_at', { ascending: true });
-    if (error) { box.innerHTML = `<p class="prog-vazio">Não foi possível carregar a fila: ${esc(error.message)}</p>`; return; }
-    $('progFilaQtd').textContent = data.length ? `(${data.length})` : '';
-    if (!data.length) { box.innerHTML = '<p class="prog-vazio">Nenhuma entrega na fila.</p>'; return; }
-    box.innerHTML = data.map((p) => {
-      const itens = (p.entregas_programadas_itens || []).sort((a, b) => a.ordem - b.ordem).map((i) => `
-        <li><strong>${fmt(i.quantidade)} × ${esc(i.epis?.nome || 'EPI')}</strong>
-          <span>${i.ca ? 'C.A. ' + esc(i.ca) : 'Sem C.A.'}${i.epi_variantes?.apelido ? ' · ' + esc(i.epi_variantes.apelido) : ''}${i.tamanho ? ' · Tam. ' + esc(i.tamanho) : ''}</span></li>`).join('');
-      const atrasada = String(p.data_prevista) < hoje();
-      return `<article class="prog-card">
-        <header><strong>${esc(p.colaboradores?.nome || 'Colaborador')}</strong>
-          <span class="prog-data${atrasada ? ' is-atrasada' : ''}">${atrasada ? 'Era para ' : ''}${dataBR(p.data_prevista)}</span></header>
-        <ul>${itens}</ul>
-        ${p.observacao ? `<p class="prog-obs">${esc(p.observacao)}</p>` : ''}
-        <button class="btn compact prog-cancelar" type="button" data-cancelar="${esc(p.id)}"><i data-lucide="x-circle"></i>Cancelar</button>
-      </article>`;
-    }).join('');
-    icons();
-  }
-
-  async function cancelar(id) {
-    if (!confirm('Cancelar esta programação? Ela sai da fila do celular.')) return;
-    const { error } = await db().from('entregas_programadas')
-      .update({ status: 'cancelada', cancelada_em: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq('id', id).eq('status', 'programada');
-    if (error) return setMsg('Não foi possível cancelar: ' + error.message, true);
-    setMsg('Programação cancelada.');
-    carregarFila();
+    setMsg(`Entrega de ${colab.nome} programada e enviada para a fila do celular.`);
   }
 
   function abrir() {
@@ -207,35 +226,44 @@
     $('dlProgEpi').innerHTML = epis().map((e) => `<option value="${esc(e.nome)}">`).join('');
     saldos.clear();
     if (!$('progItens').children.length) limpar();
-    else $('progItens').querySelectorAll('.prog-item').forEach(preencherCas);
-    carregarFila();
+    else $('progItens').querySelectorAll('.prog-item').forEach((l) => { l.dataset.epi = '__'; escolherEpi(l); });
   }
 
   function start() {
     if (!$('progItens')) return;
     $('progData').value = hoje();
     document.querySelector('.nav [data-page="programar"]')?.addEventListener('click', abrir);
-    $('progColab').addEventListener('input', mostrarTermo);
+    $('progColab').addEventListener('input', mostrarColab);
+    $('progData').addEventListener('change', resumo);
     $('progAdd').addEventListener('click', () => novaLinha().querySelector('input').focus());
     $('progLimpar').addEventListener('click', () => { limpar(); setMsg(''); });
     $('progConcluir').addEventListener('click', concluir);
     $('progItens').addEventListener('input', (e) => {
       const linha = e.target.closest('.prog-item');
       if (!linha) return;
-      if (e.target.dataset.campo === 'epi') preencherCas(linha);
+      if (e.target.dataset.campo === 'epi') escolherEpi(linha);
       else avisar(linha);
     });
-    $('progItens').addEventListener('change', (e) => { const l = e.target.closest('.prog-item'); if (l) avisar(l); });
     $('progItens').addEventListener('click', (e) => {
-      const b = e.target.closest('[data-remover]');
-      if (!b) return;
-      b.closest('.prog-item').remove();
-      if (!$('progItens').children.length) novaLinha();
+      const linha = e.target.closest('.prog-item');
+      if (!linha) return;
+      const ca = e.target.closest('.prog-ca');
+      if (ca) return marcarCa(linha, ca.dataset.var);
+      const passo = e.target.closest('[data-passo]');
+      if (passo) {
+        const q = linha.querySelector('[data-campo="qtd"]');
+        q.value = String(Math.max(1, (Number(q.value) || 1) + Number(passo.dataset.passo)));
+        return avisar(linha);
+      }
+      if (e.target.closest('[data-remover]')) {
+        linha.remove();
+        if (!$('progItens').children.length) novaLinha();
+        resumo();
+      }
     });
-    $('progFila')?.addEventListener('click', (e) => { const b = e.target.closest('[data-cancelar]'); if (b) cancelar(b.dataset.cancelar); });
   }
 
-  window.EPI_PROGRAMAR = { abrir, carregarFila };
+  window.EPI_PROGRAMAR = { abrir };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();

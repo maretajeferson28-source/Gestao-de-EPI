@@ -225,21 +225,37 @@
       </section>
 
       <section class="page" data-page-content="programar">
-        <div class="section-title"><div><h2>Programar entrega</h2><p>Monte a entrega aqui. Ela vai para a fila do celular, onde é confirmada com facial e assinatura e só então baixa do estoque.</p></div></div>
+        <div class="section-title"><div><h2>Programar entrega</h2><p>Monte o pedido aqui. Ele vai para a fila do celular, onde a entrega é confirmada com facial e assinatura.</p></div></div>
         <div class="prog-layout">
-          <div class="form-card prog-form">
-            <div class="prog-topo">
-              <div class="field prog-colab"><label for="progColab">Colaborador*</label><input id="progColab" list="dlProgColab" placeholder="Digite o nome" autocomplete="off"><small id="progTermo" class="prog-termo"></small></div>
-              <div class="field"><label for="progData">Data prevista</label><input id="progData" type="date"></div>
-            </div>
-            <h4 class="prog-titulo">EPIs da entrega</h4>
-            <div id="progItens"></div>
-            <button class="btn compact prog-add" id="progAdd" type="button"><i data-lucide="plus" aria-hidden="true"></i>Adicionar EPI</button>
-            <div class="field prog-obs-campo"><label for="progObs">Observação</label><input id="progObs" placeholder="Opcional (ex.: entregar na garagem)" autocomplete="off"></div>
-            <div class="form-actions"><button class="btn primary" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir programação</button><button class="btn" id="progLimpar" type="button"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button></div>
-            <div class="msg" id="progMsg" aria-live="polite"></div>
-            <datalist id="dlProgColab"></datalist><datalist id="dlProgEpi"></datalist>
+          <div class="prog-main">
+            <section class="prog-bloco">
+              <h3 class="prog-bloco-titulo"><span class="prog-num">1</span>Para quem</h3>
+              <div class="prog-topo">
+                <div class="prog-colab">
+                  <div class="prog-avatar" id="progAvatar" aria-hidden="true"><i data-lucide="user"></i></div>
+                  <div class="prog-colab-campo">
+                    <input id="progColab" list="dlProgColab" placeholder="Digite o nome do colaborador" autocomplete="off" aria-label="Colaborador">
+                    <span id="progTermo" class="prog-termo"></span>
+                  </div>
+                </div>
+                <label class="prog-data-campo"><span>Entregar em</span><input id="progData" type="date" aria-label="Data prevista"></label>
+              </div>
+            </section>
+            <section class="prog-bloco">
+              <h3 class="prog-bloco-titulo"><span class="prog-num">2</span>O que vai ser entregue</h3>
+              <div id="progItens"></div>
+              <button class="prog-add" id="progAdd" type="button"><i data-lucide="plus" aria-hidden="true"></i>Adicionar outro EPI</button>
+            </section>
           </div>
+          <aside class="prog-resumo">
+            <h3 class="prog-resumo-titulo"><i data-lucide="clipboard-list" aria-hidden="true"></i>Resumo da entrega</h3>
+            <div id="progResumo"></div>
+            <label class="prog-obs-campo"><span>Observação</span><textarea id="progObs" rows="2" placeholder="Opcional (ex.: entregar na garagem)"></textarea></label>
+            <button class="btn primary prog-concluir" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir programação</button>
+            <button class="prog-limpar" id="progLimpar" type="button">Limpar tudo</button>
+            <div class="msg" id="progMsg" aria-live="polite"></div>
+          </aside>
+          <datalist id="dlProgColab"></datalist><datalist id="dlProgEpi"></datalist>
         </div>
       </section>
 
