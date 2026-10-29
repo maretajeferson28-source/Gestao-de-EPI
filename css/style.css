@@ -2747,3 +2747,7 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .prog-item-linha{grid-template-columns:minmax(0,1fr) 112px 108px 36px}
 /* Programar: cada EPI sem caixa própria; os campos já são as caixas */
 .prog-item{border:0;background:none;padding:0;border-radius:0;margin-bottom:12px}
+/* Quantidade com − e +: sem as setinhas do navegador, número no meio */
+.prog-qtd input,.stock-qtd-passo input{-moz-appearance:textfield;appearance:textfield;text-align:center}
+.prog-qtd input::-webkit-inner-spin-button,.prog-qtd input::-webkit-outer-spin-button,
+.stock-qtd-passo input::-webkit-inner-spin-button,.stock-qtd-passo input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}

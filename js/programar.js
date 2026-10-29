@@ -62,7 +62,7 @@
       <div class="prog-item-corpo">
         <div class="prog-item-linha">
           <input data-campo="epi" list="dlProgEpi" placeholder="Qual EPI? Digite para buscar" autocomplete="off" aria-label="EPI">
-          <div class="prog-qtd" title="Quantidade">
+          <div class="prog-qtd">
             <button type="button" data-passo="-1" aria-label="Diminuir"><i data-lucide="minus"></i></button>
             <input data-campo="qtd" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantidade">
             <button type="button" data-passo="1" aria-label="Aumentar"><i data-lucide="plus"></i></button>
