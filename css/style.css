@@ -2640,3 +2640,37 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .stock-item-dica svg{width:15px;height:15px;color:#ff9a3f;flex:0 0 auto}
 #stockEntryModal.is-item.aguardando-ca .stock-item-dica{display:flex}
 #stockEntryModal.aguardando-ca .stock-entry-grid,#stockEntryModal.aguardando-ca .data-edit-actions{opacity:.45}
+
+/* Programar entrega (js/programar.js). No PC a entrega vira programação; o
+   "Entregar" fica só no celular (a barra de baixo aciona o botão escondido). */
+@media (min-width:721px){ .sidebar .nav [data-page="nova"]{display:none!important} }
+.prog-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16px;align-items:start}
+.prog-form,.prog-fila-card{max-width:none}
+.prog-topo{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:13px}
+.prog-termo{display:block;margin-top:6px;font-size:12px;min-height:16px}
+.prog-termo.is-ok{color:#45bd83}.prog-termo.is-ruim{color:#ffb800}
+.prog-titulo{margin:18px 0 10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a9a9a9}
+.prog-fila-card .prog-titulo{margin-top:0}
+.prog-item{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1.6fr) 80px 110px 36px;gap:10px;align-items:end;padding:10px 0;border-top:1px solid #262626}
+.prog-item:first-child{border-top:0;padding-top:0}
+.prog-item .field{margin:0}
+.prog-item select:disabled{opacity:.55}
+.prog-remover{width:36px;height:38px;padding:0!important;justify-content:center}
+.prog-remover:hover{border-color:#7a3434!important;color:#ff8f8f!important}
+.prog-aviso{grid-column:1/-1;margin:0;font-size:12px;color:#ffb800}
+.prog-aviso[hidden]{display:none}
+.prog-add{margin-top:10px}
+.prog-obs-campo{margin-top:16px}
+.prog-vazio{margin:0;color:#8f8f8f;font-size:13px}
+.prog-card{padding:12px;border:1px solid #2b2b2b;border-radius:12px;background:#151515;margin-bottom:10px}
+.prog-card header{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:8px}
+.prog-card header strong{font-size:14px;color:#f1f1f1}
+.prog-data{font-size:12px;color:#9a9a9a;white-space:nowrap}.prog-data.is-atrasada{color:#ffb800}
+.prog-card ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.prog-card li{display:flex;flex-direction:column;font-size:13px}
+.prog-card li span{font-size:11px;color:#8f8f8f}
+.prog-obs{margin:8px 0 0;font-size:12px;color:#b8b8b8;font-style:italic}
+.prog-cancelar{margin-top:10px}
+.prog-cancelar:hover{border-color:#7a3434!important;color:#ff8f8f!important}
+@media (max-width:1100px){ .prog-layout{grid-template-columns:1fr} }
+@media (max-width:720px){ .sidebar .nav [data-page="programar"]{display:none!important} }

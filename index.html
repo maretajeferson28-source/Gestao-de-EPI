@@ -124,6 +124,7 @@
     <nav class="nav">
       <button class="active" data-page="dashboard"><span class="ico"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span><span class="text">Dashboard</span></button>
       <button data-page="nova" data-admin-only hidden><span class="ico"><i data-lucide="package-plus" aria-hidden="true"></i></span><span class="text">Entregar</span></button>
+      <button data-page="programar" data-admin-only hidden><span class="ico"><i data-lucide="calendar-clock" aria-hidden="true"></i></span><span class="text">Programar entrega</span></button>
       <button data-page="movimentacoes"><span class="ico"><i data-lucide="arrow-right-left" aria-hidden="true"></i></span><span class="text">Movimentações</span></button>
       <button data-page="colaboradores" data-admin-only hidden><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
       <button data-page="epis" data-admin-only hidden><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
@@ -220,6 +221,29 @@
             <div class="form-actions entrega-acoes"><button class="btn primary" type="submit"><i data-lucide="save" aria-hidden="true"></i><span class="so-pc">Salvar movimentação</span><span class="so-celular">Salvar</span></button><button class="btn" type="reset"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button><div class="entrega-validacao" role="group" aria-label="Validar a entrega"><button class="btn compact" type="button" id="nFacial" title="Validar a entrega com a biometria facial do colaborador"><i data-lucide="scan-face" aria-hidden="true"></i>Facial</button><button class="btn compact" type="button" id="nAssinatura" title="Validar a entrega com a assinatura do colaborador"><i data-lucide="signature" aria-hidden="true"></i>Assinatura</button></div></div>
             <div class="msg" id="saidaMsg" aria-live="polite"></div>
           </form>
+        </div>
+      </section>
+
+      <section class="page" data-page-content="programar">
+        <div class="section-title"><div><h2>Programar entrega</h2><p>Monte a entrega aqui. Ela vai para a fila do celular, onde é confirmada com facial e assinatura e só então baixa do estoque.</p></div></div>
+        <div class="prog-layout">
+          <div class="form-card prog-form">
+            <div class="prog-topo">
+              <div class="field prog-colab"><label for="progColab">Colaborador*</label><input id="progColab" list="dlProgColab" placeholder="Digite o nome" autocomplete="off"><small id="progTermo" class="prog-termo"></small></div>
+              <div class="field"><label for="progData">Data prevista</label><input id="progData" type="date"></div>
+            </div>
+            <h4 class="prog-titulo">EPIs da entrega</h4>
+            <div id="progItens"></div>
+            <button class="btn compact prog-add" id="progAdd" type="button"><i data-lucide="plus" aria-hidden="true"></i>Adicionar EPI</button>
+            <div class="field prog-obs-campo"><label for="progObs">Observação</label><input id="progObs" placeholder="Opcional (ex.: entregar na garagem)" autocomplete="off"></div>
+            <div class="form-actions"><button class="btn primary" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir programação</button><button class="btn" id="progLimpar" type="button"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button></div>
+            <div class="msg" id="progMsg" aria-live="polite"></div>
+            <datalist id="dlProgColab"></datalist><datalist id="dlProgEpi"></datalist>
+          </div>
+          <aside class="form-card prog-fila-card">
+            <h4 class="prog-titulo">Na fila do celular <span id="progFilaQtd"></span></h4>
+            <div id="progFila"><p class="prog-vazio">Carregando…</p></div>
+          </aside>
         </div>
       </section>
 

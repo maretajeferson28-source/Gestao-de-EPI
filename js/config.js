@@ -149,6 +149,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(stockEntryScript);
   }
 
+  if (!document.querySelector('script[data-programar]')) {
+    const programarScript = document.createElement('script');
+    programarScript.src = 'js/programar.js?v=20261029-1';
+    programarScript.dataset.programar = 'true';
+    document.body.appendChild(programarScript);
+  }
+
   if (!document.querySelector('script[data-ciepi]')) {
     const ciepiScript = document.createElement('script');
     ciepiScript.src = 'js/ciepi.js?v=20261017-1';
