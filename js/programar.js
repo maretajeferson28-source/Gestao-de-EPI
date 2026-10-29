@@ -67,7 +67,7 @@
             <input data-campo="qtd" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantidade">
             <button type="button" data-passo="1" aria-label="Aumentar"><i data-lucide="plus"></i></button>
           </div>
-          <input data-campo="tam" list="dlProgTam${id}" placeholder="Tamanho" autocomplete="off" aria-label="Tamanho (se houver)"><datalist id="dlProgTam${id}"></datalist>
+          <input data-campo="tam" list="dlProgTam${id}" placeholder="Tam." autocomplete="off" aria-label="Tamanho (se houver)" title="Tamanho (se houver)"><datalist id="dlProgTam${id}"></datalist>
           <button class="prog-remover" type="button" data-remover title="Tirar este EPI" aria-label="Tirar este EPI"><i data-lucide="trash-2"></i></button>
         </div>
         <div class="prog-cas" data-cas></div>

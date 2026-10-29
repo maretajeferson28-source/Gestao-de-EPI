@@ -2717,3 +2717,31 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .prog-colab-campo input:focus,.prog-data-campo input:focus,.prog-item-linha input:focus,.prog-obs-campo textarea:focus{border-color:var(--gold);box-shadow:0 0 10px rgba(232,111,24,.18)}
 .prog-data-campo input{color-scheme:dark}
 .prog-termo svg{width:15px;height:15px}
+/* Programar: mais enxuto e cor só na borda (ajuste 29/10) */
+.prog-layout{gap:14px}
+.prog-main{gap:12px}
+.prog-bloco,.prog-resumo{padding:14px;border-radius:14px}
+.prog-bloco-titulo{margin:0 0 10px;font-size:14px;gap:8px}
+.prog-num{width:auto;height:auto;background:none;border-radius:0;color:#ff8a24;font-size:14px}
+.prog-num::after{content:'.'}
+.prog-avatar{width:36px;height:36px;flex-basis:36px;font-size:13px;background:#1c1c1c}
+.prog-avatar.is-ok{background:#1c1c1c;border-color:rgba(255,102,0,.55);color:#ff9a3f}
+.prog-avatar svg{width:17px;height:17px}
+.prog-colab-campo input,.prog-data-campo input{height:38px;font-size:14px}
+.prog-data-campo input{width:160px}
+.prog-item{grid-template-columns:36px minmax(0,1fr);gap:10px;padding:10px;border-radius:12px;margin-bottom:8px}
+.prog-item-icone{width:36px;height:36px;border-radius:9px;background:#151515}
+.prog-item-icone svg{width:17px;height:17px}
+.prog-item-corpo{gap:8px}
+.prog-item-linha{grid-template-columns:minmax(0,1fr) 112px 96px 36px;gap:8px}
+.prog-item-linha input,.prog-qtd,.prog-remover{height:36px}
+.prog-remover{width:36px}
+.prog-qtd button{width:30px}
+.prog-ca{padding:4px 10px;gap:6px;font-size:12px}
+.prog-ca.is-sel{background:#1b1b1b;border-color:#ff7a00;color:#f1f1f1}
+.prog-ca.is-sel small{color:#ff9a3f}
+.prog-add{height:38px;font-size:13px;border-radius:10px}
+.prog-resumo{gap:12px}
+.prog-concluir{height:42px;font-size:14px}
+.prog-num{display:inline}
+.prog-item-linha{grid-template-columns:minmax(0,1fr) 112px 108px 36px}
