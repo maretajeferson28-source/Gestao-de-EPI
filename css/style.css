@@ -2644,7 +2644,7 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 /* Programar entrega (js/programar.js). No PC a entrega vira programação; o
    "Entregar" fica só no celular (a barra de baixo aciona o botão escondido). */
 @media (min-width:721px){ .sidebar .nav [data-page="nova"]{display:none!important} }
-.prog-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16px;align-items:start}
+.prog-layout{display:grid;grid-template-columns:minmax(0,1000px);gap:16px;align-items:start}
 .prog-form,.prog-fila-card{max-width:none}
 .prog-topo{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:13px}
 .prog-termo{display:block;margin-top:6px;font-size:12px;min-height:16px}

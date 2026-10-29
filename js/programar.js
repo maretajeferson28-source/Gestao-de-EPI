@@ -166,6 +166,7 @@
   // ---- Fila (programações ainda não entregues) ----
   async function carregarFila() {
     const box = $('progFila');
+    if (!box) return;
     const { data, error } = await db().from('entregas_programadas')
       .select('id,data_prevista,observacao,created_at,colaboradores(nome),entregas_programadas_itens(ordem,quantidade,tamanho,ca,epis(nome),epi_variantes(apelido))')
       .eq('status', 'programada')
@@ -231,7 +232,7 @@
       b.closest('.prog-item').remove();
       if (!$('progItens').children.length) novaLinha();
     });
-    $('progFila').addEventListener('click', (e) => { const b = e.target.closest('[data-cancelar]'); if (b) cancelar(b.dataset.cancelar); });
+    $('progFila')?.addEventListener('click', (e) => { const b = e.target.closest('[data-cancelar]'); if (b) cancelar(b.dataset.cancelar); });
   }
 
   window.EPI_PROGRAMAR = { abrir, carregarFila };
