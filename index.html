@@ -125,6 +125,7 @@
       <button class="active" data-page="dashboard"><span class="ico"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span><span class="text">Dashboard</span></button>
       <button data-page="nova" data-admin-only hidden><span class="ico"><i data-lucide="package-plus" aria-hidden="true"></i></span><span class="text">Entregar</span></button>
       <button data-page="programar" data-admin-only hidden><span class="ico"><i data-lucide="calendar-clock" aria-hidden="true"></i></span><span class="text">Programar</span></button>
+      <button data-page="fila" data-admin-only hidden><span class="ico"><i data-lucide="list-checks" aria-hidden="true"></i></span><span class="text">Fila de entregas</span></button>
       <button data-page="movimentacoes"><span class="ico"><i data-lucide="arrow-right-left" aria-hidden="true"></i></span><span class="text">Movimentações</span></button>
       <button data-page="colaboradores" data-admin-only hidden><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
       <button data-page="epis" data-admin-only hidden><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
@@ -256,6 +257,33 @@
             <div class="msg" id="progMsg" aria-live="polite"></div>
           </aside>
           <datalist id="dlProgColab"></datalist><datalist id="dlProgEpi"></datalist>
+        </div>
+      </section>
+
+      <section class="page" data-page-content="fila">
+        <div class="section-title"><div><h2>Fila de entregas</h2><p>Entregas programadas no PC. Toque em Entregar, faça a facial e a assinatura e confirme.</p></div></div>
+        <p class="fila-aviso" id="filaAviso" hidden></p>
+        <div id="filaLista"></div>
+        <div class="fila-tela" id="filaTela" hidden role="dialog" aria-modal="true" aria-labelledby="filaTelaNome">
+          <div class="fila-tela-topo">
+            <button class="fila-tela-voltar" id="filaTelaFechar" type="button" aria-label="Voltar"><i data-lucide="arrow-left"></i></button>
+            <div><strong id="filaTelaNome"></strong><small id="filaTelaData"></small></div>
+          </div>
+          <div class="fila-tela-corpo">
+            <p class="fila-termo" id="filaTelaTermo"></p>
+            <h4 class="fila-tela-titulo">Itens da entrega</h4>
+            <ul class="fila-tela-itens" id="filaTelaItens"></ul>
+            <p class="fila-obs" id="filaTelaObs" hidden></p>
+            <h4 class="fila-tela-titulo">Validação</h4>
+            <div class="fila-validacao">
+              <button class="btn" id="filaFacial" type="button"><i data-lucide="scan-face"></i>Facial</button>
+              <button class="btn" id="filaAssinatura" type="button"><i data-lucide="signature"></i>Assinatura</button>
+            </div>
+            <p class="msg" id="filaTelaMsg" aria-live="polite"></p>
+          </div>
+          <div class="fila-tela-rodape">
+            <button class="btn primary" id="filaConfirmar" type="button" disabled><i data-lucide="package-check"></i>Confirmar entrega</button>
+          </div>
         </div>
       </section>
 

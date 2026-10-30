@@ -2792,3 +2792,54 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .auto-op{padding:9px 10px;border-radius:7px;font-size:13px;color:#e5e5e5;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .auto-op:hover,.auto-op.is-ativo{background:#262626;color:#fff;box-shadow:inset 3px 0 0 #ff7a00}
 @media (max-width:720px){ .auto-op{padding:12px 12px;font-size:15px} }
+
+/* Fila de entregas (js/fila.js): só no celular; no PC fica o Programar */
+@media (min-width:721px){ .sidebar .nav [data-page="fila"]{display:none!important} }
+.mobile-tab-icon{position:relative}
+.mobile-tab-badge{position:absolute;top:-6px;right:-10px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ff4d4d;color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center;line-height:1;border:2px solid #141414}
+.mobile-tab-badge[hidden]{display:none}
+.fila-aviso{margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(56,180,123,.45);color:#45bd83;font-size:13px}
+.fila-aviso[hidden]{display:none}
+.fila-vazio{color:#8f8f8f;font-size:13px}
+.fila-vazio-grande{display:grid;justify-items:center;gap:6px;padding:40px 16px;text-align:center;color:#8f8f8f;font-size:13px}
+.fila-vazio-grande svg{width:34px;height:34px;color:#555}
+.fila-vazio-grande strong{color:#d4d4d4;font-size:15px}
+.fila-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.fila-card header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.fila-card header strong{font-size:15px;color:#f1f1f1}
+.fila-data{font-size:12px;color:#9a9a9a;white-space:nowrap}
+.fila-data.is-hoje{color:#45bd83}.fila-data.is-atrasada{color:#ffb800}
+.fila-card ul,.fila-tela-itens{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.fila-card li{display:grid;grid-template-columns:32px minmax(0,1fr);gap:6px;font-size:14px;color:#e5e5e5}
+.fila-card li b{color:#ff9a3f}
+.fila-card li small,.fila-item-nome small{display:block;font-size:11px;color:#8f8f8f}
+.fila-obs{margin:8px 0 0;font-size:12px;color:#b8b8b8;display:flex;gap:6px;align-items:flex-start}
+.fila-obs svg{width:14px;height:14px;flex:0 0 auto;margin-top:1px}
+.fila-card footer{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.fila-cancelar{color:#b8b8b8}
+.fila-tela{position:fixed;inset:0;z-index:2500;background:#0f0f0f;display:grid;grid-template-rows:auto 1fr auto}
+.fila-tela[hidden]{display:none}
+body.fila-tela-aberta{overflow:hidden}
+.fila-tela-topo{display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;border-bottom:1px solid #222}
+.fila-tela-topo strong{display:block;font-size:16px;color:#fff}
+.fila-tela-topo small{font-size:12px;color:#9a9a9a}
+.fila-tela-voltar{width:38px;height:38px;border-radius:10px;border:1px solid #333;background:#181818;color:#e5e5e5;display:grid;place-items:center}
+.fila-tela-voltar svg{width:18px;height:18px}
+.fila-tela-corpo{overflow-y:auto;padding:14px}
+.fila-termo{display:flex;gap:6px;align-items:center;margin:0 0 6px;font-size:13px}
+.fila-termo svg{width:16px;height:16px}
+.fila-termo.is-ok{color:#45bd83}.fila-termo.is-ruim{color:#ffb800}
+.fila-tela-titulo{margin:16px 0 8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#a9a9a9}
+.fila-tela-itens li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #262626;border-radius:10px;background:#151515}
+.fila-item-nome{font-size:14px;color:#f1f1f1;min-width:0}
+.fila-qtd{display:flex;align-items:center;height:34px;border:1px solid #333;border-radius:8px;background:#1c1c1c;flex:0 0 auto}
+.fila-qtd button{width:32px;height:100%;border:0;background:none;color:#b8b8b8;display:grid;place-items:center}
+.fila-qtd button svg{width:14px;height:14px}
+.fila-qtd input{width:36px;height:100%;border:0;background:none;color:#fff;text-align:center;font-weight:700;-moz-appearance:textfield;appearance:textfield}
+.fila-qtd input::-webkit-inner-spin-button,.fila-qtd input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.fila-validacao{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fila-validacao .btn{height:44px;justify-content:center}
+.fila-validacao .btn.is-ok{border-color:rgba(56,180,123,.6);color:#45bd83}
+.fila-tela-rodape{padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #222}
+.fila-tela-rodape .btn{width:100%;height:46px;justify-content:center;font-size:15px}
+.fila-tela-rodape .btn:disabled{opacity:.45}

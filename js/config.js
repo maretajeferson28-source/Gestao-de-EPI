@@ -156,6 +156,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(autocompletarScript);
   }
 
+  if (!document.querySelector('script[data-fila]')) {
+    const filaScript = document.createElement('script');
+    filaScript.src = 'js/fila.js?v=20261030-1';
+    filaScript.dataset.fila = 'true';
+    document.body.appendChild(filaScript);
+  }
+
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
     programarScript.src = 'js/programar.js?v=20261029-5';

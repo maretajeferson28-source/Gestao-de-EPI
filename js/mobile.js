@@ -98,7 +98,7 @@
   const TABS = [
     { page: 'inicio', label: 'Início', icon: 'house' },
     { page: 'caepi', label: 'C.A.', icon: 'search' },
-    { page: 'nova', label: 'Entrega', icon: 'clipboard-list', main: true },
+    { page: 'fila', label: 'Fila', icon: 'list-checks', main: true, badge: 'fila' },
     { action: 'termo', label: 'Termo', icon: 'shield-check' },
     { page: 'estoque', label: 'Estoque', icon: 'warehouse' }
   ];
@@ -108,7 +108,7 @@
   tabbar.innerHTML = TABS.map((tab) => `
     <button type="button" class="mobile-tab${tab.main ? ' is-main' : ''}${tab.page || tab.action ? '' : ' is-soon'}"
       ${tab.page ? `data-tab="${tab.page}"` : tab.action ? `data-action="${tab.action}"` : 'disabled aria-disabled="true" title="Em breve"'}>
-      <span class="mobile-tab-icon">${icon(tab.icon)}</span>
+      <span class="mobile-tab-icon">${icon(tab.icon)}${tab.badge ? '<span class="mobile-tab-badge" data-fila-badge hidden></span>' : ''}</span>
       <span class="mobile-tab-label">${escapeHtml(tab.label)}</span>
     </button>`).join('');
   app.appendChild(tabbar);

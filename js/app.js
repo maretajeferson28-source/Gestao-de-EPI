@@ -537,7 +537,7 @@ function renderDashboard(){
 }
 
 function nav(page){
-  if(!currentIsAdmin && ['nova','programar','colaboradores','epis','ciepi','autorizacoes','dados'].includes(page)) return;
+  if(!currentIsAdmin && ['nova','programar','fila','colaboradores','epis','ciepi','autorizacoes','dados'].includes(page)) return;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.pageContent===page));
   if(page==='dashboard') renderDashboard();
@@ -2232,7 +2232,7 @@ async function loadAdminAccess(){
   });
 
   const currentPage=document.querySelector('.page.active')?.dataset?.pageContent;
-  if(!currentIsAdmin && ['nova','programar','colaboradores','epis','autorizacoes','dados'].includes(currentPage)){
+  if(!currentIsAdmin && ['nova','programar','fila','colaboradores','epis','autorizacoes','dados'].includes(currentPage)){
     nav('dashboard');
   }
 
