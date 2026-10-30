@@ -58,21 +58,17 @@
     div.className = 'prog-item';
     div.dataset.linha = id;
     div.innerHTML = `
-      <div class="prog-item-icone" data-icone><i data-lucide="package"></i></div>
-      <div class="prog-item-corpo">
-        <div class="prog-item-linha">
-          <input data-campo="epi" list="dlProgEpi" placeholder="Qual EPI? Digite para buscar" autocomplete="off" aria-label="EPI">
-          <div class="prog-qtd">
-            <button type="button" data-passo="-1" aria-label="Diminuir"><i data-lucide="minus"></i></button>
-            <input data-campo="qtd" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantidade">
-            <button type="button" data-passo="1" aria-label="Aumentar"><i data-lucide="plus"></i></button>
-          </div>
-          <input data-campo="tam" list="dlProgTam${id}" placeholder="Tam." autocomplete="off" aria-label="Tamanho (se houver)" title="Tamanho (se houver)"><datalist id="dlProgTam${id}"></datalist>
-          <button class="prog-remover" type="button" data-remover title="Tirar este EPI" aria-label="Tirar este EPI"><i data-lucide="trash-2"></i></button>
-        </div>
-        <div class="prog-cas" data-cas></div>
-        <p class="prog-aviso" data-aviso hidden></p>
-      </div>`;
+      <div class="prog-epi-cel"><span class="prog-epi-icone" data-icone><i data-lucide="package"></i></span><input data-campo="epi" list="dlProgEpi" placeholder="Digite o EPI" autocomplete="off" aria-label="EPI"></div>
+      <select data-campo="ca" aria-label="C.A." disabled><option value="">—</option></select>
+      <span class="prog-saldo" data-saldo>—</span>
+      <div class="prog-qtd">
+        <button type="button" data-passo="-1" aria-label="Diminuir"><i data-lucide="minus"></i></button>
+        <input data-campo="qtd" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantidade">
+        <button type="button" data-passo="1" aria-label="Aumentar"><i data-lucide="plus"></i></button>
+      </div>
+      <input data-campo="tam" list="dlProgTam${id}" placeholder="—" autocomplete="off" aria-label="Tamanho (se houver)"><datalist id="dlProgTam${id}"></datalist>
+      <button class="prog-remover" type="button" data-remover title="Tirar este EPI" aria-label="Tirar este EPI"><i data-lucide="trash-2"></i></button>
+      <p class="prog-aviso" data-aviso hidden></p>`;
     $('progItens').appendChild(div);
     icons();
     return div;
@@ -80,26 +76,26 @@
 
   async function escolherEpi(linha) {
     const epi = acharEpi(linha.querySelector('[data-campo="epi"]').value);
-    const box = linha.querySelector('[data-cas]');
+    const sel = linha.querySelector('[data-campo="ca"]');
     const dlTam = linha.querySelector('datalist');
     if ((linha.dataset.epi || '') === (epi?.id || '')) return avisar(linha);
     linha.dataset.epi = epi?.id || '';
     linha.dataset.var = '';
     linha.classList.toggle('tem-epi', !!epi);
     linha.querySelector('[data-icone]').innerHTML = `<i data-lucide="${esc(epi ? iconeEpi(epi.nome) : 'package')}"></i>`;
-    box.innerHTML = '';
+    sel.innerHTML = '<option value="">—</option>';
+    sel.disabled = true;
     dlTam.innerHTML = '';
     if (epi) {
       const vars = variantes(epi.id);
       await saldoDoEpi(epi.id);
       if (vars.length) {
-        box.innerHTML = '<span class="prog-cas-rotulo">C.A.:</span>' + vars.map((v) => {
-          const s = saldoCa(epi.id, v);
-          const vencido = v.data_validade && String(v.data_validade).slice(0, 10) < hoje();
-          return `<button type="button" class="prog-ca${s <= 0 ? ' is-zero' : ''}${vencido ? ' is-vencido' : ''}" data-var="${esc(v.id)}">
-            ${esc(v.apelido || codigo(v.ca))}<small>${v.apelido ? esc(codigo(v.ca)) + ' · ' : ''}${fmt(s)} em estoque</small></button>`;
-        }).join('');
-        if (vars.length === 1) marcarCa(linha, vars[0].id);
+        sel.innerHTML = '<option value="">Escolha o C.A.</option>' + vars.map((v) =>
+          `<option value="${esc(v.id)}">${esc((v.apelido ? v.apelido + ' · ' : '') + codigo(v.ca))} (${fmt(saldoCa(epi.id, v))})</option>`).join('');
+        sel.disabled = false;
+        if (vars.length === 1) { sel.value = vars[0].id; linha.dataset.var = vars[0].id; }
+      } else {
+        sel.innerHTML = '<option value="">Sem C.A. cadastrado</option>';
       }
       const tams = [...new Set(lista('movements').filter((m) => m.epi_id === epi.id).map((m) => String(m.tamanho || '').trim()).filter((t) => t && t !== 'N/A'))];
       dlTam.innerHTML = tams.map((t) => `<option value="${esc(t)}">`).join('');
@@ -110,7 +106,6 @@
 
   function marcarCa(linha, varId) {
     linha.dataset.var = varId;
-    linha.querySelectorAll('.prog-ca').forEach((b) => b.classList.toggle('is-sel', b.dataset.var === varId));
     avisar(linha);
   }
 
@@ -128,9 +123,18 @@
       if (qtd > s) avisos.push(s > 0 ? `Só tem ${fmt(s)} em estoque deste C.A.` : 'Este C.A. está sem estoque.');
       if (v?.data_validade && String(v.data_validade).slice(0, 10) < hoje()) avisos.push(`C.A. vencido em ${dataBR(v.data_validade)}.`);
     }
-    if (epiId && !varId && variantes(epiId).length) avisos.push('Toque no C.A. que vai ser entregue.');
+    if (epiId && !varId && variantes(epiId).length) avisos.push('Escolha o C.A. que vai ser entregue.');
     el.textContent = avisos.join(' ');
     el.hidden = !avisos.length;
+    // Coluna Estoque: saldo do C.A. escolhido; aviso vira ícone com o motivo no título.
+    const cel = linha.querySelector('[data-saldo]');
+    const v = varId ? lista('epiVariants').find((x) => x.id === varId) : null;
+    const s = v ? saldoCa(epiId, v) : null;
+    cel.className = 'prog-saldo' + (s == null ? '' : s <= 0 || qtd > s ? ' is-ruim' : ' is-ok') + (avisos.length ? ' tem-aviso' : '');
+    cel.title = avisos.join(' ');
+    cel.innerHTML = (avisos.length ? '<i data-lucide="triangle-alert"></i>' : '') + (s == null ? '—' : fmt(s));
+    linha.classList.toggle('tem-aviso', !!avisos.length);
+    icons();
     resumo();
   }
 
@@ -145,11 +149,12 @@
       av.textContent = ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
     } else av.innerHTML = '<i data-lucide="user"></i>';
     if (!nome) { el.textContent = ''; el.className = 'prog-termo'; }
-    else if (!c) { el.textContent = 'Colaborador não cadastrado. Escolha um da lista.'; el.className = 'prog-termo is-ruim'; }
+    else if (!c) { el.textContent = 'Não cadastrado'; el.title = 'Escolha um colaborador da lista.'; el.className = 'prog-termo is-ruim'; }
     else {
       const ok = window.EPI_TERMO?.temAssinatura?.(c.id);
       el.innerHTML = ok ? '<i data-lucide="shield-check"></i>Termo assinado'
-        : '<i data-lucide="triangle-alert"></i>Sem termo assinado: no celular, a entrega só libera depois do termo';
+        : '<i data-lucide="triangle-alert"></i>Sem termo';
+      el.title = ok ? '' : 'No celular, a entrega só libera depois do termo assinado.';
       el.className = 'prog-termo ' + (ok ? 'is-ok' : 'is-ruim');
     }
     icons();
@@ -242,6 +247,7 @@
       const linha = e.target.closest('.prog-item');
       if (!linha) return;
       if (e.target.dataset.campo === 'epi') escolherEpi(linha);
+      else if (e.target.dataset.campo === 'ca') marcarCa(linha, e.target.value);
       else avisar(linha);
     });
     $('progItens').addEventListener('click', (e) => {

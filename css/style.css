@@ -2843,3 +2843,42 @@ body.fila-tela-aberta{overflow:hidden}
 .fila-tela-rodape{padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #222}
 .fila-tela-rodape .btn{width:100%;height:46px;justify-content:center;font-size:15px}
 .fila-tela-rodape .btn:disabled{opacity:.45}
+
+/* Programar: itens como tabela de pedido (30/10) */
+.prog-cab,.prog-item{display:grid;grid-template-columns:20px minmax(0,1.5fr) minmax(0,1.3fr) 72px 100px 76px 32px;gap:8px;align-items:center}
+.prog-cab{padding:0 0 8px;border-bottom:1px solid #262626;margin-bottom:8px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8f8f8f}
+.prog-cab .num{text-align:center}
+.prog-item{counter-increment:progItem;padding:6px 0;margin:0;border:0;border-bottom:1px solid #1f1f1f;background:none;border-radius:0}
+.prog-item:last-child{border-bottom:0}
+.prog-item::before{content:counter(progItem);color:#8f8f8f;font-weight:700;font-size:12px;line-height:1;text-align:left}
+.prog-epi-cel{position:relative;min-width:0}
+.prog-epi-icone{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#777;display:grid;pointer-events:none}
+.prog-item.tem-epi .prog-epi-icone{color:#ff8a24}
+.prog-epi-icone svg{width:15px;height:15px}
+.prog-epi-cel input{width:100%;height:32px;padding:0 10px 0 32px!important}
+.prog-item select{width:100%;height:32px;background:#262626;border:1px solid #393939;color:#fff;border-radius:8px;padding:0 8px;font-size:13px;outline:none;color-scheme:dark}
+.prog-item select:focus{border-color:var(--gold)}
+.prog-item select:disabled{opacity:.5}
+.prog-saldo{display:flex;align-items:center;justify-content:center;gap:5px;height:32px;font-size:13px;font-weight:700;color:#8f8f8f;border-radius:8px;cursor:default}
+.prog-saldo.is-ok{color:#45bd83}.prog-saldo.is-ruim{color:#ff6b6b}
+.prog-saldo.tem-aviso svg{width:14px;height:14px;color:#ffb800}
+.prog-item .prog-qtd{height:32px}
+.prog-item > input[data-campo="tam"]{height:32px;text-align:center;padding:0 6px;width:100%;background:#262626;border:1px solid #393939;color:#fff;border-radius:8px;outline:none}
+.prog-item > input[data-campo="tam"]:focus{border-color:var(--gold)}
+.prog-item .prog-aviso{display:none!important}
+.prog-item .prog-remover{width:32px;height:32px}
+#progItens{margin-bottom:10px}
+@media (max-width:1100px){ .prog-cab,.prog-item{grid-template-columns:18px minmax(0,1.4fr) minmax(0,1.2fr) 60px 96px 64px 32px} }
+/* Programar: selo do termo dentro do campo do colaborador */
+.prog-colab-campo{position:relative}
+.prog-colab-campo input{padding-right:130px!important}
+.prog-colab-campo .prog-termo{position:absolute;right:8px;bottom:6px;height:20px;padding:0 8px;border-radius:999px;border:1px solid #333;background:#1c1c1c;font-size:11px;font-weight:600;gap:4px;min-height:0}
+.prog-colab-campo .prog-termo.is-ok{border-color:rgba(56,180,123,.45)}
+.prog-colab-campo .prog-termo.is-ruim{border-color:rgba(255,184,0,.45)}
+.prog-colab-campo .prog-termo svg{width:12px;height:12px}
+.prog-epi-cel input{background:#262626;border:1px solid #393939;color:#fff;border-radius:8px;outline:none;font-size:13px}
+.prog-epi-cel input:hover,.prog-item select:hover,.prog-item > input[data-campo="tam"]:hover{border-color:rgba(232,111,24,.30)}
+.prog-epi-cel input:focus{border-color:var(--gold);box-shadow:0 0 10px rgba(232,111,24,.18)}
+.prog-item .prog-qtd{background:#262626;border-color:#393939}
+.prog-item .prog-qtd input{color:#fff;font-size:13px}
+.prog-item > input[data-campo="tam"]{font-size:13px}
