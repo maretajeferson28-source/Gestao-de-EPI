@@ -2882,3 +2882,6 @@ body.fila-tela-aberta{overflow:hidden}
 .prog-item .prog-qtd{background:#262626;border-color:#393939}
 .prog-item .prog-qtd input{color:#fff;font-size:13px}
 .prog-item > input[data-campo="tam"]{font-size:13px}
+/* Seletor de quantidade: sem borda/contorno no número; o foco marca o seletor inteiro */
+.prog-qtd input,.prog-qtd input:focus,.fila-qtd input,.fila-qtd input:focus{outline:none!important;border:0!important;box-shadow:none!important;background:none!important}
+.prog-qtd:focus-within,.fila-qtd:focus-within{border-color:var(--gold)!important}
