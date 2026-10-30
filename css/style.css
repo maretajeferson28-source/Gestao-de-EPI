@@ -2786,3 +2786,9 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .prog-item::before{content:counter(progItem) '.';color:#ff8a24;font-weight:800;font-size:13px;line-height:32px;text-align:right}
 /* Programar: sem a linha do termo enquanto não há colaborador escolhido */
 .prog-termo:empty{display:none}
+/* Lista de sugestões do app (js/autocompletar.js) */
+.auto-lista{position:fixed;z-index:3000;max-height:260px;overflow-y:auto;background:#1c1c1c;border:1px solid #393939;border-radius:10px;box-shadow:0 12px 28px rgba(0,0,0,.45);padding:4px;overscroll-behavior:contain}
+.auto-lista[hidden]{display:none}
+.auto-op{padding:9px 10px;border-radius:7px;font-size:13px;color:#e5e5e5;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.auto-op:hover,.auto-op.is-ativo{background:#262626;color:#fff;box-shadow:inset 3px 0 0 #ff7a00}
+@media (max-width:720px){ .auto-op{padding:12px 12px;font-size:15px} }

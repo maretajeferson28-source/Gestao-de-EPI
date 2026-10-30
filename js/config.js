@@ -149,6 +149,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(stockEntryScript);
   }
 
+  if (!document.querySelector('script[data-autocompletar]')) {
+    const autocompletarScript = document.createElement('script');
+    autocompletarScript.src = 'js/autocompletar.js?v=20261030-1';
+    autocompletarScript.dataset.autocompletar = 'true';
+    document.body.appendChild(autocompletarScript);
+  }
+
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
     programarScript.src = 'js/programar.js?v=20261029-5';
