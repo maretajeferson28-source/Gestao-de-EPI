@@ -23,14 +23,105 @@
   let aberta = null; // programação em entrega
   const validacao = { facial: null, assinatura: null };
 
-  // ---- Contador na aba ----
+  // ---- Contador no menu (Fila de entregas) ----
   function marcarBadge(n) {
     document.querySelectorAll('[data-fila-badge]').forEach((b) => { b.textContent = n > 99 ? '99+' : String(n); b.hidden = !n; });
   }
+
+  // ---- Sininho de notificações (ao lado do Sincronizar) ----
+  // Por enquanto avisa as entregas programadas na fila. "Novas" = criadas
+  // depois da última vez que o sininho foi aberto neste aparelho.
+  const VISTO = 'epi-notif-visto';
+  let notifs = [];
+  const lerVisto = () => { try { return Number(localStorage.getItem(VISTO)) || 0; } catch (_) { return 0; } };
+  const gravarVisto = () => { try { localStorage.setItem(VISTO, String(Date.now())); } catch (_) { /* sem armazenamento */ } };
+  const haQuanto = (iso) => {
+    const min = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+    if (min < 1) return 'agora';
+    if (min < 60) return `há ${min} min`;
+    const h = Math.round(min / 60);
+    if (h < 24) return `há ${h} h`;
+    const d = Math.round(h / 24);
+    return `há ${d} dia${d > 1 ? 's' : ''}`;
+  };
+
+  function montarSino() {
+    if (!isAdmin()) return;
+    document.querySelectorAll('[data-sync-btn]').forEach((sync) => {
+      if (sync.previousElementSibling?.matches?.('[data-notif-btn]')) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.notifBtn = sync.dataset.syncBtn;
+      b.className = sync.dataset.syncBtn === 'celular' ? 'mobile-only notif-btn notif-btn-mobile' : 'btn compact notif-btn';
+      b.setAttribute('aria-label', 'Notificações');
+      b.title = 'Notificações';
+      b.innerHTML = '<i data-lucide="bell"></i><span class="notif-badge" hidden></span>';
+      sync.insertAdjacentElement('beforebegin', b);
+      b.addEventListener('click', (e) => { e.stopPropagation(); alternarPainel(b); });
+    });
+    icons();
+    renderSino();
+  }
+
+  function renderSino() {
+    const visto = lerVisto();
+    const novos = notifs.filter((n) => Date.parse(n.created_at) > visto).length;
+    document.querySelectorAll('.notif-badge').forEach((b) => { b.textContent = novos > 99 ? '99+' : String(novos); b.hidden = !novos; });
+    document.querySelectorAll('[data-notif-btn]').forEach((b) => b.classList.toggle('tem-novo', !!novos));
+  }
+
+  const painel = document.createElement('div');
+  painel.className = 'notif-painel';
+  painel.hidden = true;
+  painel.setAttribute('role', 'dialog');
+  painel.setAttribute('aria-label', 'Notificações');
+
+  function alternarPainel(botao) {
+    if (!painel.hidden) return fecharPainel();
+    const visto = lerVisto();
+    painel.innerHTML = `
+      <div class="notif-topo"><strong>Notificações</strong><span>${notifs.length ? `${notifs.length} na fila` : ''}</span></div>
+      ${notifs.length ? `<ul class="notif-lista">${notifs.map((n) => {
+        const itens = (n.entregas_programadas_itens || []).reduce((a, i) => a + Number(i.quantidade || 0), 0);
+        const novo = Date.parse(n.created_at) > visto;
+        return `<li><button type="button" data-notif-abrir class="${novo ? 'is-novo' : ''}">
+          <span class="notif-icone"><i data-lucide="calendar-clock"></i></span>
+          <span class="notif-texto">Entrega programada para <strong>${esc(n.colaboradores?.nome || 'colaborador')}</strong>
+            <small>${fmt(itens)} ${itens === 1 ? 'item' : 'itens'} · para ${dataBR(n.data_prevista)} · ${haQuanto(n.created_at)}</small></span>
+          ${novo ? '<span class="notif-ponto" aria-label="Nova"></span>' : ''}
+        </button></li>`;
+      }).join('')}</ul>` : '<p class="notif-vazio">Nenhuma novidade por aqui.</p>'}
+      <button type="button" class="notif-rodape" data-notif-abrir>Abrir fila de entregas</button>`;
+    painel.hidden = false;
+    icons();
+    const r = botao.getBoundingClientRect();
+    painel.style.top = `${r.bottom + 8}px`;
+    if (window.innerWidth <= 720) { painel.style.left = '12px'; painel.style.right = '12px'; }
+    else { painel.style.left = ''; painel.style.right = `${Math.max(12, window.innerWidth - r.right)}px`; }
+    gravarVisto();
+    renderSino();
+  }
+  function fecharPainel() { painel.hidden = true; }
+  painel.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-notif-abrir]')) return;
+    fecharPainel();
+    document.querySelector('.nav [data-page="fila"]')?.click();
+  });
+  document.addEventListener('click', (e) => { if (!painel.hidden && !painel.contains(e.target)) fecharPainel(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharPainel(); });
+
   async function contar() {
     if (!isAdmin() || !db() || !navigator.onLine) return;
-    const { count, error } = await db().from('entregas_programadas').select('id', { count: 'exact', head: true }).eq('status', 'programada');
-    if (!error) marcarBadge(count || 0);
+    montarSino();
+    const { data, error } = await db().from('entregas_programadas')
+      .select('id,created_at,data_prevista,colaboradores(nome),entregas_programadas_itens(quantidade)')
+      .eq('status', 'programada')
+      .order('created_at', { ascending: false })
+      .limit(30);
+    if (error) return;
+    notifs = data || [];
+    marcarBadge(notifs.length);
+    renderSino();
   }
 
   // ---- Lista ----
@@ -76,6 +167,7 @@
       .eq('id', id).eq('status', 'programada');
     if (error) return alert('Não foi possível cancelar: ' + error.message);
     carregar();
+    contar();
   }
 
   // ---- Tela de entrega ----
@@ -160,6 +252,7 @@
       fecharEntrega();
       try { if (typeof loadAll === 'function') await loadAll(false); } catch (_) { /* recarrega na próxima abertura */ }
       await carregar();
+      contar();
       const aviso = $('filaAviso');
       aviso.textContent = `Entrega de ${nome} confirmada e baixada do estoque.`;
       aviso.hidden = false;
@@ -172,6 +265,7 @@
 
   function start() {
     if (!$('filaLista')) return;
+    document.body.appendChild(painel);
     document.querySelector('.nav [data-page="fila"]')?.addEventListener('click', carregar);
     $('filaLista').addEventListener('click', (e) => {
       const ent = e.target.closest('[data-entregar]'); if (ent) return abrirEntrega(ent.dataset.entregar);

@@ -827,7 +827,23 @@ function aplicarFacial(payload,facial){
 $('nFacial').addEventListener('click',()=>validarEntrega('face'));
 document.querySelector('.nav [data-page="nova"]')?.addEventListener('click',()=>{if(navigator.onLine) window.EPI_FACE?.preparar()});
 $('nAssinatura').addEventListener('click',()=>validarEntrega('assinatura'));
-$('saidaForm').addEventListener('reset',()=>setTimeout(limparValidacao,0));
+$('saidaForm').addEventListener('reset',()=>setTimeout(()=>{limparValidacao();checarTermoAvulsa()},0));
+// Entrega avulsa: quem não tem termo não recebe. O aviso aparece assim que o
+// colaborador é escolhido, e facial, assinatura e salvar ficam travados.
+function checarTermoAvulsa(completo=false){
+  const aviso=$('nTermoAviso'); if(!aviso) return;
+  const nome=$('nColab').value.trim();
+  const c=nome&&nome!=='Bolsa Reserva'?findCollaborator(nome):null;
+  let msg='';
+  if(c&&!window.EPI_TERMO?.temAssinatura?.(c.id)) msg=`${c.nome} não tem termo assinado. Colete o termo na aba Termo antes de entregar.`;
+  else if(completo&&nome&&nome!=='Bolsa Reserva'&&!c) msg=`"${nome}" não é um colaborador cadastrado. Escolha um da lista.`;
+  aviso.textContent=msg; aviso.hidden=!msg;
+  ['nFacial','nAssinatura'].forEach(id=>{if($(id)) $(id).disabled=Boolean(msg)});
+  const salvar=$('saidaForm').querySelector('button[type="submit"]'); if(salvar) salvar.disabled=Boolean(msg);
+}
+$('nColab').addEventListener('input',()=>checarTermoAvulsa(false));
+$('nColab').addEventListener('change',()=>checarTermoAvulsa(true));
+document.querySelector('.nav [data-page="nova"]')?.addEventListener('click',()=>checarTermoAvulsa(true));
 // Para guardar na fila offline (localStorage só aceita texto).
 const blobParaTexto=b=>new Promise(ok=>{if(!b) return ok(null); const r=new FileReader(); r.onload=()=>ok(r.result); r.onerror=()=>ok(null); r.readAsDataURL(b)});
 async function enviarValidacao(payload,{assinatura}){
@@ -849,6 +865,9 @@ $('saidaForm').addEventListener('submit',async e=>{
       ?`"${colNome}" não é um colaborador cadastrado. Cadastre o colaborador e colete o termo antes da entrega.`
       :(!window.EPI_TERMO?.temAssinatura?.(alvo.id)?`${alvo.nome} ainda não assinou o termo de autorização. Peça para assinar no celular (botão Termo) antes da entrega.`:'');
     if(bloqueio){$('saidaMsg').textContent=bloqueio;$('saidaMsg').classList.add('is-error');return}
+    // Entrega avulsa: precisa da facial ou da assinatura do próprio colaborador.
+    const validou=validacaoEntrega.colaboradorId===alvo.id&&Boolean(validacaoEntrega.facial?.ok||validacaoEntrega.selfie||validacaoEntrega.assinatura);
+    if(!validou){$('saidaMsg').textContent='Faça a facial ou a assinatura do colaborador antes de salvar.';$('saidaMsg').classList.add('is-error');return}
   }
   const semInternet=!navigator.onLine;
   if(semInternet&&!epiCatalog.find(x=>normalize(x.nome)===normalize(epiNome))){

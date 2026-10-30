@@ -158,7 +158,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-fila]')) {
     const filaScript = document.createElement('script');
-    filaScript.src = 'js/fila.js?v=20261030-1';
+    filaScript.src = 'js/fila.js?v=20261030-2';
     filaScript.dataset.fila = 'true';
     document.body.appendChild(filaScript);
   }

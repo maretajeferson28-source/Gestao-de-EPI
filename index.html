@@ -125,7 +125,7 @@
       <button class="active" data-page="dashboard"><span class="ico"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span><span class="text">Dashboard</span></button>
       <button data-page="nova" data-admin-only hidden><span class="ico"><i data-lucide="package-plus" aria-hidden="true"></i></span><span class="text">Entregar</span></button>
       <button data-page="programar" data-admin-only hidden><span class="ico"><i data-lucide="calendar-clock" aria-hidden="true"></i></span><span class="text">Programar</span></button>
-      <button data-page="fila" data-admin-only hidden><span class="ico"><i data-lucide="list-checks" aria-hidden="true"></i></span><span class="text">Fila de entregas</span></button>
+      <button data-page="fila" data-admin-only hidden><span class="ico"><i data-lucide="list-checks" aria-hidden="true"></i></span><span class="text">Fila de entregas</span><span class="nav-badge" data-fila-badge hidden></span></button>
       <button data-page="movimentacoes"><span class="ico"><i data-lucide="arrow-right-left" aria-hidden="true"></i></span><span class="text">Movimentações</span></button>
       <button data-page="colaboradores" data-admin-only hidden><span class="ico"><i data-lucide="users" aria-hidden="true"></i></span><span class="text">Colaboradores</span></button>
       <button data-page="epis" data-admin-only hidden><span class="ico"><i data-lucide="hard-hat" aria-hidden="true"></i></span><span class="text">EPIs / Itens</span></button>
@@ -206,9 +206,10 @@
       </section>
 
       <section class="page" data-page-content="nova">
-        <div class="section-title"><div><h2>Nova saída</h2><p>Cadastre a movimentação diretamente no sistema.</p></div></div>
+        <div class="section-title"><div><h2>Entrega avulsa</h2><p>Entrega na hora, sem programação. Valide com a facial ou a assinatura do colaborador.</p></div></div>
         <div class="form-card">
           <form id="saidaForm">
+            <p class="entrega-termo-aviso" id="nTermoAviso" role="alert" hidden></p>
             <div class="form-grid">
               <div class="field"><label>Data</label><input type="date" id="nData" required></div>
               <div class="field"><label>Colaborador / Destino</label><input id="nColab" list="dlColab" placeholder="Nome ou Bolsa Reserva"></div>
