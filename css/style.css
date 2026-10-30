@@ -2784,3 +2784,5 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 #progItens{counter-reset:progItem}
 .prog-item{counter-increment:progItem;grid-template-columns:18px 32px minmax(0,1fr)}
 .prog-item::before{content:counter(progItem) '.';color:#ff8a24;font-weight:800;font-size:13px;line-height:32px;text-align:right}
+/* Programar: sem a linha do termo enquanto não há colaborador escolhido */
+.prog-termo:empty{display:none}
