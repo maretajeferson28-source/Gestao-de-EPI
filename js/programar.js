@@ -176,12 +176,15 @@
     const total = itens.reduce((a, i) => a + i.qtd, 0);
     const comAviso = itens.filter((i) => i.aviso).length;
     box.innerHTML = `
-      <div class="prog-res-quem"><div><span>Para</span><br><strong>${c ? esc(c.nome) : '—'}</strong></div>
-        <div style="text-align:right"><span>Em</span><br><strong>${esc(dataBR($('progData').value) || '—')}</strong></div></div>
+      <dl class="prog-res-quem">
+        <div><dt>Colaborador</dt><dd class="${c ? '' : 'vazio'}">${c ? esc(c.nome) : 'Não escolhido'}</dd></div>
+        <div><dt>Entrega em</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
+      </dl>
       ${itens.length ? `<ul class="prog-res-lista">${itens.map((i) => `<li><b>${fmt(i.qtd)}×</b><span>${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span></li>`).join('')}</ul>
-        <div class="prog-res-total"><span>Total</span><strong>${fmt(total)} ${total === 1 ? 'item' : 'itens'}</strong></div>
         ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
-        : '<p class="prog-res-vazio">Escolha os EPIs ao lado.</p>'}`;
+        : '<p class="prog-res-vazio">Nenhum EPI na lista ainda.</p>'}`;
+    const conta = $('progConta');
+    if (conta) conta.textContent = `${fmt(total)} ${total === 1 ? 'item' : 'itens'}`;
   }
 
   function limpar() {
