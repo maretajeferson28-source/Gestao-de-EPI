@@ -2780,3 +2780,7 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .prog-obs-campo textarea{min-height:48px;font-size:13px;padding:8px 10px;border-radius:8px}
 .prog-botoes{display:flex;justify-content:flex-end;gap:8px}
 .prog-botoes .prog-limpar,.prog-botoes .prog-concluir{width:auto;height:32px;font-size:13px;padding:0 14px;flex:0 0 auto}
+/* Programar: número só em cada EPI adicionado */
+#progItens{counter-reset:progItem}
+.prog-item{counter-increment:progItem;grid-template-columns:18px 32px minmax(0,1fr)}
+.prog-item::before{content:counter(progItem) '.';color:#ff8a24;font-weight:800;font-size:13px;line-height:32px;text-align:right}
