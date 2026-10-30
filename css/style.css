@@ -2932,3 +2932,14 @@ body.fila-tela-aberta{overflow:hidden}
 .prog-res-quem dd{margin:0;font-size:13px;font-weight:600;color:#f1f1f1;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prog-res-quem dd.vazio{color:#6f6f6f;font-weight:400}
 .prog-resumo .msg:empty{display:none}
+
+/* Resumo da entrega: itens alinhados com o resto, quantidade à direita */
+.prog-res-sec{display:grid;gap:6px}
+.prog-res-rotulo{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a9a9a9}
+.prog-resumo .prog-res-lista{gap:0}
+.prog-resumo .prog-res-lista li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #262626}
+.prog-resumo .prog-res-lista li:first-child{padding-top:2px}
+.prog-res-nome{min-width:0;font-size:13px;color:#f1f1f1;font-weight:500}
+.prog-res-nome small{display:block;margin-top:1px;font-size:11px;font-weight:400;color:#8f8f8f}
+.prog-resumo .prog-res-lista li b{flex:0 0 auto;font-size:12px;font-weight:600;color:#ff9a3f;border:1px solid rgba(255,138,36,.35);border-radius:999px;padding:2px 9px;text-align:center}
+.prog-res-quem{padding-bottom:10px}

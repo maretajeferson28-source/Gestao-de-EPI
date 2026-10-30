@@ -180,7 +180,7 @@
         <div><dt>Colaborador</dt><dd class="${c ? '' : 'vazio'}">${c ? esc(c.nome) : 'Não escolhido'}</dd></div>
         <div><dt>Entrega em</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
       </dl>
-      ${itens.length ? `<ul class="prog-res-lista">${itens.map((i) => `<li><b>${fmt(i.qtd)}×</b><span>${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span></li>`).join('')}</ul>
+      ${itens.length ? `<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><ul class="prog-res-lista">${itens.map((i) => `<li><span class="prog-res-nome">${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span><b>${fmt(i.qtd)} un</b></li>`).join('')}</ul></div>
         ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
         : '<p class="prog-res-vazio">Nenhum EPI na lista ainda.</p>'}`;
     const conta = $('progConta');
