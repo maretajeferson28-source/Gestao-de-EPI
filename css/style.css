@@ -2751,3 +2751,8 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .prog-qtd input,.stock-qtd-passo input{-moz-appearance:textfield;appearance:textfield;text-align:center}
 .prog-qtd input::-webkit-inner-spin-button,.prog-qtd input::-webkit-outer-spin-button,
 .stock-qtd-passo input::-webkit-inner-spin-button,.stock-qtd-passo input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* Programar: Limpar e Concluir lado a lado */
+.prog-botoes{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px}
+.prog-botoes .prog-limpar{height:42px;justify-self:stretch;color:#b8b8b8;font-size:13px;padding:0 12px}
+.prog-botoes .prog-limpar:hover{color:#ff8f8f;border-color:#7a3434}
+.prog-botoes .prog-concluir{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
