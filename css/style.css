@@ -2756,3 +2756,27 @@ html.tc-aberto,html.tc-aberto body{overflow:hidden}
 .prog-botoes .prog-limpar{height:42px;justify-self:stretch;color:#b8b8b8;font-size:13px;padding:0 12px}
 .prog-botoes .prog-limpar:hover{color:#ff8f8f;border-color:#7a3434}
 .prog-botoes .prog-concluir{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Programar: tamanhos proporcionais à letra e linha do "Para quem" alinhada (30/10) */
+.prog-rotulo,.prog-data-campo span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a9a9a9;line-height:1}
+.prog-topo{align-items:flex-start}
+.prog-colab{align-items:flex-start}
+.prog-avatar{margin-top:17px;width:32px;height:32px;flex-basis:32px;font-size:12px}
+.prog-avatar svg{width:15px;height:15px}
+.prog-colab-campo,.prog-data-campo{gap:6px}
+.prog-colab-campo input,.prog-data-campo input{height:32px;font-size:13px;padding:0 10px;border-radius:8px}
+.prog-data-campo input{width:150px}
+.prog-item{grid-template-columns:32px minmax(0,1fr)}
+.prog-item-icone{width:32px;height:32px;border-radius:8px}
+.prog-item-icone svg{width:15px;height:15px}
+.prog-item-linha{grid-template-columns:minmax(0,1fr) 100px 96px 32px}
+.prog-item-linha input,.prog-qtd,.prog-remover{height:32px;font-size:13px;border-radius:8px}
+.prog-item-linha input{padding:0 10px}
+.prog-remover{width:32px}
+.prog-remover svg{width:14px;height:14px}
+.prog-qtd button{width:28px}
+.prog-qtd button svg{width:13px;height:13px}
+.prog-add{height:32px;font-size:12px;border-radius:8px}
+.prog-add svg{width:14px;height:14px}
+.prog-obs-campo textarea{min-height:48px;font-size:13px;padding:8px 10px;border-radius:8px}
+.prog-botoes{display:flex;justify-content:flex-end;gap:8px}
+.prog-botoes .prog-limpar,.prog-botoes .prog-concluir{width:auto;height:32px;font-size:13px;padding:0 14px;flex:0 0 auto}
