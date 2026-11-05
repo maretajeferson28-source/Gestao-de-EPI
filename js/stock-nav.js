@@ -126,15 +126,24 @@
     box.hidden = false;
     const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const busca = page.querySelector('#stockSearchInput')?.value.trim();
-    const cards = stockItens.map((i) => {
-      const critico = Number(i.saldo) <= 0;
+    // EPIs cadastrados que ainda não tiveram entrada aparecem no fim, com 0.
+    const semAcento = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    let catalogo = [];
+    try { catalogo = Array.isArray(epiCatalog) ? epiCatalog : []; } catch (_) {}
+    const comSaldo = new Set(stockItens.map((i) => i.epi_id));
+    const semEntrada = catalogo
+      .filter((e) => e.ativo !== false && !comSaldo.has(e.id) && (!busca || semAcento(e.nome).includes(semAcento(busca))))
+      .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'))
+      .map((e) => ({ epi_id: e.id, nome: e.nome, entradas: 0, saidas: 0, saldo: 0, minimo: null, semEntrada: true }));
+    const cards = [...stockItens, ...semEntrada].map((i) => {
+      const critico = !i.semEntrada && Number(i.saldo) <= 0;
       const baixo = !critico && i.minimo != null && Number(i.saldo) <= Number(i.minimo);
-      return `<article class="stock-item${critico ? ' is-critico' : baixo ? ' is-baixo' : ''}" data-stock-epi="${esc(i.epi_id)}" data-stock-nome="${esc(i.nome)}" tabindex="0" role="button" title="${i.minimo != null ? `Mínimo: ${formatNumber(i.minimo)} • ` : ''}Clique para editar">
+      return `<article class="stock-item${i.semEntrada ? ' is-sem-entrada' : critico ? ' is-critico' : baixo ? ' is-baixo' : ''}" data-stock-epi="${esc(i.epi_id)}" data-stock-nome="${esc(i.nome)}" tabindex="0" role="button" title="${i.minimo != null ? `Mínimo: ${formatNumber(i.minimo)} • ` : ''}Clique para editar">
         <span class="stock-item-icone" aria-hidden="true"><i data-lucide="${esc(typeof epiCardIcon === 'function' ? epiCardIcon({ nome: i.nome }) : 'package')}"></i></span>
         <strong class="stock-item-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong>
         <span class="stock-item-saldo">${formatNumber(i.saldo)}<small>em estoque</small></span>
         <span class="stock-item-mov"><span class="stock-item-mov-saldo" title="Em estoque"><i data-lucide="package" aria-hidden="true"></i><span class="rot">Estoque </span>${formatNumber(i.saldo)}</span><span class="stock-item-mov-entrou" title="Entrou"><i data-lucide="arrow-up" aria-hidden="true"></i><span class="rot">Entrou </span>${formatNumber(i.entradas)}</span><span class="stock-item-mov-saiu" title="Saiu"><i data-lucide="arrow-down" aria-hidden="true"></i><span class="rot">Saiu </span>${formatNumber(i.saidas)}</span></span>
-        <span class="stock-item-tag">${critico ? 'Crítico' : baixo ? 'Baixo' : 'OK'}</span>
+        <span class="stock-item-tag">${i.semEntrada ? 'Sem entrada' : critico ? 'Crítico' : baixo ? 'Baixo' : 'OK'}</span>
       </article>`;
     }).join('');
     box.innerHTML = `<h3 class="stock-itens-titulo">Saldo por item</h3>${cards ? `<div class="stock-itens-grade">${cards}</div>` : `<p class="stock-itens-vazio">${busca ? 'Nenhum EPI com estoque para essa busca.' : 'Nenhum EPI com entrada de estoque ainda. Lance uma nota fiscal ou use o Cadastro.'}</p>`}`;
