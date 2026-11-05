@@ -255,15 +255,13 @@
     setMsg(`${novos.length} ${novos.length === 1 ? 'EPI da OS entrou' : 'EPIs da OS entraram'} na entrega. Escolha o C.A. e a quantidade de cada um.${fora ? ` ${fora} ${fora === 1 ? 'item da OS não está cadastrado' : 'itens da OS não estão cadastrados'} no app.` : ''}`);
   }
 
-  async function pdfOs() {
+  // Abre a folha A4 da OS dentro do app (js/os-folha.js); o PDF sai de lá.
+  function pdfOs() {
     const c = acharColab($('progColab').value);
     const os = osDoColab(c);
     if (!os) return;
-    const b = $('progOsPdf');
-    b.disabled = true;
-    try { await window.EPI_PDF.downloadOrdemServico({ os, colaborador: c }); }
-    catch (err) { console.error('[OS PDF]', err); alert('Não foi possível gerar o PDF: ' + (err.message || err)); }
-    finally { b.disabled = false; }
+    fecharOs();
+    window.EPI_OS_FOLHA?.abrir({ os, colaborador: c });
   }
 
   function limpar() {
