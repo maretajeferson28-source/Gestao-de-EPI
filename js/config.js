@@ -165,14 +165,14 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
-    programarScript.src = 'js/programar.js?v=20261105-4';
+    programarScript.src = 'js/programar.js?v=20261105-5';
     programarScript.dataset.programar = 'true';
     document.body.appendChild(programarScript);
   }
 
   if (!document.querySelector('script[data-os-folha]')) {
     const osFolhaScript = document.createElement('script');
-    osFolhaScript.src = 'js/os-folha.js?v=20261105-1';
+    osFolhaScript.src = 'js/os-folha.js?v=20261105-2';
     osFolhaScript.dataset.osFolha = 'true';
     document.body.appendChild(osFolhaScript);
   }

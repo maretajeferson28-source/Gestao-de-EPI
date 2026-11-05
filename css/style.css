@@ -3077,3 +3077,8 @@ body.fila-tela-aberta{overflow:hidden}
 .os-folha .os-riscos th{border:0!important;border-bottom:1px solid #f1f2f4!important}
 .os-folha .os-riscos tr:last-child th{border-bottom:0!important}
 .os-folha .os-riscos tr:hover td,.os-folha .os-riscos tr:hover th{background:transparent!important}
+
+/* Folha da OS: "Usar na entrega" na barra de cima */
+.os-folha-usar{height:34px;padding:0 14px;font-size:13px;gap:6px;border-radius:10px}
+.os-folha-usar svg{width:15px;height:15px}
+@media (max-width:720px){ .os-folha-usar span{display:none} }

@@ -210,33 +210,15 @@
       : os ? `Ver a OS de ${os.funcao} e os EPIs obrigatórios` : `${c.nome} ainda não tem ordem de serviço ligada`;
   }
 
+  // Abre direto a folha A4 da OS (js/os-folha.js), com "Usar na entrega" na barra.
   function abrirOs() {
     const c = acharColab($('progColab').value);
     const os = osDoColab(c);
     if (!os) return;
-    $('progOsTitulo').textContent = os.funcao;
-    $('progOsSub').textContent = [c.nome, os.setor, os.data_os ? 'OS de ' + dataBR(os.data_os) : '', os.revisao ? 'Rev. ' + os.revisao : ''].filter(Boolean).join(' · ');
-    const itens = os.epis || [];
-    const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
-    $('progOsCorpo').innerHTML = `
-      <h4 class="prog-os-rotulo">EPIs de uso obrigatório</h4>
-      ${itens.length ? `<ul class="prog-os-lista">${itens.map((i) => {
-        const epi = i.epi_id ? epis().find((e) => e.id === i.epi_id) : null;
-        const tag = !epi ? '<em class="prog-os-tag is-sem">Não cadastrado no app</em>'
-          : naTabela.has(epi.id) ? '<em class="prog-os-tag is-ja">Já na entrega</em>' : `<em class="prog-os-tag">${esc(epi.nome)}</em>`;
-        return `<li><span class="prog-os-icone"><i data-lucide="${esc(epi ? iconeEpi(epi.nome) : 'circle-dashed')}"></i></span><span>${esc(i.descricao)}</span>${tag}</li>`;
-      }).join('')}</ul>` : '<p class="prog-os-vazio">A OS desta função não exige EPI.</p>'}
-      ${os.descricao ? `<h4 class="prog-os-rotulo">Descrição da função</h4><p class="prog-os-texto">${esc(os.descricao)}</p>` : ''}`;
-    $('progOsUsar').disabled = !itens.some((i) => i.epi_id && !naTabela.has(i.epi_id));
-    $('progOsModal').classList.remove('hidden');
-    icons();
+    window.EPI_OS_FOLHA?.abrir({ os, colaborador: c, usar: () => usarOs(os) });
   }
-  const fecharOs = () => $('progOsModal').classList.add('hidden');
 
-  async function usarOs() {
-    const c = acharColab($('progColab').value);
-    const os = osDoColab(c);
-    if (!os) return;
+  async function usarOs(os) {
     // Tira as linhas vazias e acrescenta os EPIs da OS que ainda não estão na tabela.
     $('progItens').querySelectorAll('.prog-item').forEach((l) => { if (!l.querySelector('[data-campo="epi"]').value.trim()) l.remove(); });
     const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
@@ -250,18 +232,10 @@
     }
     if (!$('progItens').children.length) novaLinha();
     resumo();
-    fecharOs();
     const fora = (os.epis || []).filter((i) => !i.epi_id).length;
-    setMsg(`${novos.length} ${novos.length === 1 ? 'EPI da OS entrou' : 'EPIs da OS entraram'} na entrega. Escolha o C.A. e a quantidade de cada um.${fora ? ` ${fora} ${fora === 1 ? 'item da OS não está cadastrado' : 'itens da OS não estão cadastrados'} no app.` : ''}`);
-  }
-
-  // Abre a folha A4 da OS dentro do app (js/os-folha.js); o PDF sai de lá.
-  function pdfOs() {
-    const c = acharColab($('progColab').value);
-    const os = osDoColab(c);
-    if (!os) return;
-    fecharOs();
-    window.EPI_OS_FOLHA?.abrir({ os, colaborador: c });
+    setMsg(novos.length
+      ? `${novos.length} ${novos.length === 1 ? 'EPI da OS entrou' : 'EPIs da OS entraram'} na entrega. Escolha o C.A. e a quantidade de cada um.${fora ? ` ${fora} ${fora === 1 ? 'item da OS não está cadastrado' : 'itens da OS não estão cadastrados'} no app.` : ''}`
+      : 'Os EPIs da OS já estão na entrega.');
   }
 
   function limpar() {
@@ -323,10 +297,6 @@
     $('progAdd').addEventListener('click', () => novaLinha().querySelector('input').focus());
     $('progLimpar').addEventListener('click', () => { limpar(); setMsg(''); });
     $('progOs')?.addEventListener('click', abrirOs);
-    $('progOsFechar')?.addEventListener('click', fecharOs);
-    $('progOsModal')?.addEventListener('click', (e) => { if (e.target === $('progOsModal')) fecharOs(); });
-    $('progOsUsar')?.addEventListener('click', usarOs);
-    $('progOsPdf')?.addEventListener('click', pdfOs);
     $('progConcluir').addEventListener('click', concluir);
     $('progItens').addEventListener('input', (e) => {
       const linha = e.target.closest('.prog-item');

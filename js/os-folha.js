@@ -27,6 +27,7 @@
       <div class="os-folha-barra">
         <div class="os-folha-barra-titulo"><i data-lucide="file-text" aria-hidden="true"></i><span id="osFolhaNome">Ordem de serviço</span></div>
         <div class="os-folha-barra-acoes">
+          <button class="btn primary os-folha-usar" id="osFolhaUsar" type="button" hidden><i data-lucide="list-plus" aria-hidden="true"></i>Usar na entrega</button>
           <button class="btn os-folha-btn" id="osFolhaPdf" type="button"><i data-lucide="download" aria-hidden="true"></i>Baixar PDF</button>
           <button class="btn os-folha-btn" id="osFolhaImprimir" type="button"><i data-lucide="printer" aria-hidden="true"></i>Imprimir</button>
           <button class="os-folha-fechar" id="osFolhaFechar" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
@@ -39,6 +40,11 @@
     div.addEventListener('click', (e) => { if (e.target === div || e.target.id === 'osFolhaArea') fechar(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !div.classList.contains('hidden')) fechar(); });
     div.querySelector('#osFolhaImprimir').addEventListener('click', () => window.print());
+    div.querySelector('#osFolhaUsar').addEventListener('click', async () => {
+      const usar = atual?.usar;
+      fechar();
+      if (usar) await usar();
+    });
     div.querySelector('#osFolhaPdf').addEventListener('click', async (e) => {
       const b = e.currentTarget;
       b.disabled = true;
@@ -91,6 +97,7 @@
     montarJanela();
     atual = dados;
     document.getElementById('osFolha').innerHTML = folha(dados);
+    document.getElementById('osFolhaUsar').hidden = typeof dados.usar !== 'function' || !(dados.os.epis || []).some((e) => e.epi_id);
     document.getElementById('osFolhaNome').textContent = `O.S. ${dados.os.funcao}${dados.colaborador?.nome ? ' · ' + dados.colaborador.nome : ''}`;
     const modal = document.getElementById('osFolhaModal');
     modal.classList.remove('hidden');
