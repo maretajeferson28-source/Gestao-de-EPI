@@ -3086,3 +3086,10 @@ body.fila-tela-aberta{overflow:hidden}
 /* Resumo: Limpar, OS e Concluir dividindo a largura em 3 partes iguais */
 .prog-resumo .prog-botoes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .prog-resumo .prog-botoes .prog-limpar,.prog-resumo .prog-botoes .prog-repetir,.prog-resumo .prog-botoes .prog-concluir{width:100%;margin-left:0;padding:0 8px}
+
+/* Resumo: cor ao passar o mouse — Limpar vermelho, OS laranja, Concluir verde */
+.prog-resumo .prog-botoes button{transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
+.prog-resumo .prog-botoes .prog-limpar:hover{border-color:#ef4444!important;color:#ff6b6b!important;background:transparent!important}
+.prog-resumo .prog-botoes .prog-repetir:hover:not(:disabled){border-color:#ff8a24!important;color:#ff9a3f!important;background:transparent!important}
+.prog-resumo .prog-botoes .prog-concluir:hover:not(:disabled){background:transparent!important;border:1px solid #22c55e!important;color:#22c55e!important;box-shadow:none!important}
+
