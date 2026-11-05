@@ -2952,3 +2952,9 @@ body.fila-tela-aberta{overflow:hidden}
 /* Resumo vazio: mesma seção Itens, com a linha de baixo igual à lista */
 .prog-resumo .prog-res-vazio{margin:0;padding:2px 0 10px;border-bottom:1px solid #262626;font-size:13px;font-weight:500;color:#b8b8b8}
 .prog-resumo .prog-res-vazio small{display:block;margin-top:1px;font-size:11px;font-weight:400;color:#7a7a7a}
+
+/* Resumo: Limpar e Concluir ocupando a largura do cartão, mesma altura */
+.prog-resumo .prog-botoes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px;margin-top:2px}
+.prog-resumo .prog-botoes .prog-limpar,.prog-resumo .prog-botoes .prog-concluir{width:100%;height:36px;padding:0 12px;font-size:13px;justify-content:center;border-radius:10px}
+.prog-resumo .prog-botoes .prog-limpar{background:transparent;border:1px solid #393939;color:#b8b8b8}
+.prog-resumo .prog-botoes .prog-limpar:hover{border-color:#7a3434;color:#ff8f8f}
