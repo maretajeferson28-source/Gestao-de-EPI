@@ -182,7 +182,7 @@
       </dl>
       ${itens.length ? `<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><ul class="prog-res-lista">${itens.map((i) => `<li><span class="prog-res-nome">${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span><b>${fmt(i.qtd)} un</b></li>`).join('')}</ul></div>
         ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
-        : '<p class="prog-res-vazio">Nenhum EPI na lista ainda.</p>'}`;
+        : '<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><p class="prog-res-vazio">Nenhum EPI adicionado<small>Escolha os EPIs na tabela ao lado.</small></p></div>'}`;
     const conta = $('progConta');
     if (conta) conta.textContent = `${fmt(total)} ${total === 1 ? 'item' : 'itens'}`;
   }

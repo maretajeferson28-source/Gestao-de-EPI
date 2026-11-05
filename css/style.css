@@ -2948,3 +2948,7 @@ body.fila-tela-aberta{overflow:hidden}
 .stock-item.is-sem-entrada .stock-item-tag{border-color:#444;color:#9a9a9a}
 .stock-item.is-sem-entrada .stock-item-saldo{color:#8f8f8f}
 .stock-item.is-sem-entrada .stock-item-icone{color:#8f8f8f;border-color:#3a3a3a}
+
+/* Resumo vazio: mesma seção Itens, com a linha de baixo igual à lista */
+.prog-resumo .prog-res-vazio{margin:0;padding:2px 0 10px;border-bottom:1px solid #262626;font-size:13px;font-weight:500;color:#b8b8b8}
+.prog-resumo .prog-res-vazio small{display:block;margin-top:1px;font-size:11px;font-weight:400;color:#7a7a7a}
