@@ -254,10 +254,24 @@
             <h3 class="prog-resumo-titulo"><i data-lucide="clipboard-list" aria-hidden="true"></i>Resumo da entrega<span class="prog-res-conta" id="progConta">0 itens</span></h3>
             <div id="progResumo"></div>
             <label class="prog-obs-campo"><span>Observação</span><textarea id="progObs" rows="2" placeholder="Opcional (ex.: entregar na garagem)"></textarea></label>
-            <div class="prog-botoes"><button class="btn prog-limpar" id="progLimpar" type="button"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button><button class="btn primary prog-concluir" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir</button></div>
+            <div class="prog-botoes"><button class="btn prog-limpar" id="progLimpar" type="button"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button><button class="btn prog-repetir" id="progOs" type="button" disabled title="Escolha o colaborador para ver a ordem de serviço dele"><i data-lucide="file-text" aria-hidden="true"></i>OS</button><button class="btn primary prog-concluir" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir</button></div>
             
             <div class="msg" id="progMsg" aria-live="polite"></div>
           </aside>
+          <div class="data-edit-modal hidden" id="progOsModal" role="dialog" aria-modal="true" aria-labelledby="progOsTitulo">
+            <div class="data-edit-card prog-os-card">
+              <button class="data-edit-close" id="progOsFechar" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+              <div class="data-edit-head">
+                <div class="data-edit-icon"><i data-lucide="file-text" aria-hidden="true"></i></div>
+                <div><span>ORDEM DE SERVIÇO</span><h3 id="progOsTitulo">—</h3><p id="progOsSub"></p></div>
+              </div>
+              <div class="prog-os-corpo" id="progOsCorpo"></div>
+              <div class="prog-os-botoes">
+                <button class="btn prog-os-pdf" id="progOsPdf" type="button"><i data-lucide="download" aria-hidden="true"></i>Baixar PDF</button>
+                <button class="btn primary prog-os-usar" id="progOsUsar" type="button"><i data-lucide="list-plus" aria-hidden="true"></i>Usar na entrega</button>
+              </div>
+            </div>
+          </div>
           <datalist id="dlProgColab"></datalist><datalist id="dlProgEpi"></datalist>
         </div>
       </section>

@@ -235,7 +235,7 @@ async function loadAll(showBusy=true){
   setStatus('Atualizando dados...');
   try{
     const [cRes,eRes,vRes,mRes] = await Promise.all([
-      sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado,afastado,afastado_desde,desativado_desde').order('nome'),
+      sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado,afastado,afastado_desde,desativado_desde,os_id').order('nome'),
       sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
       sb.from('epi_variantes')
         .select('id,epi_id,ca,apelido,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')

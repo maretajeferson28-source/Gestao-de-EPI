@@ -165,7 +165,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
-    programarScript.src = 'js/programar.js?v=20261105-1';
+    programarScript.src = 'js/programar.js?v=20261105-3';
     programarScript.dataset.programar = 'true';
     document.body.appendChild(programarScript);
   }

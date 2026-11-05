@@ -159,6 +159,7 @@
     }
     icons();
     resumo();
+    atualizarOs();
   }
 
   // ---- Resumo ao lado ----
@@ -185,6 +186,84 @@
         : '<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><p class="prog-res-vazio">Nenhum EPI adicionado<small>Escolha os EPIs na tabela ao lado.</small></p></div>'}`;
     const conta = $('progConta');
     if (conta) conta.textContent = `${fmt(total)} ${total === 1 ? 'item' : 'itens'}`;
+  }
+
+  // ---- Ordem de serviço da função do colaborador ----
+  let ordens = null; // Map id -> OS, carregado na primeira vez
+  async function carregarOrdens() {
+    if (ordens) return ordens;
+    const { data, error } = await db().from('ordens_servico').select('*').eq('ativo', true);
+    if (error) { console.error('[OS]', error); return new Map(); }
+    ordens = new Map((data || []).map((o) => [o.id, o]));
+    return ordens;
+  }
+  const osDoColab = (c) => (c?.os_id && ordens ? ordens.get(c.os_id) || null : null);
+
+  async function atualizarOs() {
+    const b = $('progOs');
+    if (!b) return;
+    const c = acharColab($('progColab').value);
+    if (c?.os_id) await carregarOrdens();
+    const os = osDoColab(c);
+    b.disabled = !os;
+    b.title = !c ? 'Escolha o colaborador para ver a ordem de serviço dele'
+      : os ? `Ver a OS de ${os.funcao} e os EPIs obrigatórios` : `${c.nome} ainda não tem ordem de serviço ligada`;
+  }
+
+  function abrirOs() {
+    const c = acharColab($('progColab').value);
+    const os = osDoColab(c);
+    if (!os) return;
+    $('progOsTitulo').textContent = os.funcao;
+    $('progOsSub').textContent = [c.nome, os.setor, os.data_os ? 'OS de ' + dataBR(os.data_os) : '', os.revisao ? 'Rev. ' + os.revisao : ''].filter(Boolean).join(' · ');
+    const itens = os.epis || [];
+    const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
+    $('progOsCorpo').innerHTML = `
+      <h4 class="prog-os-rotulo">EPIs de uso obrigatório</h4>
+      ${itens.length ? `<ul class="prog-os-lista">${itens.map((i) => {
+        const epi = i.epi_id ? epis().find((e) => e.id === i.epi_id) : null;
+        const tag = !epi ? '<em class="prog-os-tag is-sem">Não cadastrado no app</em>'
+          : naTabela.has(epi.id) ? '<em class="prog-os-tag is-ja">Já na entrega</em>' : `<em class="prog-os-tag">${esc(epi.nome)}</em>`;
+        return `<li><span class="prog-os-icone"><i data-lucide="${esc(epi ? iconeEpi(epi.nome) : 'circle-dashed')}"></i></span><span>${esc(i.descricao)}</span>${tag}</li>`;
+      }).join('')}</ul>` : '<p class="prog-os-vazio">A OS desta função não exige EPI.</p>'}
+      ${os.descricao ? `<h4 class="prog-os-rotulo">Descrição da função</h4><p class="prog-os-texto">${esc(os.descricao)}</p>` : ''}`;
+    $('progOsUsar').disabled = !itens.some((i) => i.epi_id && !naTabela.has(i.epi_id));
+    $('progOsModal').classList.remove('hidden');
+    icons();
+  }
+  const fecharOs = () => $('progOsModal').classList.add('hidden');
+
+  async function usarOs() {
+    const c = acharColab($('progColab').value);
+    const os = osDoColab(c);
+    if (!os) return;
+    // Tira as linhas vazias e acrescenta os EPIs da OS que ainda não estão na tabela.
+    $('progItens').querySelectorAll('.prog-item').forEach((l) => { if (!l.querySelector('[data-campo="epi"]').value.trim()) l.remove(); });
+    const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
+    const novos = [...new Set((os.epis || []).map((i) => i.epi_id).filter((id) => id && !naTabela.has(id)))];
+    for (const id of novos) {
+      const epi = epis().find((e) => e.id === id);
+      if (!epi) continue;
+      const linha = novaLinha();
+      linha.querySelector('[data-campo="epi"]').value = epi.nome;
+      await escolherEpi(linha);
+    }
+    if (!$('progItens').children.length) novaLinha();
+    resumo();
+    fecharOs();
+    const fora = (os.epis || []).filter((i) => !i.epi_id).length;
+    setMsg(`${novos.length} ${novos.length === 1 ? 'EPI da OS entrou' : 'EPIs da OS entraram'} na entrega. Escolha o C.A. e a quantidade de cada um.${fora ? ` ${fora} ${fora === 1 ? 'item da OS não está cadastrado' : 'itens da OS não estão cadastrados'} no app.` : ''}`);
+  }
+
+  async function pdfOs() {
+    const c = acharColab($('progColab').value);
+    const os = osDoColab(c);
+    if (!os) return;
+    const b = $('progOsPdf');
+    b.disabled = true;
+    try { await window.EPI_PDF.downloadOrdemServico({ os, colaborador: c }); }
+    catch (err) { console.error('[OS PDF]', err); alert('Não foi possível gerar o PDF: ' + (err.message || err)); }
+    finally { b.disabled = false; }
   }
 
   function limpar() {
@@ -245,6 +324,11 @@
     $('progData').addEventListener('change', resumo);
     $('progAdd').addEventListener('click', () => novaLinha().querySelector('input').focus());
     $('progLimpar').addEventListener('click', () => { limpar(); setMsg(''); });
+    $('progOs')?.addEventListener('click', abrirOs);
+    $('progOsFechar')?.addEventListener('click', fecharOs);
+    $('progOsModal')?.addEventListener('click', (e) => { if (e.target === $('progOsModal')) fecharOs(); });
+    $('progOsUsar')?.addEventListener('click', usarOs);
+    $('progOsPdf')?.addEventListener('click', pdfOs);
     $('progConcluir').addEventListener('click', concluir);
     $('progItens').addEventListener('input', (e) => {
       const linha = e.target.closest('.prog-item');

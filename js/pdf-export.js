@@ -612,8 +612,139 @@
     doc.save('Termo_EPI_' + cleanFilename(colaborador.nome) + (dia ? '_' + dia : '') + '.pdf');
   }
 
+  // Ordem de Serviço por função, em folha A4 branca no cabeçalho do app,
+  // com o nome do colaborador e os campos de assinatura no fim.
+  async function downloadOrdemServico(options = {}) {
+    const os = options.os;
+    const colaborador = options.colaborador || {};
+    if (!os) throw new Error('Ordem de serviço não encontrada.');
+    if (!window.jspdf?.jsPDF) throw new Error('Gerador de PDF não carregado.');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+    const pageW = mm.pageW, pageH = mm.pageH, margin = mm.margin, contentW = pageW - margin * 2;
+    const orange = [255, 102, 0], dark = [17, 17, 17], gray = [105, 105, 105], border = [224, 224, 224], texto = [40, 40, 40];
+    const setText = (rgb) => doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+    const setFill = (rgb) => doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+    const setDraw = (rgb) => doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+    const logo = await getBrandLogoDataUrl();
+    const generatedAt = new Date().toLocaleString('pt-BR');
+    const dataBR = (iso) => { const [y, m, d] = String(iso || '').slice(0, 10).split('-'); return d ? d + '/' + m + '/' + y : ''; };
+    const lineH = 4.4, topo = 40, base = pageH - 16;
+
+    function header() {
+      setFill(dark); doc.rect(0, 0, pageW, 28, 'F');
+      setFill(orange); doc.rect(0, 0, 4, 28, 'F');
+      if (logo) { try { doc.addImage(logo, 'PNG', 10.4, 3.6, 20.8, 20.8, 'EPI_OS_BRAND'); } catch (_) {} }
+      setText([255, 255, 255]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text('GESTÃO DE EPI', 36.8, 12);
+      setText([175, 175, 175]); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.text('CONTROLE OPERACIONAL', 36.8, 17);
+      setText([210, 210, 210]); doc.setFontSize(7);
+      doc.text('ORDEM DE SERVIÇO (O.S.) POR FUNÇÃO', pageW - margin, 12, { align: 'right' });
+      doc.text('Gerado em ' + generatedAt, pageW - margin, 17, { align: 'right' });
+    }
+    let y = topo;
+    const novaPagina = () => { doc.addPage(); header(); y = topo; };
+    const espaco = (h) => { if (y + h > base) novaPagina(); };
+    function titulo(numero, nome) {
+      espaco(14);
+      setFill(orange); doc.rect(margin, y - 3.4, 1.2, 4.6, 'F');
+      setText(dark); doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+      doc.text(numero + '. ' + nome, margin + 4, y);
+      setDraw(border); doc.setLineWidth(0.3); doc.line(margin, y + 2.2, pageW - margin, y + 2.2);
+      y += 7.5;
+    }
+    function paragrafo(t, recuo = 0) {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); setText(texto);
+      for (const parte of String(t || '').split(/\r?\n/)) {
+        const linhas = doc.splitTextToSize(parte.trim(), contentW - recuo);
+        for (const l of linhas) { espaco(lineH); doc.text(l, margin + recuo, y); y += lineH; }
+      }
+      y += 2;
+    }
+    function itens(lista) {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+      for (const item of lista) {
+        const linhas = doc.splitTextToSize(String(item).replace(/^[-•]\s*/, ''), contentW - 7);
+        espaco(linhas.length * lineH);
+        setFill(orange); doc.circle(margin + 2.2, y - 1.2, 0.75, 'F');
+        setText(texto); doc.text(linhas, margin + 6, y);
+        y += linhas.length * lineH + 0.8;
+      }
+      y += 2;
+    }
+
+    header();
+    // Identificação
+    setText(orange); doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.text('ORDEM DE SERVIÇO', margin, y);
+    setText(dark); doc.setFontSize(16); doc.text(safe(os.funcao, 'Função'), margin, y + 8);
+    y += 15;
+    const campos = [['Funcionário', safe(colaborador.nome)], ['Função', safe(os.funcao)], ['Setor', safe(os.setor)],
+      ['Data da OS', dataBR(os.data_os) || '—'], ['Revisão', os.revisao ? 'Rev. ' + os.revisao : '—']];
+    const colW = contentW / 2;
+    setDraw(border); setFill([255, 255, 255]); doc.setLineWidth(0.3);
+    const altura = Math.ceil(campos.length / 2) * 11 + 2;
+    doc.roundedRect(margin, y, contentW, altura, 2.5, 2.5, 'S');
+    campos.forEach(([rot, val], i) => {
+      const cx = margin + 5 + (i % 2) * colW, cy = y + 5.5 + Math.floor(i / 2) * 11;
+      setText(gray); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.text(rot.toUpperCase(), cx, cy);
+      setText(dark); doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.text(doc.splitTextToSize(val, colW - 8)[0], cx, cy + 4.6);
+    });
+    y += altura + 9;
+
+    if (os.descricao) { titulo(1, 'Descrição da Função'); paragrafo(os.descricao); }
+    const agentes = (os.agentes || []);
+    titulo(2, 'Agentes Associados às Atividades');
+    if (agentes.length) {
+      for (const g of agentes) {
+        const lista = (g.itens || []).length ? g.itens.join(', ') : 'Não identificado';
+        doc.setFontSize(9);
+        const linhas = doc.splitTextToSize(lista, contentW - 34);
+        espaco(linhas.length * lineH + 1);
+        setText(dark); doc.setFont('helvetica', 'bold'); doc.text(String(g.grupo || ''), margin + 1, y);
+        setText(texto); doc.setFont('helvetica', 'normal'); doc.text(linhas, margin + 32, y);
+        y += linhas.length * lineH + 1.4;
+      }
+      y += 2;
+    } else paragrafo('Não identificados.');
+    titulo(3, 'EPIs de Uso Obrigatório');
+    if ((os.epis || []).length) itens(os.epis.map((e) => e.descricao)); else paragrafo('Não se aplica.');
+    if ((os.recomendacoes || []).length) { titulo(4, 'Recomendações'); itens(os.recomendacoes); }
+    espaco(10);
+    setText(orange); doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(9);
+    doc.text('A pressa é a companheira inesperada dos acidentes, portanto faça tudo com tempo, para fazer bem e com segurança.', pageW / 2, y, { align: 'center', maxWidth: contentW });
+    y += 10;
+    if (os.procedimentos) { titulo(5, 'Procedimentos em caso de acidentes'); paragrafo(os.procedimentos); }
+    if (os.observacoes) { titulo(6, 'Observações'); paragrafo(os.observacoes); }
+
+    // Assinaturas
+    espaco(34);
+    y += 10;
+    const assinatura = (rotulo, nome) => {
+      setDraw([150, 150, 150]); doc.setLineWidth(0.3);
+      doc.line(margin, y, margin + contentW * 0.62, y);
+      doc.line(margin + contentW * 0.7, y, pageW - margin, y);
+      setText(gray); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+      doc.text(rotulo + (nome ? ' — ' + nome : ''), margin, y + 4);
+      doc.text('Data', margin + contentW * 0.7, y + 4);
+      y += 16;
+    };
+    assinatura('Assinatura do Funcionário', colaborador.nome);
+    assinatura('Assinatura do Responsável', '');
+
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page += 1) {
+      doc.setPage(page);
+      setDraw([225, 225, 225]); doc.setLineWidth(0.25); doc.line(margin, pageH - 11, pageW - margin, pageH - 11);
+      setText([120, 120, 120]); doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+      doc.text('Gestão de EPI - Controle Operacional  •  O.S. ' + safe(os.funcao, ''), margin, pageH - 6);
+      doc.text('Página ' + page + ' de ' + totalPages, pageW - margin, pageH - 6, { align: 'right' });
+    }
+    doc.save('OS_' + cleanFilename(os.funcao) + '_' + cleanFilename(colaborador.nome || 'modelo') + '.pdf');
+  }
+
   window.EPI_PDF = {
     downloadVariantDossier,
-    downloadTermo
+    downloadTermo,
+    downloadOrdemServico
   };
 })();

@@ -2958,3 +2958,33 @@ body.fila-tela-aberta{overflow:hidden}
 .prog-resumo .prog-botoes .prog-limpar,.prog-resumo .prog-botoes .prog-concluir{width:100%;height:36px;padding:0 12px;font-size:13px;justify-content:center;border-radius:10px}
 .prog-resumo .prog-botoes .prog-limpar{background:transparent;border:1px solid #393939;color:#b8b8b8}
 .prog-resumo .prog-botoes .prog-limpar:hover{border-color:#7a3434;color:#ff8f8f}
+
+/* Resumo: Limpar, Repetir e Concluir do tamanho do texto, Concluir à direita */
+.prog-resumo .prog-botoes{display:flex;align-items:center;gap:8px}
+.prog-resumo .prog-botoes .prog-limpar,.prog-resumo .prog-botoes .prog-repetir,.prog-resumo .prog-botoes .prog-concluir{width:auto;flex:0 0 auto;height:34px;padding:0 12px;font-size:13px;gap:6px;border-radius:10px;justify-content:center}
+.prog-resumo .prog-botoes .prog-concluir{margin-left:auto;padding:0 16px}
+.prog-resumo .prog-botoes svg{width:15px;height:15px}
+.prog-resumo .prog-botoes .prog-repetir{background:transparent;border:1px solid #393939;color:#d4d4d4}
+.prog-resumo .prog-botoes .prog-repetir:hover:not(:disabled){border-color:rgba(232,111,24,.55);color:#ff9a3f}
+.prog-resumo .prog-botoes .prog-repetir:disabled{opacity:.4;cursor:not-allowed}
+`
+/* Programar: janela da Ordem de Serviço */
+.prog-os-card{width:min(560px,calc(100vw - 28px))}
+.prog-os-corpo{padding:16px 18px 6px}
+.prog-os-rotulo{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a9a9a9}
+.prog-os-lista{list-style:none;margin:0 0 16px;padding:0}
+.prog-os-lista li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #262626;font-size:13px;color:#e8e8e8}
+.prog-os-lista li > span:nth-child(2){flex:1;min-width:0}
+.prog-os-icone{width:26px;height:26px;flex:0 0 26px;display:grid;place-items:center;border:1px solid #333;border-radius:8px;color:#ff8a24}
+.prog-os-icone svg{width:14px;height:14px}
+.prog-os-tag{flex:0 0 auto;font-style:normal;font-size:11px;font-weight:600;color:#35c98b;border:1px solid rgba(53,201,139,.45);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.prog-os-tag.is-ja{color:#9a9a9a;border-color:#444}
+.prog-os-tag.is-sem{color:#ffb800;border-color:rgba(255,184,0,.45)}
+.prog-os-texto{margin:0 0 14px;font-size:12.5px;line-height:1.55;color:#b8b8b8;white-space:pre-line}
+.prog-os-vazio{margin:0 0 16px;font-size:13px;color:#8f8f8f}
+.prog-os-botoes{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px;border-top:1px solid #262626}
+.prog-os-botoes .btn{height:34px;padding:0 14px;font-size:13px;gap:6px;border-radius:10px}
+.prog-os-botoes .btn svg{width:15px;height:15px}
+.prog-os-pdf{background:transparent;border:1px solid #393939;color:#d4d4d4}
+.prog-os-pdf:hover{border-color:rgba(232,111,24,.55);color:#ff9a3f}
+.prog-os-botoes{position:sticky;bottom:0;background:#141414}
