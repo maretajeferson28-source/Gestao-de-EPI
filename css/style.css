@@ -3082,3 +3082,7 @@ body.fila-tela-aberta{overflow:hidden}
 .os-folha-usar{height:34px;padding:0 14px;font-size:13px;gap:6px;border-radius:10px}
 .os-folha-usar svg{width:15px;height:15px}
 @media (max-width:720px){ .os-folha-usar span{display:none} }
+
+/* Resumo: Limpar, OS e Concluir dividindo a largura em 3 partes iguais */
+.prog-resumo .prog-botoes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.prog-resumo .prog-botoes .prog-limpar,.prog-resumo .prog-botoes .prog-repetir,.prog-resumo .prog-botoes .prog-concluir{width:100%;margin-left:0;padding:0 8px}
