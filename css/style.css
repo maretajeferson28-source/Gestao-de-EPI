@@ -3087,9 +3087,12 @@ body.fila-tela-aberta{overflow:hidden}
 .prog-resumo .prog-botoes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .prog-resumo .prog-botoes .prog-limpar,.prog-resumo .prog-botoes .prog-repetir,.prog-resumo .prog-botoes .prog-concluir{width:100%;margin-left:0;padding:0 8px}
 
-/* Resumo: cor ao passar o mouse — Limpar vermelho, OS laranja, Concluir verde */
-.prog-resumo .prog-botoes button{transition:background .15s,border-color .15s,color .15s,box-shadow .15s}
-.prog-resumo .prog-botoes .prog-limpar:hover{border-color:#ef4444!important;color:#ff6b6b!important;background:transparent!important}
-.prog-resumo .prog-botoes .prog-repetir:hover:not(:disabled){border-color:#ff8a24!important;color:#ff9a3f!important;background:transparent!important}
-.prog-resumo .prog-botoes .prog-concluir:hover:not(:disabled){background:transparent!important;border:1px solid #22c55e!important;color:#22c55e!important;box-shadow:none!important}
-
+/* Resumo: botões cheios — Limpar vermelho, OS verde, Concluir laranja (mais claros com o mouse) */
+.prog-resumo .prog-botoes button{transition:background .15s,border-color .15s,box-shadow .15s}
+.prog-resumo .prog-botoes .prog-limpar{background:#dc2626!important;border-color:#dc2626!important;color:#fff!important}
+.prog-resumo .prog-botoes .prog-repetir{background:#16a34a!important;border-color:#16a34a!important;color:#fff!important}
+.prog-resumo .prog-botoes .prog-repetir:disabled{background:#1f3a29!important;border-color:#1f3a29!important;color:#8fb59b!important;opacity:1}
+.prog-resumo .prog-botoes .prog-concluir{background:linear-gradient(135deg,#ff8a24,#e86f18)!important;border-color:#e86f18!important;color:#fff!important;box-shadow:none!important}
+.prog-resumo .prog-botoes .prog-limpar:hover{background:#ef4444!important;border-color:#ef4444!important;color:#fff!important}
+.prog-resumo .prog-botoes .prog-repetir:hover:not(:disabled){background:#22c55e!important;border-color:#22c55e!important;color:#fff!important}
+.prog-resumo .prog-botoes .prog-concluir:hover:not(:disabled){background:linear-gradient(135deg,#ff9a3f,#ff7a1a)!important;border-color:#ff7a1a!important;color:#fff!important;box-shadow:0 0 14px rgba(255,138,36,.35)!important}
