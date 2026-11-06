@@ -3281,3 +3281,12 @@ body.fila-tela-aberta{overflow:hidden}
 .os-pagina .os-frase{margin:12px 0 0}
 .os-corpo .os-assina{margin-top:14px}
 .os-assina-data{color:#374151}
+
+/* Folha da OS econômica na impressão: sem fundo preto — títulos em cinza claro
+   com barra laranja e topo branco com linha laranja */
+.os-barra{background:#f3f4f6;color:#111;border-left:4px solid #ff6600;border-bottom:1px solid #d1d5db}
+.os-barra .os-cont{color:#6b7280}
+.os-pagina .os-topo{background:#fff;color:#111;border-left:0;border-bottom:3px solid #ff6600}
+.os-pagina .os-topo .os-marca b{color:#111}
+.os-pagina .os-topo .os-doc b{color:#111}
+.os-pagina .os-topo small{color:#6b7280}
