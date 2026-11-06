@@ -3313,3 +3313,7 @@ body.fila-tela-aberta{overflow:hidden}
   .os-pagina .os-topo .os-marca b,.os-pagina .os-topo .os-doc b{color:#111!important}
   .os-pagina .os-topo small{color:#6b7280!important}
 }
+/* PDF e impressão: o cabeçalho volta a ser a arte escura padrão; só os títulos das seções ficam em cinza leve */
+.os-impressao .os-pagina .os-topo{background:#111;color:#fff}
+.os-impressao .os-pagina .os-topo .os-marca b,.os-impressao .os-pagina .os-topo .os-doc b{color:#fff}
+.os-impressao .os-pagina .os-topo small{color:#a3a3a3}

@@ -39,7 +39,22 @@
     div.querySelector('#osFolhaFechar').addEventListener('click', fechar);
     div.addEventListener('click', (e) => { if (e.target === div) fechar(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !div.classList.contains('hidden')) fechar(); });
-    div.querySelector('#osFolhaImprimir').addEventListener('click', () => window.print());
+    // Imprimir usa o mesmo arquivo do PDF (a impressão do navegador desmontava a folha).
+    // A janela abre já no clique, senão o bloqueador de pop-up barra.
+    div.querySelector('#osFolhaImprimir').addEventListener('click', async (e) => {
+      const b = e.currentTarget;
+      const texto = b.innerHTML;
+      const janela = window.open('', '_blank');
+      b.disabled = true;
+      b.textContent = 'Preparando…';
+      try {
+        const doc = await montarPdf();
+        doc.autoPrint();
+        const url = doc.output('bloburl');
+        if (janela) janela.location.href = url; else window.open(url, '_blank');
+      } catch (err) { janela?.close(); console.error('[OS IMPRIMIR]', err); alert('Não foi possível preparar a impressão: ' + (err.message || err)); }
+      finally { b.disabled = false; b.innerHTML = texto; window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } }); }
+    });
     div.querySelector('#osFolhaUsar').addEventListener('click', async () => {
       const usar = atual?.usar;
       fechar();
@@ -57,12 +72,12 @@
   }
 
   // PDF igual à folha: cada página A4 já montada na tela vira uma página do PDF.
-  async function baixarPdf() {
+  async function montarPdf() {
     if (!window.jspdf?.jsPDF || !window.html2canvas) throw new Error('Gerador de PDF não carregado.');
     const paginas = [...document.querySelectorAll('#osFolhaArea .os-pagina')];
     if (!paginas.length) throw new Error('Abra a folha da OS primeiro.');
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-    // No PDF sai a versão de impressão (sem fundo preto, gasta pouca tinta).
+    // No PDF sai a versão de impressão: títulos em cinza leve (gasta pouca tinta).
     const area = document.getElementById('osFolhaArea');
     area.classList.add('os-impressao');
     try {
@@ -72,6 +87,11 @@
         doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
       }
     } finally { area.classList.remove('os-impressao'); }
+    return doc;
+  }
+
+  async function baixarPdf() {
+    const doc = await montarPdf();
     const nome = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w]+/g, '_').replace(/^_|_$/g, '');
     doc.save(`OS_${nome(atual?.os?.funcao)}_${nome(atual?.colaborador?.nome) || 'modelo'}.pdf`);
   }
