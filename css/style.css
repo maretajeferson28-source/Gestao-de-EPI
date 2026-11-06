@@ -3290,3 +3290,7 @@ body.fila-tela-aberta{overflow:hidden}
 .os-pagina .os-topo .os-marca b{color:#111}
 .os-pagina .os-topo .os-doc b{color:#111}
 .os-pagina .os-topo small{color:#6b7280}
+/* Títulos das seções da OS em cinza leve; o laranja fica só na barrinha e no número */
+.os-barra{background:#f7f7f7;border-bottom-color:#e5e7eb;color:#111}
+.os-box{border-color:#d4d4d4}
+.os-folha .os-form td{border-color:#d4d4d4!important}
