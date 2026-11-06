@@ -39,20 +39,15 @@
     div.querySelector('#osFolhaFechar').addEventListener('click', fechar);
     div.addEventListener('click', (e) => { if (e.target === div) fechar(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !div.classList.contains('hidden')) fechar(); });
-    // Imprimir usa o mesmo arquivo do PDF (a impressão do navegador desmontava a folha).
-    // A janela abre já no clique, senão o bloqueador de pop-up barra.
+    // Imprimir usa a mesma "foto" das páginas que o PDF (a impressão do navegador
+    // desmontava a folha), montada num quadro escondido da própria página: sem aba nova.
     div.querySelector('#osFolhaImprimir').addEventListener('click', async (e) => {
       const b = e.currentTarget;
       const texto = b.innerHTML;
-      const janela = window.open('', '_blank');
       b.disabled = true;
       b.textContent = 'Preparando…';
-      try {
-        const doc = await montarPdf();
-        doc.autoPrint();
-        const url = doc.output('bloburl');
-        if (janela) janela.location.href = url; else window.open(url, '_blank');
-      } catch (err) { janela?.close(); console.error('[OS IMPRIMIR]', err); alert('Não foi possível preparar a impressão: ' + (err.message || err)); }
+      try { await imprimir(); }
+      catch (err) { console.error('[OS IMPRIMIR]', err); alert('Não foi possível preparar a impressão: ' + (err.message || err)); }
       finally { b.disabled = false; b.innerHTML = texto; window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } }); }
     });
     div.querySelector('#osFolhaUsar').addEventListener('click', async () => {
@@ -71,23 +66,54 @@
     });
   }
 
-  // PDF igual à folha: cada página A4 já montada na tela vira uma página do PDF.
-  async function montarPdf() {
-    if (!window.jspdf?.jsPDF || !window.html2canvas) throw new Error('Gerador de PDF não carregado.');
+  // "Foto" de cada página A4 já montada na tela, na versão de impressão
+  // (títulos em cinza leve, gasta pouca tinta). Escala 2 no PDF; 1.5 basta para imprimir.
+  async function fotografar(escala) {
+    if (!window.html2canvas) throw new Error('Gerador de imagem não carregado.');
     const paginas = [...document.querySelectorAll('#osFolhaArea .os-pagina')];
     if (!paginas.length) throw new Error('Abra a folha da OS primeiro.');
-    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-    // No PDF sai a versão de impressão: títulos em cinza leve (gasta pouca tinta).
     const area = document.getElementById('osFolhaArea');
     area.classList.add('os-impressao');
     try {
-      for (let i = 0; i < paginas.length; i += 1) {
-        const canvas = await window.html2canvas(paginas[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
-        if (i) doc.addPage();
-        doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+      const fotos = [];
+      for (const pag of paginas) {
+        const canvas = await window.html2canvas(pag, { scale: escala, backgroundColor: '#ffffff', useCORS: true, logging: false });
+        fotos.push(canvas.toDataURL('image/jpeg', 0.9));
       }
+      return fotos;
     } finally { area.classList.remove('os-impressao'); }
+  }
+
+  // PDF igual à folha: cada página vira uma página A4 do PDF.
+  async function montarPdf() {
+    if (!window.jspdf?.jsPDF) throw new Error('Gerador de PDF não carregado.');
+    const fotos = await fotografar(2);
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+    fotos.forEach((foto, i) => { if (i) doc.addPage(); doc.addImage(foto, 'JPEG', 0, 0, 210, 297, undefined, 'FAST'); });
     return doc;
+  }
+
+  // Imprime as fotos das páginas num quadro escondido, uma por folha A4.
+  async function imprimir() {
+    const fotos = await fotografar(1.5);
+    document.getElementById('osImpressaoQuadro')?.remove();
+    const quadro = document.createElement('iframe');
+    quadro.id = 'osImpressaoQuadro';
+    quadro.setAttribute('aria-hidden', 'true');
+    quadro.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(quadro);
+    const d = quadro.contentDocument;
+    d.open();
+    d.write(`<!doctype html><html><head><title>O.S. ${esc(atual?.os?.funcao || '')}</title><style>
+      @page{size:A4;margin:0}html,body{margin:0;padding:0}
+      img{display:block;width:210mm;height:297mm;page-break-after:always;break-after:page}
+      img:last-child{page-break-after:auto;break-after:auto}</style></head>
+      <body>${fotos.map((foto) => `<img src="${foto}" alt="">`).join('')}</body></html>`);
+    d.close();
+    await Promise.all([...d.images].map((img) => (img.complete ? null : new Promise((ok) => { img.onload = ok; img.onerror = ok; }))));
+    quadro.contentWindow.focus();
+    quadro.contentWindow.print();
+    setTimeout(() => quadro.remove(), 60000);
   }
 
   async function baixarPdf() {

@@ -172,7 +172,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-os-folha]')) {
     const osFolhaScript = document.createElement('script');
-    osFolhaScript.src = 'js/os-folha.js?v=20261106-13';
+    osFolhaScript.src = 'js/os-folha.js?v=20261106-14';
     osFolhaScript.dataset.osFolha = 'true';
     document.body.appendChild(osFolhaScript);
   }
