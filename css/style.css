@@ -3177,3 +3177,28 @@ body.fila-tela-aberta{overflow:hidden}
 .nav-grupo.is-unico .nav-grupo-itens > button .ico svg{width:20px;height:20px}
 @media(max-width:720px){ .nav-grupo.is-unico .nav-grupo-itens > button{padding:14px;min-height:52px} }
 
+
+/* Folha da OS em páginas A4 (210 × 297 mm), com topo e rodapé em cada página */
+.os-folha-area{display:flex;flex-direction:column;align-items:center;gap:22px}
+.os-folha.os-pagina{width:210mm;height:297mm;min-height:0;max-width:none;margin:0;flex:0 0 auto;overflow:hidden}
+.os-corpo{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding-bottom:8px}
+.os-corpo > .os-sec:first-child{padding-top:22px}
+.os-corpo .os-assinaturas{margin-top:auto}
+.os-pagina .os-rodape{margin-top:0}
+.os-cont{margin-left:8px;font-style:normal;font-size:10.5px;font-weight:500;color:#9ca3af}
+@media (max-width:720px){
+  .os-folha.os-pagina{width:210mm;transform-origin:top center}
+}
+@media print{
+  body.os-folha-aberta .os-folha-area{gap:0;display:block}
+  body.os-folha-aberta .os-folha.os-pagina{width:210mm;height:297mm;break-after:page;page-break-after:always;box-shadow:none;border-radius:0}
+  body.os-folha-aberta .os-folha.os-pagina:last-child{break-after:auto;page-break-after:auto}
+  @page{size:A4;margin:0}
+}
+
+/* Folha da OS no estilo Word: fundo cinza claro, páginas brancas de canto reto
+   com sombra leve e espaço entre elas */
+.os-folha-modal .os-folha-area{background:#e6e6e6;gap:18px;padding:28px 16px 48px}
+.os-folha.os-pagina{border-radius:0;box-shadow:0 1px 3px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.10)}
+.os-folha-modal{background:#e6e6e6;backdrop-filter:none}
+.os-corpo > *{flex-shrink:0}
