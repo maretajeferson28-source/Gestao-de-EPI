@@ -112,8 +112,8 @@
       *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
       .os-impr .os-folha.os-pagina{width:210mm;height:297mm;margin:0;box-shadow:none!important;border-radius:0!important;overflow:hidden;break-after:page;page-break-after:always}
       .os-impr .os-folha.os-pagina:last-child{break-after:auto;page-break-after:auto}
-      html body .os-barra{background:#111!important;color:#fff!important;border-bottom:0!important}
-      html body .os-barra .os-cont{color:#9ca3af!important}
+      html body .os-barra{background:#f7f7f7!important;color:#111!important;border-bottom:1px solid #e5e7eb!important}
+      html body .os-barra .os-cont{color:#6b7280!important}
       html body .os-pagina .os-topo{background:#111!important;color:#fff!important}
       html body .os-pagina .os-topo .os-marca b,html body .os-pagina .os-topo .os-doc b{color:#fff!important}
       html body .os-pagina .os-topo small{color:#a3a3a3!important}
