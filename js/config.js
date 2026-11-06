@@ -128,13 +128,6 @@ window.addEventListener('load', () => {
     document.body.appendChild(chartScript);
   }
 
-  if (!document.querySelector('script[data-dashboard-spend-order]')) {
-    const spendOrderScript = document.createElement('script');
-    spendOrderScript.src = 'js/dashboard-spend-order.js?v=20261001-2';
-    spendOrderScript.dataset.dashboardSpendOrder = 'true';
-    document.body.appendChild(spendOrderScript);
-  }
-
   if (!document.querySelector('script[data-stock-nav]')) {
     const stockNavScript = document.createElement('script');
     stockNavScript.src = 'js/stock-nav.js?v=20261105-1';
