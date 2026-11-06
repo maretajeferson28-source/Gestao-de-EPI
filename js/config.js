@@ -191,6 +191,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(menuGruposScript);
   }
 
+  if (!document.querySelector('script[data-tema]')) {
+    const temaScript = document.createElement('script');
+    temaScript.src = 'js/tema.js?v=20261106-1';
+    temaScript.dataset.tema = 'true';
+    document.body.appendChild(temaScript);
+  }
+
   if (!document.querySelector('script[data-ciepi]')) {
     const ciepiScript = document.createElement('script');
     ciepiScript.src = 'js/ciepi.js?v=20261017-1';

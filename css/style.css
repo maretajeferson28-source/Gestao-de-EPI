@@ -3176,3 +3176,13 @@ body.fila-tela-aberta{overflow:hidden}
 .nav-grupo.is-unico .nav-grupo-itens > button .ico{width:22px;height:22px;flex:0 0 22px}
 .nav-grupo.is-unico .nav-grupo-itens > button .ico svg{width:20px;height:20px}
 @media(max-width:720px){ .nav-grupo.is-unico .nav-grupo-itens > button{padding:14px;min-height:52px} }
+
+/* TESTE: tema claro no computador (js/tema.js) — filtro que inverte as cores e
+   gira o tom de volta; fotos, vídeos, a folha da OS e a prévia do celular voltam ao normal. */
+.tema-btn{gap:6px}
+.tema-btn svg{width:15px;height:15px;color:#ff8a24}
+@media (min-width:721px){
+  html.tema-claro{filter:invert(1) hue-rotate(180deg);background:#000}
+  html.tema-claro img,html.tema-claro video,html.tema-claro .os-folha,html.tema-claro iframe{filter:invert(1) hue-rotate(180deg)}
+}
+@media (max-width:720px){ .tema-btn{display:none!important} }
