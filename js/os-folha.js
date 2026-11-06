@@ -72,16 +72,15 @@
     if (!window.html2canvas) throw new Error('Gerador de imagem não carregado.');
     const paginas = [...document.querySelectorAll('#osFolhaArea .os-pagina')];
     if (!paginas.length) throw new Error('Abra a folha da OS primeiro.');
-    const area = document.getElementById('osFolhaArea');
-    area.classList.add('os-impressao');
-    try {
-      const fotos = [];
-      for (const pag of paginas) {
-        const canvas = await window.html2canvas(pag, { scale: escala, backgroundColor: '#ffffff', useCORS: true, logging: false });
-        fotos.push(canvas.toDataURL('image/jpeg', 0.9));
-      }
-      return fotos;
-    } finally { area.classList.remove('os-impressao'); }
+    // A versão de impressão é aplicada só na cópia que o html2canvas fotografa:
+    // a folha na tela não pisca enquanto a foto é feita em segundo plano.
+    const versaoImpressao = (doc) => doc.getElementById('osFolhaArea')?.classList.add('os-impressao');
+    const fotos = [];
+    for (const pag of paginas) {
+      const canvas = await window.html2canvas(pag, { scale: escala, backgroundColor: '#ffffff', useCORS: true, logging: false, onclone: versaoImpressao });
+      fotos.push(canvas.toDataURL('image/jpeg', 0.9));
+    }
+    return fotos;
   }
 
   // PDF igual à folha: cada página vira uma página A4 do PDF.
@@ -93,8 +92,19 @@
     return doc;
   }
 
-  // Imprime as fotos das páginas num quadro escondido, uma por folha A4.
-  async function imprimir() {
+  // A impressão é preparada assim que a folha abre (em segundo plano): quando
+  // a pessoa clica em Imprimir, o quadro já está pronto e a janela abre na hora.
+  let preparo = null;
+  function prepararImpressao() {
+    const dados = atual;
+    preparo = new Promise((ok) => setTimeout(ok, 400))
+      .then(() => { if (atual !== dados) throw new Error('folha trocada'); return montarQuadro(); })
+      .then((quadro) => { if (atual !== dados) { quadro.remove(); throw new Error('folha trocada'); } return quadro; });
+    preparo.catch(() => {});
+  }
+
+  // Monta as fotos das páginas num quadro escondido, uma por folha A4.
+  async function montarQuadro() {
     const fotos = await fotografar(1.5);
     document.getElementById('osImpressaoQuadro')?.remove();
     const quadro = document.createElement('iframe');
@@ -111,9 +121,15 @@
       <body>${fotos.map((foto) => `<img src="${foto}" alt="">`).join('')}</body></html>`);
     d.close();
     await Promise.all([...d.images].map((img) => (img.complete ? null : new Promise((ok) => { img.onload = ok; img.onerror = ok; }))));
+    return quadro;
+  }
+
+  async function imprimir() {
+    let quadro = null;
+    try { quadro = preparo ? await preparo : null; } catch { quadro = null; }
+    if (!quadro || !quadro.isConnected) quadro = await montarQuadro();
     quadro.contentWindow.focus();
     quadro.contentWindow.print();
-    setTimeout(() => quadro.remove(), 60000);
   }
 
   async function baixarPdf() {
@@ -270,6 +286,7 @@
     paginar(area, partes(dados));
     area.scrollTop = 0;
     window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
+    prepararImpressao();
   }
 
   window.EPI_OS_FOLHA = { abrir };
