@@ -186,7 +186,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-menu-grupos]')) {
     const menuGruposScript = document.createElement('script');
-    menuGruposScript.src = 'js/menu-grupos.js?v=20261106-3';
+    menuGruposScript.src = 'js/menu-grupos.js?v=20261106-4';
     menuGruposScript.dataset.menuGrupos = 'true';
     document.body.appendChild(menuGruposScript);
   }

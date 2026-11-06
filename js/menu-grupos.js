@@ -39,27 +39,30 @@
   }
 
   // Coloca cada grupo no lugar (depois do item/grupo anterior) e puxa os botões.
+  // Só mexe no que está fora do lugar: tirar e recolocar um botão no meio de um
+  // clique faz o clique se perder (e cada mudança dispararia outra organização).
   function organizar() {
+    let criou = false;
     for (const g of GRUPOS) {
       let box = nav.querySelector(`.nav-grupo[data-grupo="${g.id}"]`);
       if (!box) {
         box = criarGrupo(g);
+        criou = true;
         const ancora = g.depois && (nav.querySelector(`.nav-grupo[data-grupo="${g.depois}"]`) || nav.querySelector(`:scope > [data-page="${g.depois}"]`));
         if (ancora) ancora.after(box); else nav.appendChild(box);
       }
       const itens = box.querySelector('.nav-grupo-itens');
-      for (const pagina of g.paginas) {
-        const b = nav.querySelector(`:scope > [data-page="${pagina}"]`);
-        if (b) itens.appendChild(b);
-      }
-      // Mantém a ordem da lista mesmo quando um botão chega depois (Estoque, Notas).
-      for (const pagina of g.paginas) { const b = itens.querySelector(`[data-page="${pagina}"]`); if (b) itens.appendChild(b); }
+      // Ordem certa dos botões que já existem (Estoque e Notas chegam depois).
+      const certos = g.paginas.map((p) => nav.querySelector(`[data-page="${p}"]`)).filter(Boolean);
+      const atuais = [...itens.children];
+      const emOrdem = certos.length === atuais.length && certos.every((b, i) => atuais[i] === b);
+      if (!emOrdem) certos.forEach((b) => itens.appendChild(b));
     }
     // Consulta C.A. fica solta, logo depois do Estoque.
     const caepi = nav.querySelector(':scope > [data-page="caepi"]');
     const estoque = nav.querySelector('.nav-grupo[data-grupo="estoque"]');
     if (caepi && estoque && estoque.nextElementSibling !== caepi) estoque.after(caepi);
-    icons();
+    if (criou) icons();
   }
 
   let agendado = false;
