@@ -3335,3 +3335,20 @@ body.fila-tela-aberta{overflow:hidden}
 .prog-falta-todos:hover{background:#ff7a1f}
 .prog-falta.is-ok{border-color:rgba(74,222,128,.3);border-left-color:#4ade80;background:rgba(74,222,128,.05);padding:8px 12px}
 .prog-falta.is-ok svg{color:#4ade80}
+
+/* Faixa Pela O.S.: neutra, no cinza do app; título com contagem e Adicionar todos à direita */
+.prog-falta{display:grid;gap:10px;border:1px solid #2e2e2e;border-left:3px solid #ff6600;background:#161616;padding:12px 14px}
+.prog-falta-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.prog-falta-txt{color:#b8b8b8}
+.prog-falta-txt svg{color:#ff6b6b}
+.prog-falta-txt em{font-style:normal;color:#ff9a3f;font-weight:700}
+.prog-falta-chip{border-color:#3a3a3a;color:#e5e5e5;background:#1e1e1e}
+.prog-falta-chip svg{color:#ff9a3f}
+.prog-falta-chip:hover{background:rgba(255,102,0,.14);border-color:#ff6600;color:#fff}
+.prog-falta-chip:hover svg{color:#ff9a3f}
+.prog-falta-chip.is-vencido{border-color:rgba(255,184,0,.45);color:#ffcf5a;background:#1e1e1e}
+.prog-falta-chip.is-vencido svg{color:#ffb800}
+.prog-falta-chip.is-vencido:hover{background:rgba(255,184,0,.12);border-color:#ffb800;color:#ffd77a}
+.prog-falta-todos{display:inline-flex;align-items:center;gap:5px;padding:0 12px 0 9px}
+.prog-falta-todos svg{width:14px;height:14px}
+.prog-falta.is-ok{display:flex;border-color:#2e2e2e;border-left-color:#4ade80;background:#161616;color:#b8b8b8}

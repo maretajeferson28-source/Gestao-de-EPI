@@ -234,9 +234,11 @@
         : `<i data-lucide="circle-check"></i><span>Em dia com a O.S. de <b>${esc(r.os.funcao)}</b></span>`;
     } else {
       el.className = 'prog-falta';
-      el.innerHTML = `<div class="prog-falta-txt"><i data-lucide="triangle-alert"></i><span>A O.S. de <b>${esc(r.os.funcao)}</b> pede e ${r.faltas.length === 1 ? 'falta entregar' : 'faltam entregar'}:</span></div>
-        <div class="prog-falta-chips">${r.faltas.map((x) => `<button type="button" class="prog-falta-chip is-${x.st}" data-falta-epi="${esc(x.id)}" title="${esc(x.motivo)} · clique para pôr na entrega"><i data-lucide="plus"></i>${esc(x.nome)}</button>`).join('')}
-        ${r.faltas.length > 1 ? '<button type="button" class="prog-falta-todos" data-falta-todos>Adicionar todos</button>' : ''}</div>`;
+      el.innerHTML = `<div class="prog-falta-cab">
+          <div class="prog-falta-txt"><i data-lucide="triangle-alert"></i><span><b>Falta entregar pela O.S.</b> · ${esc(r.os.funcao)} <em>(${r.faltas.length})</em></span></div>
+          ${r.faltas.length > 1 ? '<button type="button" class="prog-falta-todos" data-falta-todos><i data-lucide="plus"></i>Adicionar todos</button>' : ''}
+        </div>
+        <div class="prog-falta-chips">${r.faltas.map((x) => `<button type="button" class="prog-falta-chip is-${x.st}" data-falta-epi="${esc(x.id)}" title="${esc(x.motivo)} · clique para pôr na entrega"><i data-lucide="plus"></i>${esc(x.nome)}</button>`).join('')}</div>`;
     }
     icons();
   }
