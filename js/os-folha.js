@@ -92,42 +92,41 @@
     return doc;
   }
 
-  // A impressão é preparada assim que a folha abre (em segundo plano): quando
-  // a pessoa clica em Imprimir, o quadro já está pronto e a janela abre na hora.
-  let preparo = null;
-  function prepararImpressao() {
-    const dados = atual;
-    preparo = new Promise((ok) => setTimeout(ok, 400))
-      .then(() => { if (atual !== dados) throw new Error('folha trocada'); return montarQuadro(); })
-      .then((quadro) => { if (atual !== dados) { quadro.remove(); throw new Error('folha trocada'); } return quadro; });
-    preparo.catch(() => {});
-  }
-
-  // Monta as fotos das páginas num quadro escondido, uma por folha A4.
-  async function montarQuadro() {
-    const fotos = await fotografar(1.5);
+  // Imprime as próprias páginas da tela, com o mesmo visual do app (faixas
+  // pretas e cabeçalho escuro), num quadro escondido. Sem "foto": abre na hora.
+  async function imprimir() {
+    const paginas = [...document.querySelectorAll('#osFolhaArea .os-pagina')];
+    if (!paginas.length) throw new Error('Abra a folha da OS primeiro.');
     document.getElementById('osImpressaoQuadro')?.remove();
     const quadro = document.createElement('iframe');
     quadro.id = 'osImpressaoQuadro';
     quadro.setAttribute('aria-hidden', 'true');
     quadro.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
     document.body.appendChild(quadro);
+    const estilos = [...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => `<link rel="stylesheet" href="${l.href}">`).join('');
     const d = quadro.contentDocument;
     d.open();
-    d.write(`<!doctype html><html><head><title>O.S. ${esc(atual?.os?.funcao || '')}</title><style>
-      @page{size:A4;margin:0}html,body{margin:0;padding:0}
-      img{display:block;width:210mm;height:297mm;page-break-after:always;break-after:page}
-      img:last-child{page-break-after:auto;break-after:auto}</style></head>
-      <body>${fotos.map((foto) => `<img src="${foto}" alt="">`).join('')}</body></html>`);
+    d.write(`<!doctype html><html><head><meta charset="utf-8"><title>O.S. ${esc(atual?.os?.funcao || '')}</title>${estilos}<style>
+      @page{size:A4;margin:0}
+      html,body{margin:0!important;padding:0!important;background:#fff!important}
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+      .os-impr .os-folha.os-pagina{width:210mm;height:297mm;margin:0;box-shadow:none!important;border-radius:0!important;overflow:hidden;break-after:page;page-break-after:always}
+      .os-impr .os-folha.os-pagina:last-child{break-after:auto;page-break-after:auto}
+      html body .os-barra{background:#111!important;color:#fff!important;border-bottom:0!important}
+      html body .os-barra .os-cont{color:#9ca3af!important}
+      html body .os-pagina .os-topo{background:#111!important;color:#fff!important}
+      html body .os-pagina .os-topo .os-marca b,html body .os-pagina .os-topo .os-doc b{color:#fff!important}
+      html body .os-pagina .os-topo small{color:#a3a3a3!important}
+    </style></head><body><div class="os-impr">${paginas.map((p) => p.outerHTML).join('')}</div></body></html>`);
     d.close();
-    await Promise.all([...d.images].map((img) => (img.complete ? null : new Promise((ok) => { img.onload = ok; img.onerror = ok; }))));
-    return quadro;
-  }
-
-  async function imprimir() {
-    let quadro = null;
-    try { quadro = preparo ? await preparo : null; } catch { quadro = null; }
-    if (!quadro || !quadro.isConnected) quadro = await montarQuadro();
+    // Espera o estilo, as fontes e o logo (já estão no cache do navegador: é rápido).
+    const prazo = Date.now() + 4000;
+    while (Date.now() < prazo) {
+      const links = [...d.querySelectorAll('link[rel="stylesheet"]')];
+      if (links.every((l) => l.sheet) && [...d.images].every((i) => i.complete)) break;
+      await new Promise((ok) => setTimeout(ok, 30));
+    }
+    try { await d.fonts?.ready; } catch {}
     quadro.contentWindow.focus();
     quadro.contentWindow.print();
   }
@@ -286,7 +285,6 @@
     paginar(area, partes(dados));
     area.scrollTop = 0;
     window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
-    prepararImpressao();
   }
 
   window.EPI_OS_FOLHA = { abrir };
