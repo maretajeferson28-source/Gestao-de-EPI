@@ -47,11 +47,28 @@
     });
     div.querySelector('#osFolhaPdf').addEventListener('click', async (e) => {
       const b = e.currentTarget;
+      const texto = b.innerHTML;
       b.disabled = true;
-      try { await window.EPI_PDF.downloadOrdemServico(atual); }
+      b.textContent = 'Gerando PDF…';
+      try { await baixarPdf(); }
       catch (err) { console.error('[OS PDF]', err); alert('Não foi possível gerar o PDF: ' + (err.message || err)); }
-      finally { b.disabled = false; }
+      finally { b.disabled = false; b.innerHTML = texto; window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } }); }
     });
+  }
+
+  // PDF igual à folha: cada página A4 já montada na tela vira uma página do PDF.
+  async function baixarPdf() {
+    if (!window.jspdf?.jsPDF || !window.html2canvas) throw new Error('Gerador de PDF não carregado.');
+    const paginas = [...document.querySelectorAll('#osFolhaArea .os-pagina')];
+    if (!paginas.length) throw new Error('Abra a folha da OS primeiro.');
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+    for (let i = 0; i < paginas.length; i += 1) {
+      const canvas = await window.html2canvas(paginas[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+      if (i) doc.addPage();
+      doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+    }
+    const nome = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w]+/g, '_').replace(/^_|_$/g, '');
+    doc.save(`OS_${nome(atual?.os?.funcao)}_${nome(atual?.colaborador?.nome) || 'modelo'}.pdf`);
   }
 
   // Texto corrido -> tópicos: quebra nas linhas e nos marcadores; se vier um
@@ -69,42 +86,26 @@
     return { principal: partes[0] || t, subs: partes.slice(1) };
   }
 
-  // Monta as partes da folha. O topo e o rodapé se repetem em cada página;
-  // os blocos do meio são distribuídos nas páginas A4 por paginar().
+  // Monta as partes da folha no padrão das OS originais (formulário com
+  // quadros e faixas de título), com a identidade do app. O topo e o rodapé se
+  // repetem em cada página; os blocos do meio são distribuídos por paginar().
   function partes({ os, colaborador = {} }) {
-    const secao = (n, titulo, corpo, lista) => `<section class="os-sec"${lista ? ' data-quebra' : ''}><h3><span>${n}</span>${esc(titulo)}</h3>${corpo}</section>`;
-    const campo = (rot, val, largo) => `<div class="os-campo${largo ? ' is-largo' : ''}"><small>${esc(rot)}</small><strong>${esc(val || '—')}</strong></div>`;
+    const quadro = (n, titulo, corpo, lista) => `<section class="os-box"${lista ? ' data-quebra' : ''}><h3 class="os-barra"><span>${n}</span>${esc(titulo)}</h3><div class="os-box-corpo">${corpo}</div></section>`;
     const ident = [colaborador.matricula ? 'Matrícula ' + colaborador.matricula : '', colaborador.cpf ? 'CPF ' + cpfFmt(colaborador.cpf) : ''].filter(Boolean).join(' · ');
-
-    // 1. Descrição em tópicos
     const desc = topicos(os.descricao);
-    const descricao = desc.length ? `<ul class="os-topicos" data-itens>${desc.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : '';
-    // 2. Agentes: um card por grupo de risco, com a cor do mapa de riscos
-    const agentes = (os.agentes || []).map((g) => `<div class="os-risco-card" style="--cor:${corRisco(g.grupo)}">
-        <b>${esc(g.grupo)}</b>
-        ${(g.itens || []).length ? `<ul>${g.itens.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '<p>Não identificado</p>'}</div>`).join('');
-    // 3. EPIs
+    const agentes = (os.agentes || []).map((g) => `<tr><th><i style="background:${corRisco(g.grupo)}"></i>${esc(g.grupo)}</th>
+        <td>${(g.itens || []).length ? g.itens.map((i) => `<div>${esc(i)}</div>`).join('') : '<div class="os-vazio">Não identificado</div>'}</td></tr>`).join('');
     const epis = (os.epis || []).map((e) => `<li><span class="os-check" aria-hidden="true"></span>${esc(e.descricao)}</li>`).join('');
-    // 4. Recomendações em tabela numerada
-    const recs = (os.recomendacoes || []).map((r, i) => {
+    const recs = (os.recomendacoes || []).map((r) => {
       const x = recomendacao(r);
-      return `<tr><td class="os-num">${String(i + 1).padStart(2, '0')}</td><td>${esc(x.principal)}${x.subs.length ? `<ul class="os-sub">${x.subs.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}</td></tr>`;
+      return `<li>${esc(x.principal)}${x.subs.length ? `<ul class="os-sub">${x.subs.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}</li>`;
     }).join('');
-    // 5. Procedimentos: quadro de alerta, com a OBS separada
     const proc = topicos(os.procedimentos);
-    const procOk = proc.filter((l) => !/^obs/i.test(l));
-    const procObs = proc.filter((l) => /^obs/i.test(l)).map((l) => l.replace(/^obs\.?:?\s*/i, ''));
-    const procedimentos = `<div class="os-alerta"><b>Em caso de acidente</b>${procOk.map((l) => `<p>${esc(l)}</p>`).join('')}
-      ${procObs.map((l) => `<p class="os-nota"><strong>Atenção:</strong> ${esc(l)}</p>`).join('')}</div>`;
-    // 6. Observações: declaração + trecho da CLT em destaque
     const obs = String(os.observacoes || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     const iArt = obs.findIndex((l) => /^art\.?\s*\d+/i.test(l));
     const declara = iArt < 0 ? obs : obs.slice(0, iArt);
     const lei = iArt < 0 ? [] : obs.slice(iArt);
     const leiItens = lei.slice(1).join(' ').split(/\s(?=[a-z]\)\s)/);
-    const observacoes = `<div class="os-declaracao">${declara.map((l) => `<p>${esc(l)}</p>`).join('')}</div>
-      ${lei.length ? `<div class="os-lei"><b>CLT · ${esc(lei[0].replace(/^art\.?\s*/i, 'Art. '))}</b>${leiItens.map((l) => `<p>${esc(l)}</p>`).join('')}</div>` : ''}`;
-
     return {
       topo: `<header class="os-topo">
         <div class="os-marca"><img src="/assets/pdf-brand/logo.png" alt=""><div><b>GESTÃO DE <em>EPI</em></b><small>CONTROLE OPERACIONAL</small></div></div>
@@ -112,27 +113,25 @@
       </header>`,
       rodape: (pag, total) => `<footer class="os-rodape"><span>Gestão de EPI · Controle Operacional · O.S. ${esc(os.funcao)}</span><span>Página ${pag} de ${total}</span></footer>`,
       blocos: [
-        `<div class="os-titulo">
-          <div><small>ORDEM DE SERVIÇO</small><h2>${esc(os.funcao)}</h2></div>
-          <div class="os-selo"><span>Data</span><b>${esc(dataBR(os.data_os) || '—')}</b><span>Revisão</span><b>${esc(os.revisao ? 'Rev. ' + os.revisao : '—')}</b></div>
-        </div>`,
-        `<div class="os-ident">
-          ${campo('Funcionário', colaborador.nome, true)}
-          ${campo('Função', os.funcao)}
-          ${campo('Setor', os.setor)}
-          ${ident ? campo('Identificação', ident, true) : ''}
-        </div>`,
-        descricao ? secao(1, 'Descrição da Função', descricao, desc.length > 1) : '',
-        secao(2, 'Agentes Associados às Atividades', agentes ? `<div class="os-riscos-grid">${agentes}</div>` : '<p class="os-texto"><em>Não identificados.</em></p>'),
-        secao(3, 'EPIs de Uso Obrigatório', epis ? `<ul class="os-epis" data-itens>${epis}</ul>` : '<p class="os-texto"><em>Não se aplica.</em></p>', !!epis),
-        recs ? secao(4, 'Recomendações', `<table class="os-tabela"><thead><tr><th>Nº</th><th>Recomendação</th></tr></thead><tbody data-itens>${recs}</tbody></table>`, true) : '',
+        // Cabeçalho do formulário, como nas OS originais
+        `<table class="os-form"><colgroup><col style="width:50%"><col><col style="width:150px"></colgroup>
+          <tr><td class="os-form-titulo" colspan="2"><small>ORDEM DE SERVIÇO (O.S.) POR FUNÇÃO</small><b>${esc(os.funcao)}</b></td>
+            <td class="os-form-data"><span>Data</span><b>${esc(dataBR(os.data_os) || '—')}</b><span>Revisão</span><b>${esc(os.revisao ? 'Rev. ' + os.revisao : '—')}</b></td></tr>
+          <tr><td colspan="3"><span>Nome Funcionário:</span> <b>${esc(colaborador.nome || '—')}</b>${ident ? `<em>${esc(ident)}</em>` : ''}</td></tr>
+          <tr><td><span>Função:</span> <b>${esc(os.funcao)}</b></td><td colspan="2"><span>Setor:</span> <b>${esc(os.setor || '—')}</b></td></tr>
+        </table>`,
+        desc.length ? quadro(1, 'Descrição da Função', `<ul class="os-lista" data-itens>${desc.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>`, desc.length > 3) : '',
+        quadro(2, 'Agentes Associados às Atividades', agentes ? `<table class="os-agentes">${agentes}</table>` : '<p class="os-vazio">Não identificados.</p>'),
+        quadro(3, 'EPIs de Uso Obrigatório', epis ? `<ul class="os-epis" data-itens>${epis}</ul>` : '<p class="os-vazio">Não se aplica.</p>', !!epis),
+        recs ? quadro(4, 'Recomendações', `<ul class="os-lista" data-itens>${recs}</ul>`, true) : '',
         `<p class="os-frase">${esc(FRASE)}</p>`,
-        os.procedimentos ? secao(5, 'Procedimentos em caso de acidentes', procedimentos) : '',
-        os.observacoes ? secao(6, 'Observações', observacoes) : '',
-        `<div class="os-assinaturas" data-junto>
-          <div><span class="os-linha"></span><b>${esc(colaborador.nome || 'Funcionário')}</b><small>Assinatura do Funcionário</small><span class="os-data">Data: ____/____/______</span></div>
-          <div><span class="os-linha"></span><b>&nbsp;</b><small>Assinatura do Responsável</small><span class="os-data">Data: ____/____/______</span></div>
-        </div>`
+        os.procedimentos ? quadro(5, 'Procedimentos em caso de acidentes', proc.map((l) => /^obs/i.test(l) ? `<p><b>OBS:</b> ${esc(l.replace(/^obs\.?:?\s*/i, ''))}</p>` : `<p>${esc(l)}</p>`).join('')) : '',
+        os.observacoes ? quadro(6, 'Observações', `${declara.map((l, i) => `<p${i ? ' class="os-forte"' : ''}>${esc(l)}</p>`).join('')}
+          ${lei.length ? `<div class="os-lei"><b>${esc(lei[0].replace(/^art\.?\s*/i, 'Art. '))}</b>${leiItens.map((l) => `<p>${esc(l)}</p>`).join('')}</div>` : ''}`) : '',
+        `<table class="os-form os-assina" data-junto>
+          <tr><td><span>Assinatura do Funcionário:</span><div class="os-linha-ass"></div><b>${esc(colaborador.nome || '')}</b></td><td class="os-assina-data"><span>Data:</span> ____/____/______</td></tr>
+          <tr><td><span>Assinatura do Responsável:</span><div class="os-linha-ass"></div></td><td class="os-assina-data"><span>Data:</span> ____/____/______</td></tr>
+        </table>`
       ].filter(Boolean)
     };
   }
