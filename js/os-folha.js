@@ -62,11 +62,16 @@
     const paginas = [...document.querySelectorAll('#osFolhaArea .os-pagina')];
     if (!paginas.length) throw new Error('Abra a folha da OS primeiro.');
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-    for (let i = 0; i < paginas.length; i += 1) {
-      const canvas = await window.html2canvas(paginas[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
-      if (i) doc.addPage();
-      doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
-    }
+    // No PDF sai a versão de impressão (sem fundo preto, gasta pouca tinta).
+    const area = document.getElementById('osFolhaArea');
+    area.classList.add('os-impressao');
+    try {
+      for (let i = 0; i < paginas.length; i += 1) {
+        const canvas = await window.html2canvas(paginas[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+        if (i) doc.addPage();
+        doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+      }
+    } finally { area.classList.remove('os-impressao'); }
     const nome = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w]+/g, '_').replace(/^_|_$/g, '');
     doc.save(`OS_${nome(atual?.os?.funcao)}_${nome(atual?.colaborador?.nome) || 'modelo'}.pdf`);
   }

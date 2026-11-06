@@ -3294,3 +3294,22 @@ body.fila-tela-aberta{overflow:hidden}
 .os-barra{background:#f7f7f7;border-bottom-color:#e5e7eb;color:#111}
 .os-box{border-color:#d4d4d4}
 .os-folha .os-form td{border-color:#d4d4d4!important}
+
+/* Folha da OS: na tela, títulos e topo pretos (cara do app); na impressão e no
+   PDF (classe os-impressao, posta só durante a geração) volta o cinza leve. */
+.os-barra{background:#111;color:#fff;border-bottom:0}
+.os-barra .os-cont{color:#9ca3af}
+.os-pagina .os-topo{background:#111;color:#fff}
+.os-pagina .os-topo .os-marca b,.os-pagina .os-topo .os-doc b{color:#fff}
+.os-pagina .os-topo small{color:#a3a3a3}
+.os-impressao .os-barra{background:#f7f7f7;color:#111;border-bottom:1px solid #e5e7eb}
+.os-impressao .os-barra .os-cont{color:#6b7280}
+.os-impressao .os-pagina .os-topo{background:#fff;color:#111}
+.os-impressao .os-pagina .os-topo .os-marca b,.os-impressao .os-pagina .os-topo .os-doc b{color:#111}
+.os-impressao .os-pagina .os-topo small{color:#6b7280}
+@media print{
+  .os-barra{background:#f7f7f7!important;color:#111!important;border-bottom:1px solid #e5e7eb!important}
+  .os-pagina .os-topo{background:#fff!important;color:#111!important}
+  .os-pagina .os-topo .os-marca b,.os-pagina .os-topo .os-doc b{color:#111!important}
+  .os-pagina .os-topo small{color:#6b7280!important}
+}
