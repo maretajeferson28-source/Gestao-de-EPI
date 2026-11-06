@@ -3202,3 +3202,36 @@ body.fila-tela-aberta{overflow:hidden}
 .os-folha.os-pagina{border-radius:0;box-shadow:0 1px 3px rgba(0,0,0,.22),0 4px 14px rgba(0,0,0,.10)}
 .os-folha-modal{background:#e6e6e6;backdrop-filter:none}
 .os-corpo > *{flex-shrink:0}
+
+/* Folha da OS organizada: tópicos, cards de risco, tabela de recomendações e quadros */
+.os-topicos{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.os-topicos li{position:relative;padding:6px 10px 6px 30px;background:#f8f9fb;border:1px solid #eef0f2;border-radius:8px;color:#1f2937}
+.os-topicos li::before{content:"";position:absolute;left:11px;top:11px;width:9px;height:9px;border-radius:2px;background:#ff6600}
+.os-riscos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.os-risco-card{border:1px solid #e5e7eb;border-top:3px solid var(--cor);border-radius:8px;padding:8px 10px 9px;background:#fff}
+.os-risco-card b{display:block;margin-bottom:4px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--cor)}
+.os-risco-card ul{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.os-risco-card li{position:relative;padding-left:10px;font-size:11.5px;line-height:1.35;color:#374151}
+.os-risco-card li::before{content:"";position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:var(--cor)}
+.os-risco-card p{margin:0;font-size:11.5px;font-style:italic;color:#9ca3af}
+.os-tabela{width:100%;border-collapse:collapse;font-size:12px;border:1px solid #e5e7eb}
+.os-tabela thead th{background:#111!important;color:#fff!important;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:7px 10px;border:0!important}
+.os-tabela td{padding:7px 10px;border-top:1px solid #eef0f2;color:#1f2937;vertical-align:top;background:#fff}
+.os-tabela tbody tr:nth-child(even) td{background:#fafafa}
+.os-tabela td.os-num{width:34px;font-weight:900;color:#ff6600;text-align:center}
+.os-sub{margin:5px 0 0;padding:0 0 0 14px;color:#4b5563}
+.os-sub li{margin:2px 0;font-size:11.5px}
+.os-alerta{border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:8px;background:#fef2f2;padding:10px 12px}
+.os-alerta b{display:block;margin-bottom:4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#b91c1c}
+.os-alerta p{margin:0 0 4px;color:#1f2937}
+.os-alerta .os-nota{margin:6px 0 0;padding-top:6px;border-top:1px dashed #fca5a5;font-size:11.5px;color:#7f1d1d}
+.os-declaracao{border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;background:#f8f9fb}
+.os-declaracao p{margin:0 0 6px;font-size:11.5px;line-height:1.5;color:#374151}
+.os-declaracao p:last-child{margin-bottom:0}
+.os-lei{margin-top:8px;border-left:3px solid #9ca3af;padding:6px 12px;background:#fff}
+.os-lei b{display:block;margin-bottom:3px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#4b5563}
+.os-lei p{margin:0 0 3px;font-size:11px;line-height:1.45;color:#4b5563}
+@media print{ .os-tabela thead th,.os-risco-card,.os-alerta,.os-topicos li::before{-webkit-print-color-adjust:exact;print-color-adjust:exact} }
+.os-riscos-grid{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
+.os-folha .os-tabela td{border:0!important;border-top:1px solid #eef0f2!important}
+.os-folha .os-tabela tr:hover td{background:inherit}

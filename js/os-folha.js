@@ -54,17 +54,57 @@
     });
   }
 
+  // Texto corrido -> tópicos: quebra nas linhas e nos marcadores; se vier um
+  // parágrafo só, quebra nas frases.
+  const frases = (t) => String(t || '').split(/(?<=[.;:])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/).map((s) => s.trim()).filter(Boolean);
+  function topicos(texto) {
+    const linhas = String(texto || '').split(/\r?\n/).map((l) => l.replace(/^[\s•\-–]+/, '').trim()).filter(Boolean);
+    return linhas.length > 1 ? linhas : frases(linhas[0] || '');
+  }
+  // Recomendação longa vira item principal + subitens (" - " ou frases).
+  function recomendacao(r) {
+    const t = String(r || '').replace(/^[-•]\s*/, '').trim();
+    let partes = t.split(/\s+-\s+/).map((s) => s.trim()).filter(Boolean);
+    if (partes.length === 1 && t.length > 260) partes = frases(t);
+    return { principal: partes[0] || t, subs: partes.slice(1) };
+  }
+
   // Monta as partes da folha. O topo e o rodapé se repetem em cada página;
   // os blocos do meio são distribuídos nas páginas A4 por paginar().
   function partes({ os, colaborador = {} }) {
     const secao = (n, titulo, corpo, lista) => `<section class="os-sec"${lista ? ' data-quebra' : ''}><h3><span>${n}</span>${esc(titulo)}</h3>${corpo}</section>`;
     const campo = (rot, val, largo) => `<div class="os-campo${largo ? ' is-largo' : ''}"><small>${esc(rot)}</small><strong>${esc(val || '—')}</strong></div>`;
-    const agentes = (os.agentes || []).map((g) => `<tr>
-        <th><span class="os-risco" style="--cor:${corRisco(g.grupo)}">${esc(g.grupo)}</span></th>
-        <td>${(g.itens || []).length ? g.itens.map(esc).join('<i>·</i>') : '<em>Não identificado</em>'}</td></tr>`).join('');
-    const epis = (os.epis || []).map((e) => `<li><span class="os-check" aria-hidden="true"></span>${esc(e.descricao)}</li>`).join('');
-    const recs = (os.recomendacoes || []).map((r) => `<li>${esc(String(r).replace(/^[-•]\s*/, ''))}</li>`).join('');
     const ident = [colaborador.matricula ? 'Matrícula ' + colaborador.matricula : '', colaborador.cpf ? 'CPF ' + cpfFmt(colaborador.cpf) : ''].filter(Boolean).join(' · ');
+
+    // 1. Descrição em tópicos
+    const desc = topicos(os.descricao);
+    const descricao = desc.length ? `<ul class="os-topicos" data-itens>${desc.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : '';
+    // 2. Agentes: um card por grupo de risco, com a cor do mapa de riscos
+    const agentes = (os.agentes || []).map((g) => `<div class="os-risco-card" style="--cor:${corRisco(g.grupo)}">
+        <b>${esc(g.grupo)}</b>
+        ${(g.itens || []).length ? `<ul>${g.itens.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>` : '<p>Não identificado</p>'}</div>`).join('');
+    // 3. EPIs
+    const epis = (os.epis || []).map((e) => `<li><span class="os-check" aria-hidden="true"></span>${esc(e.descricao)}</li>`).join('');
+    // 4. Recomendações em tabela numerada
+    const recs = (os.recomendacoes || []).map((r, i) => {
+      const x = recomendacao(r);
+      return `<tr><td class="os-num">${String(i + 1).padStart(2, '0')}</td><td>${esc(x.principal)}${x.subs.length ? `<ul class="os-sub">${x.subs.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}</td></tr>`;
+    }).join('');
+    // 5. Procedimentos: quadro de alerta, com a OBS separada
+    const proc = topicos(os.procedimentos);
+    const procOk = proc.filter((l) => !/^obs/i.test(l));
+    const procObs = proc.filter((l) => /^obs/i.test(l)).map((l) => l.replace(/^obs\.?:?\s*/i, ''));
+    const procedimentos = `<div class="os-alerta"><b>Em caso de acidente</b>${procOk.map((l) => `<p>${esc(l)}</p>`).join('')}
+      ${procObs.map((l) => `<p class="os-nota"><strong>Atenção:</strong> ${esc(l)}</p>`).join('')}</div>`;
+    // 6. Observações: declaração + trecho da CLT em destaque
+    const obs = String(os.observacoes || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const iArt = obs.findIndex((l) => /^art\.?\s*\d+/i.test(l));
+    const declara = iArt < 0 ? obs : obs.slice(0, iArt);
+    const lei = iArt < 0 ? [] : obs.slice(iArt);
+    const leiItens = lei.slice(1).join(' ').split(/\s(?=[a-z]\)\s)/);
+    const observacoes = `<div class="os-declaracao">${declara.map((l) => `<p>${esc(l)}</p>`).join('')}</div>
+      ${lei.length ? `<div class="os-lei"><b>CLT · ${esc(lei[0].replace(/^art\.?\s*/i, 'Art. '))}</b>${leiItens.map((l) => `<p>${esc(l)}</p>`).join('')}</div>` : ''}`;
+
     return {
       topo: `<header class="os-topo">
         <div class="os-marca"><img src="/assets/pdf-brand/logo.png" alt=""><div><b>GESTÃO DE <em>EPI</em></b><small>CONTROLE OPERACIONAL</small></div></div>
@@ -82,13 +122,13 @@
           ${campo('Setor', os.setor)}
           ${ident ? campo('Identificação', ident, true) : ''}
         </div>`,
-        os.descricao ? secao(1, 'Descrição da Função', `<p class="os-texto">${esc(os.descricao)}</p>`) : '',
-        secao(2, 'Agentes Associados às Atividades', agentes ? `<table class="os-riscos">${agentes}</table>` : '<p class="os-texto"><em>Não identificados.</em></p>'),
-        secao(3, 'EPIs de Uso Obrigatório', epis ? `<ul class="os-epis">${epis}</ul>` : '<p class="os-texto"><em>Não se aplica.</em></p>', !!epis),
-        recs ? secao(4, 'Recomendações', `<ul class="os-recs">${recs}</ul>`, true) : '',
+        descricao ? secao(1, 'Descrição da Função', descricao, desc.length > 1) : '',
+        secao(2, 'Agentes Associados às Atividades', agentes ? `<div class="os-riscos-grid">${agentes}</div>` : '<p class="os-texto"><em>Não identificados.</em></p>'),
+        secao(3, 'EPIs de Uso Obrigatório', epis ? `<ul class="os-epis" data-itens>${epis}</ul>` : '<p class="os-texto"><em>Não se aplica.</em></p>', !!epis),
+        recs ? secao(4, 'Recomendações', `<table class="os-tabela"><thead><tr><th>Nº</th><th>Recomendação</th></tr></thead><tbody data-itens>${recs}</tbody></table>`, true) : '',
         `<p class="os-frase">${esc(FRASE)}</p>`,
-        os.procedimentos ? secao(5, 'Procedimentos em caso de acidentes', `<p class="os-texto">${esc(os.procedimentos)}</p>`) : '',
-        os.observacoes ? secao(6, 'Observações', `<p class="os-texto os-pequeno">${esc(os.observacoes)}</p>`) : '',
+        os.procedimentos ? secao(5, 'Procedimentos em caso de acidentes', procedimentos) : '',
+        os.observacoes ? secao(6, 'Observações', observacoes) : '',
         `<div class="os-assinaturas" data-junto>
           <div><span class="os-linha"></span><b>${esc(colaborador.nome || 'Funcionário')}</b><small>Assinatura do Funcionário</small><span class="os-data">Data: ____/____/______</span></div>
           <div><span class="os-linha"></span><b>&nbsp;</b><small>Assinatura do Responsável</small><span class="os-data">Data: ____/____/______</span></div>
@@ -125,30 +165,34 @@
       const bloco = elemento(html);
       corpo.appendChild(bloco);
       if (!estoura(corpo, bloco)) continue;
-      const lista = bloco.hasAttribute('data-quebra') ? bloco.querySelector('ul') : null;
+      const lista = bloco.hasAttribute('data-quebra') ? bloco.querySelector('[data-itens]') : null;
       if (lista && lista.children.length > 1) {
         // Parte a lista: o que cabe fica aqui, o resto vai para a próxima página.
         const itens = [...lista.children];
         lista.innerHTML = '';
-        let atualLista = lista, atualBloco = bloco;
+        let atualLista = lista, atualBloco = bloco, anteriorLista = null;
         for (const li of itens) {
           atualLista.appendChild(li);
-          if (estoura(corpo, li) && atualLista.children.length > 1) {
-            atualLista.removeChild(li);
-            corpo = nova();
-            atualBloco = bloco.cloneNode(true);
-            atualBloco.querySelector('h3').insertAdjacentHTML('beforeend', '<em class="os-cont">continuação</em>');
-            atualLista = atualBloco.querySelector('ul');
-            atualLista.innerHTML = '';
-            corpo.appendChild(atualBloco);
-            atualLista.appendChild(li);
-          } else if (estoura(corpo, li) && atualBloco === bloco && atualLista.children.length === 1 && corpo.children.length > 1) {
-            // Nem o primeiro item cabe: a seção inteira começa na próxima página.
+          if (!estoura(corpo, li)) continue;
+          if (atualBloco === bloco && atualLista.children.length <= 3 && corpo.children.length > 1) {
+            // Só caberiam até 2 itens no pé da página: a seção inteira começa na próxima.
             corpo.removeChild(bloco);
             corpo = nova();
             corpo.appendChild(bloco);
+          } else if (atualLista.children.length > 1) {
+            atualLista.removeChild(li);
+            anteriorLista = atualLista;
+            corpo = nova();
+            atualBloco = bloco.cloneNode(true);
+            atualBloco.querySelector('h3').insertAdjacentHTML('beforeend', '<em class="os-cont">continuação</em>');
+            atualLista = atualBloco.querySelector('[data-itens]');
+            atualLista.innerHTML = '';
+            corpo.appendChild(atualBloco);
+            atualLista.appendChild(li);
           }
         }
+        // Viúva (como no Word): a continuação não fica com um item só.
+        if (anteriorLista && atualLista.children.length === 1 && anteriorLista.children.length >= 4) atualLista.prepend(anteriorLista.lastElementChild);
       } else if (corpo.children.length > 1) {
         // "Manter com o anterior" (como no Word): as assinaturas não descem sozinhas.
         const anterior = bloco.hasAttribute('data-junto') && corpo.children.length > 2 ? bloco.previousElementSibling : null;
