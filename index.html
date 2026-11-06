@@ -123,6 +123,7 @@
     <div class="brand"><div class="brand-badge"><div class="shield"><i data-lucide="shield-check" aria-hidden="true"></i></div><span>EPI</span></div><small>CONTROLE OPERACIONAL</small></div>
     <nav class="nav">
       <button class="active" data-page="dashboard"><span class="ico"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span><span class="text">Dashboard</span></button>
+      <button data-page="pendencias" data-admin-only hidden><span class="ico"><i data-lucide="bell-ring" aria-hidden="true"></i></span><span class="text">Pendências</span><span class="nav-badge" data-pend-badge hidden></span></button>
       <button data-page="nova" data-admin-only hidden><span class="ico"><i data-lucide="package-plus" aria-hidden="true"></i></span><span class="text">Entregar</span></button>
       <button data-page="programar" data-admin-only hidden><span class="ico"><i data-lucide="calendar-clock" aria-hidden="true"></i></span><span class="text">Programar</span></button>
       <button data-page="fila" data-admin-only hidden><span class="ico"><i data-lucide="list-checks" aria-hidden="true"></i></span><span class="text">Fila de entregas</span><span class="nav-badge" data-fila-badge hidden></span></button>
@@ -203,6 +204,11 @@
           </div>
         </section>
 
+      </section>
+
+      <section class="page" data-page-content="pendencias">
+        <div class="section-title"><div><h2>Pendências</h2><p>O que falta no cadastro e o que precisa ser resolvido, do mais grave para o mais leve.</p></div></div>
+        <div class="pd-conteudo" id="pendConteudo"><p class="pd-carregando">Carregando…</p></div>
       </section>
 
       <section class="page" data-page-content="nova">

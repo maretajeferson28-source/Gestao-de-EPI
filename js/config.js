@@ -177,11 +177,18 @@ window.addEventListener('load', () => {
     document.body.appendChild(osFolhaScript);
   }
 
-  if (!document.querySelector('script[data-dash-atencao]')) {
-    const dashAtencaoScript = document.createElement('script');
-    dashAtencaoScript.src = 'js/dash-atencao.js?v=20261106-2';
-    dashAtencaoScript.dataset.dashAtencao = 'true';
-    document.body.appendChild(dashAtencaoScript);
+  if (!document.querySelector('script[data-pendencias]')) {
+    const pendenciasScript = document.createElement('script');
+    pendenciasScript.src = 'js/pendencias.js?v=20261106-1';
+    pendenciasScript.dataset.pendencias = 'true';
+    document.body.appendChild(pendenciasScript);
+  }
+
+  if (!document.querySelector('script[data-menu-grupos]')) {
+    const menuGruposScript = document.createElement('script');
+    menuGruposScript.src = 'js/menu-grupos.js?v=20261106-3';
+    menuGruposScript.dataset.menuGrupos = 'true';
+    document.body.appendChild(menuGruposScript);
   }
 
   if (!document.querySelector('script[data-ciepi]')) {

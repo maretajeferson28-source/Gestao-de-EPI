@@ -537,7 +537,7 @@ function renderDashboard(){
 }
 
 function nav(page){
-  if(!currentIsAdmin && ['nova','programar','fila','colaboradores','epis','ciepi','autorizacoes','dados'].includes(page)) return;
+  if(!currentIsAdmin && ['nova','programar','fila','pendencias','colaboradores','epis','ciepi','autorizacoes','dados'].includes(page)) return;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.pageContent===page));
   if(page==='dashboard') renderDashboard();
@@ -545,6 +545,7 @@ function nav(page){
   if(page==='colaboradores') renderColabs();
   if(page==='epis') renderEpis();
   if(page==='autorizacoes') loadAuthorizedUsers();
+  if(page==='pendencias') window.EPI_PENDENCIAS?.atualizar();
   refreshIcons();
 }
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.page)));
