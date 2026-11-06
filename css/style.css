@@ -3318,18 +3318,20 @@ body.fila-tela-aberta{overflow:hidden}
 .os-impressao .os-pagina .os-topo .os-marca b,.os-impressao .os-pagina .os-topo .os-doc b{color:#fff}
 .os-impressao .os-pagina .os-topo small{color:#a3a3a3}
 
-/* Programar entrega: quadro "Pela O.S." no resumo (o que a O.S. pede x o que o colaborador já recebeu) */
-.prog-res-os .prog-res-rotulo{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.prog-res-os .prog-res-rotulo em{flex:0 0 auto;font-style:normal;letter-spacing:0;text-transform:none;font-size:11px;font-weight:700;color:#ff6b6b;border:1px solid rgba(255,107,107,.4);border-radius:999px;padding:1px 8px}
-.prog-res-os .prog-res-rotulo em.is-ok{color:#4ade80;border-color:rgba(74,222,128,.4)}
-.prog-os-lista{list-style:none;margin:0;padding:0 0 6px;border-bottom:1px solid #262626}
-.prog-os-lista li{display:flex;gap:9px;align-items:flex-start;padding:6px 0;font-size:13px;font-weight:500;color:#f1f1f1}
-.prog-os-lista li svg{width:16px;height:16px;flex:0 0 16px;margin-top:1px}
-.prog-os-lista li span{min-width:0}
-.prog-os-lista small{display:block;margin-top:1px;font-size:11px;font-weight:400;color:#8f8f8f}
-.prog-os-lista .is-ok svg{color:#4ade80}
-.prog-os-lista .is-vencido svg,.prog-os-lista .is-vencido small{color:#ffb800}
-.prog-os-lista .is-falta svg{color:#ff6b6b}
-.prog-os-lista .is-falta small{color:#ff8a8a}
-.prog-os-lista .is-fora svg{color:#6b6b6b}
-.prog-os-lista .is-fora span{color:#9a9a9a}
+/* Programar entrega: faixa "Pela O.S." no topo da tabela (o que a O.S. pede e falta entregar) */
+.prog-falta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(255,107,107,.35);border-left:3px solid #ff6b6b;border-radius:10px;background:rgba(255,107,107,.06);font-size:13px;color:#e5e5e5}
+.prog-falta[hidden]{display:none}
+.prog-falta b{color:#fff}
+.prog-falta svg{width:16px;height:16px;flex:0 0 16px}
+.prog-falta-txt{display:flex;align-items:center;gap:8px}
+.prog-falta-txt svg{color:#ff6b6b}
+.prog-falta-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.prog-falta-chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 10px 0 7px;border-radius:999px;border:1px solid rgba(255,107,107,.45);background:transparent;color:#ffb3b3;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.prog-falta-chip svg{width:14px;height:14px;flex:0 0 14px}
+.prog-falta-chip:hover{background:#ff6b6b;border-color:#ff6b6b;color:#111}
+.prog-falta-chip.is-vencido{border-color:rgba(255,184,0,.5);color:#ffcf5a}
+.prog-falta-chip.is-vencido:hover{background:#ffb800;border-color:#ffb800;color:#111}
+.prog-falta-todos{height:28px;padding:0 12px;border-radius:999px;border:0;background:#ff6600;color:#fff;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.prog-falta-todos:hover{background:#ff7a1f}
+.prog-falta.is-ok{border-color:rgba(74,222,128,.3);border-left-color:#4ade80;background:rgba(74,222,128,.05);padding:8px 12px}
+.prog-falta.is-ok svg{color:#4ade80}

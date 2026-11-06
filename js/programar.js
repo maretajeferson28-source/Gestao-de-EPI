@@ -181,46 +181,74 @@
         <div><dt>Colaborador</dt><dd class="${c ? '' : 'vazio'}">${c ? esc(c.nome) : 'Não escolhido'}</dd></div>
         <div><dt>Entrega em</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
       </dl>
-      ${quadroOs(c)}
       ${itens.length ? `<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><ul class="prog-res-lista">${itens.map((i) => `<li><span class="prog-res-nome">${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span><b>${fmt(i.qtd)} un</b></li>`).join('')}</ul></div>
         ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
         : '<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><p class="prog-res-vazio">Nenhum EPI adicionado<small>Escolha os EPIs na tabela ao lado.</small></p></div>'}`;
     const conta = $('progConta');
     if (conta) conta.textContent = `${fmt(total)} ${total === 1 ? 'item' : 'itens'}`;
-    if (box.querySelector('.prog-os-lista')) icons();
+    faixaOs(c);
   }
 
-  // Quadro "Pela O.S.": cada EPI que a O.S. do colaborador pede, com a última
-  // entrega dele. Mostra o que nunca recebeu e o que foi entregue com C.A. vencido.
+  // Faixa "Pela O.S." no topo da tabela: o que a O.S. do colaborador pede e ele
+  // nunca recebeu (ou recebeu com C.A. vencido). Cada nome é um botão que põe o
+  // EPI na tabela; o que já está na tabela sai da faixa.
   const isoDeBR = (br) => { const [d, m, y] = String(br || '').split('/'); return y ? `${y}-${m}-${d}` : ''; };
-  function quadroOs(c) {
+  function faltasOs(c) {
     const os = osDoColab(c);
-    if (!os || !(os.epis || []).length) return '';
+    if (!os) return null;
     const h = hoje();
     const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
     const recebidos = lista('movements').filter((m) => m.colaborador_id === c.id);
     const vistos = new Set();
-    const ordem = { falta: 0, vencido: 1, ok: 2, fora: 3 };
-    const linhas = [];
-    for (const item of os.epis) {
-      if (!item.epi_id) { linhas.push({ st: 'fora', nome: item.descricao, txt: 'Não cadastrado no app' }); continue; }
-      if (vistos.has(item.epi_id)) continue;
+    const faltas = [];
+    let pedidos = 0, naEntrega = 0;
+    for (const item of os.epis || []) {
+      if (!item.epi_id || vistos.has(item.epi_id)) continue;
       vistos.add(item.epi_id);
-      const nome = epis().find((e) => e.id === item.epi_id)?.nome || item.descricao;
-      const ult = recebidos.filter((m) => m.epi_id === item.epi_id).sort((a, b) => isoDeBR(b.data).localeCompare(isoDeBR(a.data)))[0];
-      const jaNaEntrega = naTabela.has(item.epi_id) ? ' · já está nesta entrega' : '';
-      if (!ult) { linhas.push({ st: 'falta', nome, txt: 'Nunca recebeu' + jaNaEntrega }); continue; }
-      const v = lista('epiVariants').find((x) => x.epi_id === item.epi_id && normCa(x.ca) === normCa(ult.ca));
-      if (v?.data_validade && String(v.data_validade).slice(0, 10) < h) linhas.push({ st: 'vencido', nome, txt: `Recebeu em ${ult.data} · C.A. vencido` + jaNaEntrega });
-      else linhas.push({ st: 'ok', nome, txt: `Recebeu em ${ult.data}` });
+      const epi = epis().find((e) => e.id === item.epi_id);
+      if (!epi) continue;
+      pedidos++;
+      const ult = recebidos.filter((m) => m.epi_id === item.epi_id).sort((x, y) => isoDeBR(y.data).localeCompare(isoDeBR(x.data)))[0];
+      let st = null, motivo = '';
+      if (!ult) { st = 'falta'; motivo = 'Nunca recebeu'; }
+      else {
+        const v = lista('epiVariants').find((x) => x.epi_id === item.epi_id && normCa(x.ca) === normCa(ult.ca));
+        if (v?.data_validade && String(v.data_validade).slice(0, 10) < h) { st = 'vencido'; motivo = `Recebeu em ${ult.data} com C.A. vencido`; }
+      }
+      if (st && naTabela.has(epi.id)) naEntrega++;
+      else if (st) faltas.push({ id: epi.id, nome: epi.nome, st, motivo });
     }
-    linhas.sort((a, b) => ordem[a.st] - ordem[b.st]);
-    const faltam = linhas.filter((l) => l.st === 'falta' || l.st === 'vencido').length;
-    const icone = { ok: 'circle-check', vencido: 'triangle-alert', falta: 'circle-x', fora: 'circle-minus' };
-    return `<div class="prog-res-sec prog-res-os">
-      <span class="prog-res-rotulo">Pela O.S. · ${esc(os.funcao)}<em class="${faltam ? '' : 'is-ok'}">${faltam ? `Faltam ${faltam}` : 'Em dia'}</em></span>
-      <ul class="prog-os-lista">${linhas.map((l) => `<li class="is-${l.st}"><i data-lucide="${icone[l.st]}"></i><span>${esc(l.nome)}<small>${esc(l.txt)}</small></span></li>`).join('')}</ul>
-    </div>`;
+    return { os, faltas, pedidos, naEntrega };
+  }
+
+  function faixaOs(c) {
+    const el = $('progFaltaOs');
+    if (!el) return;
+    const r = c ? faltasOs(c) : null;
+    if (!r || !r.pedidos) { el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    if (!r.faltas.length) {
+      el.className = 'prog-falta is-ok';
+      el.innerHTML = r.naEntrega
+        ? `<i data-lucide="circle-check"></i><span>Tudo o que faltava da O.S. de <b>${esc(r.os.funcao)}</b> já está nesta entrega</span>`
+        : `<i data-lucide="circle-check"></i><span>Em dia com a O.S. de <b>${esc(r.os.funcao)}</b></span>`;
+    } else {
+      el.className = 'prog-falta';
+      el.innerHTML = `<div class="prog-falta-txt"><i data-lucide="triangle-alert"></i><span>A O.S. de <b>${esc(r.os.funcao)}</b> pede e ${r.faltas.length === 1 ? 'falta entregar' : 'faltam entregar'}:</span></div>
+        <div class="prog-falta-chips">${r.faltas.map((x) => `<button type="button" class="prog-falta-chip is-${x.st}" data-falta-epi="${esc(x.id)}" title="${esc(x.motivo)} · clique para pôr na entrega"><i data-lucide="plus"></i>${esc(x.nome)}</button>`).join('')}
+        ${r.faltas.length > 1 ? '<button type="button" class="prog-falta-todos" data-falta-todos>Adicionar todos</button>' : ''}</div>`;
+    }
+    icons();
+  }
+
+  // Põe um EPI na tabela: usa a linha vazia se houver, senão cria outra.
+  async function adicionarEpi(id) {
+    const epi = epis().find((e) => e.id === id);
+    if (!epi) return;
+    const vazia = [...$('progItens').querySelectorAll('.prog-item')].find((l) => !l.querySelector('[data-campo="epi"]').value.trim());
+    const linha = vazia || novaLinha();
+    linha.querySelector('[data-campo="epi"]').value = epi.nome;
+    await escolherEpi(linha);
   }
 
   // ---- Ordem de serviço da função do colaborador ----
@@ -333,6 +361,14 @@
     $('progAdd').addEventListener('click', () => novaLinha().querySelector('input').focus());
     $('progLimpar').addEventListener('click', () => { limpar(); setMsg(''); });
     $('progOs')?.addEventListener('click', abrirOs);
+    $('progFaltaOs')?.addEventListener('click', async (e) => {
+      const chip = e.target.closest('[data-falta-epi]');
+      if (chip) return adicionarEpi(chip.dataset.faltaEpi);
+      if (e.target.closest('[data-falta-todos]')) {
+        const ids = [...$('progFaltaOs').querySelectorAll('[data-falta-epi]')].map((b) => b.dataset.faltaEpi);
+        for (const id of ids) await adicionarEpi(id);
+      }
+    });
     $('progConcluir').addEventListener('click', concluir);
     $('progItens').addEventListener('input', (e) => {
       const linha = e.target.closest('.prog-item');
