@@ -3317,3 +3317,19 @@ body.fila-tela-aberta{overflow:hidden}
 .os-impressao .os-pagina .os-topo{background:#111;color:#fff}
 .os-impressao .os-pagina .os-topo .os-marca b,.os-impressao .os-pagina .os-topo .os-doc b{color:#fff}
 .os-impressao .os-pagina .os-topo small{color:#a3a3a3}
+
+/* Programar entrega: quadro "Pela O.S." no resumo (o que a O.S. pede x o que o colaborador já recebeu) */
+.prog-res-os .prog-res-rotulo{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.prog-res-os .prog-res-rotulo em{flex:0 0 auto;font-style:normal;letter-spacing:0;text-transform:none;font-size:11px;font-weight:700;color:#ff6b6b;border:1px solid rgba(255,107,107,.4);border-radius:999px;padding:1px 8px}
+.prog-res-os .prog-res-rotulo em.is-ok{color:#4ade80;border-color:rgba(74,222,128,.4)}
+.prog-os-lista{list-style:none;margin:0;padding:0 0 6px;border-bottom:1px solid #262626}
+.prog-os-lista li{display:flex;gap:9px;align-items:flex-start;padding:6px 0;font-size:13px;font-weight:500;color:#f1f1f1}
+.prog-os-lista li svg{width:16px;height:16px;flex:0 0 16px;margin-top:1px}
+.prog-os-lista li span{min-width:0}
+.prog-os-lista small{display:block;margin-top:1px;font-size:11px;font-weight:400;color:#8f8f8f}
+.prog-os-lista .is-ok svg{color:#4ade80}
+.prog-os-lista .is-vencido svg,.prog-os-lista .is-vencido small{color:#ffb800}
+.prog-os-lista .is-falta svg{color:#ff6b6b}
+.prog-os-lista .is-falta small{color:#ff8a8a}
+.prog-os-lista .is-fora svg{color:#6b6b6b}
+.prog-os-lista .is-fora span{color:#9a9a9a}

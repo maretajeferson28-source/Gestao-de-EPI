@@ -181,11 +181,46 @@
         <div><dt>Colaborador</dt><dd class="${c ? '' : 'vazio'}">${c ? esc(c.nome) : 'Não escolhido'}</dd></div>
         <div><dt>Entrega em</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
       </dl>
+      ${quadroOs(c)}
       ${itens.length ? `<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><ul class="prog-res-lista">${itens.map((i) => `<li><span class="prog-res-nome">${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span><b>${fmt(i.qtd)} un</b></li>`).join('')}</ul></div>
         ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
         : '<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><p class="prog-res-vazio">Nenhum EPI adicionado<small>Escolha os EPIs na tabela ao lado.</small></p></div>'}`;
     const conta = $('progConta');
     if (conta) conta.textContent = `${fmt(total)} ${total === 1 ? 'item' : 'itens'}`;
+    if (box.querySelector('.prog-os-lista')) icons();
+  }
+
+  // Quadro "Pela O.S.": cada EPI que a O.S. do colaborador pede, com a última
+  // entrega dele. Mostra o que nunca recebeu e o que foi entregue com C.A. vencido.
+  const isoDeBR = (br) => { const [d, m, y] = String(br || '').split('/'); return y ? `${y}-${m}-${d}` : ''; };
+  function quadroOs(c) {
+    const os = osDoColab(c);
+    if (!os || !(os.epis || []).length) return '';
+    const h = hoje();
+    const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
+    const recebidos = lista('movements').filter((m) => m.colaborador_id === c.id);
+    const vistos = new Set();
+    const ordem = { falta: 0, vencido: 1, ok: 2, fora: 3 };
+    const linhas = [];
+    for (const item of os.epis) {
+      if (!item.epi_id) { linhas.push({ st: 'fora', nome: item.descricao, txt: 'Não cadastrado no app' }); continue; }
+      if (vistos.has(item.epi_id)) continue;
+      vistos.add(item.epi_id);
+      const nome = epis().find((e) => e.id === item.epi_id)?.nome || item.descricao;
+      const ult = recebidos.filter((m) => m.epi_id === item.epi_id).sort((a, b) => isoDeBR(b.data).localeCompare(isoDeBR(a.data)))[0];
+      const jaNaEntrega = naTabela.has(item.epi_id) ? ' · já está nesta entrega' : '';
+      if (!ult) { linhas.push({ st: 'falta', nome, txt: 'Nunca recebeu' + jaNaEntrega }); continue; }
+      const v = lista('epiVariants').find((x) => x.epi_id === item.epi_id && normCa(x.ca) === normCa(ult.ca));
+      if (v?.data_validade && String(v.data_validade).slice(0, 10) < h) linhas.push({ st: 'vencido', nome, txt: `Recebeu em ${ult.data} · C.A. vencido` + jaNaEntrega });
+      else linhas.push({ st: 'ok', nome, txt: `Recebeu em ${ult.data}` });
+    }
+    linhas.sort((a, b) => ordem[a.st] - ordem[b.st]);
+    const faltam = linhas.filter((l) => l.st === 'falta' || l.st === 'vencido').length;
+    const icone = { ok: 'circle-check', vencido: 'triangle-alert', falta: 'circle-x', fora: 'circle-minus' };
+    return `<div class="prog-res-sec prog-res-os">
+      <span class="prog-res-rotulo">Pela O.S. · ${esc(os.funcao)}<em class="${faltam ? '' : 'is-ok'}">${faltam ? `Faltam ${faltam}` : 'Em dia'}</em></span>
+      <ul class="prog-os-lista">${linhas.map((l) => `<li class="is-${l.st}"><i data-lucide="${icone[l.st]}"></i><span>${esc(l.nome)}<small>${esc(l.txt)}</small></span></li>`).join('')}</ul>
+    </div>`;
   }
 
   // ---- Ordem de serviço da função do colaborador ----
@@ -208,6 +243,7 @@
     b.disabled = !os;
     b.title = !c ? 'Escolha o colaborador para ver a ordem de serviço dele'
       : os ? `Ver a OS de ${os.funcao} e os EPIs obrigatórios` : `${c.nome} ainda não tem ordem de serviço ligada`;
+    resumo();
   }
 
   // Abre direto a folha A4 da OS (js/os-folha.js), com "Usar na entrega" na barra.
