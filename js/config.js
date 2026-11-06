@@ -177,6 +177,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(osFolhaScript);
   }
 
+  if (!document.querySelector('script[data-dash-atencao]')) {
+    const dashAtencaoScript = document.createElement('script');
+    dashAtencaoScript.src = 'js/dash-atencao.js?v=20261106-2';
+    dashAtencaoScript.dataset.dashAtencao = 'true';
+    document.body.appendChild(dashAtencaoScript);
+  }
+
   if (!document.querySelector('script[data-ciepi]')) {
     const ciepiScript = document.createElement('script');
     ciepiScript.src = 'js/ciepi.js?v=20261017-1';
