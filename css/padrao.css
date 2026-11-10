@@ -755,3 +755,14 @@
             mask-composite:intersect
   }
 }
+
+/* Etapa 4g: foto nova sem a logo na esquerda; o título volta e a sombra da
+   esquerda (da referência) volta para dar leitura ao texto */
+@media (min-width:721px){
+  .gpi-hero{background-position:center 14%;background-image:url("/assets/app-brand/hero-dashboard-2.webp"),radial-gradient(110% 150% at 62% 28%,#F59A3C 0%,#C2561E 16%,#4A2618 36%,#141821 58%,#070B10 84%)}
+  .gpi-hero__copy,.gpi-hero__slash{display:block}
+  .gpi-hero::before{background:
+    linear-gradient(90deg,rgba(3,6,11,.82) 0%,rgba(5,9,15,.55) 24%,rgba(5,9,15,.12) 48%,rgba(5,9,15,0) 75%,rgba(5,9,15,.2) 100%),
+    linear-gradient(0deg,rgba(3,6,11,.8) 0%,rgba(3,6,11,0) 34%),
+    linear-gradient(180deg,rgba(3,6,11,.3) 0%,rgba(3,6,11,0) 24%)}
+}
