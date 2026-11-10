@@ -177,6 +177,12 @@ window.addEventListener('load', () => {
     document.body.appendChild(pendenciasScript);
   }
 
+  if (!document.querySelector('script[data-dash-hero]')) {
+    const dashHeroScript = document.createElement('script');
+    dashHeroScript.src = 'js/dash-hero.js?v=20261110-2';
+    dashHeroScript.dataset.dashHero = 'true';
+    document.body.appendChild(dashHeroScript);
+  }
   if (!document.querySelector('script[data-moldura]')) {
     const molduraScript = document.createElement('script');
     molduraScript.src = 'js/moldura.js?v=20261110-1';

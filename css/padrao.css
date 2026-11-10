@@ -518,3 +518,124 @@
 
   .app .sidebar .side-foot{display:none!important}
 }
+
+/* =====================================================================
+   Etapa 4: cabeçalho do Dashboard (Cabecalho_Gestao_de_EPI_Referencia.css)
+   Só no PC. A foto é /assets/app-brand/hero-dashboard.webp; enquanto ela
+   não existe, aparece o céu de fim de tarde em degradê.
+   ===================================================================== */
+.gpi-hero{display:none}
+@media (min-width:721px){
+  /* No Dashboard, o cabeçalho substitui a barra do topo e os filtros antigos */
+  .main:has(.page.active[data-page-content="dashboard"]) > .topbar{display:none}
+  .page[data-page-content="dashboard"] > .filters{display:none}
+
+  .gpi-hero{
+    display:block;position:relative;isolation:isolate;box-sizing:border-box;
+    height:291px;margin:0 -32px 24px;overflow:hidden;color:#F5F6F8;font-family:"Inter",Roboto,Arial,sans-serif;
+    background-color:#070B10;
+    background-image:url("/assets/app-brand/hero-dashboard.webp"),
+      radial-gradient(110% 150% at 62% 28%,#F59A3C 0%,#C2561E 16%,#4A2618 36%,#141821 58%,#070B10 84%);
+    background-repeat:no-repeat;background-size:cover;background-position:center 48%;
+    border-bottom:1px solid rgba(149,164,181,.22)
+  }
+  .gpi-hero::before{
+    content:"";position:absolute;z-index:0;inset:0;pointer-events:none;
+    background:
+      linear-gradient(90deg,rgba(3,6,11,.94) 0%,rgba(5,9,15,.75) 24%,rgba(5,9,15,.21) 50%,rgba(5,9,15,.08) 75%,rgba(5,9,15,.29) 100%),
+      linear-gradient(0deg,rgba(3,6,11,.86) 0%,rgba(3,6,11,0) 29%,rgba(3,6,11,.18) 100%)
+  }
+  .gpi-hero__slash{
+    position:absolute;z-index:2;left:38px;top:-25px;width:5px;height:128px;transform:rotate(33deg);
+    background:linear-gradient(180deg,#FF8A1A,#FF6600 78%,rgba(255,102,0,0));box-shadow:0 0 17px rgba(255,102,0,.35);pointer-events:none
+  }
+
+  /* Texto */
+  .gpi-hero__copy{position:absolute;z-index:3;top:55px;left:71px;max-width:565px}
+  .gpi-hero__title{margin:0;font-size:34px;font-weight:400;line-height:1.04;letter-spacing:-.9px;text-shadow:0 2px 14px rgba(0,0,0,.26);color:#F5F6F8}
+  .gpi-hero__title strong{font-weight:750;color:#FF6600}
+  .gpi-hero__subtitle{margin:11px 0 0;font-size:15px;font-weight:400;line-height:1.35;color:#D5DAE1;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+
+  /* Ferramentas: sincronizar, notificações, perfil */
+  .gpi-hero__toolbar{position:absolute;z-index:5;top:12px;right:20px;display:flex;align-items:center;gap:11px}
+  .gpi-hero__icon-btn{
+    position:relative;display:grid;place-items:center;width:48px;height:48px;padding:0;
+    border:1px solid rgba(255,255,255,.07);border-radius:17px;color:#F7F8FA;background:rgba(5,9,14,.76);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);box-shadow:0 5px 18px rgba(0,0,0,.25);cursor:pointer
+  }
+  .gpi-hero__icon-btn:hover{background:rgba(20,26,34,.9)}
+  .gpi-hero__icon-btn svg{width:21px;height:21px;stroke-width:1.9}
+  .gpi-hero__icon-btn.is-busy svg{animation:sync-gira 1s linear infinite}
+  .gpi-hero__notification-dot{position:absolute;top:4px;right:4px;width:11px;height:11px;border-radius:50%;border:2px solid #081018;background:#FF6600}
+  .gpi-hero__notification-dot[hidden]{display:none}
+  .gpi-hero__perfil-box{position:relative}
+  .gpi-hero__profile{
+    display:flex;align-items:center;gap:10px;box-sizing:border-box;width:212px;height:52px;padding:6px 12px 6px 9px;
+    border:1px solid rgba(255,255,255,.08);border-radius:25px;color:#F7F8FA;background:rgba(5,9,14,.82);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);cursor:pointer;font:inherit
+  }
+  .gpi-hero__avatar{
+    width:36px;height:36px;flex:0 0 36px;border-radius:50%;overflow:hidden;border:1px solid rgba(255,255,255,.18);
+    display:grid;place-items:center;background:#1F2937;font-size:14px;font-weight:700;color:#fff
+  }
+  .gpi-hero__avatar img{width:100%;height:100%;object-fit:cover}
+  .gpi-hero__profile-text{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;text-align:left}
+  .gpi-hero__profile-name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px;font-weight:650;line-height:1.1}
+  .gpi-hero__profile-role{color:#C3CAD3;font-size:11px;font-weight:400;line-height:1.1}
+  .gpi-hero__profile-chevron{width:14px;height:14px;opacity:.9}
+  .gpi-hero__menu{
+    position:absolute;right:0;top:calc(100% + 8px);min-width:212px;padding:6px;border-radius:14px;z-index:20;
+    background:rgba(10,14,20,.96);border:1px solid rgba(255,255,255,.1);box-shadow:0 12px 30px rgba(0,0,0,.4)
+  }
+  .gpi-hero__menu[hidden]{display:none}
+  .gpi-hero__menu button{
+    display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px;border:0;border-radius:10px;
+    background:transparent;color:#E3E7EB;font:500 14px/1 "Inter",Roboto,Arial,sans-serif;cursor:pointer;text-align:left
+  }
+  .gpi-hero__menu button:hover{background:rgba(255,255,255,.07);color:#fff}
+  .gpi-hero__menu svg{width:17px;height:17px}
+
+  /* Rodapé do cabeçalho: período e abas */
+  .gpi-hero__bottom{position:absolute;z-index:5;left:28px;bottom:20px;display:flex;align-items:center;gap:34px}
+  .gpi-hero__period{
+    position:relative;display:flex;align-items:center;box-sizing:border-box;width:250px;height:50px;padding:6px 15px;gap:12px;
+    border:1px solid rgba(209,220,232,.12);border-radius:17px;color:#F5F6F8;background:rgba(11,17,24,.82);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 6px 20px rgba(0,0,0,.22);cursor:pointer
+  }
+  .gpi-hero__period-icon{width:22px;height:22px;flex:0 0 22px;stroke-width:1.85}
+  .gpi-hero__period-text{display:grid;gap:2px;min-width:0}
+  .gpi-hero__period-label{font-size:11px;line-height:1.15;color:#C7CDD6;font-weight:400}
+  .gpi-hero__period-value{font-size:14px;line-height:1.15;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gpi-hero__period-chevron{width:15px;height:15px;margin-left:auto}
+  .gpi-hero__period select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;color-scheme:dark}
+  .gpi-hero__modes{
+    display:flex;align-items:center;gap:5px;box-sizing:border-box;min-height:50px;padding:6px 7px;
+    border:1px solid rgba(255,255,255,.09);border-radius:24px;background:rgba(7,12,18,.72);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 18px rgba(0,0,0,.24)
+  }
+  .gpi-hero__mode{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;min-width:135px;height:37px;padding:0 14px;
+    border:1px solid transparent;border-radius:22px;color:#E3E7EB;background:transparent;
+    font:500 14px/1 "Inter",Roboto,Arial,sans-serif;white-space:nowrap;cursor:pointer;transition:background .18s ease,color .18s ease
+  }
+  .gpi-hero__mode svg{width:18px;height:18px;stroke-width:1.8}
+  .gpi-hero__mode[aria-selected="true"]{
+    color:#fff;background:linear-gradient(110deg,#FF7900,#C34B00);border-color:rgba(255,139,37,.72);
+    box-shadow:0 0 10px rgba(255,102,0,.14),inset 0 1px 0 rgba(255,255,255,.22)
+  }
+  .gpi-hero__mode:hover:not([aria-selected="true"]):not(:disabled){background:rgba(255,255,255,.07)}
+  .gpi-hero__mode:disabled{opacity:.55;cursor:default}
+  .gpi-hero button:focus-visible,.gpi-hero__period:focus-within{outline:2px solid #FF8C32;outline-offset:3px}
+}
+@media (min-width:721px) and (max-width:1160px){
+  .gpi-hero__copy{left:36px;max-width:420px}
+  .gpi-hero__title{font-size:30px}
+  .gpi-hero__bottom{left:20px;gap:16px}
+  .gpi-hero__period{width:225px}
+  .gpi-hero__mode{min-width:115px;font-size:13px}
+}
+@media (min-width:721px) and (max-width:900px){
+  .gpi-hero__profile{width:53px;padding:7px}
+  .gpi-hero__profile-text,.gpi-hero__profile-chevron{display:none}
+}
