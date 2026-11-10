@@ -1165,3 +1165,13 @@
 @media (min-width:721px){
   .caf-topo{margin-top:22px}
 }
+@media (min-width:721px){
+  /* Ficha vazia (antes da consulta ou quando não achou): mesmos lugares, com traços */
+  .caf.is-vazia .caf-rotulo{display:none}
+  .caf.is-vazia .caf-numero{color:#5E6672}
+  .caf.is-vazia .caf-numero b{color:#7B8490}
+  .caf.is-vazia .caf-nome{color:#AEB5BF}
+  .caf.is-vazia .caf-fab{color:#8F97A3;font-size:14px}
+  .caf.is-vazia .caf-dir dd b,.caf.is-vazia .caf-grade p{color:#6F7782}
+  .caf.is-vazia [data-caf-mais]{display:none}
+}

@@ -77,7 +77,7 @@
       </div>`;
     pagina.prepend(el);
     ligar(el);
-    icons();
+    fichaVazia(el, 'is-neutro', 'Aguardando consulta', '', 'Digite um número acima para ver a ficha.');
   }
 
   // C.A. cadastrado no app e C.A. que ele substituiu (mesmo EPI, marcado "passada").
@@ -118,22 +118,39 @@
     original.value = valor;
     original.dispatchEvent(new Event('input'));
     btn.disabled = true;
-    $('[data-caf-aviso] strong', el).textContent = 'Consultando…';
-    $('[data-caf-aviso]', el).hidden = false;
-    $('[data-caf-resultado]', el).hidden = true;
+    fichaVazia(el, 'is-neutro', 'Consultando…', valor, 'Buscando na base oficial…');
     try { await lookupCaepi(); } finally { btn.disabled = false; }
     await desenhar(el);
   }
 
+  // Ficha com traços (como a antiga): antes da consulta, ou quando não achou.
+  function fichaVazia(el, cls, selo_, numero, dica) {
+    const seloEl = $('[data-caf-selo]', el);
+    seloEl.className = `caf-selo ${cls}`;
+    seloEl.innerHTML = `<i data-lucide="${cls === 'is-neutro' ? 'clock-3' : 'circle-x'}"></i>${esc(selo_)}`;
+    const n = String(numero || '').toUpperCase();
+    $('[data-caf-numero]', el).innerHTML = /^CI-/.test(n) ? `<b>${esc(n)}</b>` : `C.A. <b>${esc(n.replace(/\D+/g, '') || '—')}</b>`;
+    $('[data-caf-nome]', el).textContent = 'Informações do EPI';
+    $('[data-caf-fab]', el).textContent = dica;
+    $('[data-caf-cadastro]', el).hidden = true;
+    ['validade', 'ref', 'cnpj', 'hist', 'tipo', 'marca', 'fab2', 'anterior', 'norma', 'desc', 'fonte'].forEach((k) => { $(`[data-caf-${k}]`, el).textContent = '—'; });
+    ['prazo', 'hist2'].forEach((k) => { $(`[data-caf-${k}]`, el).textContent = ''; });
+    $('[data-caf-aviso]', el).hidden = true;
+    $('[data-caf-resultado]', el).hidden = false;
+    el.classList.add('is-vazia');
+    icons();
+  }
+
   async function desenhar(el) {
+    el.classList.remove('is-vazia');
     const status = txt('caStageStatus');
     const aviso = $('[data-caf-aviso]', el), res = $('[data-caf-resultado]', el);
     if (/não encontrado|erro|indisponível|informe/i.test(status) || vazio(txt('caSituation'))) {
-      res.hidden = true;
-      aviso.hidden = false;
-      aviso.classList.toggle('is-erro', /não encontrado|erro|indisponível/i.test(status));
-      $('strong', aviso).textContent = /não encontrado/i.test(status) ? 'Número não encontrado.' : /erro|indisponível/i.test(status) ? 'Não foi possível consultar agora.' : 'Digite um número para ver a ficha do equipamento.';
-      $('[data-caf-base]', aviso).textContent = txt('caStageHint') || 'Consulta na base oficial CAEPI (C.A.) e na base CIEPI (C.I.).';
+      const naoAchou = /não encontrado/i.test(status), falhou = /erro|indisponível/i.test(status);
+      fichaVazia(el, naoAchou || falhou ? 'is-vencido' : 'is-neutro',
+        naoAchou ? 'Não encontrado' : falhou ? 'Não foi possível consultar' : 'Aguardando consulta',
+        naoAchou || falhou ? $('[data-caf-input]', el).value.trim() : '',
+        naoAchou ? 'Confira o número e tente de novo.' : falhou ? 'Tente de novo em instantes.' : 'Digite um número acima para ver a ficha.');
       return;
     }
     const numero = txt('caStageNumber');
