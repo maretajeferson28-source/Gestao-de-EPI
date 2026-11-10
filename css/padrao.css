@@ -717,3 +717,11 @@
             mask-composite:intersect
   }
 }
+
+/* Etapa 4d: foto do banner (hero-dashboard.webp). A arte já traz a marca à
+   esquerda, então o título some e as sombras ficam só embaixo e no topo. */
+@media (min-width:721px){
+  .gpi-hero{background-position:center 12%}
+  .gpi-hero::before{background:linear-gradient(0deg,rgba(3,6,11,.78) 0%,rgba(3,6,11,0) 34%),linear-gradient(180deg,rgba(3,6,11,.35) 0%,rgba(3,6,11,0) 24%)}
+  .gpi-hero__copy,.gpi-hero__slash{display:none}
+}
