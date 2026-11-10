@@ -506,3 +506,15 @@
   .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button .ico svg{width:20px;height:20px;flex-basis:20px}
   .app .sidebar .nav-badge{width:22px;min-width:22px;height:22px;font-size:13px}
 }
+
+/* Etapa 3d: item único de grupo sem recuo de árvore, foto inteira no rodapé, perfil escondido por enquanto */
+@media (min-width:721px){
+  .app .sidebar .nav-grupo.is-unico > .nav-grupo-itens{display:contents!important;margin:0!important;padding:0!important}
+  .app .sidebar .nav-grupo.is-unico > .nav-grupo-itens::before{display:none!important}
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button,
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button.active{margin:0!important;padding:0 14px!important;font-weight:600}
+
+  .app .sidebar::after{height:250px;background-size:100% auto;background-position:center bottom}
+
+  .app .sidebar .side-foot{display:none!important}
+}
