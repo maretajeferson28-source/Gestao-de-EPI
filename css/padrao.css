@@ -905,3 +905,13 @@
             mask-image:linear-gradient(to right,#000 0%,#000 5%,rgba(0,0,0,.45) 13%,transparent 26%)
   }
 }
+
+/* Etapa 5d: KPIs logo abaixo das abas (~16 px), como na referência. O banner
+   termina logo depois do período/abas; o sumiço suave fica só nos 12 px finais. */
+@media (min-width:721px){
+  .gpi-hero{height:262px;
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),transparent 100%);
+            mask-image:linear-gradient(to bottom,#000 calc(100% - 12px),transparent 100%)}
+  .gpi-hero__bottom{bottom:14px}
+  .kpi-grid{margin-top:0}
+}
