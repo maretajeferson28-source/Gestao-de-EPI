@@ -793,3 +793,51 @@
             mask-image:linear-gradient(to bottom,#000 calc(100% - 40px),transparent 100%)}
   .gpi-hero__bottom{bottom:70px}
 }
+
+/* =====================================================================
+   Etapa 5a: faixa de 4 KPIs (KPIs_Gestao_de_EPI_Referencia.css)
+   Só no PC; no celular continuam os cards antigos.
+   ===================================================================== */
+.kpi-grid{display:none}
+@media (min-width:721px){
+  /* Banner um pouco mais baixo para os cards ficarem perto das abas */
+  .gpi-hero{height:290px}
+  .gpi-hero__bottom{bottom:50px}
+
+  .kpi-grid{
+    --kpi-text:#F7F8FB;--kpi-text-muted:#A8ADB6;--kpi-orange:#FF7100;--kpi-cyan:#03AEFF;--kpi-purple:#AF82F5;--kpi-red:#FF4054;
+    --kpi-green-bg:#123A24;--kpi-gray-bg:#2D3036;--kpi-red-bg:#44171C;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%;align-items:stretch;
+    margin:2px 0 18px;font-family:"Roboto",Arial,sans-serif;font-variant-numeric:tabular-nums
+  }
+  .kpi-card{
+    --tone:var(--kpi-orange);--tint:rgba(255,113,0,.15);
+    isolation:isolate;position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:10px;
+    min-height:104px;padding:14px 14px 12px;box-sizing:border-box;overflow:hidden;border-radius:12px;
+    border:1px solid rgba(255,255,255,.11);background:linear-gradient(145deg,var(--base,#202024),#111316 74%);
+    color:var(--kpi-text);box-shadow:0 6px 24px rgba(0,0,0,.26);transition:border-color .18s,transform .18s
+  }
+  .kpi-card:hover{transform:translateY(-1px)}
+  .kpi-card::before{content:"";position:absolute;z-index:-1;inset:0;background:radial-gradient(ellipse at 0% 4%,var(--tint) 0%,transparent 66%);pointer-events:none}
+  .kpi-card::after{content:"";position:absolute;left:0;top:11px;bottom:11px;width:2px;border-radius:2px;background:var(--tone);box-shadow:0 0 10px var(--tone);pointer-events:none}
+  .kpi-card--orange{--tone:var(--kpi-orange);--tint:rgba(255,106,0,.17);border-color:rgba(255,114,15,.25);--base:#201713}
+  .kpi-card--blue{--tone:var(--kpi-cyan);--tint:rgba(0,160,255,.18);border-color:rgba(37,163,245,.28);--base:#101B26}
+  .kpi-card--purple{--tone:var(--kpi-purple);--tint:rgba(139,89,225,.20);border-color:rgba(173,121,237,.26);--base:#1D1827}
+  .kpi-card--red{--tone:var(--kpi-red);--tint:rgba(235,55,66,.19);border-color:rgba(239,65,75,.30);--base:#211416}
+  .kpi-card__icon{width:28px;height:28px;align-self:start;color:var(--tone);filter:drop-shadow(0 0 6px var(--tint))}
+  .kpi-card__icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .kpi-card__body{min-width:0}
+  .kpi-card__label{margin:0 0 4px;font-size:12px;line-height:1.15;font-weight:500;letter-spacing:-.15px;white-space:nowrap;color:#F2F2F5}
+  .kpi-card__value-row{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+  .kpi-card__value{margin:0;font-size:clamp(23px,2vw,30px);line-height:1.06;font-weight:700;letter-spacing:-.7px;white-space:nowrap;color:#fff}
+  .kpi-card__value--currency{font-size:clamp(18px,1.5vw,25px);letter-spacing:-.5px}
+  .kpi-card__sub{margin:4px 0 0;font-size:11px;line-height:1.1;color:var(--kpi-text-muted)}
+  .kpi-badge{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;gap:2px;padding:4px 6px;border-radius:999px;font-size:10px;line-height:1;font-weight:700;letter-spacing:-.1px;white-space:nowrap}
+  .kpi-badge[hidden]{display:none}
+  .kpi-badge--up{color:#55E58B;background:var(--kpi-green-bg)}
+  .kpi-badge--neutral{color:#EBEDF0;background:var(--kpi-gray-bg)}
+  .kpi-badge--cost{color:#FF646C;background:var(--kpi-red-bg)}
+}
+@media (min-width:721px) and (max-width:1050px){
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

@@ -183,6 +183,12 @@ window.addEventListener('load', () => {
     dashHeroScript.dataset.dashHero = 'true';
     document.body.appendChild(dashHeroScript);
   }
+  if (!document.querySelector('script[data-dash-kpis]')) {
+    const dashKpisScript = document.createElement('script');
+    dashKpisScript.src = 'js/dash-kpis.js?v=20261110-1';
+    dashKpisScript.dataset.dashKpis = 'true';
+    document.body.appendChild(dashKpisScript);
+  }
   if (!document.querySelector('script[data-moldura]')) {
     const molduraScript = document.createElement('script');
     molduraScript.src = 'js/moldura.js?v=20261110-1';
