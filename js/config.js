@@ -183,6 +183,12 @@ window.addEventListener('load', () => {
     dashHeroScript.dataset.dashHero = 'true';
     document.body.appendChild(dashHeroScript);
   }
+  if (!document.querySelector('script[data-ca-ficha]')) {
+    const caFichaScript = document.createElement('script');
+    caFichaScript.src = 'js/ca-ficha.js?v=20261110-2';
+    caFichaScript.dataset.caFicha = 'true';
+    document.body.appendChild(caFichaScript);
+  }
   if (!document.querySelector('script[data-dash-kpis]')) {
     const dashKpisScript = document.createElement('script');
     dashKpisScript.src = 'js/dash-kpis.js?v=20261110-8';
