@@ -664,3 +664,31 @@
 
   .app .sidebar::after{height:210px}
 }
+
+/* Etapa 4b: cabeçalho e controles menores, na proporção da referência */
+@media (min-width:721px){
+  .gpi-hero{height:256px}
+  .gpi-hero__copy{top:46px;left:60px}
+  .gpi-hero__title{font-size:32px}
+  .gpi-hero__subtitle{margin-top:9px;font-size:14px}
+  .gpi-hero__slash{left:30px;top:-30px;height:110px}
+
+  .gpi-hero__toolbar{top:12px;right:18px;gap:9px}
+  .gpi-hero__icon-btn{width:40px;height:40px;border-radius:14px}
+  .gpi-hero__icon-btn svg{width:18px;height:18px}
+  .gpi-hero__notification-dot{top:3px;right:3px;width:10px;height:10px}
+  .gpi-hero__profile{width:184px;height:44px;padding:4px 10px 4px 6px;border-radius:22px;gap:9px}
+  .gpi-hero__avatar{width:32px;height:32px;flex-basis:32px;font-size:13px}
+  .gpi-hero__profile-name{font-size:12.5px}
+  .gpi-hero__profile-role{font-size:10.5px}
+
+  .gpi-hero__bottom{left:24px;bottom:16px;gap:24px}
+  .gpi-hero__period{width:200px;height:40px;padding:4px 12px;gap:10px;border-radius:14px}
+  .gpi-hero__period-icon{width:19px;height:19px;flex-basis:19px}
+  .gpi-hero__period-label{font-size:10px}
+  .gpi-hero__period-value{font-size:13px}
+  .gpi-hero__period-chevron{width:14px;height:14px}
+  .gpi-hero__modes{min-height:40px;padding:4px 5px;gap:4px;border-radius:20px}
+  .gpi-hero__mode{min-width:112px;height:30px;padding:0 12px;gap:7px;border-radius:16px;font-size:13px}
+  .gpi-hero__mode svg{width:16px;height:16px}
+}
