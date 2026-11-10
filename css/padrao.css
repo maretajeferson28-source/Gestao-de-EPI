@@ -772,3 +772,15 @@
 @media (min-width:721px){
   .page[data-page-content="dashboard"] > :not(#dashHero):not(.pv-dash-novo){display:none!important}
 }
+
+/* Etapa 4h: sem borda dura embaixo. A foto desce mais 74 px e se dissolve no
+   preto do fundo (#0B0B0C); o painel novo vai subir por cima dessa faixa. */
+@media (min-width:721px){
+  .gpi-hero{height:330px;margin-bottom:-74px;border-bottom:0}
+  .gpi-hero__bottom{bottom:90px}
+  .gpi-hero::before{background:
+    linear-gradient(0deg,#0B0B0C 0%,rgba(11,11,12,.92) 12%,rgba(11,11,12,.55) 30%,rgba(11,11,12,0) 58%),
+    linear-gradient(90deg,rgba(3,6,11,.82) 0%,rgba(5,9,15,.55) 24%,rgba(5,9,15,.12) 48%,rgba(5,9,15,0) 75%,rgba(5,9,15,.2) 100%),
+    linear-gradient(180deg,rgba(3,6,11,.3) 0%,rgba(3,6,11,0) 24%)}
+  .page[data-page-content="dashboard"] > :not(#dashHero){position:relative;z-index:1}
+}
