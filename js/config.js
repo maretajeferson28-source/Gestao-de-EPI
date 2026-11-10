@@ -179,13 +179,13 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-dash-hero]')) {
     const dashHeroScript = document.createElement('script');
-    dashHeroScript.src = 'js/dash-hero.js?v=20261110-4';
+    dashHeroScript.src = 'js/dash-hero.js?v=20261110-8';
     dashHeroScript.dataset.dashHero = 'true';
     document.body.appendChild(dashHeroScript);
   }
   if (!document.querySelector('script[data-dash-kpis]')) {
     const dashKpisScript = document.createElement('script');
-    dashKpisScript.src = 'js/dash-kpis.js?v=20261110-3';
+    dashKpisScript.src = 'js/dash-kpis.js?v=20261110-4';
     dashKpisScript.dataset.dashKpis = 'true';
     document.body.appendChild(dashKpisScript);
   }

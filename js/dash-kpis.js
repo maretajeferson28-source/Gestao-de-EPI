@@ -43,7 +43,13 @@
           <p class="kpi-card__sub" data-sub>vs. mês anterior</p>
         </div>
       </article>`).join('');
-    hero.after(el);
+    // Linha de cima: KPIs à esquerda e, à direita, o espaço da busca (#dashLado).
+    const topo = document.createElement('div');
+    topo.className = 'pv-dash-topo pv-dash-novo';
+    topo.id = 'dashTopo';
+    topo.innerHTML = '<aside class="pv-dash-lado" id="dashLado"></aside>';
+    topo.prepend(el);
+    hero.after(topo);
     icons();
     return true;
   }

@@ -49,13 +49,14 @@
         </label>
         <div class="gpi-hero__modes" role="tablist" aria-label="Visão do painel">
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="true" data-modo="geral"><i data-lucide="chart-column-increasing"></i>Geral</button>
-          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="colaborador" aria-disabled="true" title="Em construção"><i data-lucide="users-round"></i>Por Colaborador</button>
-          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="epi" aria-disabled="true" title="Em construção"><i data-lucide="hard-hat"></i>Por EPI</button>
+          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="colaborador"><i data-lucide="users-round"></i>Por Colaborador</button>
+          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="epi"><i data-lucide="hard-hat"></i>Por EPI</button>
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="unidade" aria-disabled="true" title="Em construção"><i data-lucide="map-pin"></i>Por Unidade</button>
         </div>
       </div>`;
     pagina.prepend(el);
     ligar(el);
+    ligarBusca(el);
     icons();
     atualizar();
   }
@@ -134,6 +135,173 @@
     const alvos = ['#sideUserName', '#sideUserInitial', '#sideUserAvatar', '.topbar [data-notif-btn="pc"]', '.topbar [data-sync-btn="pc"]', '#statusText'];
     const obs = new MutationObserver(() => setTimeout(atualizar, 0));
     alvos.forEach((s) => { const t = $(s); if (t) obs.observe(t, { attributes: true, childList: true, subtree: true, characterData: true }); });
+  }
+
+  // ---- Abas + busca: a aba escolhe o que a busca procura; o resultado vira
+  // o filtro de colaborador (#fColab) ou de EPI (#fEpi) que o Dashboard já usa.
+  const MODOS = {
+    geral: { dica: 'Colaborador ou EPI…', titulo: 'Pesquisar colaborador ou EPI' },
+    colaborador: { dica: 'Buscar colaborador…', titulo: 'Pesquisar colaborador', filtro: '#fColab', icone: 'users-round', rotulo: 'Colaborador' },
+    epi: { dica: 'Buscar EPI…', titulo: 'Pesquisar EPI', filtro: '#fEpi', icone: 'hard-hat', rotulo: 'EPI' }
+  };
+  const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const opcoes = (sel) => [...($(sel)?.options || [])].map((o) => o.value).filter(Boolean);
+  let modo = 'geral';
+
+  function escolherModo(el, novo) {
+    modo = novo;
+    el.querySelectorAll('.gpi-hero__mode').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.modo === novo)));
+    const campo = $('[data-hero-busca-campo]');
+    if (campo) campo.placeholder = MODOS[novo].dica;
+    const titulo = $('[data-hero-busca-titulo]');
+    if (titulo) titulo.textContent = MODOS[novo].titulo;
+  }
+  function aplicarFiltro(tipo, valor) {
+    ['colaborador', 'epi'].forEach((t) => {
+      const s = $(MODOS[t].filtro);
+      if (!s) return;
+      const v = t === tipo ? valor : '';
+      if (s.value !== v) { s.value = v; s.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+    mostrarChip();
+  }
+  function mostrarChip() {
+    const el = $('#dashHero');
+    if (!el) return;
+    const colab = $('#fColab')?.value, epi = $('#fEpi')?.value;
+    const tipo = colab ? 'colaborador' : epi ? 'epi' : '';
+    const chip = $('[data-hero-chip]'), campo = $('[data-hero-busca-campo]');
+    if (!chip || !campo) return;
+    chip.hidden = !tipo;
+    campo.hidden = !!tipo;
+    $('[data-hero-busca]').classList.toggle('tem-filtro', !!tipo);
+    if (tipo) {
+      if (modo !== tipo) escolherModo(el, tipo);
+      $('[data-hero-chip-texto]').textContent = colab || epi;
+      $('[data-hero-chip-icone]').outerHTML = `<i data-hero-chip-icone data-lucide="${MODOS[tipo].icone}"></i>`;
+      chip.title = `${MODOS[tipo].rotulo}: ${colab || epi}`;
+      icons();
+    }
+  }
+
+  // Lista de sugestões fica fora do banner (ele corta o que passa da borda).
+  let lista_ = null, itens = [], marcado = -1;
+  function caixaSugestoes() {
+    if (lista_) return lista_;
+    lista_ = document.createElement('div');
+    lista_.className = 'gpi-hero__sugestoes';
+    lista_.setAttribute('role', 'listbox');
+    lista_.hidden = true;
+    document.body.appendChild(lista_);
+    lista_.addEventListener('mousedown', (e) => {
+      const b = e.target.closest('[data-i]');
+      if (!b) return;
+      e.preventDefault();
+      escolher(+b.dataset.i);
+    });
+    return lista_;
+  }
+  function fecharSugestoes() { if (lista_) lista_.hidden = true; marcado = -1; }
+  function sugerir(el) {
+    const campo = $('[data-hero-busca-campo]');
+    const q = semAcento(campo.value.trim());
+    const caixa = caixaSugestoes();
+    const tipos = modo === 'geral' ? ['colaborador', 'epi'] : [modo];
+    itens = [];
+    tipos.forEach((t) => opcoes(MODOS[t].filtro).forEach((v) => {
+      const n = semAcento(v);
+      if (!q || n.includes(q)) itens.push({ tipo: t, valor: v, peso: !q ? 1 : n.startsWith(q) ? 0 : n.split(' ').some((p) => p.startsWith(q)) ? 1 : 2 });
+    }));
+    itens.sort((a, b) => a.peso - b.peso || a.valor.localeCompare(b.valor, 'pt-BR'));
+    itens = itens.slice(0, 8);
+    marcado = itens.length ? 0 : -1;
+    caixa.innerHTML = itens.length
+      ? itens.map((it, i) => `<button type="button" role="option" data-i="${i}" class="${i === marcado ? 'is-marcado' : ''}"><i data-lucide="${MODOS[it.tipo].icone}"></i><span>${esc(it.valor)}</span>${modo === 'geral' ? `<small>${MODOS[it.tipo].rotulo}</small>` : ''}</button>`).join('')
+      : `<p>Nada encontrado${q ? ` para "${esc(campo.value.trim())}"` : ''}.</p>`;
+    const r = $('[data-hero-busca]').getBoundingClientRect();
+    const larg = Math.round(Math.max(r.width, 240));
+    caixa.style.width = `${larg}px`;
+    caixa.style.left = `${Math.round(Math.min(r.left, window.innerWidth - larg - 8))}px`;
+    caixa.style.top = `${Math.round(r.bottom + 6)}px`;
+    caixa.hidden = false;
+    icons();
+  }
+  function escolher(i) {
+    const it = itens[i];
+    const el = $('#dashHero');
+    if (!it || !el) return;
+    escolherModo(el, it.tipo);
+    aplicarFiltro(it.tipo, it.valor);
+    const campo = $('[data-hero-busca-campo]');
+    campo.value = '';
+    fecharSugestoes();
+  }
+
+  // A busca mora no espaço à direita dos KPIs (#dashLado, criado pelo dash-kpis.js).
+  function montarBusca() {
+    if ($('#dashBusca')) return true;
+    const lado = $('#dashLado');
+    if (!lado) return false;
+    const box = document.createElement('section');
+    box.className = 'gpi-busca';
+    box.id = 'dashBusca';
+    box.innerHTML = `
+      <p class="gpi-busca__titulo"><i data-lucide="search"></i><span data-hero-busca-titulo>Pesquisar</span></p>
+      <div class="gpi-busca__barra" data-hero-busca>
+        <input type="search" autocomplete="off" spellcheck="false" aria-label="Pesquisar no painel" data-hero-busca-campo>
+        <span class="gpi-hero__chip" data-hero-chip hidden><i data-hero-chip-icone></i><span data-hero-chip-texto></span><button type="button" aria-label="Limpar filtro" data-limpar-filtro>×</button></span>
+      </div>
+      <small class="gpi-busca__dica">A aba acima escolhe o que pesquisar.</small>`;
+    lado.appendChild(box);
+    const campo = $('[data-hero-busca-campo]');
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('[data-limpar-filtro]')) {
+        aplicarFiltro('', '');
+        const hero = $('#dashHero');
+        if (hero) escolherModo(hero, 'geral');
+        campo.focus();
+        return;
+      }
+      if (!campo.hidden) campo.focus();
+    });
+    campo.addEventListener('focus', () => sugerir());
+    campo.addEventListener('input', () => sugerir());
+    campo.addEventListener('blur', () => setTimeout(fecharSugestoes, 120));
+    campo.addEventListener('keydown', (e) => {
+      if (!lista_ || lista_.hidden) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!itens.length) return;
+        marcado = (marcado + (e.key === 'ArrowDown' ? 1 : itens.length - 1)) % itens.length;
+        lista_.querySelectorAll('[data-i]').forEach((b) => b.classList.toggle('is-marcado', +b.dataset.i === marcado));
+      } else if (e.key === 'Enter') { e.preventDefault(); if (marcado >= 0) escolher(marcado); }
+      else if (e.key === 'Escape') { fecharSugestoes(); campo.blur(); }
+    });
+    const hero = $('#dashHero');
+    if (hero) escolherModo(hero, modo);
+    mostrarChip();
+    icons();
+    return true;
+  }
+
+  function ligarBusca(el) {
+    // As abas só escolhem a categoria; a busca fica ao lado dos KPIs.
+    el.addEventListener('click', (e) => {
+      const aba = e.target.closest('.gpi-hero__mode');
+      if (!aba || aba.getAttribute('aria-disabled') === 'true') return;
+      escolherModo(el, aba.dataset.modo);
+      const campo = $('[data-hero-busca-campo]');
+      if (aba.dataset.modo === 'geral') { aplicarFiltro('', ''); return; }
+      if (!$(MODOS[aba.dataset.modo].filtro)?.value) { aplicarFiltro('', ''); if (campo) { campo.hidden = false; campo.focus(); } }
+    });
+    window.addEventListener('resize', fecharSugestoes);
+    document.querySelector('.content')?.addEventListener('scroll', fecharSugestoes, { passive: true });
+    // Se o filtro mudar por outro caminho, a etiqueta acompanha.
+    ['#fColab', '#fEpi'].forEach((s) => $(s)?.addEventListener('change', mostrarChip));
+    if (!montarBusca()) {
+      const espera = setInterval(() => { if (montarBusca()) clearInterval(espera); }, 300);
+      setTimeout(() => clearInterval(espera), 20000);
+    }
   }
 
   function start() {
