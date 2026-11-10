@@ -701,3 +701,19 @@
   .gpi-hero__mode svg{width:18px;height:18px;stroke-width:1.7}
   .gpi-hero__mode[aria-disabled="true"]{opacity:1;cursor:default}
 }
+
+/* Etapa 3f: foto do rodapé do menu se dissolvendo em todas as direções (sem corte) */
+@media (min-width:721px){
+  .app .sidebar::after{
+    height:250px;background-size:100% auto;background-position:center bottom;
+    filter:brightness(.92) contrast(1.06);
+    -webkit-mask-image:
+      linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 22%,rgba(0,0,0,.7) 48%,#000 72%),
+      linear-gradient(to right,transparent 0%,#000 14%,#000 80%,transparent 100%);
+    -webkit-mask-composite:source-in;
+            mask-image:
+      linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 22%,rgba(0,0,0,.7) 48%,#000 72%),
+      linear-gradient(to right,transparent 0%,#000 14%,#000 80%,transparent 100%);
+            mask-composite:intersect
+  }
+}
