@@ -725,3 +725,11 @@
   .gpi-hero::before{background:linear-gradient(0deg,rgba(3,6,11,.78) 0%,rgba(3,6,11,0) 34%),linear-gradient(180deg,rgba(3,6,11,.35) 0%,rgba(3,6,11,0) 24%)}
   .gpi-hero__copy,.gpi-hero__slash{display:none}
 }
+
+/* Etapa 4e: canto de cima à esquerda escurecido (a ponta da faixa verde da arte some) */
+@media (min-width:721px){
+  .gpi-hero::before{background:
+    radial-gradient(150px 115px at 0 0,#070B10 0%,#070B10 48%,rgba(7,11,16,.85) 64%,rgba(7,11,16,0) 100%),
+    linear-gradient(0deg,rgba(3,6,11,.78) 0%,rgba(3,6,11,0) 34%),
+    linear-gradient(180deg,rgba(3,6,11,.35) 0%,rgba(3,6,11,0) 24%)}
+}
