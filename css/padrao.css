@@ -246,3 +246,92 @@
 @media (min-width:721px) and (max-width:1250px){
   .page[data-page-content="programar"] .prog-colab-info{display:none!important}
 }
+
+/* =====================================================================
+   Etapa 3: menu lateral novo (marca, botão ativo em degradê, grupos com
+   linha de árvore e rastros de luz no rodapé)
+   ===================================================================== */
+@media (min-width:721px){
+  .app .sidebar{
+    position:relative;background:#0D0D0F url("/assets/app-brand/menu-rodape.svg") bottom center/100% auto no-repeat;
+    border-right:1px solid #1B1B1F;padding:24px 16px 20px;gap:18px
+  }
+
+  /* Marca: logo + "Gestão de EPI" + TRANSPORTADORA */
+  .app .sidebar .brand{padding:0 6px 6px;border-bottom:0}
+  .app .sidebar .brand{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:12px}
+  .app .sidebar .brand-badge{display:contents}
+  .app .sidebar .brand-badge .shield{grid-row:1 / span 2;width:52px!important;height:52px!important}
+  .app .sidebar .brand-badge .shield img{width:52px!important;height:52px!important;object-fit:contain}
+  .app .sidebar .brand-badge > span{align-self:end;font-size:23px;font-weight:700;letter-spacing:-.01em;line-height:1.1;color:var(--pv-texto)}
+  .app .sidebar .brand-badge > span em{font-style:normal;color:var(--pv-marca)}
+  .app .sidebar .brand small{display:block!important;align-self:start;margin-top:4px;font-size:11px;letter-spacing:.3em;color:var(--pv-texto2)}
+
+  /* Itens de primeiro nível e cabeçalhos de grupo */
+  .app .sidebar .nav{gap:2px}
+  .app .sidebar .nav > button,
+  .app .sidebar .nav .nav-grupo-cab{
+    min-height:46px;padding:0 16px;gap:14px;border-radius:12px;font-size:16px;font-weight:500;color:#E4E4E7
+  }
+  .app .sidebar .nav > button .ico svg,
+  .app .sidebar .nav .nav-grupo-cab .ico svg{width:22px;height:22px;stroke-width:1.7}
+  .app .sidebar .nav .ico{color:#D4D4D8}
+  .app .sidebar .nav-grupo-seta{color:#A1A1AA}
+  .app .sidebar .nav-grupo-seta svg{width:18px;height:18px}
+
+  /* Linhas finas separando os blocos do menu */
+  .app .sidebar .nav > .nav-grupo,
+  .app .sidebar .nav > button[data-page="pendencias"]{border-top:1px solid #1E1E22;padding-top:6px;margin-top:6px}
+
+  /* Botão ativo: degradê laranja, brilho suave e subtítulo */
+  .app .sidebar .nav button.active,
+  .app .sidebar .nav button.active:hover{
+    background:linear-gradient(135deg,#FF8A2B 0%,#FF6A0D 45%,#E04F00 100%)!important;
+    border:1px solid rgba(255,170,100,.55)!important;color:#fff!important;
+    box-shadow:0 8px 24px rgba(255,102,0,.28),inset 0 1px 0 rgba(255,255,255,.22)!important
+  }
+  .app .sidebar .nav button.active .ico,
+  .app .sidebar .nav button.active .ico svg{color:#fff!important;stroke:#fff!important}
+  .app .sidebar .nav > button.active{min-height:62px}
+  .app .sidebar .nav > button.active .text{display:grid;gap:2px;font-weight:600}
+  .app .sidebar .nav > button.active .text[data-sub]::after{content:attr(data-sub);font-size:12px;font-weight:400;color:rgba(255,255,255,.88)}
+  .app .sidebar .nav button.active .nav-badge{background:#fff;color:#E04F00}
+
+  /* Subitens: sem ícone, com linha de árvore à esquerda */
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{
+    margin:0 0 4px 27px;padding:2px 0 2px 0;border-left:1px solid #3A3A40;gap:0
+  }
+  .app .sidebar .nav-grupo-itens > button{
+    position:relative;min-height:34px;margin-left:14px;padding:0 12px;border-radius:9px;
+    font-size:14.5px;font-weight:400;color:#C4C4CC
+  }
+  .app .sidebar .nav-grupo-itens > button::before{
+    content:"";position:absolute;left:-14px;top:50%;width:9px;border-top:1px solid #3A3A40
+  }
+  .app .sidebar .nav-grupo-itens > button .ico{display:none}
+  .app .sidebar .nav-grupo-itens > button.active{min-height:36px;font-weight:600}
+
+  /* Grupo de um item só (Administração sem Dados): volta a ser item normal */
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button{margin-left:0;min-height:46px;padding:0 16px;font-size:16px;font-weight:500;color:#E4E4E7}
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button::before{display:none}
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button .ico{display:grid}
+
+  /* Bolinha vermelha (Pendências, Fila) */
+  .app .sidebar .nav-badge{min-width:24px;height:24px;border-radius:999px;background:#EF4444;font-size:12px;font-weight:700}
+
+  /* Perfil no rodapé, por cima dos rastros de luz */
+  .app .sidebar .side-foot{position:relative;z-index:1;border-top:0;padding:12px 8px 0}
+}
+/* Menu só com ícones (entre 721 e 1100 px) */
+@media (min-width:721px) and (max-width:1100px){
+  .app .sidebar .brand{display:block;padding:0 0 12px}
+  .app .sidebar .brand-badge .shield{margin:0 auto}
+  .app .sidebar .brand-badge > span,.app .sidebar .brand small{display:none!important}
+  .app .sidebar .nav > button,.app .sidebar .nav .nav-grupo-cab{padding:0;justify-content:center}
+  .app .sidebar .nav > button.active{min-height:46px}
+  .app .sidebar .nav > button.active .text[data-sub]::after{content:none}
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{margin-left:0;border-left:0}
+  .app .sidebar .nav-grupo-itens > button{margin-left:0;justify-content:center}
+  .app .sidebar .nav-grupo-itens > button::before{display:none}
+  .app .sidebar .nav-grupo-itens > button .ico{display:grid}
+}

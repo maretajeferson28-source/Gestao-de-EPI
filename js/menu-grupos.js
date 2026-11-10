@@ -7,9 +7,9 @@
   'use strict';
 
   const GRUPOS = [
-    { id: 'entregas', nome: 'Entregas', icone: 'hand-helping', depois: 'pendencias', paginas: ['nova', 'programar', 'fila', 'movimentacoes'] },
-    { id: 'cadastros', nome: 'Cadastros', icone: 'folder-open', depois: 'entregas', paginas: ['colaboradores', 'epis', 'ciepi'] },
-    { id: 'estoque', nome: 'Estoque', icone: 'warehouse', depois: 'cadastros', paginas: ['estoque', 'notas'] },
+    { id: 'entregas', nome: 'Entregas', icone: 'package', depois: 'dashboard', paginas: ['nova', 'programar', 'fila', 'movimentacoes'] },
+    { id: 'cadastros', nome: 'Cadastros', icone: 'users', depois: 'entregas', paginas: ['colaboradores', 'epis', 'ciepi'] },
+    { id: 'estoque', nome: 'Estoque', icone: 'layers', depois: 'cadastros', paginas: ['estoque', 'notas'] },
     { id: 'admin', nome: 'Administração', icone: 'settings', depois: null, paginas: ['autorizacoes', 'dados'] }
   ];
   const CHAVE = 'epi-menu-grupos-v1';
@@ -58,10 +58,13 @@
       const emOrdem = certos.length === atuais.length && certos.every((b, i) => atuais[i] === b);
       if (!emOrdem) certos.forEach((b) => itens.appendChild(b));
     }
-    // Consulta C.A. fica solta, logo depois do Estoque.
-    const caepi = nav.querySelector(':scope > [data-page="caepi"]');
+    // Pendências e Consulta C.A. ficam soltas, logo depois do Estoque (Administração por último).
     const estoque = nav.querySelector('.nav-grupo[data-grupo="estoque"]');
-    if (caepi && estoque && estoque.nextElementSibling !== caepi) estoque.after(caepi);
+    const pend = nav.querySelector(':scope > [data-page="pendencias"]');
+    const caepi = nav.querySelector(':scope > [data-page="caepi"]');
+    if (pend && estoque && estoque.nextElementSibling !== pend) estoque.after(pend);
+    const antesCa = pend || estoque;
+    if (caepi && antesCa && antesCa.nextElementSibling !== caepi) antesCa.after(caepi);
     if (criou) icons();
   }
 

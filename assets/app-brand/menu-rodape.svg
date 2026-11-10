@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 260" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="sobe" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#0D0D0F" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0D0D0F" stop-opacity="1"/>
+    </linearGradient>
+    <radialGradient id="brilho" cx="0.35" cy="1" r="0.75">
+      <stop offset="0" stop-color="#FF6A00" stop-opacity=".45"/>
+      <stop offset=".45" stop-color="#FF5A00" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#FF5A00" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rastro" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF4D00" stop-opacity="0"/>
+      <stop offset=".35" stop-color="#FF6A00" stop-opacity=".95"/>
+      <stop offset=".75" stop-color="#FFB15C" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#FFD7A8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="estrada" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A1A1E" stop-opacity="0"/>
+      <stop offset="1" stop-color="#16161A"/>
+    </linearGradient>
+    <filter id="borra" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter>
+    <filter id="borra2" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <rect width="280" height="260" fill="#0D0D0F"/>
+  <rect width="280" height="260" fill="url(#brilho)"/>
+  <!-- estrada em perspectiva -->
+  <path d="M-20 260 L120 150 L170 150 L300 260 Z" fill="url(#estrada)"/>
+  <path d="M146 158 L140 176 M137 190 L130 212 M126 228 L118 254" stroke="#3A3A40" stroke-width="2" stroke-linecap="round"/>
+  <!-- rastros de luz (halo + linha) -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M-10 250 C 60 215, 120 205, 300 120" stroke="url(#rastro)" stroke-width="10" filter="url(#borra2)" opacity=".7"/>
+    <path d="M-10 250 C 60 215, 120 205, 300 120" stroke="url(#rastro)" stroke-width="2.6" filter="url(#borra)"/>
+    <path d="M-10 250 C 60 215, 120 205, 300 120" stroke="#FFE2C2" stroke-width=".9" opacity=".8"/>
+    <path d="M10 262 C 90 232, 150 222, 300 158" stroke="url(#rastro)" stroke-width="8" filter="url(#borra2)" opacity=".55"/>
+    <path d="M10 262 C 90 232, 150 222, 300 158" stroke="url(#rastro)" stroke-width="2" filter="url(#borra)"/>
+    <path d="M60 265 C 140 245, 200 232, 300 196" stroke="url(#rastro)" stroke-width="1.6" opacity=".7"/>
+  </g>
+  <!-- faróis ao longe -->
+  <circle cx="150" cy="152" r="7" fill="#FFB15C" opacity=".35" filter="url(#borra2)"/>
+  <circle cx="146" cy="153" r="1.6" fill="#FFF1DC"/>
+  <circle cx="154" cy="153" r="1.6" fill="#FFF1DC"/>
+  <!-- some no fundo do menu -->
+  <rect width="280" height="140" fill="url(#sobe)"/>
+</svg>
