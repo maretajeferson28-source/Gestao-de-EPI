@@ -460,3 +460,49 @@
   .app .sidebar .nav-grupo-itens > button{justify-content:center;margin:0}
   .app .sidebar .side-foot{display:none}
 }
+
+/* Etapa 3c: menu mais enxuto, mais perto da referência */
+@media (min-width:721px){
+  .app .sidebar .brand{height:84px;padding:16px 22px 8px;column-gap:10px}
+  .app .sidebar .brand-badge .shield,
+  .app .sidebar .brand-badge .shield img{width:44px!important;height:52px!important}
+  .app .sidebar .brand-badge > span{font-size:21px;font-weight:700}
+  .app .sidebar .brand small{margin-top:5px;font-size:10.5px}
+
+  .app .sidebar .nav{padding:12px 12px 150px}
+  .app .sidebar .nav > button,
+  .app .sidebar .nav .nav-grupo-cab{min-height:40px;padding:0 14px;gap:14px;font-size:15px;font-weight:600;letter-spacing:-.2px}
+  .app .sidebar .nav > button .ico,
+  .app .sidebar .nav .nav-grupo-cab .ico,
+  .app .sidebar .nav > button .ico svg,
+  .app .sidebar .nav .nav-grupo-cab .ico svg{width:20px;height:20px;flex-basis:20px}
+  .app .sidebar .nav > button .ico svg,
+  .app .sidebar .nav .nav-grupo-cab .ico svg{stroke-width:1.7}
+  /* Seta sempre encostada na direita */
+  .app .sidebar .nav-grupo-cab .nav-grupo-seta{margin-left:auto!important}
+  .app .sidebar .nav-grupo-seta svg{width:14px;height:14px}
+
+  /* Divisórias mais próximas */
+  .app .sidebar .nav > .nav-grupo,
+  .app .sidebar .nav > button[data-page="pendencias"]{margin-top:11px;box-shadow:0 -6px 0 -5px rgba(130,137,145,.24)}
+  .app .sidebar .nav > .nav-grupo[data-grupo="entregas"]{margin-top:6px;box-shadow:none}
+
+  /* Botão ativo mais baixo */
+  .app .sidebar .nav > button.active{min-height:40px;padding:0 14px;gap:14px}
+  .app .sidebar .nav > button.active[data-page="dashboard"]{min-height:54px}
+  .app .sidebar .nav > button.active .text{font-size:15px}
+  .app .sidebar .nav > button.active .text[data-sub]::after{font-size:11.5px}
+  .app .sidebar .nav > button.active .ico svg{width:20px;height:20px}
+
+  /* Subitens um pouco mais juntos */
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{margin:0 0 8px 24px;padding-left:28px}
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens::before{top:10px;bottom:12px}
+  .app .sidebar .nav-grupo-itens > button{min-height:29px;font-size:13.5px}
+  .app .sidebar .nav-grupo-itens > button::before{left:-28px;width:11px}
+  .app .sidebar .nav-grupo-itens > button.active::before{left:-16px}
+
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button{min-height:40px;padding:0 14px;gap:14px;font-size:15px;font-weight:600}
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button .ico,
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button .ico svg{width:20px;height:20px;flex-basis:20px}
+  .app .sidebar .nav-badge{width:22px;min-width:22px;height:22px;font-size:13px}
+}
