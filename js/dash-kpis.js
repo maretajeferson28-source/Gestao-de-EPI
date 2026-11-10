@@ -15,13 +15,14 @@
   const pad = (n) => String(n).padStart(2, '0');
   const dataIso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const lista = () => { try { return Array.isArray(movements) ? movements : []; } catch (_) { return []; } };
-  const gasto = (arr) => { try { return spendingSummary(arr).total || 0; } catch (_) { return 0; } };
+  const resumo = (arr) => { try { const s = spendingSummary(arr); return { total: s.total || 0, economia: s.totalReplacementSavings || 0 }; } catch (_) { return { total: 0, economia: 0 }; } };
 
   const CARDS = [
     { k: 'itens', tom: 'orange', icone: 'hard-hat', rotulo: 'Itens entregues' },
     { k: 'entregas', tom: 'blue', icone: 'package', rotulo: 'Entregas realizadas' },
     { k: 'colab', tom: 'purple', icone: 'users-round', rotulo: 'Colaboradores atendidos' },
-    { k: 'valor', tom: 'red', icone: 'banknote', rotulo: 'Valor gasto', moeda: true }
+    { k: 'valor', tom: 'red', icone: 'banknote', rotulo: 'Valor gasto', moeda: true },
+    { k: 'economia', tom: 'green', icone: 'piggy-bank', rotulo: 'Economia', moeda: true, dica: 'Quanto se economizou entregando o C.A. atual no lugar do C.A. antigo, mais caro' }
   ];
 
   function montar() {
@@ -32,7 +33,7 @@
     el.id = 'dashKpis';
     el.setAttribute('aria-label', 'Resumo de indicadores');
     el.innerHTML = CARDS.map((c) => `
-      <article class="kpi-card kpi-card--${c.tom}" data-kpi="${c.k}">
+      <article class="kpi-card kpi-card--${c.tom}" data-kpi="${c.k}"${c.dica ? ` title="${c.dica}"` : ''}>
         <div class="kpi-card__icon" aria-hidden="true"><i data-lucide="${c.icone}"></i></div>
         <div class="kpi-card__body">
           <p class="kpi-card__label">${c.rotulo}</p>
@@ -67,7 +68,7 @@
       itens: arr.reduce((s, x) => s + (Number(x.quantidade) || 0), 0),
       entregas: arr.length,
       colab: new Set(arr.map((x) => x.colaborador).filter((n) => n && n !== 'Bolsa Reserva')).size,
-      valor: gasto(arr)
+      ...(() => { const r = resumo(arr); return { valor: r.total, economia: r.economia }; })()
     };
   }
   // Mês anterior ao período escolhido. Sem período ("Todo o período"), não há comparação.
@@ -109,7 +110,7 @@
     CARDS.forEach((c) => {
       const card = $(`#dashKpis [data-kpi="${c.k}"]`);
       $('[data-valor]', card).textContent = c.moeda ? dinheiro(agora[c.k]) : num(agora[c.k]);
-      badge($('[data-badge]', card), agora[c.k], antes ? antes[c.k] : null, !!c.moeda);
+      badge($('[data-badge]', card), agora[c.k], antes ? antes[c.k] : null, c.k === 'valor');
       $('[data-sub]', card).textContent = !ant ? 'todo o período' : ant.periodo ? 'vs. período anterior' : 'vs. mês anterior';
     });
   }

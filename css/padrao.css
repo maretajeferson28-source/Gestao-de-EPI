@@ -1004,3 +1004,16 @@
   }
   .gpi-busca__barra:focus-within{border-color:transparent;box-shadow:0 0 0 2px rgba(255,140,50,.55),0 6px 18px rgba(0,0,0,.28)}
 }
+
+/* Etapa 5g: quinto KPI (Economia, verde). Fileira de 5 cards iguais ocupando a
+   largura toda; a busca ao lado sai por enquanto. */
+@media (min-width:721px){
+  .kpi-card--green{--tone:#1BD66A;--tint:rgba(27,214,106,.16);border-color:rgba(27,214,106,.28);--base:#0F1F17}
+}
+@media (min-width:721px){
+  .pv-dash-lado{display:none!important}
+}
+@media (min-width:1101px){
+  .pv-dash-topo{grid-template-columns:minmax(0,1fr)}
+  .kpi-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+}

@@ -205,6 +205,7 @@
   function sugerir(el) {
     const campo = $('[data-hero-busca-campo]');
     const q = semAcento(campo.value.trim());
+    if (!q) { fecharSugestoes(); return; }
     const caixa = caixaSugestoes();
     const tipos = modo === 'geral' ? ['colaborador', 'epi'] : [modo];
     itens = [];
