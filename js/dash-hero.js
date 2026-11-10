@@ -48,10 +48,10 @@
           <select data-hero-select aria-label="Período do painel"></select>
         </label>
         <div class="gpi-hero__modes" role="tablist" aria-label="Visão do painel">
-          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="true" data-modo="geral"><i data-lucide="bar-chart-3"></i>Geral</button>
-          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="unidade" disabled title="Em construção"><i data-lucide="building-2"></i>Por unidade</button>
-          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="colaborador" disabled title="Em construção"><i data-lucide="users"></i>Por colaborador</button>
-          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="epi" disabled title="Em construção"><i data-lucide="hard-hat"></i>Por EPI</button>
+          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="true" data-modo="geral"><i data-lucide="chart-column-increasing"></i>Geral</button>
+          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="colaborador" aria-disabled="true" title="Em construção"><i data-lucide="users-round"></i>Por Colaborador</button>
+          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="epi" aria-disabled="true" title="Em construção"><i data-lucide="hard-hat"></i>Por EPI</button>
+          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="unidade" aria-disabled="true" title="Em construção"><i data-lucide="map-pin"></i>Por Unidade</button>
         </div>
       </div>`;
     pagina.prepend(el);

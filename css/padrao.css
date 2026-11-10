@@ -692,3 +692,12 @@
   .gpi-hero__mode{min-width:112px;height:30px;padding:0 12px;gap:7px;border-radius:16px;font-size:13px}
   .gpi-hero__mode svg{width:16px;height:16px}
 }
+
+/* Etapa 4c: abas do cabeçalho como na referência (ordem, ícones, todas em branco) */
+@media (min-width:721px){
+  .gpi-hero__modes{gap:8px;padding:4px 6px}
+  .gpi-hero__mode{min-width:110px;height:31px;padding:0 14px;gap:10px;border-radius:16px;font:400 13px/1 "Inter",Roboto,Arial,sans-serif;color:#E8EAED}
+  .gpi-hero__mode[aria-selected="true"]{font-weight:500}
+  .gpi-hero__mode svg{width:18px;height:18px;stroke-width:1.7}
+  .gpi-hero__mode[aria-disabled="true"]{opacity:1;cursor:default}
+}
