@@ -21,7 +21,7 @@
     { k: 'itens', tom: 'orange', icone: 'hard-hat', rotulo: 'Itens entregues' },
     { k: 'entregas', tom: 'blue', icone: 'package', rotulo: 'Entregas realizadas' },
     { k: 'colab', tom: 'purple', icone: 'users-round', rotulo: 'Colaboradores atendidos' },
-    { k: 'valor', tom: 'red', icone: 'coins', rotulo: 'Valor gasto', moeda: true }
+    { k: 'valor', tom: 'red', icone: 'banknote', rotulo: 'Valor gasto', moeda: true }
   ];
 
   function montar() {
