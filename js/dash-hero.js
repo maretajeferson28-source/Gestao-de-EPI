@@ -26,6 +26,7 @@
         <p class="gpi-hero__subtitle">Gestão completa dos EPIs da sua operação.</p>
       </div>
       <div class="gpi-hero__toolbar">
+        <button type="button" class="gpi-hero__icon-btn" data-hero="celular" title="Ver como o app fica no celular" hidden><i data-lucide="smartphone"></i></button>
         <button type="button" class="gpi-hero__icon-btn" data-hero="sync" title="Sincronizar"><i data-lucide="refresh-cw"></i><span class="gpi-hero__notification-dot" data-hero-sync-dot hidden></span></button>
         <button type="button" class="gpi-hero__icon-btn" data-hero="notif" title="Notificações"><i data-lucide="bell"></i><span class="gpi-hero__notification-dot" data-hero-notif-dot hidden></span></button>
         <div class="gpi-hero__perfil-box">
@@ -105,6 +106,8 @@
     const sync = $('.topbar [data-sync-btn="pc"]');
     $('[data-hero="sync"]', hero).classList.toggle('is-busy', !!sync?.classList.contains('is-busy'));
     $('[data-hero-sync-dot]', hero).hidden = !sync?.classList.contains('has-pending');
+    const chave = $('#mpToggle');
+    $('[data-hero="celular"]', hero).hidden = !chave || chave.hidden;
     const st = $('#statusText')?.textContent || '';
     $('[data-hero="sync"]', hero).title = st ? `Sincronizar · ${st}` : 'Sincronizar';
   }
@@ -118,6 +121,11 @@
       if (!b) return;
       const acao = b.dataset.hero;
       if (acao === 'sync') $('.topbar [data-sync-btn="pc"]')?.click();
+      if (acao === 'celular') {
+        // Mesma chave "Celular" do topo (js/mobile-preview.js), que agora fica escondida.
+        const chave = $('#mpToggle input');
+        if (chave) { chave.checked = !chave.checked; chave.dispatchEvent(new Event('change', { bubbles: true })); }
+      }
       if (acao === 'notif') $('.topbar [data-notif-btn="pc"]')?.click();
       if (acao === 'perfil') { menu.hidden = !menu.hidden; perfil.setAttribute('aria-expanded', String(!menu.hidden)); }
       if (acao === 'editar') { fecharMenu(); $('#sideUserProfile')?.click(); }

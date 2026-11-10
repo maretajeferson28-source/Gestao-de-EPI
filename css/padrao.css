@@ -1151,3 +1151,14 @@
   /* O título grande da página já diz "Consulta de C.A.": some o repetido do topo */
   .main:has(.page.active[data-page-content="caepi"]) > .topbar h1{visibility:hidden}
 }
+
+/* Etapa 1b: topo sem status, sininho, sincronizar, celular e sair (sininho e
+   sincronizar estão no banner do Dashboard; sair, no perfil). Os botões
+   continuam no HTML, escondidos, porque o banner aciona os mesmos. */
+@media (min-width:721px){
+  .main > .topbar > .status{display:none!important}
+  .main:has(.page.active[data-page-content="caepi"]) > .topbar{display:none}
+}
+@media (min-width:721px){
+  .gpi-hero__icon-btn[hidden]{display:none}
+}
