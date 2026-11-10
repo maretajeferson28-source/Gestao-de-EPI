@@ -157,6 +157,12 @@
       el.title = ok ? '' : 'No celular, a entrega só libera depois do termo assinado.';
       el.className = 'prog-termo ' + (ok ? 'is-ok' : 'is-ruim');
     }
+    // Função e setor ao lado do campo (padrão visual no PC).
+    const info = $('progColabInfo');
+    if (info) {
+      info.hidden = !c;
+      info.innerHTML = c ? `<div><span>Função</span><b>${esc(c.funcao || c.cargo || '—')}</b></div>` : '';
+    }
     icons();
     resumo();
     atualizarOs();
@@ -177,13 +183,18 @@
     const total = itens.reduce((a, i) => a + i.qtd, 0);
     const comAviso = itens.filter((i) => i.aviso).length;
     box.innerHTML = `
+      <div class="prog-res-pessoa${c ? '' : ' vazio'}">
+        <div><i data-lucide="user"></i><b>${c ? esc(c.nome) : 'Colaborador não escolhido'}</b></div>
+        ${c ? `<div><i data-lucide="briefcase"></i><span>Função: ${esc(c.funcao || c.cargo || '—')}</span></div>` : ''}
+      </div>
       <dl class="prog-res-quem">
-        <div><dt>Colaborador</dt><dd class="${c ? '' : 'vazio'}">${c ? esc(c.nome) : 'Não escolhido'}</dd></div>
-        <div><dt>Entrega em</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
+        <div><dt><i data-lucide="layers"></i>Total de itens</dt><dd>${fmt(total)}</dd></div>
+        <div><dt><i data-lucide="calendar"></i>Previsão de entrega</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
       </dl>
-      ${itens.length ? `<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><ul class="prog-res-lista">${itens.map((i) => `<li><span class="prog-res-nome">${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span><b>${fmt(i.qtd)} un</b></li>`).join('')}</ul></div>
+      ${itens.length ? `<div class="prog-res-sec"><span class="prog-res-rotulo">Itens selecionados</span><ul class="prog-res-lista">${itens.map((i) => `<li><span class="prog-res-nome">${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span><b>${fmt(i.qtd)} un</b></li>`).join('')}</ul></div>
         ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
-        : '<div class="prog-res-sec"><span class="prog-res-rotulo">Itens</span><p class="prog-res-vazio">Nenhum EPI adicionado<small>Escolha os EPIs na tabela ao lado.</small></p></div>'}`;
+        : '<div class="prog-res-sec"><span class="prog-res-rotulo">Itens selecionados</span><p class="prog-res-vazio">Nenhum EPI adicionado</p></div>'}`;
+    icons();
     const conta = $('progConta');
     if (conta) conta.textContent = `${fmt(total)} ${total === 1 ? 'item' : 'itens'}`;
     faixaOs(c);

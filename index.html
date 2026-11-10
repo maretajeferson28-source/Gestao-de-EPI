@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261110-1">
+<link rel="stylesheet" href="css/padrao.css?v=20261110-2">
 </head>
 <body>
 
@@ -247,22 +247,23 @@
                     <span id="progTermo" class="prog-termo"></span>
                   </div>
                 </div>
+                <div class="prog-colab-info" id="progColabInfo" hidden></div>
                 <label class="prog-data-campo"><span>Entregar em</span><input id="progData" type="date" aria-label="Data prevista"></label>
               </div>
             </section>
             <section class="prog-bloco">
-              <h3 class="prog-bloco-titulo">O que vai ser entregue</h3>
-              <div class="prog-falta" id="progFaltaOs" hidden></div>
-              <div class="prog-cab" aria-hidden="true"><span>#</span><span>EPI</span><span>C.A.</span><span class="num">Estoque</span><span class="num">Qtd</span><span>Tam.</span><span></span></div>
+              <h3 class="prog-bloco-titulo">Itens para entrega</h3>
+              <div class="prog-cab" aria-hidden="true"><span>#</span><span>EPI</span><span>C.A.</span><span class="num">Estoque</span><span class="num">Quantidade</span><span>Tamanho</span><span></span></div>
               <div id="progItens"></div>
               <button class="prog-add" id="progAdd" type="button"><i data-lucide="plus" aria-hidden="true"></i>Adicionar outro EPI</button>
             </section>
+            <div class="prog-falta" id="progFaltaOs" hidden></div>
           </div>
           <aside class="prog-resumo">
-            <h3 class="prog-resumo-titulo"><i data-lucide="clipboard-list" aria-hidden="true"></i>Resumo da entrega<span class="prog-res-conta" id="progConta">0 itens</span></h3>
+            <h3 class="prog-resumo-titulo"><i data-lucide="clipboard-list" aria-hidden="true"></i>Resumo<span class="prog-res-conta" id="progConta">0 itens</span></h3>
             <div id="progResumo"></div>
             <label class="prog-obs-campo"><span>Observação</span><textarea id="progObs" rows="2" placeholder="Opcional (ex.: entregar na garagem)"></textarea></label>
-            <div class="prog-botoes"><button class="btn prog-limpar" id="progLimpar" type="button"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button><button class="btn prog-repetir" id="progOs" type="button" disabled title="Escolha o colaborador para ver a ordem de serviço dele"><i data-lucide="file-text" aria-hidden="true"></i>OS</button><button class="btn primary prog-concluir" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir</button></div>
+            <div class="prog-botoes"><button class="btn prog-limpar" id="progLimpar" type="button"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button><button class="btn prog-repetir" id="progOs" type="button" disabled title="Escolha o colaborador para ver a ordem de serviço dele"><i data-lucide="file-text" aria-hidden="true"></i>O.S.</button><button class="btn primary prog-concluir" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir</button></div>
             
             <div class="msg" id="progMsg" aria-live="polite"></div>
           </aside>

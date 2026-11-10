@@ -101,3 +101,148 @@
   .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{margin-left:0;padding-left:0;border-left:0}
   .main .topbar .title h1{font-size:26px}
 }
+
+/* =====================================================================
+   Etapa 2: Programar entrega
+   ===================================================================== */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-layout{gap:24px;align-items:start}
+  .page[data-page-content="programar"] .prog-main{display:grid;gap:24px}
+
+  /* Cartões: um nível só, sem sombra */
+  .page[data-page-content="programar"] .prog-bloco,
+  .page[data-page-content="programar"] .prog-resumo,
+  .page[data-page-content="programar"] .prog-falta:not([hidden]){
+    background:var(--pv-sup)!important;border:1px solid var(--pv-borda)!important;border-radius:var(--pv-raio)!important;
+    padding:24px!important;margin:0!important;box-shadow:none!important
+  }
+  .page[data-page-content="programar"] .prog-bloco-titulo,
+  .page[data-page-content="programar"] .prog-resumo-titulo{
+    margin:0 0 16px;font-size:20px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--pv-texto)
+  }
+  .page[data-page-content="programar"] .prog-resumo-titulo > svg{display:none}
+
+  /* Rótulos em texto normal */
+  .page[data-page-content="programar"] .prog-rotulo,
+  .page[data-page-content="programar"] .prog-data-campo > span,
+  .page[data-page-content="programar"] .prog-obs-campo > span{
+    font-size:14px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--pv-texto)
+  }
+
+  /* Campos: 44 px, fundo escuro, cantos de 10 px */
+  .page[data-page-content="programar"] input:not([type="checkbox"]),
+  .page[data-page-content="programar"] select,
+  .page[data-page-content="programar"] textarea{
+    background:var(--pv-fundo)!important;border:1px solid var(--pv-borda)!important;color:var(--pv-texto)!important;
+    border-radius:10px!important;font-size:14px!important;box-shadow:none!important
+  }
+  .page[data-page-content="programar"] input:focus,
+  .page[data-page-content="programar"] select:focus,
+  .page[data-page-content="programar"] textarea:focus{border-color:var(--pv-marca)!important}
+
+  /* ---- Colaborador ---- */
+  .page[data-page-content="programar"] .prog-topo{display:flex;flex-wrap:nowrap;align-items:flex-end;gap:24px}
+  .page[data-page-content="programar"] .prog-colab{flex:1 1 auto;min-width:0}
+  .page[data-page-content="programar"] .prog-avatar{display:none}
+  .page[data-page-content="programar"] .prog-colab-campo{display:grid;gap:8px}
+  .page[data-page-content="programar"] #progColab{height:var(--pv-alt);padding:0 150px 0 14px!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo{bottom:9px;right:10px;height:26px;padding:0 10px;font-size:12px;font-weight:500;border-radius:999px}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-ok{color:#86EFAC;border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.08)}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-ruim{color:#FCD34D;border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)}
+  .page[data-page-content="programar"] .prog-colab-info{display:flex;gap:24px;padding:0 0 0 24px;border-left:1px solid var(--pv-borda);min-height:44px;align-items:center}
+  .page[data-page-content="programar"] .prog-colab-info[hidden]{display:none}
+  .page[data-page-content="programar"] .prog-colab-info div{display:grid;gap:2px}
+  .page[data-page-content="programar"] .prog-colab-info span{font-size:13px;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-colab-info b{font-size:14px;font-weight:500;color:var(--pv-texto);white-space:nowrap}
+  .page[data-page-content="programar"] .prog-data-campo{display:grid;gap:8px;flex:0 0 180px}
+  .page[data-page-content="programar"] #progData{height:var(--pv-alt);padding:0 12px;color-scheme:dark}
+
+  /* ---- Itens para entrega (tabela) ---- */
+  .page[data-page-content="programar"] .prog-cab,
+  .page[data-page-content="programar"] .prog-item{grid-template-columns:minmax(0,1.5fr) minmax(0,1.2fr) 64px 112px 88px 36px;gap:10px}
+  .page[data-page-content="programar"] .prog-cab > span:first-child{display:none}
+  .page[data-page-content="programar"] .prog-item::before{display:none}
+  .page[data-page-content="programar"] .prog-cab{
+    padding:0 0 12px;margin:0;border-bottom:1px solid var(--pv-borda);
+    font-size:14px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--pv-texto)
+  }
+  .page[data-page-content="programar"] .prog-cab .num{text-align:left}
+  .page[data-page-content="programar"] .prog-item{padding:12px 0;border-bottom:1px solid #222327}
+  .page[data-page-content="programar"] .prog-epi-cel input,
+  .page[data-page-content="programar"] .prog-item select,
+  .page[data-page-content="programar"] .prog-item > input[data-campo="tam"],
+  .page[data-page-content="programar"] .prog-item .prog-qtd{height:var(--pv-alt)!important}
+  .page[data-page-content="programar"] .prog-item .prog-qtd{background:var(--pv-fundo)!important;border:1px solid var(--pv-borda)!important;border-radius:10px!important}
+  .page[data-page-content="programar"] .prog-item .prog-qtd input{border:0!important;background:none!important}
+  .page[data-page-content="programar"] .prog-item.tem-epi .prog-epi-icone{color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-saldo{justify-content:flex-start;height:var(--pv-alt);font-size:14px;font-weight:500;color:var(--pv-texto)}
+  .page[data-page-content="programar"] .prog-saldo.is-ok{color:var(--pv-texto)}
+  .page[data-page-content="programar"] .prog-saldo.is-ruim{color:#FCA5A5}
+  .page[data-page-content="programar"] .prog-item .prog-remover{width:40px;height:40px;border-radius:10px;background:transparent;border:0;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-item .prog-remover:hover{background:var(--pv-sup2);color:#FCA5A5}
+  .page[data-page-content="programar"] .prog-add{margin-top:12px;height:40px;padding:0;color:var(--pv-texto2);font-size:14px;font-weight:500}
+  .page[data-page-content="programar"] .prog-add:hover{color:var(--pv-texto)}
+
+  /* ---- Falta entregar pela O.S. (cartão próprio, abaixo da tabela) ---- */
+  .page[data-page-content="programar"] .prog-falta:not([hidden]){display:grid;gap:16px}
+  .page[data-page-content="programar"] .prog-falta-cab{align-items:center}
+  .page[data-page-content="programar"] .prog-falta-txt{font-size:20px;font-weight:600;color:var(--pv-texto)}
+  .page[data-page-content="programar"] .prog-falta-txt > svg{display:none}
+  .page[data-page-content="programar"] .prog-falta-txt b{font-weight:600;color:var(--pv-texto)}
+  .page[data-page-content="programar"] .prog-falta-txt span{font-weight:400;font-size:16px;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-falta-txt em{color:var(--pv-texto2);font-weight:400}
+  .page[data-page-content="programar"] .prog-falta-chips{gap:12px}
+  .page[data-page-content="programar"] .prog-falta-chip{
+    height:var(--pv-alt);padding:0 18px 0 14px;gap:8px;border-radius:999px;font-size:14px;font-weight:500;
+    background:transparent;border:1px solid var(--pv-borda);color:var(--pv-texto)
+  }
+  .page[data-page-content="programar"] .prog-falta-chip svg{width:16px;height:16px;flex-basis:16px;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-falta-chip:hover{background:var(--pv-sup2);border-color:#3A3D42;color:#fff}
+  .page[data-page-content="programar"] .prog-falta-chip.is-vencido{border-color:rgba(245,158,11,.45);color:#FCD34D}
+  .page[data-page-content="programar"] .prog-falta-todos{
+    height:40px;padding:0 16px;border-radius:10px;font-size:14px;font-weight:500;
+    background:var(--pv-sup);border:1px solid var(--pv-borda);color:var(--pv-texto)
+  }
+  .page[data-page-content="programar"] .prog-falta-todos:hover{background:var(--pv-sup2);border-color:#3A3D42;color:#fff}
+  .page[data-page-content="programar"] .prog-falta.is-ok:not([hidden]){display:flex;align-items:center;gap:10px;font-size:14px;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-falta.is-ok svg{color:var(--pv-ok)}
+
+  /* ---- Resumo ---- */
+  .page[data-page-content="programar"] .prog-resumo{display:grid;gap:16px}
+  .page[data-page-content="programar"] .prog-resumo-titulo{margin:0}
+  .page[data-page-content="programar"] .prog-resumo-titulo .prog-res-conta{display:none}
+  .page[data-page-content="programar"] .prog-res-pessoa{display:grid;gap:10px;padding-bottom:16px;border-bottom:1px solid var(--pv-borda)}
+  .page[data-page-content="programar"] .prog-res-pessoa div{display:flex;align-items:center;gap:12px;min-width:0}
+  .page[data-page-content="programar"] .prog-res-pessoa svg{width:18px;height:18px;flex:0 0 18px;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-res-pessoa b{font-size:18px;font-weight:600;color:var(--pv-texto);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .page[data-page-content="programar"] .prog-res-pessoa span{font-size:14px;color:#D4D4D8}
+  .page[data-page-content="programar"] .prog-res-pessoa.vazio b{font-size:15px;font-weight:400;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-res-quem{gap:12px;padding-bottom:16px;border-bottom:1px solid var(--pv-borda)}
+  .page[data-page-content="programar"] .prog-res-quem dt{display:flex;align-items:center;gap:12px;font-size:14px;color:#D4D4D8}
+  .page[data-page-content="programar"] .prog-res-quem dt svg{width:18px;height:18px;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-res-quem dd{font-size:15px;font-weight:600;color:var(--pv-texto)}
+  .page[data-page-content="programar"] .prog-res-sec{gap:8px}
+  .page[data-page-content="programar"] .prog-res-rotulo{font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--pv-texto)}
+  .page[data-page-content="programar"] .prog-resumo .prog-res-lista li{padding:10px 0;border-bottom:1px solid #222327}
+  .page[data-page-content="programar"] .prog-res-nome{font-size:14px;font-weight:400;color:#E4E4E7}
+  .page[data-page-content="programar"] .prog-resumo .prog-res-lista li b{border:0;padding:0;font-size:14px;font-weight:500;color:var(--pv-texto)}
+  .page[data-page-content="programar"] .prog-resumo .prog-res-vazio{border:0;padding:0;font-size:14px;font-weight:400;color:var(--pv-texto2)}
+  .page[data-page-content="programar"] .prog-obs-campo{display:grid;gap:8px}
+  .page[data-page-content="programar"] #progObs{padding:10px 12px;min-height:64px}
+
+  /* Botões empilhados: Limpar e O.S. secundários, Concluir é o único laranja */
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;margin-top:8px}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes button{
+    width:100%!important;height:48px!important;margin:0!important;padding:0 16px!important;border-radius:var(--pv-raio)!important;
+    font-size:15px!important;font-weight:600!important;justify-content:center;gap:8px;box-shadow:none!important;
+    background:transparent!important;border:1px solid #3A3D42!important;color:var(--pv-texto)!important
+  }
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes button svg{display:none}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes button:hover:not(:disabled){background:var(--pv-sup2)!important;border-color:#52565C!important}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes .prog-repetir:disabled{opacity:.45!important;background:transparent!important;color:var(--pv-texto2)!important}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes .prog-concluir{background:var(--pv-marca)!important;border-color:var(--pv-marca)!important;color:#fff!important}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes .prog-concluir:hover:not(:disabled){background:#FF7A1F!important;border-color:#FF7A1F!important}
+}
+@media (min-width:721px) and (max-width:1250px){
+  .page[data-page-content="programar"] .prog-colab-info{display:none!important}
+}
