@@ -766,3 +766,9 @@
     linear-gradient(0deg,rgba(3,6,11,.8) 0%,rgba(3,6,11,0) 34%),
     linear-gradient(180deg,rgba(3,6,11,.3) 0%,rgba(3,6,11,0) 24%)}
 }
+
+/* Etapa 5 (início): no PC, o Dashboard mostra só o banner enquanto o painel
+   novo é montado embaixo. No celular continua tudo como estava. */
+@media (min-width:721px){
+  .page[data-page-content="dashboard"] > :not(#dashHero):not(.pv-dash-novo){display:none!important}
+}
