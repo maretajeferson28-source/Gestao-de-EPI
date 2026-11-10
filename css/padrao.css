@@ -1017,3 +1017,32 @@
   .pv-dash-topo{grid-template-columns:minmax(0,1fr)}
   .kpi-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
+
+/* Etapa 4m: barra de busca no banner, na linha das abas, alinhada em cima do
+   último KPI (Economia): mesma largura e mesma borda direita do card. */
+.gpi-hero__search{display:none}
+@media (min-width:721px){
+  .gpi-hero__search{
+    position:absolute;z-index:5;right:32px;bottom:14px;box-sizing:border-box;
+    display:flex;align-items:center;gap:9px;width:calc((100% - 104px) / 5);min-width:170px;height:40px;padding:0 8px 0 12px;
+    border-radius:14px;cursor:text;color:#F5F6F8;border:1px solid transparent;
+    background:
+      linear-gradient(rgba(11,17,24,.84),rgba(11,17,24,.84)) padding-box,
+      linear-gradient(100deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.07) 22%,rgba(255,255,255,.05) 55%,rgba(255,255,255,.26) 82%,rgba(255,255,255,.08) 100%) border-box;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)
+  }
+  .gpi-hero__search:focus-within{box-shadow:0 0 0 2px rgba(255,140,50,.55),0 6px 18px rgba(0,0,0,.28)}
+  .gpi-hero__search-icon{width:17px;height:17px;flex:0 0 17px;color:#C7CDD6}
+  .gpi-hero__search input{
+    flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;background:transparent;box-shadow:none;
+    color:#F5F6F8;font:400 13px/1 "Inter",Roboto,Arial,sans-serif
+  }
+  .gpi-hero__search input::placeholder{color:#AEB5BF}
+  .gpi-hero__search input::-webkit-search-cancel-button{display:none}
+  .gpi-hero__search-limpar{
+    display:grid;place-items:center;width:22px;height:22px;flex:0 0 22px;padding:0;border:0;border-radius:50%;
+    background:rgba(255,255,255,.12);color:#fff;font:600 14px/1 Arial,sans-serif;cursor:pointer
+  }
+  .gpi-hero__search-limpar[hidden]{display:none}
+  .gpi-hero__search-limpar:hover{background:rgba(255,255,255,.24)}
+}

@@ -56,11 +56,20 @@
   }
 
   // Filtro igual ao do Dashboard, mas com o intervalo de datas informado.
+  // Texto da busca do banner (dash-hero.js): parte do nome, sem ligar para acento.
+  const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  function casaBusca(x) {
+    const b = window.EPI_BUSCA || {};
+    const q = semAcento(b.texto);
+    if (!q) return true;
+    const colab = semAcento(x.colaborador).includes(q), epi = semAcento(x.epi).includes(q);
+    return b.modo === 'colaborador' ? colab : b.modo === 'epi' ? epi : (colab || epi);
+  }
   function filtrar(de, ate) {
     const c = val('fColab'), e = val('fEpi'), r = val('fResp');
     return lista().filter((x) => {
       const d = iso(x.data);
-      return (!de || d >= de) && (!ate || d <= ate) && (!c || x.colaborador === c) && (!e || x.epi === e) && (!r || x.responsavel === r);
+      return (!de || d >= de) && (!ate || d <= ate) && (!c || x.colaborador === c) && (!e || x.epi === e) && (!r || x.responsavel === r) && casaBusca(x);
     });
   }
   function medir(arr) {
@@ -123,6 +132,7 @@
     const obs = new MutationObserver(agendar);
     alvos.forEach((t) => obs.observe(t, { childList: true, characterData: true, subtree: true }));
     window.addEventListener('epi:data-loaded', agendar);
+    window.addEventListener('epi:busca', agendar);
     agendar();
     // O cabeçalho pode chegar depois deste arquivo.
     const espera = setInterval(() => { if ($('#dashHero')) { clearInterval(espera); agendar(); } }, 400);
