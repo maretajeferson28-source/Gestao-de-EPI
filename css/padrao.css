@@ -1046,3 +1046,9 @@
   .gpi-hero__search-limpar[hidden]{display:none}
   .gpi-hero__search-limpar:hover{background:rgba(255,255,255,.24)}
 }
+
+/* Etapa 4n: banner do Dashboard volta a rolar junto com a página (não fica
+   mais travado no topo, para sobrar tela para os gráficos). */
+@media (min-width:721px){
+  .gpi-hero{position:relative;top:auto;z-index:auto}
+}
