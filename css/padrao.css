@@ -1052,101 +1052,6 @@
 @media (min-width:721px){
   .gpi-hero{position:relative;top:auto;z-index:auto}
 }
-
-/* =====================================================================
-   Etapa 6: Consulta de C.A. nova (js/ca-ficha.js). Só no PC; no celular
-   continua a ficha antiga. Sem foto e sem ícone grande no lugar dela.
-   ===================================================================== */
-.caf{display:none}
-@media (min-width:721px){
-  .page[data-page-content="caepi"] > .ca-section-title,
-  .page[data-page-content="caepi"] > .ca-layout{display:none!important}
-  .caf{display:block;color:#F5F6F8;font-family:"Inter",Roboto,Arial,sans-serif;max-width:1280px}
-  .caf small{display:block;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B9C0CA}
-
-  .caf-topo{margin:4px 0 18px}
-  .caf-topo h2{margin:6px 0 0;font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1.05;color:#F7F8FA}
-  .caf-topo h2 em{font-style:normal;color:#FF6B00}
-
-  .caf-busca{
-    position:relative;overflow:hidden;padding:20px 22px 22px;border-radius:16px;margin-bottom:22px;
-    border:1px solid transparent;
-    background:
-      radial-gradient(60% 120% at 72% 0%,rgba(255,110,0,.16),transparent 60%) padding-box,
-      linear-gradient(180deg,#14171C,#0E1115) padding-box,
-      linear-gradient(100deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.05) 40%,rgba(255,130,40,.55) 72%,rgba(255,255,255,.06) 100%) border-box;
-    box-shadow:0 10px 30px rgba(0,0,0,.3)
-  }
-  .caf-busca-linha{display:flex;gap:14px;margin-top:12px}
-  .caf-campo{flex:1;display:flex;align-items:center;gap:12px;height:52px;padding:0 16px;border-radius:12px;background:#0A0D11;border:1px solid rgba(255,255,255,.18);cursor:text}
-  .caf-campo:focus-within{border-color:rgba(255,140,50,.8);box-shadow:0 0 0 3px rgba(255,121,0,.15)}
-  .caf-campo svg{width:20px;height:20px;color:#9AA3AE;flex:0 0 20px}
-  .caf-campo input{flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;background:transparent;box-shadow:none;color:#F5F6F8;font:400 16px/1 "Inter",Roboto,Arial,sans-serif}
-  .caf-campo input::placeholder{color:#7F8893}
-  .caf-btn{
-    display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 24px;border:0;border-radius:12px;cursor:pointer;
-    background:linear-gradient(180deg,#FF8A1F,#FF6A00);color:#1A0E05;font:700 16px/1 "Inter",Roboto,Arial,sans-serif;
-    box-shadow:0 6px 18px rgba(255,106,0,.28)
-  }
-  .caf-btn:hover{filter:brightness(1.06)}
-  .caf-btn:disabled{opacity:.6;cursor:wait}
-  .caf-btn svg{width:19px;height:19px}
-
-  .caf-aviso{padding:26px 24px;border-radius:16px;border:1px dashed rgba(255,255,255,.14);background:rgba(255,255,255,.02);display:grid;gap:6px}
-  .caf-aviso strong{font-size:16px;font-weight:600}
-  .caf-aviso span{font-size:13px;color:#9AA3AE}
-  .caf-aviso.is-erro strong{color:#FF6B6B}
-  .caf-aviso[hidden],.caf-resultado[hidden]{display:none}
-
-  .caf-principal{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:28px;align-items:center;margin:0 0 22px;padding:6px 4px 0}
-  .caf-selo{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
-  .caf-selo svg{width:26px;height:26px}
-  .caf-selo.is-valido{color:#2BD67B}
-  .caf-selo.is-atencao{color:#F5B301}
-  .caf-selo.is-vencido{color:#FF4D5E}
-  .caf-selo.is-neutro{color:#B9C0CA}
-  .caf-numero{display:block;margin:14px 0 6px;font-size:44px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:#F7F8FA}
-  .caf-numero b{font-size:72px;letter-spacing:-2.5px}
-  .caf-nome{margin:0 0 20px;font-size:28px;font-weight:700;letter-spacing:-.5px;color:#F2F3F5}
-  .caf-rotulo{margin-bottom:5px}
-  .caf-fab{margin:0;font-size:16px;color:#E3E7EB}
-  .caf-link{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:0;border:0;background:none;color:#FF8A2A;font:600 14px/1 "Inter",Roboto,Arial,sans-serif;cursor:pointer}
-  .caf-link:hover{color:#FFB070}
-  .caf-link svg{width:16px;height:16px}
-  .caf-link[hidden]{display:none}
-
-  .caf-dir{margin:0;display:grid}
-  .caf-dir > div{display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-areas:"ic dt" "ic dd";column-gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.09)}
-  .caf-dir > div:last-child{border-bottom:0}
-  .caf-dir > div > svg{grid-area:ic;width:24px;height:24px;color:#C7CDD6;align-self:center}
-  .caf-dir dt{grid-area:dt;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B9C0CA}
-  .caf-dir dd{grid-area:dd;margin:4px 0 0;display:grid;gap:4px}
-  .caf-dir dd b{font-size:19px;font-weight:600;color:#F7F8FA;overflow-wrap:anywhere}
-  .caf-prazo{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600}
-  .caf-prazo::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
-  .caf-prazo:empty{display:none}
-  .caf-prazo.is-valido{color:#2BD67B}.caf-prazo.is-atencao{color:#F5B301}.caf-prazo.is-vencido{color:#FF4D5E}.caf-prazo.is-neutro{color:#B9C0CA}
-  .caf-sub{font-size:13px;color:#AEB5BF}
-
-  .caf-tecnica{padding:18px 22px 20px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg,#14171C,#0F1216);box-shadow:0 10px 30px rgba(0,0,0,.25)}
-  .caf-tecnica header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.09)}
-  .caf-tecnica h4{display:flex;align-items:center;gap:12px;margin:0;font-size:20px;font-weight:700}
-  .caf-tecnica h4 svg{width:24px;height:24px;color:#C7CDD6}
-  .caf-tecnica header .caf-link{margin:0;padding-left:18px;border-left:1px solid rgba(255,255,255,.12)}
-  .caf-grade{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
-  .caf-grade > div,.caf-completa > div{padding:16px 18px 2px;min-width:0}
-  .caf-grade > div + div{border-left:1px solid rgba(255,255,255,.09)}
-  .caf-grade p,.caf-completa p{margin:8px 0 0;font-size:15px;line-height:1.4;color:#EEF0F3;overflow-wrap:anywhere}
-  .caf-completa{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:14px;border-top:1px solid rgba(255,255,255,.09)}
-  .caf-completa[hidden]{display:none}
-  .caf-completa .caf-larga{grid-column:1 / -1}
-  .caf-completa p{font-size:14px;color:#D5DAE1}
-}
-@media (min-width:721px) and (max-width:1100px){
-  .caf-principal{grid-template-columns:1fr}
-  .caf-grade{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .caf-numero b{font-size:58px}
-}
 @media (min-width:721px){
   /* O título grande da página já diz "Consulta de C.A.": some o repetido do topo */
   .main:has(.page.active[data-page-content="caepi"]) > .topbar h1{visibility:hidden}
@@ -1162,16 +1067,209 @@
 @media (min-width:721px){
   .gpi-hero__icon-btn[hidden]{display:none}
 }
+
+/* =====================================================================
+   Etapa 6d: Consulta de C.A. pela especificação (Consulta_CA_Especificacao_
+   Visual.css), modo sem imagem "Solução B": identidade do C.A. ~55% e dados
+   ~45%, sem coluna central, sem foto e sem ícone grande. Classes caf- para
+   não bater com as ca- da tela antiga. Só no PC; celular segue a antiga.
+   ===================================================================== */
+.caf{display:none}
 @media (min-width:721px){
-  .caf-topo{margin-top:22px}
+  .page[data-page-content="caepi"] > .ca-section-title,
+  .page[data-page-content="caepi"] > .ca-layout{display:none!important}
+  .caf{
+    --ca-bg:#080D12;--ca-surface:#101820;--ca-border:#31414C;--ca-border-strong:#758694;
+    --ca-text:#F4F7FA;--ca-text-muted:#B8C3CD;--ca-text-soft:#8F9DAA;
+    --ca-orange:#FF6600;--ca-orange-hot:#FF7D18;--ca-green:#12D890;--ca-red:#F04452;--ca-yellow:#FFC247;
+    display:block;box-sizing:border-box;max-width:1520px;padding:24px 0 48px;color:var(--ca-text);font-family:Roboto,Arial,sans-serif
+  }
+  .caf *,.caf *::before,.caf *::after{box-sizing:border-box}
+
+  .caf-kicker{margin:0 0 10px 6px;color:var(--ca-text-muted);font-size:11px;font-weight:700;line-height:1.35;letter-spacing:.16em;text-transform:uppercase}
+  .caf-title{margin:0 0 24px 6px;font-size:clamp(32px,2.5vw,44px);line-height:1.06;letter-spacing:-.035em;font-weight:800;color:var(--ca-text)}
+  .caf-title em{color:var(--ca-orange);font-style:normal}
+
+  /* Busca: o único CTA laranja da página */
+  .caf-search{
+    position:relative;isolation:isolate;overflow:hidden;padding:24px 32px 30px;
+    border:1px solid var(--ca-border);border-radius:16px;background:linear-gradient(125deg,#111C24 0%,#12191E 62%,#0B1219 100%)
+  }
+  .caf-search::before{
+    content:"";position:absolute;z-index:-1;width:3px;height:240px;top:-60px;left:70%;transform:rotate(56deg);
+    background:#FF820F;box-shadow:0 0 9px 2px #FF660066,0 0 35px 9px #FF660044;opacity:.92;pointer-events:none
+  }
+  .caf-search-label{display:block;margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--ca-text-muted);text-transform:uppercase}
+  .caf-search-row{display:flex;align-items:stretch;gap:20px;min-width:0}
+  .caf-input-wrap{position:relative;flex:1;min-width:0}
+  .caf-input-icon{position:absolute;left:22px;top:50%;width:22px;height:22px;transform:translateY(-50%);color:#A8B6C1;pointer-events:none}
+  .caf-query{
+    width:100%;height:56px;padding:0 18px 0 60px;border:1.5px solid var(--ca-border-strong);border-radius:12px;outline:none;
+    background:#0D151BDE;color:var(--ca-text);font:500 18px/1 Roboto,Arial,sans-serif;box-shadow:none;transition:border-color .18s,box-shadow .18s
+  }
+  .caf-query::placeholder{color:#8D9AA5;opacity:1}
+  .caf-query:focus-visible,.caf-query:focus{border-color:var(--ca-orange);box-shadow:0 0 0 3px #FF660029}
+  .caf-submit{
+    flex:0 0 164px;display:inline-flex;align-items:center;justify-content:center;gap:10px;height:56px;border:0;border-radius:12px;
+    background:linear-gradient(180deg,#FF8624 0%,#FF6600 100%);color:#0B1015;font:800 17px/1 Roboto,Arial,sans-serif;cursor:pointer;
+    box-shadow:inset 0 1px 0 #FFFFFF2E
+  }
+  .caf-submit svg{width:20px;height:20px;stroke-width:2.4}
+  .caf-submit:hover{filter:brightness(1.06)}
+  .caf-submit:disabled{opacity:.55;cursor:not-allowed}
+  .caf-submit:focus-visible,.caf-tech-link:focus-visible,.caf-link:focus-visible{outline:3px solid #FFBA76;outline-offset:3px}
+
+  /* Resultado: área aberta, sem cartões por campo; halo discreto na cor do estado */
+  .caf-result{
+    --ca-state:var(--ca-orange);--ca-state-glow:#FF66001A;
+    position:relative;display:grid;grid-template-columns:minmax(280px,1.2fr) minmax(270px,.98fr);gap:clamp(20px,2vw,38px);
+    align-items:center;min-height:300px;padding:24px 4px 12px 26px;margin-top:20px;
+    background:radial-gradient(ellipse 55% 80% at 30% 70%,var(--ca-state-glow),transparent 77%)
+  }
+  .caf-result[data-state="valid"]{--ca-state:var(--ca-green);--ca-state-glow:#12D89016}
+  .caf-result[data-state="expired"],.caf-result[data-state="revoked"]{--ca-state:var(--ca-red);--ca-state-glow:#F0445217}
+  .caf-result[data-state="warning"]{--ca-state:var(--ca-yellow);--ca-state-glow:#FFC24717}
+  .caf-result[data-state="loading"],.caf-result[data-state="not-found"],.caf-result[data-state="error"]{--ca-state:#8E9CA8;--ca-state-glow:#8E9CA80B}
+  .caf-status{display:inline-flex;align-items:center;gap:12px;color:var(--ca-state);font-size:15px;line-height:1.2;font-weight:800;letter-spacing:.075em;text-transform:uppercase}
+  .caf-status svg{flex:0 0 34px;width:34px;height:34px;stroke-width:1.8}
+  .caf-result[data-state="loading"] .caf-status svg{animation:caf-gira 1s linear infinite}
+  @keyframes caf-gira{to{transform:rotate(360deg)}}
+  .caf-number{margin:20px 0 8px;font-size:clamp(50px,5.3vw,82px);font-weight:900;letter-spacing:-.055em;line-height:.98;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:var(--ca-text)}
+  .caf-prefix{font-size:.67em}
+  .caf-name{margin:0;font-size:clamp(24px,2.2vw,36px);font-weight:800;line-height:1.1;letter-spacing:-.018em;color:var(--ca-text)}
+  .caf-maker{margin-top:30px}
+  .caf-label{display:block;color:var(--ca-text-muted);font-size:11px;font-weight:700;letter-spacing:.12em;line-height:1.4;text-transform:uppercase}
+  .caf-value{display:block;margin-top:7px;font-size:17px;line-height:1.3;font-weight:500;overflow-wrap:anywhere}
+  .caf-link{display:inline-flex;align-items:center;gap:6px;margin-top:18px;padding:0;border:0;background:none;color:var(--ca-orange-hot);font:700 14px/1.2 Roboto,Arial,sans-serif;cursor:pointer}
+  .caf-link svg{width:16px;height:16px}
+  .caf-link[hidden]{display:none}
+
+  /* Dados à direita: linhas com divisórias, não cartões */
+  .caf-meta{margin:0;padding:0 0 0 24px;border-left:1px solid #273541}
+  .caf-meta-row{display:flex;align-items:flex-start;gap:20px;min-height:72px;padding:15px 10px;border-bottom:1px solid #374751}
+  .caf-meta-row:last-child{border-bottom:0}
+  .caf-meta-row[hidden]{display:none}
+  .caf-meta-row > svg{flex:0 0 26px;width:26px;height:26px;stroke-width:1.7;color:#E1E6EA;margin-top:2px}
+  .caf-meta dd{margin:4px 0 0}
+  .caf-meta-value{display:block;font-size:18px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+  .caf-meta-note{display:inline-flex;align-items:center;gap:7px;margin-top:5px;font-size:13px;font-weight:500;color:var(--ca-state)}
+  .caf-meta-note::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+  .caf-meta-note:empty{display:none}
+  .caf-meta-sub{display:block;margin-top:5px;font-size:13px;color:var(--ca-text-soft)}
+  .caf-meta-sub:empty{display:none}
+
+  /* Identificação técnica: um painel só, dividido por linhas */
+  .caf-tech{margin-top:4px;border:1px solid var(--ca-border);border-radius:16px;background:linear-gradient(110deg,#0D161D,#111A22 68%,#0D141B);overflow:hidden}
+  .caf-tech-head{display:flex;align-items:center;gap:16px;min-height:68px;padding:18px 28px;border-bottom:1px solid #34424B}
+  .caf-tech-head > svg{width:26px;height:26px;stroke-width:1.7;color:#E1E6EA}
+  .caf-tech-title{flex:1;margin:0;font-size:23px;font-weight:800;color:var(--ca-text)}
+  .caf-tech-link{display:inline-flex;align-items:center;gap:8px;padding:0 0 0 22px;border:0;border-left:1px solid #36444F;background:none;color:var(--ca-orange-hot);font:700 15px/1.2 Roboto,Arial,sans-serif;cursor:pointer}
+  .caf-tech-link svg{width:17px;height:17px}
+  .caf-tech-grid{display:grid;grid-template-columns:1fr 1fr 1.16fr .8fr;padding:20px 16px}
+  .caf-tech-field{min-width:0;padding:3px 22px}
+  .caf-tech-grid .caf-tech-field + .caf-tech-field{border-left:1px solid #36444F}
+  .caf-tech-body{display:flex;align-items:flex-start;gap:14px;margin-top:12px}
+  .caf-tech-body svg{flex:0 0 24px;width:24px;height:24px;stroke-width:1.7;color:#E1E6EA}
+  .caf-tech-body span{font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+  .caf-tech-full{display:grid;grid-template-columns:1fr;gap:16px;padding:18px 16px 22px;border-top:1px solid #34424B}
+  .caf-tech-full[hidden]{display:none}
+  .caf-tech-full p{margin:8px 0 0;font-size:15px;line-height:1.55;color:#D9E0E6}
+
+  /* Sem certificado na tela: traços mais apagados */
+  .caf.is-vazia .caf-number,.caf.is-vazia .caf-meta-value,.caf.is-vazia .caf-tech-body span{color:#5F6D79}
+  .caf.is-vazia .caf-name{color:#8F9DAA}
+  .caf.is-vazia .caf-value{font-size:15px;color:var(--ca-text-soft)}
+  .caf.is-vazia .caf-maker .caf-label{display:none}
+  .caf.is-vazia .caf-tech-link{display:none}
 }
+@media (min-width:721px) and (max-width:1240px){
+  .caf-result{grid-template-columns:1fr 1fr}
+  .caf-tech-grid{grid-template-columns:repeat(2,1fr);row-gap:20px}
+  .caf-tech-grid .caf-tech-field:nth-child(3){border-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .caf-query{transition:none}
+  .caf-result[data-state="loading"] .caf-status svg{animation:none}
+}
+
+/* Etapa 6e: busca, resultado e identificação técnica dentro de um painel só,
+   com o visual do card da busca (grafite, brilho laranja em cima e borda que
+   acende no canto), descendo até o fim da página. */
 @media (min-width:721px){
-  /* Ficha vazia (antes da consulta ou quando não achou): mesmos lugares, com traços */
-  .caf.is-vazia .caf-rotulo{display:none}
-  .caf.is-vazia .caf-numero{color:#5E6672}
-  .caf.is-vazia .caf-numero b{color:#7B8490}
-  .caf.is-vazia .caf-nome{color:#AEB5BF}
-  .caf.is-vazia .caf-fab{color:#8F97A3;font-size:14px}
-  .caf.is-vazia .caf-dir dd b,.caf.is-vazia .caf-grade p{color:#6F7782}
-  .caf.is-vazia [data-caf-mais]{display:none}
+  .caf-painel{
+    position:relative;isolation:isolate;overflow:hidden;box-sizing:border-box;min-height:calc(100vh - 150px);padding:0 0 26px;border-radius:16px;
+    border:1px solid transparent;
+    background:
+      radial-gradient(60% 260px at 72% 0%,rgba(255,110,0,.16),transparent 70%) padding-box,
+      linear-gradient(180deg,#14171C,#0E1115 420px,#0C0F13) padding-box,
+      linear-gradient(100deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.05) 40%,rgba(255,130,40,.55) 72%,rgba(255,255,255,.06) 100%) border-box;
+    box-shadow:0 10px 30px rgba(0,0,0,.3)
+  }
+  .caf-painel .caf-search{padding:22px 24px 4px;border:0;border-radius:0;background:none;overflow:visible}
+  .caf-painel .caf-search::before{display:none}
+  .caf-painel .caf-search-label{color:#B9C0CA;letter-spacing:.18em}
+  .caf-painel .caf-search-row{gap:14px}
+  .caf-painel .caf-input-icon{left:16px;width:20px;height:20px;color:#9AA3AE}
+  .caf-painel .caf-query{height:52px;padding-left:48px;border:1px solid rgba(255,255,255,.18);background:#0A0D11;font:400 16px/1 "Inter",Roboto,Arial,sans-serif}
+  .caf-painel .caf-query::placeholder{color:#7F8893}
+  .caf-painel .caf-query:focus{border-color:rgba(255,140,50,.8);box-shadow:0 0 0 3px rgba(255,121,0,.15)}
+  .caf-painel .caf-submit{
+    flex:0 0 auto;height:52px;padding:0 24px;border-radius:12px;background:linear-gradient(180deg,#FF8A1F,#FF6A00);color:#1A0E05;
+    font:700 16px/1 "Inter",Roboto,Arial,sans-serif;box-shadow:0 6px 18px rgba(255,106,0,.28)
+  }
+  .caf-painel .caf-result{margin:10px 0 0;padding:26px 28px 18px 30px}
+  .caf-painel .caf-tech{margin:6px 24px 0;border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.02)}
+}
+
+/* Etapa 6i: dentro do painel, direto (sem card em volta): uma linha com
+   número, nome e situação e, embaixo, blocos de campo (ícone, rótulo e valor),
+   largos ou em pares. */
+@media (min-width:721px){
+  .caf-campos{--ca-state:#FF6600;padding:4px 24px 0}
+  .caf-campos[data-state="valid"]{--ca-state:#12D890}
+  .caf-campos[data-state="expired"],.caf-campos[data-state="revoked"]{--ca-state:#F04452}
+  .caf-campos[data-state="warning"]{--ca-state:#FFC247}
+  .caf-campos[data-state="loading"],.caf-campos[data-state="not-found"],.caf-campos[data-state="error"]{--ca-state:#8E9CA8}
+
+  .caf-cab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 20px;padding:18px 2px 14px}
+  .caf-cab-id{display:flex;align-items:baseline;gap:12px;min-width:0}
+  .caf-cab .caf-number{margin:0;font:800 26px/1.1 Roboto,Arial,sans-serif;letter-spacing:-.5px;color:#F4F7FA;white-space:nowrap}
+  .caf-cab .caf-prefix{font-size:.7em;color:#B8C3CD}
+  .caf-cab .caf-name{margin:0;font:600 16px/1.2 Roboto,Arial,sans-serif;color:#B8C3CD;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .caf-cab-dir{display:flex;align-items:center;gap:18px}
+  .caf-cab .caf-status{
+    display:inline-flex;align-items:center;gap:8px;padding:6px 13px 6px 10px;border-radius:999px;
+    font:800 12px/1 Roboto,Arial,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--ca-state);
+    background:color-mix(in srgb,var(--ca-state) 13%,transparent);border:1px solid color-mix(in srgb,var(--ca-state) 38%,transparent)
+  }
+  .caf-cab .caf-status svg{flex:0 0 16px;width:16px;height:16px}
+  .caf-campos[data-state="loading"] .caf-status svg{animation:caf-gira 1s linear infinite}
+  .caf-cab-dica{flex-basis:100%;font-size:13px;color:#8F9DAA}
+  .caf:not(.is-vazia) .caf-cab-dica{display:none}
+  .caf-tt-link{display:inline-flex;align-items:center;gap:7px;padding:0;border:0;background:none;color:#FF7D18;font:700 13.5px/1.2 Roboto,Arial,sans-serif;cursor:pointer}
+  .caf-tt-link svg{width:16px;height:16px}
+  .caf-tt-link[hidden]{display:none}
+  .caf-tt-link:hover{color:#FFA35A}
+
+  .caf-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .caf-bloco{
+    display:flex;align-items:flex-start;gap:14px;min-width:0;padding:14px 16px;border-radius:12px;
+    border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025)
+  }
+  .caf-bloco.caf-larga{grid-column:1 / -1}
+  .caf-bloco[hidden]{display:none}
+  .caf-bloco-ic{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+  .caf-bloco-ic svg{width:20px;height:20px;stroke-width:1.7;color:#E1E6EA}
+  .caf-bloco-tx{min-width:0;display:flex;flex-direction:column;gap:5px;padding-top:1px}
+  .caf-bloco-rot{font:700 10.5px/1.3 Roboto,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#B8C3CD}
+  .caf-bloco-val{font:500 15px/1.4 Roboto,Arial,sans-serif;color:#F4F7FA;overflow-wrap:anywhere}
+  .caf-bloco.caf-larga:last-child .caf-bloco-val{font-size:14px;font-weight:400;line-height:1.6;color:#D2D9E0}
+  .caf-bloco-nota{font-style:normal;font-size:12.5px;color:var(--ca-state)}
+  .caf-bloco-nota::before{content:"● ";font-size:10px}
+  .caf-bloco-nota:empty{display:none}
+  .caf-bloco-sub{font-style:normal;font-size:12px;color:#8F9DAA}
+  .caf-bloco-sub:empty{display:none}
+
+  /* Antes de consultar / não encontrado */
+  .caf.is-vazia .caf-bloco-val,.caf.is-vazia .caf-cab .caf-number{color:#5F6D79}
 }

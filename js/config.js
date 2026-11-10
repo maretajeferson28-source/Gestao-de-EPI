@@ -185,7 +185,7 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-ca-ficha]')) {
     const caFichaScript = document.createElement('script');
-    caFichaScript.src = 'js/ca-ficha.js?v=20261110-3';
+    caFichaScript.src = 'js/ca-ficha.js?v=20261110-11';
     caFichaScript.dataset.caFicha = 'true';
     document.body.appendChild(caFichaScript);
   }
