@@ -1162,3 +1162,6 @@
 @media (min-width:721px){
   .gpi-hero__icon-btn[hidden]{display:none}
 }
+@media (min-width:721px){
+  .caf-topo{margin-top:22px}
+}
