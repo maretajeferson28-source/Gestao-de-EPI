@@ -335,3 +335,127 @@
   .app .sidebar .nav-grupo-itens > button::before{display:none}
   .app .sidebar .nav-grupo-itens > button .ico{display:grid}
 }
+
+/* =====================================================================
+   Etapa 3b: menu lateral pela especificação (Navbar_Gestao_de_EPI_Referencia.css)
+   Medidas e cores da especificação; fonte Inter só no menu.
+   ===================================================================== */
+@media (min-width:1101px){
+  .app{grid-template-columns:273px minmax(0,1fr)}
+}
+@media (min-width:721px){
+  .app .sidebar{
+    position:sticky;top:0;height:100vh;overflow:hidden;
+    padding:0;gap:0;font-family:"Inter",Roboto,Arial,sans-serif;color:#F5F6F8;
+    background:
+      radial-gradient(ellipse at 90% 4%,rgba(70,87,105,.27),transparent 28%),
+      linear-gradient(180deg,#080C10 0%,#090D12 38%,#060A0E 100%)!important;
+    border-right:1px solid #1B2027
+  }
+  /* Arte do rodapé: foto com máscara que some para cima */
+  .app .sidebar::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:170px;pointer-events:none;z-index:0;
+    background:url("/assets/app-brand/menu-rodape.webp") center bottom/cover no-repeat;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.75) 35%,#000 100%);
+            mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.75) 35%,#000 100%)
+  }
+
+  /* Marca */
+  .app .sidebar .brand{
+    position:relative;z-index:1;display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:12px;
+    height:94px;padding:18px 26px 10px;border:0;flex-shrink:0
+  }
+  .app .sidebar .brand-badge .shield{width:52px!important;height:62px!important}
+  .app .sidebar .brand-badge .shield img{width:52px!important;height:62px!important;object-fit:contain}
+  .app .sidebar .brand-badge > span{font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.1;white-space:nowrap;color:#F5F6F8}
+  .app .sidebar .brand-badge > span em{color:#FF6B00}
+  .app .sidebar .brand small{margin-top:7px;font-size:11px;font-weight:500;letter-spacing:3px;color:#DDE0E5}
+
+  /* Área de navegação: rola por dentro, sem barra, com espaço para a arte */
+  .app .sidebar .nav{
+    position:relative;z-index:1;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+    padding:16px 12px 150px;gap:0;scrollbar-width:none;align-content:start
+  }
+  .app .sidebar .nav::-webkit-scrollbar{display:none}
+
+  /* Itens soltos e cabeçalhos de grupo */
+  .app .sidebar .nav > button,
+  .app .sidebar .nav .nav-grupo-cab{
+    min-height:46px;padding:0 19px;gap:20px;border:0;border-radius:14px;background:transparent;
+    font-size:17px;font-weight:650;letter-spacing:-.3px;color:#F5F6F8
+  }
+  .app .sidebar .nav > button .ico,
+  .app .sidebar .nav .nav-grupo-cab .ico{width:23px;height:23px;flex:0 0 23px;color:#F5F6F8}
+  .app .sidebar .nav > button .ico svg,
+  .app .sidebar .nav .nav-grupo-cab .ico svg{width:23px;height:23px;stroke-width:1.9}
+  .app .sidebar .nav-grupo-seta{color:#DDE0E5}
+  .app .sidebar .nav-grupo-seta svg{width:15px;height:15px}
+  .app .sidebar .nav .nav-grupo{margin-top:0}
+
+  /* Divisórias recuadas entre os blocos */
+  .app .sidebar .nav > .nav-grupo,
+  .app .sidebar .nav > button[data-page="pendencias"]{
+    border-top:0;padding-top:0;margin-top:17px;
+    box-shadow:0 -9px 0 -8px rgba(130,137,145,.24)
+  }
+  .app .sidebar .nav > .nav-grupo[data-grupo="entregas"]{margin-top:8px;box-shadow:none}
+
+  /* Botão ativo da especificação */
+  .app .sidebar .nav button.active,
+  .app .sidebar .nav button.active:hover{
+    border:1px solid #FF7900!important;
+    background:linear-gradient(105deg,#FF7000 0%,#C04B02 35%,#682C06 65%,#361C0D 100%)!important;
+    box-shadow:0 0 17px rgba(255,102,0,.15),inset 0 1px 0 rgba(255,190,100,.22)!important;
+    color:#fff!important
+  }
+  .app .sidebar .nav > button.active{min-height:67px;padding:0 17px;gap:20px;border-radius:14px}
+  .app .sidebar .nav > button.active .ico svg{width:24px;height:24px;stroke-width:2}
+  .app .sidebar .nav > button.active .text{display:grid;gap:3px;font-size:16px;font-weight:700;line-height:1.25;letter-spacing:0}
+  .app .sidebar .nav > button.active .text[data-sub]::after{content:attr(data-sub);font-size:12px;font-weight:400;line-height:1.3;color:#FFE8D7}
+
+  /* Submenu em árvore */
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{
+    position:relative;display:grid;margin:2px 0 11px 33px;padding-left:34px;border-left:0;gap:0
+  }
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens::before{
+    content:"";position:absolute;left:0;top:12px;bottom:15px;border-left:1px solid rgba(150,155,162,.52)
+  }
+  .app .sidebar .nav-grupo-itens > button{
+    position:relative;min-height:32px;margin:0;padding:0;border:0;border-radius:9px;background:transparent;
+    font-size:14px;font-weight:400;letter-spacing:0;color:#DDE0E5
+  }
+  .app .sidebar .nav-grupo-itens > button::before{
+    content:"";position:absolute;left:-34px;top:50%;width:13px;border-top:1px solid rgba(150,155,162,.52)
+  }
+  .app .sidebar .nav-grupo-itens > button:hover{background:transparent!important;color:#fff!important;box-shadow:none!important}
+  /* Subitem aberto: mesmo degradê, em formato de pílula curta */
+  .app .sidebar .nav-grupo-itens > button.active{min-height:32px;padding:0 12px;margin-left:-12px;font-weight:600}
+  .app .sidebar .nav-grupo-itens > button.active::before{left:-22px}
+
+  /* Grupo com um item só vira item comum */
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button{
+    min-height:46px;padding:0 19px;gap:20px;margin:0;font-size:17px;font-weight:650;letter-spacing:-.3px;color:#F5F6F8
+  }
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button::before{display:none}
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button .ico{display:grid;width:23px;height:23px;flex:0 0 23px}
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button .ico svg{width:23px;height:23px;stroke-width:1.9}
+
+  /* Bolinha de contagem */
+  .app .sidebar .nav-badge{width:25px;min-width:25px;height:25px;padding:0;border-radius:50%;background:#F52B2B;color:#fff;font-size:15px;font-weight:700;line-height:1}
+  .app .sidebar .nav button.active .nav-badge{background:#fff;color:#C04B02}
+
+  /* Perfil por cima da arte */
+  .app .sidebar .side-foot{position:absolute;left:12px;right:12px;bottom:14px;z-index:2;margin:0;padding:0;border:0}
+}
+@media (min-width:721px) and (max-width:1100px){
+  .app .sidebar .brand{display:block;height:auto;padding:18px 0 10px}
+  .app .sidebar .brand-badge .shield{margin:0 auto}
+  .app .sidebar .nav{padding:12px 9px 150px}
+  .app .sidebar .nav > button,.app .sidebar .nav .nav-grupo-cab{padding:0;justify-content:center}
+  .app .sidebar .nav > button.active{min-height:50px;padding:0}
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{margin-left:0;padding-left:0}
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens::before,
+  .app .sidebar .nav-grupo-itens > button::before{display:none}
+  .app .sidebar .nav-grupo-itens > button{justify-content:center;margin:0}
+  .app .sidebar .side-foot{display:none}
+}
