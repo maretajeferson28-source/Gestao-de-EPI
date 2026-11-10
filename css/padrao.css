@@ -733,3 +733,25 @@
     linear-gradient(0deg,rgba(3,6,11,.78) 0%,rgba(3,6,11,0) 34%),
     linear-gradient(180deg,rgba(3,6,11,.35) 0%,rgba(3,6,11,0) 24%)}
 }
+
+/* Etapa 3g: a foto do rodapé passa a ser o último item do menu. Com os grupos
+   fechados ela fica no pé; com grupos abertos ela desce junto e nunca fica
+   atrás dos botões. */
+@media (min-width:721px){
+  .app .sidebar::after{display:none}
+  .app .sidebar .nav{display:flex;flex-direction:column;padding-bottom:0}
+  .app .sidebar .nav > *{flex-shrink:0}
+  .app .sidebar .nav::after{
+    content:"";display:block;flex:0 0 210px;margin:auto -8px 0;pointer-events:none;
+    background:url("/assets/app-brand/menu-rodape.webp") center bottom/100% auto no-repeat;
+    filter:brightness(.92) contrast(1.06);
+    -webkit-mask-image:
+      linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 22%,rgba(0,0,0,.7) 48%,#000 72%),
+      linear-gradient(to right,transparent 0%,#000 14%,#000 80%,transparent 100%);
+    -webkit-mask-composite:source-in;
+            mask-image:
+      linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 22%,rgba(0,0,0,.7) 48%,#000 72%),
+      linear-gradient(to right,transparent 0%,#000 14%,#000 80%,transparent 100%);
+            mask-composite:intersect
+  }
+}
