@@ -894,15 +894,14 @@
   .gpi-hero__mode:first-child{margin-left:-1px}
 }
 
-/* Etapa 5c: contorno dos KPIs em degradê da cor do card (forte no canto de
-   cima à esquerda, mais fraco à direita) no lugar da linha reta. */
+/* Etapa 5c: a linha colorida da esquerda dos KPIs acompanha a curva dos
+   cantos e vai sumindo pelo topo e pela base (a "voltinha" da referência). */
 @media (min-width:721px){
-  .kpi-card{
-    border:1.5px solid transparent;
-    background:
-      linear-gradient(145deg,var(--base,#202024),#111316 74%) padding-box,
-      linear-gradient(125deg,var(--tone) 0%,color-mix(in srgb,var(--tone) 55%,transparent) 30%,color-mix(in srgb,var(--tone) 18%,transparent) 62%,color-mix(in srgb,var(--tone) 45%,transparent) 100%) border-box;
-    box-shadow:0 0 18px -6px color-mix(in srgb,var(--tone) 60%,transparent),0 6px 24px rgba(0,0,0,.26)
+  .kpi-card::after{
+    display:block;left:0;right:0;top:0;bottom:0;width:auto;
+    border:2px solid var(--tone);border-radius:12px;background:none;
+    box-shadow:0 0 10px var(--tone),inset 0 0 6px color-mix(in srgb,var(--tone) 45%,transparent);
+    -webkit-mask-image:linear-gradient(to right,#000 0%,#000 5%,rgba(0,0,0,.45) 13%,transparent 26%);
+            mask-image:linear-gradient(to right,#000 0%,#000 5%,rgba(0,0,0,.45) 13%,transparent 26%)
   }
-  .kpi-card::after{display:none}
 }
