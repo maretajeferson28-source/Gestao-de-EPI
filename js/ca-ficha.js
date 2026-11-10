@@ -42,13 +42,19 @@
         </div>
       </form>
       <div class="caf-campos" data-caf-result data-state="idle" aria-live="polite">
-        <div class="caf-cab">
-          <div class="caf-cab-id"><span class="caf-number" data-caf-numero></span><span class="caf-name" data-caf-nome></span></div>
-          <div class="caf-cab-dir">
-            <span class="caf-status" data-caf-status></span>
-            <button type="button" class="caf-tt-link" data-caf-cadastro hidden>Ver cadastro no app <i data-lucide="arrow-up-right"></i></button>
+        <div class="caf-banner">
+          <span class="caf-banner-ic" data-caf-ic></span>
+          <div class="caf-banner-tx">
+            <p class="caf-number" data-caf-numero></p>
+            <p class="caf-banner-sit" data-caf-status></p>
+            <p class="caf-name" data-caf-nome></p>
           </div>
-          <span class="caf-cab-dica" data-caf-fab></span>
+          <button type="button" class="caf-tt-link" data-caf-cadastro hidden>Ver cadastro no app <i data-lucide="arrow-up-right"></i></button>
+          <span hidden data-caf-fab></span>
+        </div>
+        <div class="caf-expl">
+          <span class="caf-expl-ic" data-caf-expl-ic></span>
+          <div><strong>O que isso significa?</strong><p data-caf-expl></p></div>
         </div>
         <div class="caf-grade">
           <div class="caf-bloco caf-larga"><span class="caf-bloco-ic"><i data-lucide="hard-hat"></i></span><div class="caf-bloco-tx"><span class="caf-bloco-rot">Equipamento</span><span class="caf-bloco-val" data-caf-tipo></span></div></div>
@@ -100,13 +106,34 @@
     } catch (_) { return []; }
   }
 
+  // Bloco de destaque: escudo, número, "Certificado VÁLIDO/VENCIDO…" e a explicação.
+  function banner(el, estado, ctx = {}) {
+    const ate = ctx.data ? ` até ${ctx.data}` : '';
+    const sit = String(ctx.situacao || 'cancelado').toLowerCase();
+    const T = {
+      idle: ['shield', 'Aguardando', 'consulta', 'info', 'Digite o número do C.A. ou do C.I. acima para ver se o certificado está valendo.'],
+      loading: ['shield', 'Consultando', '…', 'info', 'Buscando o número na base oficial.'],
+      'not-found': ['shield-question', 'C.A.', 'não localizado', 'triangle-alert', 'Este número não está na base oficial do Ministério do Trabalho. Verifique o número digitado ou consulte outra fonte.'],
+      error: ['shield-off', 'Consulta', 'indisponível', 'triangle-alert', 'Não foi possível consultar a base agora. Tente de novo em instantes.'],
+      valid: ['shield-check', ctx.interno ? 'Código interno' : 'Certificado', 'válido', 'circle-check', ctx.interno
+        ? `Código da base interna CIEPI, usado para itens sem C.A. do Ministério do Trabalho. Vale${ate}.`
+        : `Este C.A. está vigente na base oficial do Ministério do Trabalho${ate}. Pode ser entregue normalmente.`],
+      warning: ['shield-alert', 'Certificado', 'a vencer', 'triangle-alert', `${ctx.nota || 'Vence em breve'}${ctx.data ? ` (${ctx.data})` : ''}. Ainda pode ser entregue, mas já providencie o C.A. novo do equipamento.`],
+      expired: ['shield-x', 'Certificado', 'vencido', 'triangle-alert', `A validade deste C.A. terminou${ctx.data ? ` em ${ctx.data}` : ''}. EPI com C.A. vencido não deve ser entregue: cadastre o C.A. atual do equipamento.`],
+      revoked: ['shield-x', 'Certificado', sit, 'triangle-alert', `Este C.A. está ${sit} na base oficial do Ministério do Trabalho e não vale para entrega.`]
+    }[estado] || ['shield', 'Situação', 'não informada', 'info', 'A base não informou a situação deste certificado.'];
+    $('[data-caf-ic]', el).innerHTML = `<i data-lucide="${T[0]}"></i>`;
+    $('[data-caf-status]', el).innerHTML = `${esc(T[1])} <b>${esc(T[2].toLocaleUpperCase('pt-BR'))}</b>`;
+    $('[data-caf-expl-ic]', el).innerHTML = `<i data-lucide="${T[3]}"></i>`;
+    $('[data-caf-expl]', el).textContent = T[4];
+  }
+
   const por = (el, k, v) => { const n = $(`[data-caf-${k}]`, el); if (n) n.textContent = v; };
 
   // Sem certificado na tela (inicial, consultando, não encontrado, erro): tudo com traço.
   function estadoSemResultado(el, estado, rotulo, numero, dica) {
     $('[data-caf-result]', el).dataset.state = estado;
-    const icone = estado === 'loading' ? 'loader-circle' : estado === 'idle' ? 'clock-3' : estado === 'error' ? 'wifi-off' : 'search-x';
-    $('[data-caf-status]', el).innerHTML = `<i data-lucide="${icone}"></i><span>${esc(rotulo)}</span>`;
+    banner(el, estado);
     const n = String(numero || '').toUpperCase();
     $('[data-caf-numero]', el).innerHTML = /^CI-/.test(n) ? esc(n) : `<span class="caf-prefix">C.A.</span> ${esc(n.replace(/\D+/g, '') || '—')}`;
     por(el, 'nome', 'Informações do EPI');
@@ -155,7 +182,7 @@
     const s = estadoDe(situacao, validade);
 
     $('[data-caf-result]', el).dataset.state = s.estado;
-    $('[data-caf-status]', el).innerHTML = `<i data-lucide="${s.icone}"></i><span>${esc(interno && s.estado === 'valid' ? 'Código interno válido' : s.texto)}</span>`;
+    banner(el, s.estado, { interno, data: vazio(validade) ? '' : dataLonga(validade), nota: s.nota, situacao });
     $('[data-caf-numero]', el).innerHTML = interno ? esc(ca) : `<span class="caf-prefix">C.A.</span> ${esc(ca)}`;
     por(el, 'nome', cad.epi?.nome || frase(equipamento) || 'Equipamento');
     const fab = ou(txt('caFabricante'));
