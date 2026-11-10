@@ -49,6 +49,7 @@
         </label>
         <div class="gpi-hero__modes" role="tablist" aria-label="Visão do painel">
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="true" data-modo="geral"><i data-lucide="bar-chart-3"></i>Geral</button>
+          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="unidade" disabled title="Em construção"><i data-lucide="building-2"></i>Por unidade</button>
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="colaborador" disabled title="Em construção"><i data-lucide="users"></i>Por colaborador</button>
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="epi" disabled title="Em construção"><i data-lucide="hard-hat"></i>Por EPI</button>
         </div>

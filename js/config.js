@@ -179,7 +179,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-dash-hero]')) {
     const dashHeroScript = document.createElement('script');
-    dashHeroScript.src = 'js/dash-hero.js?v=20261110-2';
+    dashHeroScript.src = 'js/dash-hero.js?v=20261110-3';
     dashHeroScript.dataset.dashHero = 'true';
     document.body.appendChild(dashHeroScript);
   }
