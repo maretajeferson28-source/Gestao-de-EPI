@@ -841,3 +841,23 @@
 @media (min-width:721px) and (max-width:1050px){
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Etapa 5b: KPIs só na coluna da esquerda (~77%), como na referência; a
+   coluna da direita fica para Ações rápidas e Pendências. Cards mais altos. */
+@media (min-width:1101px){
+  .kpi-grid{width:calc(77% - 5px)}
+  .kpi-card{min-height:116px;padding:16px 14px 14px 16px;grid-template-columns:32px minmax(0,1fr)}
+  .kpi-card__icon{width:30px;height:30px}
+  .kpi-card__label{margin-bottom:8px}
+  .kpi-card__sub{margin-top:7px}
+}
+@media (min-width:1101px){
+  .kpi-card{padding:16px 12px 14px 14px;grid-template-columns:28px minmax(0,1fr);column-gap:9px}
+  .kpi-card__icon{width:28px;height:28px}
+  .kpi-card__value--currency{font-size:clamp(16px,1.25vw,25px);letter-spacing:-.4px}
+  .kpi-badge{padding:4px 5px}
+  .kpi-card__label{overflow:hidden;text-overflow:ellipsis}
+}
+@media (min-width:1101px){
+  .kpi-card__label{font-size:clamp(11px,.82vw,12px);letter-spacing:-.25px}
+}

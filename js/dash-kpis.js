@@ -85,7 +85,7 @@
       const pct = Math.round(((atual - antes) / antes) * 100);
       if (pct === 0) texto = '0%';
       else {
-        texto = `${pct > 0 ? '↑ +' : '↓ '}${pct}%`;
+        texto = Math.abs(pct) >= 1000 ? `${pct > 0 ? "↑" : "↓"} ${Math.round(atual / antes)}x` : `${pct > 0 ? "↑ +" : "↓ "}${pct}%`;
         if (ehGasto) classe = pct > 0 ? 'cost' : 'up';
         else classe = pct > 0 ? 'up' : 'neutral';
       }
