@@ -639,3 +639,28 @@
   .gpi-hero__profile{width:53px;padding:7px}
   .gpi-hero__profile-text,.gpi-hero__profile-chevron{display:none}
 }
+
+/* Etapa 3e: menu mais estreito (232 px), margens laterais menores, foto do rodapé mais baixa */
+@media (min-width:1101px){
+  .app{grid-template-columns:232px minmax(0,1fr)}
+}
+@media (min-width:721px){
+  .app .sidebar .brand{padding:16px 14px 8px;column-gap:9px}
+  .app .sidebar .brand-badge .shield,
+  .app .sidebar .brand-badge .shield img{width:40px!important;height:48px!important}
+  .app .sidebar .brand-badge > span{font-size:20px}
+  .app .sidebar .brand small{letter-spacing:2.6px}
+
+  .app .sidebar .nav{padding:10px 8px 130px}
+  .app .sidebar .nav > button,
+  .app .sidebar .nav .nav-grupo-cab,
+  .app .sidebar .nav > button.active,
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button,
+  .app .sidebar .nav-grupo.is-unico .nav-grupo-itens > button.active{padding:0 10px!important;gap:11px}
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{margin:0 0 8px 19px;padding-left:22px}
+  .app .sidebar .nav-grupo-itens > button::before{left:-22px;width:9px}
+  .app .sidebar .nav-grupo-itens > button.active{padding:0 10px;margin-left:-10px}
+  .app .sidebar .nav-grupo-itens > button.active::before{left:-12px}
+
+  .app .sidebar::after{height:210px}
+}
