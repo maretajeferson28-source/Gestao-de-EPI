@@ -784,3 +784,12 @@
     linear-gradient(180deg,rgba(3,6,11,.3) 0%,rgba(3,6,11,0) 24%)}
   .page[data-page-content="dashboard"] > :not(#dashHero){position:relative;z-index:1}
 }
+
+/* Etapa 4i: banner congelado no topo. A área de baixo rola por trás dele e
+   some no degradê escuro, sem linha. */
+@media (min-width:721px){
+  .gpi-hero{position:sticky;top:0;z-index:5;height:310px;margin-bottom:0;
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 40px),transparent 100%);
+            mask-image:linear-gradient(to bottom,#000 calc(100% - 40px),transparent 100%)}
+  .gpi-hero__bottom{bottom:70px}
+}
