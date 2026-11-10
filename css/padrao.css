@@ -1,0 +1,103 @@
+/* =====================================================================
+   Padrão visual do Gestão de EPI (docs/padrao-visual.md)
+   Carregado depois de style.css e mobile.css. Só vale no PC (acima de
+   720 px): o celular continua com o visual dele.
+   Etapa 1: moldura — menu lateral, barra do topo e título da página.
+   ===================================================================== */
+:root{
+  --pv-fundo:#0B0B0C; --pv-sup:#141416; --pv-sup2:#1A1B1F; --pv-borda:#2A2D31;
+  --pv-texto:#F3F4F6; --pv-texto2:#A1A1AA; --pv-marca:#FF6600;
+  --pv-ok:#22C55E; --pv-atencao:#F59E0B; --pv-erro:#EF4444;
+  --pv-raio:12px; --pv-alt:44px;
+}
+
+@media (min-width:721px){
+  html,body{background:var(--pv-fundo)}
+
+  /* ---------- Menu lateral ---------- */
+  .app .sidebar{background:var(--pv-fundo);border-right:1px solid #1C1D21;padding:24px 16px;gap:16px}
+  .app .sidebar .brand{padding:0 8px 24px;border-bottom:1px solid #1C1D21}
+  .app .sidebar .brand-badge{gap:12px;font-size:20px;font-weight:700;letter-spacing:0;color:var(--pv-texto)}
+  .app .sidebar .brand small{display:none}
+
+  .app .sidebar .nav{gap:4px}
+  .app .sidebar .nav button,
+  .app .sidebar .nav .nav-grupo-cab{
+    min-height:var(--pv-alt);padding:0 14px;gap:14px;border-radius:var(--pv-raio);
+    font-size:15px;font-weight:400;letter-spacing:0;text-transform:none;
+    color:#D4D4D8;background:transparent;box-shadow:none
+  }
+  .app .sidebar .nav button:hover,
+  .app .sidebar .nav .nav-grupo-cab:hover{background:var(--pv-sup)!important;color:var(--pv-texto)!important;box-shadow:none!important}
+  .app .sidebar .nav .ico{color:var(--pv-texto2)}
+  .app .sidebar .nav .ico svg{width:20px;height:20px;stroke-width:1.7;stroke:currentColor}
+
+  /* Página ativa: fundo cor de laranja escuro, barrinha laranja à esquerda */
+  .app .sidebar .nav button.active,
+  .app .sidebar .nav button.active:hover{
+    background:linear-gradient(90deg,rgba(255,102,0,.20),rgba(255,102,0,.08))!important;
+    color:var(--pv-texto)!important;font-weight:500;box-shadow:inset 3px 0 0 var(--pv-marca)!important
+  }
+  .app .sidebar .nav button.active .ico,
+  .app .sidebar .nav button.active .ico svg{color:var(--pv-marca);stroke:var(--pv-marca)}
+
+  /* Grupos: cabeçalho igual aos itens; itens recuados, sem caixa */
+  .app .sidebar .nav-grupo.tem-ativo > .nav-grupo-cab{color:var(--pv-texto)}
+  .app .sidebar .nav-grupo.tem-ativo > .nav-grupo-cab .ico{color:var(--pv-texto2)}
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{margin-left:24px;padding-left:8px;border-left:1px solid #1C1D21;gap:2px}
+  .app .sidebar .nav-grupo-itens button{min-height:40px;font-size:14px}
+
+  /* Perfil no rodapé do menu */
+  .app .sidebar .side-foot{border-top:1px solid #1C1D21;padding:16px 8px 0}
+
+  /* ---------- Barra do topo ---------- */
+  .main .topbar{padding:28px 32px 24px;align-items:center;gap:16px}
+  .main .topbar .title{min-width:0}
+  .main .topbar .title h1{font-size:32px;font-weight:600;letter-spacing:0;line-height:1.15;color:var(--pv-texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .main .topbar .title p{display:none}
+
+  .main .topbar .status{gap:12px;font-size:13px;color:var(--pv-texto2)}
+  /* "Sincronizado": etiqueta com bolinha verde */
+  .main .topbar .status .dot{display:none}
+  .main .topbar #statusText{
+    display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;
+    border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.08);color:#D1FAE5;font-size:13px;white-space:nowrap
+  }
+  .main .topbar #statusText::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pv-ok)}
+
+  /* Botões do topo: secundário (Sincronizar) e fantasmas (sino, Sair) */
+  .main .topbar .btn.compact{
+    height:var(--pv-alt);padding:0 16px;border-radius:var(--pv-raio);font-size:14px;font-weight:500;
+    background:var(--pv-sup);border:1px solid var(--pv-borda);color:var(--pv-texto);box-shadow:none;gap:8px
+  }
+  .main .topbar .btn.compact svg{width:18px;height:18px}
+  .main .topbar .btn.compact:hover{background:var(--pv-sup2)}
+  .main .topbar .notif-btn.btn.compact,
+  .main .topbar #signOutBtn{background:transparent;border-color:transparent;color:var(--pv-texto2)}
+  .main .topbar .notif-btn.btn.compact{width:var(--pv-alt);padding:0}
+  .main .topbar .notif-btn.btn.compact:hover,
+  .main .topbar #signOutBtn:hover{background:var(--pv-sup);color:var(--pv-texto)}
+  .main .topbar .user-email{display:none}
+  .main .topbar .mp-switch{color:var(--pv-texto2);font-size:13px}
+
+  /* ---------- Título da página ----------
+     O nome da página vai para a barra do topo (js/moldura.js); o título
+     antigo e a frase de ajuda embaixo dele somem. */
+  .content{padding:0 32px 32px}
+  .content .section-title > div:first-child > h2,
+  .content .section-title > div:first-child > p{display:none}
+  .content .section-title.pv-vazio{display:none}
+}
+
+/* Menu com nomes só em tela larga; entre 721 e 1100 px ele fica só com ícones (como antes) */
+@media (min-width:1101px){
+  .app{grid-template-columns:264px minmax(0,1fr)}
+}
+@media (min-width:721px) and (max-width:1100px){
+  .app .sidebar{padding:24px 12px}
+  .app .sidebar .brand{padding:0 0 24px}
+  .app .sidebar .nav button,
+  .app .sidebar .nav .nav-grupo-cab{padding:0;justify-content:center}
+  .app .sidebar .nav-grupo.is-aberto > .nav-grupo-itens{margin-left:0;padding-left:0;border-left:0}
+  .main .topbar .title h1{font-size:26px}
+}

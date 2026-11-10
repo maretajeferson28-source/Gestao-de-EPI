@@ -177,6 +177,12 @@ window.addEventListener('load', () => {
     document.body.appendChild(pendenciasScript);
   }
 
+  if (!document.querySelector('script[data-moldura]')) {
+    const molduraScript = document.createElement('script');
+    molduraScript.src = 'js/moldura.js?v=20261110-1';
+    molduraScript.dataset.moldura = 'true';
+    document.body.appendChild(molduraScript);
+  }
   if (!document.querySelector('script[data-menu-grupos]')) {
     const menuGruposScript = document.createElement('script');
     menuGruposScript.src = 'js/menu-grupos.js?v=20261106-4';
