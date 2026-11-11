@@ -2217,3 +2217,15 @@
   .page[data-page-content="programar"] .prog-resumo .prog-botoes .prog-concluir{min-height:36px!important;height:36px!important;border-radius:10px!important;padding:0 5px!important;gap:5px!important;font-size:12.5px!important}
   .page[data-page-content="programar"] .prog-resumo .prog-botoes button svg{width:14px!important;height:14px!important}
 }
+
+/* Etapa 8c: Resumo com cada EPI numa linha: nome à esquerda (corta com
+   reticências) e C.A. · quantidade · tamanho à direita, em cinza.
+   No celular continua corrido, com " · " entre o nome e os números. */
+.prog-res-num::before{content:" · "}
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-res-itens li{align-items:center!important;min-width:0}
+  .page[data-page-content="programar"] .prog-res-itens li::before{margin-top:0!important}
+  .page[data-page-content="programar"] .prog-res-nome{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#E3E5E8}
+  .page[data-page-content="programar"] .prog-res-num{flex-shrink:0;white-space:nowrap;color:#9EA3AA;font-variant-numeric:tabular-nums}
+  .page[data-page-content="programar"] .prog-res-num::before{content:none}
+}
