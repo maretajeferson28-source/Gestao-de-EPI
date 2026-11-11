@@ -2167,3 +2167,17 @@
   .page[data-page-content="programar"] .prog-osp.is-ok .prog-osp-cab{margin-bottom:0;padding:3px 0 0}
   .page[data-page-content="programar"] .prog-osp.is-ok .prog-osp-ic{color:#35C96D;background:linear-gradient(145deg,rgba(53,201,109,.20) 0%,rgba(20,70,40,.18) 100%);border-color:rgba(53,201,109,.25);box-shadow:none}
 }
+
+/* Etapa 7x: ícones do relógio (Falta entregar pela O.S.) e da Composição
+   com a mesma estrutura do ícone do topo (Programar entrega): fundo marrom
+   queimado em diagonal, borda laranja e brilho em volta. Só muda o tamanho. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-comp-ic,
+  .page[data-page-content="programar"] .prog-osp:not(.is-ok) .prog-osp-ic{
+    color:#FF6600!important;border:1px solid rgba(255,111,25,.35)!important;
+    background:linear-gradient(135deg,#583018,#24160F 65%,#111214)!important;
+    box-shadow:0 0 18px rgba(255,102,0,.12)!important
+  }
+  .page[data-page-content="programar"] .prog-comp-ic svg,
+  .page[data-page-content="programar"] .prog-osp-ic svg{stroke-width:1.9!important}
+}
