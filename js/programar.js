@@ -229,16 +229,16 @@
     // Se o nome não couber inteiro junto do selo, o selo vira só o ícone
     // (o texto aparece ao passar o mouse).
     el.classList.remove('is-curto');
-    if (pl + texto + 12 + el.offsetWidth + 40 > inp.clientWidth) {
+    if (pl + texto + 10 + el.offsetWidth + 34 > inp.clientWidth) {
       el.classList.add('is-curto');
       if (!el.title) el.title = el.textContent.trim();
     }
     const larg = el.offsetWidth;
-    const max = inp.clientWidth - larg - 40;
-    const left = Math.min(pl + texto + 12, max);
+    const max = inp.clientWidth - larg - 34;
+    const left = Math.min(pl + texto + 10, max);
     el.style.left = `${inp.offsetLeft + left}px`;
     el.style.right = 'auto';
-    inp.style.setProperty('padding-right', `${larg + 48}px`, 'important');
+    inp.style.setProperty('padding-right', `${larg + 42}px`, 'important');
   }
   window.addEventListener('resize', () => posicionarTermo());
   // O campo muda de largura sem a janela mudar (Resumo, menu lateral, barra de

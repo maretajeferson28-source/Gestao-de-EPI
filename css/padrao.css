@@ -2002,3 +2002,11 @@
   .page[data-page-content="programar"] .prog-resumo{top:0!important;margin-top:0!important}
   .page[data-page-content="programar"] .prog-head::before{transform:translateY(calc(-35% - 14px))!important}
 }
+
+/* Etapa 7p: selo do termo mais fino, como no mockup (~105 px em vez de 122),
+   para nomes curtos caberem com o selo inteiro. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo{height:20px!important;bottom:5.5px!important;padding:0 7px!important;gap:4px!important;font-size:10px!important;font-weight:600!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo svg{width:11px!important;height:11px!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-curto{width:20px!important;padding:0!important;font-size:0!important}
+}
