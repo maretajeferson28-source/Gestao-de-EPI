@@ -2255,3 +2255,25 @@
   .page[data-page-content="programar"] .prog-res-itens li:not(.prog-res-cab) .prog-res-c{font-size:11px}
   .page[data-page-content="programar"] .prog-res-itens li::before{width:6px!important;height:6px!important}
 }
+
+/* Etapa 8e: tabelinha do Resumo fechada com as mesmas linhas finas da
+   Composição (borda em volta, linha entre itens e entre colunas), sem os
+   pontinhos de tópico; o nome fica com o espaço que sobrou. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-res-itens{
+    gap:0!important;border:1px solid rgba(255,255,255,.09);border-radius:9px;overflow:hidden
+  }
+  .page[data-page-content="programar"] .prog-res-itens li,
+  .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab{
+    grid-template-columns:minmax(0,1fr) 43px 27px 28px!important;column-gap:0!important;
+    min-height:26px;padding:0!important;margin:0!important;border-bottom:1px solid rgba(255,255,255,.09)!important
+  }
+  .page[data-page-content="programar"] .prog-res-itens li:last-child{border-bottom:0!important}
+  .page[data-page-content="programar"] .prog-res-itens li::before{display:none!important;content:none!important}
+  .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab{min-height:22px;background:rgba(255,255,255,.025)}
+  .page[data-page-content="programar"] .prog-res-nome{padding:0 4px 0 7px}
+  .page[data-page-content="programar"] .prog-res-c{align-self:stretch;display:flex!important;align-items:center;justify-content:center;padding:0 2px;border-left:1px solid rgba(255,255,255,.09)}
+}
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab .prog-res-c{letter-spacing:0}
+}
