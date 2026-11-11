@@ -387,8 +387,7 @@
             const ca = v ? (/^CI-/i.test(String(v.ca)) ? String(v.ca) : 'CA ' + v.ca) : 'Sem C.A.';
             return `<button type="button" class="prog-osp-item is-${x.st}" data-falta-epi="${esc(x.id)}" title="${esc(x.motivo)} · clique para pôr na entrega">
               <span class="prog-osp-foto" data-osp-foto="${esc(x.id)}"></span>
-              <span class="prog-osp-info"><span class="prog-osp-nome">${esc(x.nome)}</span><span class="prog-osp-ca">${esc(ca)}</span></span>
-              <i data-lucide="chevron-right" class="prog-osp-chev"></i></button>`;
+              <span class="prog-osp-info"><span class="prog-osp-nome">${esc(x.nome)}</span><span class="prog-osp-ca">${esc(ca)}</span></span></button>`;
           }).join('')}</div></div></div>
         <div class="prog-falta-velho">
           <div class="prog-falta-cab">
