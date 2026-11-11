@@ -335,13 +335,19 @@
     // Etiqueta "O.S. ativa · N itens pendentes" na faixa do colaborador (só no PC).
     const chip = $('progOsChip');
     if (chip) {
-      chip.hidden = !r || !r.pedidos;
-      if (r && r.pedidos) {
+      // Fica sempre no lugar: sem colaborador ou sem O.S., mostra "Nenhuma O.S.".
+      chip.hidden = false;
+      if (!r || !r.pedidos) {
+        chip.className = 'prog-os-chip is-vazio';
+        chip.innerHTML = '<i data-lucide="layers"></i><span>Nenhuma O.S.</span>';
+        chip.title = c ? 'Este colaborador não tem O.S. com EPIs.' : 'Escolha um colaborador para ver a O.S.';
+      } else {
         const n = r.faltas.length;
         chip.className = 'prog-os-chip' + (n ? '' : ' is-ok');
         chip.innerHTML = `<i data-lucide="${n ? 'layers' : 'circle-check'}"></i><span><em>O.S. ativa</em> · ${n ? `${n} ${n === 1 ? 'item pendente' : 'itens pendentes'}` : 'em dia'}</span>`;
         chip.title = `O.S. de ${r.os.funcao}`;
       }
+      icons();
       // O chip aparecendo/sumindo muda a largura do campo do colaborador.
       posicionarTermo();
     }

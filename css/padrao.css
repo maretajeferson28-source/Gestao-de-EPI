@@ -2029,3 +2029,20 @@
       linear-gradient(115deg,rgba(255,112,35,.42) 0%,rgba(173,95,53,.21) 16%,rgba(255,255,255,.07) 37%,rgba(255,255,255,.04) 60%,rgba(255,255,255,.06) 82%,rgba(255,255,255,.08) 100%)!important
   }
 }
+
+/* Etapa 7r: campo do colaborador com largura máxima fixa (não cresce com o
+   nome; nome comprido termina em reticências) e chip da O.S. sempre no lugar,
+   com "Nenhuma O.S." quando não há colaborador ou O.S. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-topo{grid-template-columns:auto auto minmax(0,1fr)!important}
+  .page[data-page-content="programar"] .prog-colab-campo{flex:0 0 242px!important;width:242px!important;max-width:242px!important}
+  .page[data-page-content="programar"] .prog-os-chip{justify-self:end!important}
+  .page[data-page-content="programar"] #progColab{text-overflow:ellipsis!important;white-space:nowrap!important;overflow:hidden!important}
+  .page[data-page-content="programar"] .prog-os-chip.is-vazio{
+    color:#8C9198!important;
+    background:linear-gradient(180deg,rgba(255,255,255,.045) 0%,rgba(255,255,255,.02) 100%)!important;
+    border-color:rgba(255,255,255,.12)!important;box-shadow:none!important
+  }
+  .page[data-page-content="programar"] .prog-os-chip.is-vazio em{color:#A9AEB5!important}
+  .page[data-page-content="programar"] .prog-os-chip.is-vazio svg{color:#7F858D!important}
+}
