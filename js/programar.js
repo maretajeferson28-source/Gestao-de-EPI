@@ -82,6 +82,10 @@
     linha.dataset.epi = epi?.id || '';
     linha.dataset.var = '';
     linha.classList.toggle('tem-epi', !!epi);
+    // Escolheu um EPI: as outras linhas que ficaram vazias saem da tabela.
+    if (epi) $('progItens').querySelectorAll('.prog-item').forEach((l) => {
+      if (l !== linha && !l.querySelector('[data-campo="epi"]').value.trim()) l.remove();
+    });
     linha.querySelector('[data-icone]').innerHTML = `<i data-lucide="${esc(epi ? iconeEpi(epi.nome) : 'package')}"></i>`;
     sel.innerHTML = '<option value="">—</option>';
     sel.disabled = true;
