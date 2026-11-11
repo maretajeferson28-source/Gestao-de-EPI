@@ -2277,3 +2277,11 @@
 @media (min-width:721px){
   .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab .prog-res-c{letter-spacing:0}
 }
+
+/* Etapa 8f: tabelinha do Resumo 8 px mais larga de cada lado; os 16 px a
+   mais vão metade para o C.A. e metade para o Tam (nome fica igual). */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-res-itens{margin-left:-8px!important;margin-right:-8px!important}
+  .page[data-page-content="programar"] .prog-res-itens li,
+  .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab{grid-template-columns:minmax(0,1fr) 51px 27px 36px!important}
+}
