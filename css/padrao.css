@@ -1529,3 +1529,24 @@
   .page[data-page-content="programar"] .prog-res-quem dt,.page[data-page-content="programar"] .prog-res-quem dd{white-space:nowrap}
   .page[data-page-content="programar"] .prog-res-quem dt{font-size:12.5px}
 }
+
+/* Etapa 7e: caminhão do topo no tamanho do mockup (frente ~14% da largura,
+   em ~60-74%), sem apagar o canto direito (a 2ª linha laranja da arte aparece)
+   e descendo por trás da faixa e do Resumo, sumindo em degradê ali. */
+@media (min-width:721px){
+  .content .section-title.prog-head{overflow:visible}
+  .content .section-title.prog-head::after{display:none}
+  .content .section-title.prog-head::before{
+    left:auto;right:0;width:68%;transform:translateY(-35%);
+    -webkit-mask-image:
+      linear-gradient(90deg,transparent 0%,#000 40%),
+      linear-gradient(180deg,#000 0%,#000 84%,transparent 100%);
+    -webkit-mask-composite:source-in;
+            mask-image:
+      linear-gradient(90deg,transparent 0%,#000 40%),
+      linear-gradient(180deg,#000 0%,#000 84%,transparent 100%);
+            mask-composite:intersect
+  }
+  /* Os cards passam por cima da arte */
+  .page[data-page-content="programar"] .prog-layout{position:relative;z-index:1}
+}
