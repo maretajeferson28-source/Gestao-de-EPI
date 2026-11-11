@@ -2181,3 +2181,14 @@
   .page[data-page-content="programar"] .prog-comp-ic svg,
   .page[data-page-content="programar"] .prog-osp-ic svg{stroke-width:1.9!important}
 }
+
+/* Etapa 7y: foto do item pendente numa caixinha própria, mais clara que o
+   cartão e com borda fina, para separar a imagem do fundo (como no mockup). */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-osp-foto{
+    box-sizing:border-box!important;padding:3px!important;border-radius:9px!important;
+    background:linear-gradient(145deg,#34363A 0%,#232528 100%)!important;
+    border:1px solid rgba(255,255,255,.14)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 2px 6px rgba(0,0,0,.25)!important
+  }
+}
