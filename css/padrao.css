@@ -1810,3 +1810,28 @@
   .page[data-page-content="programar"] .prog-epi-icone{position:static!important;transform:none!important;pointer-events:auto}
   .page[data-page-content="programar"] .prog-epi-cel input{padding:0 10px!important;flex:1;min-width:0}
 }
+
+/* Etapa 7j: Composição da entrega mais compacta, nas medidas da referência
+   (linhas ~39 px, miniatura 44x32, controles 30 px, título 20 px). */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:nth-child(2){padding:12px 24px 6px!important}
+  .page[data-page-content="programar"] .prog-comp-titulo{gap:12px!important;margin:0 0 10px!important;font-size:20px!important;letter-spacing:-.3px!important}
+  .page[data-page-content="programar"] .prog-comp-ic{width:38px!important;height:38px!important;border-radius:10px!important}
+  .page[data-page-content="programar"] .prog-comp-ic svg{width:20px!important;height:20px!important}
+  .page[data-page-content="programar"] .prog-cab{padding:2px 0 9px!important;font-size:12.5px!important}
+  .page[data-page-content="programar"] .prog-item{min-height:39px!important;padding:3px 0!important}
+  .page[data-page-content="programar"] .prog-epi-cel{gap:10px!important}
+  .page[data-page-content="programar"] .prog-epi-icone{width:44px!important;height:32px!important;border-radius:7px!important}
+  .page[data-page-content="programar"] .prog-epi-cel input{height:30px!important;padding:0 8px!important;font-weight:400!important;font-size:13.5px!important}
+  .page[data-page-content="programar"] .prog-item select[data-campo="ca"]{height:30px!important;font-size:13.5px!important;font-weight:400!important}
+  .page[data-page-content="programar"] .prog-saldo{height:30px!important;font-size:13.5px!important;font-weight:700!important}
+  .page[data-page-content="programar"] .prog-item .prog-qtd{height:30px!important;max-width:100px!important;border-radius:9px!important}
+  .page[data-page-content="programar"] .prog-item .prog-qtd button{width:26px!important;height:24px!important;border-radius:7px!important}
+  .page[data-page-content="programar"] .prog-item .prog-qtd button svg{width:13px!important;height:13px!important}
+  .page[data-page-content="programar"] .prog-item .prog-qtd input{height:24px!important;font-size:13.5px!important}
+  .page[data-page-content="programar"] .prog-item > input[data-campo="tam"]{height:30px!important;max-width:95px!important;padding:0 24px 0 10px!important;border-radius:9px!important;font-size:12.5px!important;background-size:12px auto,auto!important;background-position:right 8px center,0 0!important}
+  .page[data-page-content="programar"] .prog-item .prog-remover{width:28px!important;height:28px!important}
+  .page[data-page-content="programar"] .prog-item .prog-remover svg{width:15px!important;height:15px!important}
+  .page[data-page-content="programar"] .prog-add{padding:9px 2px!important;gap:8px!important;font-size:13.5px!important}
+  .page[data-page-content="programar"] .prog-add svg{width:16px!important;height:16px!important}
+}
