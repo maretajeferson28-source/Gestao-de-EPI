@@ -231,6 +231,21 @@
     inp.style.setProperty('padding-right', `${larg + 48}px`, 'important');
   }
   window.addEventListener('resize', () => posicionarTermo());
+  // O campo muda de largura sem a janela mudar (Resumo, menu lateral, barra de
+  // rolagem, fonte terminando de carregar): reposiciona o selo junto, para ele
+  // nunca passar por cima da setinha nem sair do campo.
+  if (window.ResizeObserver) {
+    let ultimaLarg = 0;
+    const obs = new ResizeObserver(() => {
+      const inp = $('progColab');
+      if (!inp || inp.offsetWidth === ultimaLarg) return;
+      ultimaLarg = inp.offsetWidth;
+      posicionarTermo();
+    });
+    const ligar = () => { const inp = $('progColab'); if (inp) obs.observe(inp); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar); else ligar();
+  }
+  document.fonts?.ready?.then(() => posicionarTermo());
 
   // ---- Resumo ao lado ----
   function resumo() {
@@ -315,6 +330,8 @@
         chip.innerHTML = `<i data-lucide="${n ? 'layers' : 'circle-check'}"></i><span><em>O.S. ativa</em> · ${n ? `${n} ${n === 1 ? 'item pendente' : 'itens pendentes'}` : 'em dia'}</span>`;
         chip.title = `O.S. de ${r.os.funcao}`;
       }
+      // O chip aparecendo/sumindo muda a largura do campo do colaborador.
+      posicionarTermo();
     }
     if (!r || !r.pedidos) { el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
