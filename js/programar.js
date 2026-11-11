@@ -212,9 +212,19 @@
       el.style.left = ''; el.style.right = ''; inp.style.removeProperty('padding-right'); return;
     }
     const cs = getComputedStyle(inp);
-    regua = regua || document.createElement('canvas').getContext('2d');
-    regua.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    const texto = regua.measureText(inp.value || '').width;
+    // Mede com um span invisível na mesma fonte do campo (o canvas media com a
+    // fonte reserva enquanto a Inter ainda não tinha chegado, e o selo caía
+    // em cima do nome).
+    if (!regua) {
+      regua = document.createElement('span');
+      regua.setAttribute('aria-hidden', 'true');
+      regua.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:pre;pointer-events:none';
+      document.body.appendChild(regua);
+    }
+    regua.style.font = cs.font;
+    regua.style.letterSpacing = cs.letterSpacing;
+    regua.textContent = inp.value || '';
+    const texto = regua.getBoundingClientRect().width;
     const pl = parseFloat(cs.paddingLeft) || 0;
     // Se o nome não couber inteiro junto do selo, o selo vira só o ícone
     // (o texto aparece ao passar o mouse).
@@ -246,6 +256,8 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar); else ligar();
   }
   document.fonts?.ready?.then(() => posicionarTermo());
+  // A Inter é baixada só quando a tela usa: remede quando ela chegar.
+  document.fonts?.addEventListener?.('loadingdone', () => posicionarTermo());
 
   // ---- Resumo ao lado ----
   function resumo() {
