@@ -2062,3 +2062,20 @@
   .page[data-page-content="programar"] .prog-colab-campo{flex:1 1 auto!important;width:auto!important;max-width:none!important}
   .page[data-page-content="programar"] .prog-os-chip{justify-self:start!important;margin-left:18px!important;max-width:196px;box-sizing:border-box}
 }
+
+/* Etapa 7u: tag da O.S. com rótulo "Situação da O.S." em cima (igual a
+   Colaborador e Entregar em), tag na linha dos campos, bloco encostado na
+   ponta direita e os 3 blocos com o mesmo vão (16 px de cada lado das
+   divisórias). O campo do nome fica com o espaço que sobra. */
+.prog-os-campo{display:none}
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-topo{grid-template-columns:minmax(0,1fr) auto 206px!important;column-gap:16px!important;align-items:center!important}
+  .page[data-page-content="programar"] .prog-colab{gap:12px!important}
+  .page[data-page-content="programar"] .prog-data-campo{padding-left:16px!important;column-gap:12px!important}
+  .page[data-page-content="programar"] .prog-os-campo{
+    display:grid;grid-template-rows:auto 31px;row-gap:5px;align-content:center;min-width:0;box-sizing:border-box;padding-left:16px;
+    background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.10) 20%,rgba(255,255,255,.10) 80%,rgba(255,255,255,0) 100%) left center/1px 44px no-repeat
+  }
+  .page[data-page-content="programar"] .prog-os-campo .prog-os-chip{margin:0!important;justify-self:start!important;align-self:center!important;max-width:100%}
+  .page[data-page-content="programar"] .prog-os-campo .prog-os-chip::before{display:none!important;content:none!important}
+}
