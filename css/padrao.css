@@ -1589,3 +1589,16 @@
   .page[data-page-content="programar"] .prog-os-chip svg{width:15px!important;height:15px!important}
   .page[data-page-content="programar"] .prog-os-chip::before{top:-11px!important;bottom:-11px!important;left:-19px!important}
 }
+
+/* Etapa 7g: borda da faixa em degradê entre os tokens do guia: neutra
+   (#35363A, --pe-border) à esquerda e quente (rgba(255,117,34,.28),
+   --pe-border-warm) à direita; fundo continua o do .pe-meta-bar. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child{
+    border:1px solid transparent!important;
+    background:
+      radial-gradient(60% 140% at 100% 0%,rgba(255,105,25,.07),transparent 60%) padding-box,
+      linear-gradient(110deg,#1B1A1B,#121416) padding-box,
+      linear-gradient(100deg,#3B3C41 0%,#35363A 45%,rgba(255,117,34,.28) 85%,rgba(255,117,34,.42) 100%) border-box!important
+  }
+}
