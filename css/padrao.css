@@ -1960,3 +1960,24 @@
 @media (min-width:721px){
   .page[data-page-content="programar"] .prog-resumo-titulo > svg{display:block!important}
 }
+
+/* Etapa 7n: faixa do colaborador um pouco mais magra (~76 px, como no mockup):
+   letras, campos e ícones levemente menores. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child{padding:10px 20px 12px!important}
+  .page[data-page-content="programar"] .prog-rotulo,
+  .page[data-page-content="programar"] .prog-data-campo > span{font-size:12.5px!important}
+  .page[data-page-content="programar"] .prog-colab-campo,
+  .page[data-page-content="programar"] .prog-data-campo{row-gap:5px!important}
+  .page[data-page-content="programar"] .prog-colab::before,
+  .page[data-page-content="programar"] .prog-data-campo::before{flex-basis:18px!important;width:18px!important;height:18px!important}
+  .page[data-page-content="programar"] .prog-data-campo{grid-template-columns:18px auto!important}
+  .page[data-page-content="programar"] #progColab{height:31px!important;font-size:13.5px!important;padding-left:36px!important}
+  .page[data-page-content="programar"] .prog-avatar,
+  .page[data-page-content="programar"] .prog-avatar.is-ok{width:20px!important;height:20px!important;bottom:5.5px!important;left:40px!important;background-size:13px!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo{height:21px!important;bottom:5px!important;font-size:11px!important;padding:0 8px!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-curto{width:21px!important;padding:0!important;font-size:0!important}
+  .page[data-page-content="programar"] .prog-data-campo input{height:31px!important;width:122px!important;font-size:13.5px!important}
+  .page[data-page-content="programar"] .prog-os-chip{padding:6px 9px!important;font-size:10.5px!important}
+  .page[data-page-content="programar"] .prog-os-chip svg{width:14px!important;height:14px!important}
+}
