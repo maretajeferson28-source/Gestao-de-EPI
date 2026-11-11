@@ -2052,3 +2052,13 @@
   .page[data-page-content="programar"] .prog-colab-campo .prog-termo{display:none!important}
   .page[data-page-content="programar"] #progColab{padding-right:34px!important}
 }
+
+/* Etapa 7t: os 3 blocos da faixa (nome, data, O.S.) com espaçamento igual:
+   divisória sempre no meio do vão (18 px de cada lado), coluna da O.S. com
+   largura fixa (nada pula quando o texto muda) e o campo do nome ocupando
+   o espaço que sobrou. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-topo{grid-template-columns:minmax(0,1fr) auto 214px!important;column-gap:18px!important}
+  .page[data-page-content="programar"] .prog-colab-campo{flex:1 1 auto!important;width:auto!important;max-width:none!important}
+  .page[data-page-content="programar"] .prog-os-chip{justify-self:start!important;margin-left:18px!important;max-width:196px;box-sizing:border-box}
+}
