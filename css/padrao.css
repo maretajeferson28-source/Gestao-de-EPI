@@ -1550,3 +1550,42 @@
   /* Os cards passam por cima da arte */
   .page[data-page-content="programar"] .prog-layout{position:relative;z-index:1}
 }
+
+/* Etapa 7f: faixa do colaborador nas medidas do mockup (card ~88 px, campos
+   ~33 px, ícones 18 px) e com o degradê/borda do guia valendo de verdade
+   (a regra antiga da Etapa 2 tinha !important e cobria o fundo). */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child{
+    min-height:0!important;padding:14px 22px 16px!important;border-radius:18px!important;
+    border:1px solid #35363A!important;
+    background:
+      radial-gradient(60% 140% at 100% 0%,rgba(255,105,25,.07),transparent 60%),
+      linear-gradient(110deg,#1B1A1B,#121416)!important;
+    box-shadow:0 9px 25px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.04)!important
+  }
+  .page[data-page-content="programar"] .prog-topo{gap:18px!important}
+  .page[data-page-content="programar"] .prog-rotulo,
+  .page[data-page-content="programar"] .prog-data-campo > span{font:600 13px/1.2 Inter,Roboto,Arial,sans-serif!important;color:#EEEFF2!important}
+  .page[data-page-content="programar"] .prog-colab-campo,
+  .page[data-page-content="programar"] .prog-data-campo{row-gap:6px!important}
+  .page[data-page-content="programar"] .prog-colab{gap:14px!important}
+  .page[data-page-content="programar"] .prog-colab::before,
+  .page[data-page-content="programar"] .prog-data-campo::before{flex-basis:20px!important;width:20px!important;height:20px!important}
+  .page[data-page-content="programar"] .prog-data-campo{grid-template-columns:20px auto!important;column-gap:14px!important}
+
+  /* Campo do colaborador: 33 px */
+  .page[data-page-content="programar"] #progColab{height:33px!important;border-radius:9px!important;padding-left:38px!important;font:700 14.5px/1 Inter,Roboto,Arial,sans-serif!important;background-size:15px!important}
+  .page[data-page-content="programar"] .prog-avatar,
+  .page[data-page-content="programar"] .prog-avatar.is-ok{width:21px!important;height:21px!important;left:42px!important;bottom:6px!important;background-size:14px!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo{height:22px!important;bottom:5.5px!important;padding:0 9px!important;font:650 11.5px/1 Inter,Roboto,Arial,sans-serif!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-curto{width:22px!important;padding:0!important;font-size:0!important}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo:empty{display:none!important}
+
+  /* Data: 33 px */
+  .page[data-page-content="programar"] .prog-data-campo input{height:33px!important;width:128px!important;padding:0 10px!important;border-radius:9px!important;font:500 14px/1 Inter,Roboto,Arial,sans-serif!important}
+
+  /* O.S. ativa */
+  .page[data-page-content="programar"] .prog-os-chip{padding:7px 10px!important;gap:7px!important;border-radius:9px!important;font:500 11px/1.1 Inter,Roboto,Arial,sans-serif!important}
+  .page[data-page-content="programar"] .prog-os-chip svg{width:15px!important;height:15px!important}
+  .page[data-page-content="programar"] .prog-os-chip::before{top:-11px!important;bottom:-11px!important;left:-19px!important}
+}
