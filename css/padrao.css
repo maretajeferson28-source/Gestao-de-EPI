@@ -2046,3 +2046,9 @@
   .page[data-page-content="programar"] .prog-os-chip.is-vazio em{color:#A9AEB5!important}
   .page[data-page-content="programar"] .prog-os-chip.is-vazio svg{color:#7F858D!important}
 }
+
+/* Etapa 7s: no PC o campo do colaborador é só o nome: selo do termo desligado. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo{display:none!important}
+  .page[data-page-content="programar"] #progColab{padding-right:34px!important}
+}

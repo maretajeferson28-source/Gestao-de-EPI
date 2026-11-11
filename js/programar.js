@@ -208,7 +208,8 @@
   function posicionarTermo() {
     const inp = $('progColab'), el = $('progTermo');
     if (!inp || !el) return;
-    if (!window.matchMedia('(min-width:721px)').matches || !el.textContent.trim()) {
+    // No PC o selo do termo foi desligado: o campo é só o nome.
+    if (window.matchMedia('(min-width:721px)').matches || !el.textContent.trim()) {
       el.style.left = ''; el.style.right = ''; inp.style.removeProperty('padding-right'); return;
     }
     const cs = getComputedStyle(inp);
@@ -337,10 +338,15 @@
     if (chip) {
       // Fica sempre no lugar: sem colaborador ou sem O.S., mostra "Nenhuma O.S.".
       chip.hidden = false;
-      if (!r || !r.pedidos) {
+      if (r && !r.pedidos) {
+        // O.S. ligada ao cadastro, mas sem EPIs nela.
+        chip.className = 'prog-os-chip is-vazio';
+        chip.innerHTML = `<i data-lucide="layers"></i><span><em>O.S. ${esc(r.os.funcao || '')}</em> · sem EPIs</span>`;
+        chip.title = `O.S. de ${r.os.funcao}`;
+      } else if (!r) {
         chip.className = 'prog-os-chip is-vazio';
         chip.innerHTML = '<i data-lucide="layers"></i><span>Nenhuma O.S.</span>';
-        chip.title = c ? 'Este colaborador não tem O.S. com EPIs.' : 'Escolha um colaborador para ver a O.S.';
+        chip.title = c ? 'Este colaborador não tem O.S. no cadastro.' : 'Escolha um colaborador para ver a O.S.';
       } else {
         const n = r.faltas.length;
         chip.className = 'prog-os-chip' + (n ? '' : ' is-ok');
