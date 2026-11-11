@@ -242,22 +242,27 @@
       if (!epi) return null;
       const v = lista('epiVariants').find((x) => x.id === l.dataset.var);
       const tam = l.querySelector('[data-campo="tam"]').value.trim();
-      return { nome: epi.nome, qtd: Number(l.querySelector('[data-campo="qtd"]').value) || 0, ca: v ? (v.apelido ? `${v.apelido} · ${codigo(v.ca)}` : codigo(v.ca)) : '', tam, aviso: !l.querySelector('[data-aviso]').hidden };
+      const caNum = v ? (/^CI-/i.test(String(v.ca)) ? String(v.ca) : `CA ${v.ca}`) : '';
+      return { nome: epi.nome, qtd: Number(l.querySelector('[data-campo="qtd"]').value) || 0, ca: caNum, tam, aviso: !l.querySelector('[data-aviso]').hidden };
     }).filter(Boolean);
     const total = itens.reduce((a, i) => a + i.qtd, 0);
     const comAviso = itens.filter((i) => i.aviso).length;
+    // Como no mockup: três linhas (ícone, rótulo, valor à direita) e a lista
+    // "Nome · CA · Qtd. · Tam." com ponto laranja, sem cartões.
     box.innerHTML = `
-      <div class="prog-res-pessoa${c ? '' : ' vazio'}">
-        <div><i data-lucide="user"></i><b>${c ? esc(c.nome) : 'Colaborador não escolhido'}</b></div>
-        ${c ? `<div><i data-lucide="briefcase"></i><span>Função: ${esc(c.funcao || c.cargo || '—')}</span></div>` : ''}
-      </div>
-      <dl class="prog-res-quem">
+      <dl class="prog-res-info">
+        <div><dt><i data-lucide="users-round"></i>Colaborador</dt><dd${c ? '' : ' class="vazio"'}>${c ? esc(c.nome) : '—'}</dd></div>
         <div><dt><i data-lucide="layers"></i>Total de itens</dt><dd>${fmt(total)}</dd></div>
-        <div><dt><i data-lucide="calendar"></i>Previsão de entrega</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
+        <div><dt><i data-lucide="calendar-days"></i>Previsão de entrega</dt><dd>${esc(dataBR($('progData').value) || '—')}</dd></div>
       </dl>
-      ${itens.length ? `<div class="prog-res-sec"><span class="prog-res-rotulo">Itens selecionados</span><ul class="prog-res-lista">${itens.map((i) => `<li><span class="prog-res-nome">${esc(i.nome)}<small>${esc([i.ca || 'Sem C.A.', i.tam ? 'Tam. ' + i.tam : ''].filter(Boolean).join(' · '))}</small></span><b>${fmt(i.qtd)} un</b></li>`).join('')}</ul></div>
-        ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
-        : '<div class="prog-res-sec"><span class="prog-res-rotulo">Itens selecionados</span><p class="prog-res-vazio">Nenhum EPI adicionado</p></div>'}`;
+      <div class="prog-res-sec">
+        <h4 class="prog-res-tit">Itens selecionados</h4>
+        ${itens.length
+          ? `<ul class="prog-res-itens">${itens.map((i) => `<li>${esc([i.nome, i.ca || 'Sem C.A.', `Qtd. ${fmt(i.qtd)}`, i.tam ? `Tam. ${i.tam}` : ''].filter(Boolean).join(' · '))}</li>`).join('')}</ul>
+            ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
+          : '<p class="prog-res-vazio">Nenhum EPI adicionado</p>'}
+      </div>
+      <div class="prog-res-div" aria-hidden="true"></div>`;
     icons();
     const conta = $('progConta');
     if (conta) conta.textContent = `${fmt(total)} ${total === 1 ? 'item' : 'itens'}`;

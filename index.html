@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261111-17">
+<link rel="stylesheet" href="css/padrao.css?v=20261111-18">
 </head>
 <body>
 
@@ -227,7 +227,7 @@
               <div class="field"><label>Responsável</label><input id="nResp" list="dlResp" value="Jeferson" required></div>
               <div class="field wide"><label>Observação</label><input id="nObs" placeholder="Opcional"></div>
             </div>
-            <div class="form-actions entrega-acoes"><button class="btn primary" type="submit"><i data-lucide="save" aria-hidden="true"></i><span class="so-pc">Salvar movimentação</span><span class="so-celular">Salvar</span></button><button class="btn" type="reset"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button><div class="entrega-validacao" role="group" aria-label="Validar a entrega"><button class="btn compact" type="button" id="nFacial" title="Validar a entrega com a biometria facial do colaborador"><i data-lucide="scan-face" aria-hidden="true"></i>Facial</button><button class="btn compact" type="button" id="nAssinatura" title="Validar a entrega com a assinatura do colaborador"><i data-lucide="signature" aria-hidden="true"></i>Assinatura</button></div></div>
+            <div class="form-actions entrega-acoes"><button class="btn primary" type="submit"><i data-lucide="save" aria-hidden="true"></i><span class="so-pc">Salvar movimentação</span><span class="so-celular">Salvar</span></button><button class="btn" type="reset"><i data-lucide="trash-2" aria-hidden="true"></i>Limpar</button><div class="entrega-validacao" role="group" aria-label="Validar a entrega"><button class="btn compact" type="button" id="nFacial" title="Validar a entrega com a biometria facial do colaborador"><i data-lucide="scan-face" aria-hidden="true"></i>Facial</button><button class="btn compact" type="button" id="nAssinatura" title="Validar a entrega com a assinatura do colaborador"><i data-lucide="signature" aria-hidden="true"></i>Assinatura</button></div></div>
             <div class="msg" id="saidaMsg" aria-live="polite"></div>
           </form>
         </div>
@@ -261,10 +261,10 @@
             <div class="prog-falta" id="progFaltaOs" hidden></div>
           </div>
           <aside class="prog-resumo">
-            <h3 class="prog-resumo-titulo"><i data-lucide="clipboard-list" aria-hidden="true"></i>Resumo<span class="prog-res-conta" id="progConta">0 itens</span></h3>
+            <h3 class="prog-resumo-titulo"><i data-lucide="layers" aria-hidden="true"></i>Resumo<span class="prog-res-conta" id="progConta">0 itens</span></h3>
             <div id="progResumo"></div>
-            <label class="prog-obs-campo"><span>Observação</span><textarea id="progObs" rows="2" placeholder="Opcional (ex.: entregar na garagem)"></textarea></label>
-            <div class="prog-botoes"><button class="btn prog-limpar" id="progLimpar" type="button"><i data-lucide="eraser" aria-hidden="true"></i>Limpar</button><button class="btn prog-repetir" id="progOs" type="button" disabled title="Escolha o colaborador para ver a ordem de serviço dele"><i data-lucide="file-text" aria-hidden="true"></i>O.S.</button><button class="btn primary prog-concluir" id="progConcluir" type="button"><i data-lucide="send" aria-hidden="true"></i>Concluir</button></div>
+            <label class="prog-obs-campo"><span><i data-lucide="message-circle" aria-hidden="true"></i>Observação</span><textarea id="progObs" rows="2" placeholder="Opcional (ex.: entregar na garagem)"></textarea></label>
+            <div class="prog-botoes"><button class="btn prog-limpar" id="progLimpar" type="button"><i data-lucide="trash-2" aria-hidden="true"></i>Limpar</button><button class="btn prog-repetir" id="progOs" type="button" disabled title="Escolha o colaborador para ver a ordem de serviço dele"><i data-lucide="file-text" aria-hidden="true"></i>O.S.</button><button class="btn primary prog-concluir" id="progConcluir" type="button"><i data-lucide="check" aria-hidden="true"></i>Concluir</button></div>
             
             <div class="msg" id="progMsg" aria-live="polite"></div>
           </aside>
