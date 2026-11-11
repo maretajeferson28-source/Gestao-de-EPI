@@ -1447,9 +1447,12 @@
    largura, cortado pela borda de cima, faróis perto do pé do cabeçalho. */
 @media (min-width:721px){
   .content .section-title.prog-head::before{
-    left:10%;right:auto;top:0;bottom:auto;width:71.4%;aspect-ratio:3 / 1;transform:translateY(-40%);opacity:1;
+    left:3.3%;right:auto;top:0;bottom:auto;width:80%;aspect-ratio:3 / 1;transform:translateY(-34%);opacity:1;
     background:url("/assets/app-brand/programar-topo.webp") center/100% 100% no-repeat;
     -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 45%,#000 85%,transparent 100%);
             mask-image:linear-gradient(90deg,transparent 0%,#000 45%,#000 85%,transparent 100%)
   }
+}
+@media (min-width:721px){
+  .content .section-title.prog-head::after{height:22px}
 }
