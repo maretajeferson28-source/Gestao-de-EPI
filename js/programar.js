@@ -236,6 +236,17 @@
     const el = $('progFaltaOs');
     if (!el) return;
     const r = c ? faltasOs(c) : null;
+    // Etiqueta "O.S. ativa · N itens pendentes" na faixa do colaborador (só no PC).
+    const chip = $('progOsChip');
+    if (chip) {
+      chip.hidden = !r || !r.pedidos;
+      if (r && r.pedidos) {
+        const n = r.faltas.length;
+        chip.className = 'prog-os-chip' + (n ? '' : ' is-ok');
+        chip.innerHTML = `<i data-lucide="${n ? 'layers' : 'circle-check'}"></i><span>O.S. ativa · <b>${n ? `${n} ${n === 1 ? 'item pendente' : 'itens pendentes'}` : 'em dia'}</b></span>`;
+        chip.title = `O.S. de ${r.os.funcao}`;
+      }
+    }
     if (!r || !r.pedidos) { el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
     if (!r.faltas.length) {
