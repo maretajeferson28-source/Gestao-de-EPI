@@ -2198,3 +2198,22 @@
 @media (min-width:721px){
   .page[data-page-content="programar"] .prog-main{gap:14px!important;row-gap:14px!important}
 }
+
+/* Etapa 8a: botões do Resumo numa linha só: Limpar, O.S. e Concluir (o
+   laranja fica no fim e um pouco mais largo). Mesma altura nos três. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes{flex-direction:row!important;align-items:stretch!important;gap:8px!important}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes button{
+    flex:1 1 0!important;width:auto!important;min-width:0!important;min-height:44px!important;padding:0 6px!important;gap:5px!important;
+    font-size:13px!important;white-space:nowrap!important
+  }
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes button svg{width:16px!important;height:16px!important}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes .prog-concluir{flex:1.25 1 0!important;min-height:44px!important;font-size:14px!important}
+}
+/* Etapa 8b: botões da linha menores (eram altos e apertados). */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes{gap:7px!important}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes button,
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes .prog-concluir{min-height:36px!important;height:36px!important;border-radius:10px!important;padding:0 5px!important;gap:5px!important;font-size:12.5px!important}
+  .page[data-page-content="programar"] .prog-resumo .prog-botoes button svg{width:14px!important;height:14px!important}
+}
