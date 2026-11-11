@@ -2085,3 +2085,85 @@
 @media (min-width:721px){
   .page[data-page-content="programar"] .prog-os-campo .prog-os-chip{justify-self:stretch!important;width:100%!important;max-width:none!important;height:31px!important;padding-top:0!important;padding-bottom:0!important;display:flex!important;align-items:center!important;box-sizing:border-box!important;border-radius:9px!important}
 }
+
+/* =====================================================================
+   Etapa 7w: "Falta entregar pela O.S." pela especificação do GPT: painel
+   grafite com luz quente no canto do ícone (relógio), título e subtítulo,
+   3 cartões (foto, nome, C.A., chevron) e setinha que passa os itens.
+   No celular continua a lista de botões de antes.
+   ===================================================================== */
+.prog-osp{display:none}
+.prog-falta-velho{display:contents}
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-falta-velho{display:none!important}
+  .page[data-page-content="programar"] .prog-falta:not([hidden]){
+    position:relative;isolation:isolate;box-sizing:border-box;display:block!important;width:100%;min-width:0;
+    padding:9px 22px 14px!important;border-radius:16px!important;margin:0!important;gap:0!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    background:
+      radial-gradient(ellipse 55% 140% at 12% 0%,rgba(157,71,30,.15) 0%,rgba(83,46,30,.07) 45%,transparent 80%),
+      radial-gradient(ellipse 60% 120% at 95% 10%,rgba(64,83,105,.045) 0%,transparent 75%),
+      linear-gradient(180deg,#17191B 0%,#111315 52%,#0E1012 100%)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 8px 24px rgba(0,0,0,.24)!important
+  }
+  .page[data-page-content="programar"] .prog-falta:not([hidden])::before{
+    content:"";position:absolute;inset:0;padding:1px;border-radius:inherit;pointer-events:none;z-index:2;
+    background:linear-gradient(112deg,rgba(255,110,35,.35) 0%,rgba(175,95,55,.12) 17%,rgba(255,255,255,.09) 40%,rgba(255,255,255,.05) 72%,rgba(255,255,255,.11) 100%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude
+  }
+  .page[data-page-content="programar"] .prog-osp{display:block;position:relative;z-index:3}
+
+  /* Cabeçalho: relógio laranja iluminado + título e subtítulo */
+  .page[data-page-content="programar"] .prog-osp-cab{display:flex;align-items:center;gap:12px;min-height:42px;margin-bottom:7px}
+  .page[data-page-content="programar"] .prog-osp-ic{
+    display:flex;align-items:center;justify-content:center;width:42px;height:42px;flex-shrink:0;border-radius:11px;
+    background:linear-gradient(145deg,rgba(255,118,22,.28) 0%,rgba(96,43,18,.20) 100%);border:1px solid rgba(255,120,25,.22);
+    box-shadow:inset 0 1px 0 rgba(255,185,90,.13),0 0 18px rgba(255,102,0,.10);color:#FF820C
+  }
+  .page[data-page-content="programar"] .prog-osp-ic svg{width:24px;height:24px;stroke-width:2}
+  .page[data-page-content="programar"] .prog-osp-txt{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+  .page[data-page-content="programar"] .prog-osp-tit{margin:0;color:#F5F5F5;font:700 18px/1.2 Roboto,Arial,sans-serif;letter-spacing:-.3px}
+  .page[data-page-content="programar"] .prog-osp-sub{margin:0;color:#A8ADB4;font:400 12px/1.3 Roboto,Arial,sans-serif}
+  .page[data-page-content="programar"] .prog-osp-sub b{color:#E5E7E9;font-weight:600}
+
+  /* Setinha que passa os itens */
+  .page[data-page-content="programar"] .prog-osp-prox{
+    display:flex;align-items:center;justify-content:center;width:32px;height:32px;flex-shrink:0;padding:0;border-radius:9px;cursor:pointer;
+    background:linear-gradient(180deg,#252628 0%,#17191B 100%);border:1px solid rgba(255,255,255,.17);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.045);color:#E5E7E9;transition:border-color 160ms ease,color 160ms ease
+  }
+  .page[data-page-content="programar"] .prog-osp-prox svg{width:17px;height:17px;stroke-width:2}
+  .page[data-page-content="programar"] .prog-osp-prox:hover{border-color:rgba(255,125,35,.55);color:#FF941F}
+  .page[data-page-content="programar"] .prog-osp-prox:focus-visible{outline:2px solid #FF820C;outline-offset:2px}
+
+  /* 3 cartões por vez */
+  .page[data-page-content="programar"] .prog-osp-janela{overflow:hidden;margin:0 -4px;padding:2px 4px 4px}
+  .page[data-page-content="programar"] .prog-osp-trilho{display:flex;gap:14px;width:100%;will-change:transform}
+  .page[data-page-content="programar"] .prog-osp-item{
+    position:relative;display:flex;align-items:center;gap:10px;flex:0 0 calc((100% - 28px) / 3);min-width:0;min-height:49px;
+    box-sizing:border-box;padding:4px 10px 4px 4px;margin:0;border-radius:12px;
+    background:linear-gradient(180deg,#252628 0%,#191A1C 48%,#131517 100%);border:1px solid rgba(255,255,255,.17);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.15);
+    color:#F5F5F5;text-align:left;font:inherit;cursor:pointer;transition:border-color 160ms ease,background 160ms ease,box-shadow 160ms ease
+  }
+  .page[data-page-content="programar"] .prog-osp-item:hover{
+    border-color:rgba(255,102,0,.85);
+    background:radial-gradient(ellipse 90% 120% at 0% 0%,rgba(255,105,15,.15),transparent 75%),linear-gradient(180deg,#30231D 0%,#201C1B 60%,#171819 100%);
+    box-shadow:inset 0 1px 0 rgba(255,155,70,.15),0 0 14px rgba(255,102,0,.09)
+  }
+  .page[data-page-content="programar"] .prog-osp-item:focus-visible{outline:2px solid #FF820C;outline-offset:2px}
+  .page[data-page-content="programar"] .prog-osp-foto{
+    display:flex;align-items:center;justify-content:center;width:39px;height:39px;flex-shrink:0;overflow:hidden;border-radius:9px;
+    background:linear-gradient(145deg,#242527 0%,#151719 100%)
+  }
+  .page[data-page-content="programar"] .prog-osp-foto img{width:100%;height:100%;object-fit:contain;display:block}
+  .page[data-page-content="programar"] .prog-osp-info{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+  .page[data-page-content="programar"] .prog-osp-nome{color:#F5F5F5;font:700 12px/1.2 Roboto,Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .page[data-page-content="programar"] .prog-osp-ca{color:#B4B8BE;font:400 11px/1.2 Roboto,Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .page[data-page-content="programar"] .prog-osp-chev{width:16px;height:16px;flex-shrink:0;color:#B6BBC1;stroke-width:1.8}
+  .page[data-page-content="programar"] .prog-osp-item:hover .prog-osp-chev{color:#FFD1AA}
+
+  /* Em dia: só o cabeçalho, com o ícone verde */
+  .page[data-page-content="programar"] .prog-osp.is-ok .prog-osp-cab{margin-bottom:0;padding:3px 0 0}
+  .page[data-page-content="programar"] .prog-osp.is-ok .prog-osp-ic{color:#35C96D;background:linear-gradient(145deg,rgba(53,201,109,.20) 0%,rgba(20,70,40,.18) 100%);border-color:rgba(53,201,109,.25);box-shadow:none}
+}

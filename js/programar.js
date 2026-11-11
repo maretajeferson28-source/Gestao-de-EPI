@@ -357,22 +357,103 @@
       // O chip aparecendo/sumindo muda a largura do campo do colaborador.
       posicionarTermo();
     }
-    if (!r || !r.pedidos) { el.hidden = true; el.innerHTML = ''; return; }
+    if (!r || !r.pedidos) { el.hidden = true; el.innerHTML = ''; el.dataset.chave = ''; rotOsColab = null; return; }
+    // Só redesenha quando muda o colaborador ou o que falta (o resumo chama
+    // isto a cada tecla; redesenhar à toa reiniciava o carrossel e as fotos).
+    const chave = `${c.id}|${r.faltas.map((x) => x.id + ':' + x.st).join(',')}|${r.naEntrega}`;
+    if (el.dataset.chave === chave && !el.hidden) return;
+    if (rotOsColab !== c.id) { rotOs = 0; rotOsColab = c.id; }
+    el.dataset.chave = chave;
     el.hidden = false;
+    // No PC: painel com 3 cartões e setinha (pc); no celular continua a lista
+    // de botões de antes (velho).
+    const cabPc = (sub) => `<div class="prog-osp-cab"><span class="prog-osp-ic" aria-hidden="true"><i data-lucide="clock-3"></i></span>
+        <div class="prog-osp-txt"><h3 class="prog-osp-tit">Falta entregar pela O.S.</h3><p class="prog-osp-sub">${sub}</p></div>
+        ${r.faltas.length > 3 ? '<button type="button" class="prog-osp-prox" data-osp-prox title="Ver o próximo item" aria-label="Ver o próximo item"><i data-lucide="chevron-right"></i></button>' : ''}</div>`;
     if (!r.faltas.length) {
       el.className = 'prog-falta is-ok';
-      el.innerHTML = r.naEntrega
-        ? `<i data-lucide="circle-check"></i><span>Tudo o que faltava da O.S. de <b>${esc(r.os.funcao)}</b> já está nesta entrega</span>`
-        : `<i data-lucide="circle-check"></i><span>Em dia com a O.S. de <b>${esc(r.os.funcao)}</b></span>`;
+      const txt = r.naEntrega
+        ? `Tudo o que faltava da O.S. de <b>${esc(r.os.funcao)}</b> já está nesta entrega`
+        : `Em dia com a O.S. de <b>${esc(r.os.funcao)}</b>`;
+      el.innerHTML = `<div class="prog-osp is-ok">${cabPc(txt)}</div>
+        <div class="prog-falta-velho"><i data-lucide="circle-check"></i><span>${txt}</span></div>`;
     } else {
       el.className = 'prog-falta';
-      el.innerHTML = `<div class="prog-falta-cab">
-          <div class="prog-falta-txt"><i data-lucide="triangle-alert"></i><span><b>Falta entregar pela O.S.</b> · ${esc(r.os.funcao)} <em>(${r.faltas.length})</em></span></div>
-          ${r.faltas.length > 1 ? '<button type="button" class="prog-falta-todos" data-falta-todos><i data-lucide="plus"></i>Adicionar todos</button>' : ''}
-        </div>
-        <div class="prog-falta-chips">${r.faltas.map((x) => `<button type="button" class="prog-falta-chip is-${x.st}" data-falta-epi="${esc(x.id)}" title="${esc(x.motivo)} · clique para pôr na entrega"><i data-lucide="plus"></i>${esc(x.nome)}</button>`).join('')}</div>`;
+      const n = r.faltas.length;
+      const ordem = r.faltas.slice(rotOs % n).concat(r.faltas.slice(0, rotOs % n));
+      el.innerHTML = `<div class="prog-osp">${cabPc('Itens pendentes desta ordem de serviço.')}
+          <div class="prog-osp-janela"><div class="prog-osp-trilho">${ordem.map((x) => {
+            const v = caDaFalta(x.id);
+            const ca = v ? (/^CI-/i.test(String(v.ca)) ? String(v.ca) : 'CA ' + v.ca) : 'Sem C.A.';
+            return `<button type="button" class="prog-osp-item is-${x.st}" data-falta-epi="${esc(x.id)}" title="${esc(x.motivo)} · clique para pôr na entrega">
+              <span class="prog-osp-foto" data-osp-foto="${esc(x.id)}"></span>
+              <span class="prog-osp-info"><span class="prog-osp-nome">${esc(x.nome)}</span><span class="prog-osp-ca">${esc(ca)}</span></span>
+              <i data-lucide="chevron-right" class="prog-osp-chev"></i></button>`;
+          }).join('')}</div></div></div>
+        <div class="prog-falta-velho">
+          <div class="prog-falta-cab">
+            <div class="prog-falta-txt"><i data-lucide="triangle-alert"></i><span><b>Falta entregar pela O.S.</b> · ${esc(r.os.funcao)} <em>(${n})</em></span></div>
+            ${n > 1 ? '<button type="button" class="prog-falta-todos" data-falta-todos><i data-lucide="plus"></i>Adicionar todos</button>' : ''}
+          </div>
+          <div class="prog-falta-chips">${r.faltas.map((x) => `<button type="button" class="prog-falta-chip is-${x.st}" data-falta-epi="${esc(x.id)}" title="${esc(x.motivo)} · clique para pôr na entrega"><i data-lucide="plus"></i>${esc(x.nome)}</button>`).join('')}</div>
+        </div>`;
+      fotosOs(el);
     }
     icons();
+  }
+
+  // Carrossel da faixa da O.S. (PC): a setinha leva o 1º cartão para o fim,
+  // o 2º vira o 1º e o próximo aparece.
+  let rotOs = 0, rotOsColab = null;
+  function proximoOs() {
+    const trilho = $('progFaltaOs')?.querySelector('.prog-osp-trilho');
+    if (!trilho || trilho.dataset.andando || trilho.children.length < 2) return;
+    trilho.dataset.andando = '1';
+    let feito = false;
+    const fim = () => {
+      if (feito) return;
+      feito = true;
+      trilho.style.transition = 'none';
+      trilho.appendChild(trilho.firstElementChild);
+      trilho.style.transform = '';
+      void trilho.offsetWidth;
+      trilho.style.transition = '';
+      rotOs++;
+      delete trilho.dataset.andando;
+    };
+    trilho.style.transition = 'transform 380ms cubic-bezier(.4,0,.2,1)';
+    trilho.style.transform = 'translateX(calc((-100% - 14px) / 3))';
+    trilho.addEventListener('transitionend', fim, { once: true });
+    setTimeout(fim, 450);
+  }
+
+  // C.A. mostrado no cartão: o primeiro válido do EPI (senão o primeiro).
+  function caDaFalta(epiId) {
+    const h = hoje();
+    const vs = variantes(epiId);
+    return vs.find((v) => !v.data_validade || String(v.data_validade).slice(0, 10) >= h) || vs[0] || null;
+  }
+
+  // Foto cadastrada do EPI em cada cartão; sem foto, a caixinha fica vazia.
+  function fotosOs(el) {
+    if (typeof variantImageUrl !== 'function') return;
+    el.querySelectorAll('[data-osp-foto]').forEach(async (box) => {
+      const id = box.dataset.ospFoto;
+      const v0 = caDaFalta(id);
+      const vs = variantes(id).filter((v) => v.imagem_path);
+      const v = (v0 && v0.imagem_path ? v0 : null) || vs[0];
+      if (!v) return;
+      try {
+        const url = await variantImageUrl(v.imagem_path);
+        if (!url || box.querySelector('img')) return;
+        const img = document.createElement('img');
+        img.alt = '';
+        img.loading = 'lazy';
+        img.src = url;
+        box.appendChild(img);
+        box.classList.add('tem-foto');
+      } catch (_) { /* sem foto */ }
+    });
   }
 
   // Põe um EPI na tabela: usa a linha vazia se houver, senão cria outra.
@@ -496,10 +577,11 @@
     $('progLimpar').addEventListener('click', () => { limpar(); setMsg(''); });
     $('progOs')?.addEventListener('click', abrirOs);
     $('progFaltaOs')?.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-osp-prox]')) return proximoOs();
       const chip = e.target.closest('[data-falta-epi]');
       if (chip) return adicionarEpi(chip.dataset.faltaEpi);
       if (e.target.closest('[data-falta-todos]')) {
-        const ids = [...$('progFaltaOs').querySelectorAll('[data-falta-epi]')].map((b) => b.dataset.faltaEpi);
+        const ids = [...$('progFaltaOs').querySelectorAll('.prog-falta-velho [data-falta-epi]')].map((b) => b.dataset.faltaEpi);
         for (const id of ids) await adicionarEpi(id);
       }
     });
