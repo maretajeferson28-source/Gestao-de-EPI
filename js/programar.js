@@ -90,23 +90,50 @@
       const vars = variantes(epi.id);
       await saldoDoEpi(epi.id);
       if (vars.length) {
-        sel.innerHTML = '<option value="">Escolha o C.A.</option>' + vars.map((v) =>
-          `<option value="${esc(v.id)}">${esc((v.apelido ? v.apelido + ' · ' : '') + codigo(v.ca))} (${fmt(saldoCa(epi.id, v))})</option>`).join('');
+        sel.innerHTML = '<option value="">Escolher</option>' + vars.map((v) =>
+          `<option value="${esc(v.id)}" title="${esc((v.apelido ? v.apelido + ' · ' : '') + 'estoque ' + fmt(saldoCa(epi.id, v)))}">${esc(String(v.ca))}</option>`).join('');
         sel.disabled = false;
         if (vars.length === 1) { sel.value = vars[0].id; linha.dataset.var = vars[0].id; }
       } else {
-        sel.innerHTML = '<option value="">Sem C.A. cadastrado</option>';
+        sel.innerHTML = '<option value="">Sem C.A.</option>';
       }
       const tams = [...new Set(lista('movements').filter((m) => m.epi_id === epi.id).map((m) => String(m.tamanho || '').trim()).filter((t) => t && t !== 'N/A'))];
       dlTam.innerHTML = tams.map((t) => `<option value="${esc(t)}">`).join('');
     }
     icons();
+    fotoLinha(linha);
     avisar(linha);
   }
 
   function marcarCa(linha, varId) {
     linha.dataset.var = varId;
+    fotoLinha(linha);
     avisar(linha);
+  }
+
+  // Foto do EPI na caixinha da linha (só no PC): a do C.A. escolhido ou, se
+  // ele não tiver, a de outro C.A. do mesmo EPI. Sem foto cadastrada, a caixa
+  // fica vazia no PC (no celular continua o ícone).
+  async function fotoLinha(linha) {
+    const box = linha.querySelector('[data-icone]');
+    if (!box) return;
+    box.querySelector('img')?.remove();
+    box.classList.remove('tem-foto');
+    const epiId = linha.dataset.epi;
+    if (!epiId || typeof variantImageUrl !== 'function') return;
+    const vars = lista('epiVariants').filter((v) => v.epi_id === epiId && v.ativo !== false && v.imagem_path);
+    const v = vars.find((x) => x.id === linha.dataset.var) || vars[0];
+    if (!v) return;
+    try {
+      const url = await variantImageUrl(v.imagem_path);
+      if (!url || linha.dataset.epi !== epiId || box.querySelector('img')) return;
+      const img = document.createElement('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.src = url;
+      box.appendChild(img);
+      box.classList.add('tem-foto');
+    } catch (_) { /* sem foto: a caixa fica vazia */ }
   }
 
   function avisar(linha) {

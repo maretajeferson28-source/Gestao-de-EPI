@@ -1675,3 +1675,138 @@
   /* Termo assinado: verde discreto, sem brilho */
   .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-ok{box-shadow:none!important}
 }
+
+/* =====================================================================
+   Etapa 7i: Composição da entrega pelo "Ajuste visual cirúrgico" (GPT).
+   Painel com fundo em camadas, borda com iluminação variável e reflexo
+   diagonal no canto superior direito; cabeçalho com ícone de caixa; tabela
+   limpa (sem cartões por linha); foto do EPI quando cadastrada; controles
+   grafite. Só no PC. Tabela/JS continuam os mesmos.
+   ===================================================================== */
+.prog-comp-ic,.prog-comp-pc{display:none}
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:nth-child(2){
+    position:relative;isolation:isolate;overflow:hidden;padding:18px 28px 10px!important;border-radius:18px!important;
+    border:1px solid rgba(255,255,255,.09)!important;
+    background:
+      radial-gradient(ellipse 52% 110% at 93% -8%,rgba(255,125,32,.19) 0%,rgba(157,76,28,.11) 24%,rgba(42,31,25,.05) 52%,transparent 75%),
+      radial-gradient(ellipse 65% 85% at 17% 0%,rgba(145,72,38,.14) 0%,rgba(82,46,35,.07) 45%,transparent 82%),
+      radial-gradient(ellipse 65% 90% at 5% 105%,rgba(255,102,0,.045) 0%,transparent 70%),
+      linear-gradient(180deg,#17181B 0%,#101113 42%,#0D0E10 73%,#141516 100%)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 8px 28px rgba(0,0,0,.32)!important
+  }
+  /* Borda com iluminação variável */
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:nth-child(2)::before{
+    content:"";position:absolute;inset:0;padding:1px;border-radius:inherit;pointer-events:none;z-index:2;
+    background:linear-gradient(115deg,rgba(255,112,35,.42) 0%,rgba(173,95,53,.21) 16%,rgba(255,255,255,.07) 37%,rgba(255,255,255,.04) 60%,rgba(255,127,42,.24) 82%,rgba(255,255,255,.09) 100%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude
+  }
+  /* Reflexo diagonal do canto superior direito */
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:nth-child(2)::after{
+    content:"";position:absolute;top:-35px;right:-25px;width:38%;height:140px;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 70% 8%,rgba(255,151,51,.30) 0%,rgba(255,110,25,.16) 24%,rgba(145,67,24,.07) 52%,transparent 77%);
+    clip-path:polygon(34% 0%,100% 0%,100% 100%,77% 64%,49% 50%,0% 100%)
+  }
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:nth-child(2) > *{position:relative;z-index:1}
+
+  /* Cabeçalho: ícone de caixa iluminado + título */
+  .page[data-page-content="programar"] .prog-comp-titulo{display:flex!important;align-items:center;gap:16px;margin:0 0 14px!important;font:700 24px/1.2 Inter,Roboto,Arial,sans-serif!important;letter-spacing:-.4px;color:#F5F5F5!important}
+  .page[data-page-content="programar"] .prog-comp-pc{display:inline}
+  .page[data-page-content="programar"] .prog-comp-velho{display:none}
+  .page[data-page-content="programar"] .prog-comp-ic{
+    display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border-radius:12px;color:#FF8A18;
+    background:linear-gradient(145deg,rgba(255,115,20,.23) 0%,rgba(87,38,15,.19) 100%);border:1px solid rgba(255,118,22,.25);
+    box-shadow:inset 0 1px 0 rgba(255,180,80,.10),0 0 20px rgba(255,102,0,.08)
+  }
+  .page[data-page-content="programar"] .prog-comp-ic svg{width:26px;height:26px;stroke-width:2}
+
+  /* Tabela: colunas EPI 36% / C.A. 13% / Estoque 13% / Quantidade 19% / Tamanho 15% / ação */
+  .page[data-page-content="programar"] .prog-cab,
+  .page[data-page-content="programar"] .prog-item{grid-template-columns:minmax(0,36fr) minmax(0,13fr) minmax(0,13fr) minmax(0,19fr) minmax(0,15fr) 34px!important;column-gap:10px!important}
+  .page[data-page-content="programar"] .prog-cab{
+    padding:4px 0 12px!important;border-bottom:1px solid rgba(255,255,255,.12)!important;
+    font:600 13px/1.4 Inter,Roboto,Arial,sans-serif!important;color:#E7E8EB!important
+  }
+  .page[data-page-content="programar"] .prog-cab > span:nth-child(4){text-align:center}
+  .page[data-page-content="programar"] .prog-item{
+    align-items:center;min-height:50px;padding:5px 0!important;border-bottom:1px solid rgba(255,255,255,.09)!important;background:transparent!important;transition:background 160ms ease
+  }
+  .page[data-page-content="programar"] .prog-item:hover{background:rgba(255,255,255,.025)!important}
+
+  /* EPI: miniatura + nome (o campo parece texto até receber foco) */
+  .page[data-page-content="programar"] .prog-epi-cel{display:flex;align-items:center;gap:12px;min-width:0}
+  .page[data-page-content="programar"] .prog-epi-icone{
+    display:flex!important;align-items:center;justify-content:center;width:44px!important;height:44px!important;flex-shrink:0;border-radius:9px!important;overflow:hidden;
+    background:linear-gradient(145deg,#25272A 0%,#161719 100%)!important;border:1px solid rgba(255,255,255,.08)!important;color:transparent!important
+  }
+  .page[data-page-content="programar"] .prog-epi-icone svg{display:none!important}
+  .page[data-page-content="programar"] .prog-epi-icone img{width:100%;height:100%;object-fit:contain}
+  .page[data-page-content="programar"] .prog-epi-cel input{
+    height:36px!important;padding:0 10px!important;border-radius:9px!important;border:1px solid transparent!important;background:transparent!important;box-shadow:none!important;
+    font:500 14px/1 Inter,Roboto,Arial,sans-serif!important;color:#F0F1F2!important;text-overflow:ellipsis
+  }
+  .page[data-page-content="programar"] .prog-epi-cel input:hover{border-color:rgba(255,255,255,.12)!important}
+  .page[data-page-content="programar"] .prog-epi-cel input:focus{border-color:#FF6600!important;background:#0F1113!important}
+  .page[data-page-content="programar"] .prog-item:not(.tem-epi) .prog-epi-cel input{border-color:rgba(255,255,255,.14)!important;background:#0F1113!important}
+
+  /* C.A.: parece texto com uma setinha discreta */
+  .page[data-page-content="programar"] .prog-item select[data-campo="ca"]{
+    height:36px!important;padding:0 22px 0 6px!important;border-radius:9px!important;border:1px solid transparent!important;box-shadow:none!important;
+    background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237C7F86' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 4px center/13px no-repeat!important;
+    -webkit-appearance:none;appearance:none;font:500 14px/1 Inter,Roboto,Arial,sans-serif!important;color:#F0F1F2!important;text-overflow:ellipsis;cursor:pointer
+  }
+  .page[data-page-content="programar"] .prog-item select[data-campo="ca"]:hover{border-color:rgba(255,255,255,.12)!important}
+  .page[data-page-content="programar"] .prog-item select[data-campo="ca"]:disabled{cursor:default;background-image:none!important;color:#7C7F86!important}
+  .page[data-page-content="programar"] .prog-item select[data-campo="ca"] option{background:#141518;color:#F0F1F2}
+
+  /* Estoque */
+  .page[data-page-content="programar"] .prog-saldo{justify-content:center!important;height:36px!important;font:600 14px/1 Inter,Roboto,Arial,sans-serif!important;color:#F0F1F2!important;font-variant-numeric:tabular-nums}
+  .page[data-page-content="programar"] .prog-saldo.is-ruim{color:#FCA5A5!important}
+
+  /* Quantidade: [−] valor [+] */
+  .page[data-page-content="programar"] .prog-item .prog-qtd{
+    display:flex!important;align-items:center;justify-content:space-between;height:36px!important;min-width:0;width:100%;max-width:132px;padding:0 2px;
+    border-radius:11px!important;background:linear-gradient(180deg,#17191B 0%,#101113 100%)!important;border:1px solid rgba(255,255,255,.16)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important
+  }
+  .page[data-page-content="programar"] .prog-item .prog-qtd button{
+    display:flex;align-items:center;justify-content:center;width:32px!important;height:30px!important;flex:none;padding:0;border:0!important;border-radius:9px!important;
+    background:rgba(255,255,255,.035)!important;color:#E9EAEC!important;cursor:pointer
+  }
+  .page[data-page-content="programar"] .prog-item .prog-qtd button:hover{background:rgba(255,255,255,.09)!important}
+  .page[data-page-content="programar"] .prog-item .prog-qtd button svg{width:15px;height:15px}
+  .page[data-page-content="programar"] .prog-item .prog-qtd input{
+    width:100%!important;min-width:0;height:30px!important;padding:0!important;text-align:center;border:0!important;background:none!important;box-shadow:none!important;
+    font:700 14px/1 Inter,Roboto,Arial,sans-serif!important;color:#FFFFFF!important;font-variant-numeric:tabular-nums;-moz-appearance:textfield
+  }
+  .page[data-page-content="programar"] .prog-item .prog-qtd input::-webkit-inner-spin-button,
+  .page[data-page-content="programar"] .prog-item .prog-qtd input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
+  /* Tamanho: com cara de seletor */
+  .page[data-page-content="programar"] .prog-item > input[data-campo="tam"]{
+    height:36px!important;width:100%;max-width:125px;padding:0 28px 0 12px!important;border-radius:11px!important;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D5D5D8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 10px center/14px no-repeat,linear-gradient(180deg,#17191B 0%,#0E1012 100%)!important;
+    border:1px solid rgba(255,255,255,.17)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+    font:500 13px/1 Inter,Roboto,Arial,sans-serif!important;color:#F5F5F5!important
+  }
+  .page[data-page-content="programar"] .prog-item > input[data-campo="tam"]::-webkit-calendar-picker-indicator{opacity:0}
+  .page[data-page-content="programar"] .prog-item > input[data-campo="tam"]:focus{border-color:#FF6600!important}
+
+  /* Lixeira discreta */
+  .page[data-page-content="programar"] .prog-item .prog-remover{width:32px!important;height:32px!important;justify-self:center;border-radius:8px!important;background:transparent!important;color:#B1B4B9!important}
+  .page[data-page-content="programar"] .prog-item .prog-remover svg{width:17px;height:17px}
+  .page[data-page-content="programar"] .prog-item .prog-remover:hover{color:#F87171!important;background:rgba(240,75,77,.08)!important}
+
+  /* Adicionar outro EPI */
+  .page[data-page-content="programar"] .prog-add{
+    display:inline-flex!important;align-items:center;gap:10px;height:auto!important;margin:2px 0 0!important;padding:12px 2px!important;border:0!important;background:transparent!important;
+    color:#FF7900!important;font:600 14px/1 Inter,Roboto,Arial,sans-serif!important;transition:color 160ms ease
+  }
+  .page[data-page-content="programar"] .prog-add svg{width:18px;height:18px;stroke-width:2.4}
+  .page[data-page-content="programar"] .prog-add:hover{color:#FF9B42!important}
+}
+@media (min-width:721px){
+  /* Miniatura fora do campo (a regra antiga punha o ícone por cima do texto) */
+  .page[data-page-content="programar"] .prog-epi-icone{position:static!important;transform:none!important;pointer-events:auto}
+  .page[data-page-content="programar"] .prog-epi-cel input{padding:0 10px!important;flex:1;min-width:0}
+}
