@@ -2079,3 +2079,9 @@
   .page[data-page-content="programar"] .prog-os-campo .prog-os-chip{margin:0!important;justify-self:start!important;align-self:center!important;max-width:100%}
   .page[data-page-content="programar"] .prog-os-campo .prog-os-chip::before{display:none!important;content:none!important}
 }
+
+/* Etapa 7v: a tag da O.S. ocupa sempre a largura toda do bloco (vazia ou
+   com O.S.), para a faixa ficar igualmente distribuída nos dois estados. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-os-campo .prog-os-chip{justify-self:stretch!important;width:100%!important;max-width:none!important;height:31px!important;padding-top:0!important;padding-bottom:0!important;display:flex!important;align-items:center!important;box-sizing:border-box!important;border-radius:9px!important}
+}

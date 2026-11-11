@@ -345,7 +345,7 @@
         chip.title = `O.S. de ${r.os.funcao}`;
       } else if (!r) {
         chip.className = 'prog-os-chip is-vazio';
-        chip.innerHTML = '<i data-lucide="layers"></i><span>Nenhuma O.S.</span>';
+        chip.innerHTML = '<i data-lucide="layers"></i><span>Nenhuma O.S. identificada</span>';
         chip.title = c ? 'Este colaborador não tem O.S. no cadastro.' : 'Escolha um colaborador para ver a O.S.';
       } else {
         const n = r.faltas.length;
