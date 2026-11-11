@@ -1981,3 +1981,24 @@
   .page[data-page-content="programar"] .prog-os-chip{padding:6px 9px!important;font-size:10.5px!important}
   .page[data-page-content="programar"] .prog-os-chip svg{width:14px!important;height:14px!important}
 }
+
+/* Etapa 7o: bordinha laranja acesa no topo da Composição e do Resumo (como no
+   mockup), Resumo alinhado com a faixa do colaborador e arte do topo um pouco
+   mais alta para o farol continuar aparecendo. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:nth-child(2)::before{
+    background:
+      radial-gradient(52% 24px at 78% 0,rgba(255,140,60,.85) 0%,rgba(255,120,40,.35) 55%,rgba(255,120,40,0) 100%),
+      radial-gradient(26% 34px at 0 0,rgba(255,120,40,.40) 0%,rgba(255,120,40,0) 100%),
+      linear-gradient(115deg,rgba(255,112,35,.42) 0%,rgba(173,95,53,.21) 16%,rgba(255,255,255,.07) 37%,rgba(255,255,255,.04) 60%,rgba(255,127,42,.24) 82%,rgba(255,255,255,.09) 100%)!important
+  }
+  .page[data-page-content="programar"] .prog-resumo::before{
+    background:
+      radial-gradient(75% 26px at 50% 0,rgba(255,140,60,.80) 0%,rgba(255,120,40,.30) 55%,rgba(255,120,40,0) 100%),
+      radial-gradient(18px 40% at 100% 0,rgba(255,130,50,.55) 0%,rgba(255,130,50,0) 100%),
+      radial-gradient(35% 55px at 0 0,rgba(255,130,50,.65) 0%,rgba(255,130,50,0) 100%),
+      linear-gradient(135deg,rgba(255,110,25,.58) 0%,rgba(255,120,40,.32) 17%,rgba(255,255,255,.06) 37%,rgba(255,255,255,.04) 67%,rgba(255,120,40,.18) 100%)!important
+  }
+  .page[data-page-content="programar"] .prog-resumo{top:0!important;margin-top:0!important}
+  .page[data-page-content="programar"] .prog-head::before{transform:translateY(calc(-35% - 14px))!important}
+}
