@@ -276,7 +276,7 @@
     const total = itens.reduce((a, i) => a + i.qtd, 0);
     const comAviso = itens.filter((i) => i.aviso).length;
     // Como no mockup: três linhas (ícone, rótulo, valor à direita) e a lista
-    // uma linha por EPI: nome (corta com reticências) e números à direita.
+    // tabelinha: Nome | C.A. | Qtd | Tam (nome corta com reticências).
     box.innerHTML = `
       <dl class="prog-res-info">
         <div><dt><i data-lucide="users-round"></i>Colaborador</dt><dd${c ? '' : ' class="vazio"'}>${c ? esc(c.nome) : '—'}</dd></div>
@@ -286,7 +286,7 @@
       <div class="prog-res-sec">
         <h4 class="prog-res-tit">Itens selecionados</h4>
         ${itens.length
-          ? `<ul class="prog-res-itens">${itens.map((i) => { const completo = [i.nome, i.ca || 'Sem C.A.', `Qtd. ${fmt(i.qtd)}`, i.tam ? `Tam. ${i.tam}` : ''].filter(Boolean).join(' · '); const nums = [i.ca ? i.ca.replace(/^CA /, '') : 's/ C.A.', `${fmt(i.qtd)}×`, i.tam].filter(Boolean).join(' · '); return `<li title="${esc(completo)}"><span class="prog-res-nome">${esc(i.nome)}</span><span class="prog-res-num">${esc(nums)}</span></li>`; }).join('')}</ul>
+          ? `<ul class="prog-res-itens"><li class="prog-res-cab" aria-hidden="true"><span class="prog-res-nome">Nome</span><span class="prog-res-c">C.A.</span><span class="prog-res-c">Qtd</span><span class="prog-res-c">Tam</span></li>${itens.map((i) => { const completo = [i.nome, i.ca || 'Sem C.A.', `Qtd. ${fmt(i.qtd)}`, i.tam ? `Tam. ${i.tam}` : ''].filter(Boolean).join(' · '); return `<li title="${esc(completo)}"><span class="prog-res-nome">${esc(i.nome)}</span><span class="prog-res-c">${esc(i.ca ? i.ca.replace(/^CA /, '') : 's/ C.A.')}</span><span class="prog-res-c">${fmt(i.qtd)}</span><span class="prog-res-c${i.tam ? '' : ' is-vazio'}">${esc(i.tam || '—')}</span></li>`; }).join('')}</ul>
             ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
           : '<p class="prog-res-vazio">Nenhum EPI adicionado</p>'}
       </div>

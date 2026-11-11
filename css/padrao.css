@@ -2229,3 +2229,29 @@
   .page[data-page-content="programar"] .prog-res-num{flex-shrink:0;white-space:nowrap;color:#9EA3AA;font-variant-numeric:tabular-nums}
   .page[data-page-content="programar"] .prog-res-num::before{content:none}
 }
+
+/* Etapa 8d: itens do Resumo como tabelinha com cabeçalho
+   Nome | C.A. | Qtd | Tam. No celular: texto corrido, sem cabeçalho. */
+.prog-res-cab{display:none!important}
+.prog-res-c::before{content:" · "}
+.prog-res-c.is-vazio{display:none}
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-res-itens{gap:6px!important}
+  .page[data-page-content="programar"] .prog-res-itens li{
+    display:grid!important;grid-template-columns:6px minmax(0,1fr) 44px 22px 30px;column-gap:5px!important;align-items:center!important
+  }
+  .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab{
+    display:grid!important;padding-bottom:5px;margin-bottom:1px;border-bottom:1px solid rgba(255,255,255,.08);
+    color:#8C9198;font:600 10.5px/1.2 Roboto,Arial,sans-serif!important;text-transform:uppercase;letter-spacing:.3px
+  }
+  .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab::before{background:none!important;box-shadow:none!important}
+  .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab .prog-res-nome{color:#8C9198}
+  .page[data-page-content="programar"] .prog-res-c{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;color:#B4B8BE;font-variant-numeric:tabular-nums}
+  .page[data-page-content="programar"] .prog-res-c::before{content:none}
+  .page[data-page-content="programar"] .prog-res-c.is-vazio{display:block;color:#5F646B}
+}
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-res-itens li:not(.prog-res-cab){font-size:11.5px!important}
+  .page[data-page-content="programar"] .prog-res-itens li:not(.prog-res-cab) .prog-res-c{font-size:11px}
+  .page[data-page-content="programar"] .prog-res-itens li::before{width:6px!important;height:6px!important}
+}
