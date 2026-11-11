@@ -152,7 +152,7 @@
     else if (!c) { el.textContent = 'Não cadastrado'; el.title = 'Escolha um colaborador da lista.'; el.className = 'prog-termo is-ruim'; }
     else {
       const ok = window.EPI_TERMO?.temAssinatura?.(c.id);
-      el.innerHTML = ok ? '<i data-lucide="shield-check"></i>Termo assinado'
+      el.innerHTML = ok ? '<i data-lucide="check"></i>Termo assinado'
         : '<i data-lucide="triangle-alert"></i>Sem termo';
       el.title = ok ? '' : 'No celular, a entrega só libera depois do termo assinado.';
       el.className = 'prog-termo ' + (ok ? 'is-ok' : 'is-ruim');
@@ -164,9 +164,42 @@
       info.innerHTML = c ? `<div><span>Função</span><b>${esc(c.funcao || c.cargo || '—')}</b></div>` : '';
     }
     icons();
+    posicionarTermo();
+    requestAnimationFrame(posicionarTermo);
     resumo();
     atualizarOs();
   }
+
+  // No PC o selo do termo fica logo depois do nome, dentro do campo (como no
+  // mockup). Mede o texto digitado e encosta o selo nele; se o nome for longo,
+  // o selo para antes da setinha e o texto é cortado antes dele.
+  let regua = null;
+  function posicionarTermo() {
+    const inp = $('progColab'), el = $('progTermo');
+    if (!inp || !el) return;
+    if (!window.matchMedia('(min-width:721px)').matches || !el.textContent.trim()) {
+      el.style.left = ''; el.style.right = ''; inp.style.removeProperty('padding-right'); return;
+    }
+    const cs = getComputedStyle(inp);
+    regua = regua || document.createElement('canvas').getContext('2d');
+    regua.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const texto = regua.measureText(inp.value || '').width;
+    const pl = parseFloat(cs.paddingLeft) || 0;
+    // Se o nome não couber inteiro junto do selo, o selo vira só o ícone
+    // (o texto aparece ao passar o mouse).
+    el.classList.remove('is-curto');
+    if (pl + texto + 12 + el.offsetWidth + 40 > inp.clientWidth) {
+      el.classList.add('is-curto');
+      if (!el.title) el.title = el.textContent.trim();
+    }
+    const larg = el.offsetWidth;
+    const max = inp.clientWidth - larg - 40;
+    const left = Math.min(pl + texto + 12, max);
+    el.style.left = `${inp.offsetLeft + left}px`;
+    el.style.right = 'auto';
+    inp.style.setProperty('padding-right', `${larg + 48}px`, 'important');
+  }
+  window.addEventListener('resize', () => posicionarTermo());
 
   // ---- Resumo ao lado ----
   function resumo() {
@@ -243,7 +276,7 @@
       if (r && r.pedidos) {
         const n = r.faltas.length;
         chip.className = 'prog-os-chip' + (n ? '' : ' is-ok');
-        chip.innerHTML = `<i data-lucide="${n ? 'layers' : 'circle-check'}"></i><span>O.S. ativa · <b>${n ? `${n} ${n === 1 ? 'item pendente' : 'itens pendentes'}` : 'em dia'}</b></span>`;
+        chip.innerHTML = `<i data-lucide="${n ? 'layers' : 'circle-check'}"></i><span><em>O.S. ativa</em> · ${n ? `${n} ${n === 1 ? 'item pendente' : 'itens pendentes'}` : 'em dia'}</span>`;
         chip.title = `O.S. de ${r.os.funcao}`;
       }
     }

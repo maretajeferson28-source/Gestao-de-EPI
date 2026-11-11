@@ -1433,11 +1433,6 @@
   .page[data-page-content="programar"] .prog-colab-info{display:none!important}
   .page[data-page-content="programar"] .prog-colab-campo input{padding-right:150px}
 }
-@media (min-width:721px) and (max-width:1599px){
-  /* Tela menor: colaborador ocupa a primeira linha; data e O.S. vão para a segunda */
-  .page[data-page-content="programar"] .prog-colab{flex-basis:100%}
-  .page[data-page-content="programar"] .prog-data-campo{padding-left:0;border-left:0}
-}
 @media (min-width:721px){
   .page[data-page-content="programar"] #progColab{padding:0 150px 0 48px!important}
 }
@@ -1455,4 +1450,82 @@
 }
 @media (min-width:721px){
   .content .section-title.prog-head::after{height:22px}
+}
+
+/* Etapa 7c: faixa do colaborador numa linha só, pelo guia (.pe-meta-bar):
+   colaborador | entregar em | O.S. ativa, com divisórias, degradê #1B1A1B ->
+   #121416, borda #35363A, campos #101113 / #45464A, selo verde #12361F. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child{
+    min-height:101px;display:flex;align-items:center;padding:14px 24px;border-radius:18px;border:1px solid #35363A;
+    background:linear-gradient(110deg,#1B1A1B,#121416);box-shadow:0 9px 25px rgba(0,0,0,.14)
+  }
+  .page[data-page-content="programar"] .prog-topo{
+    width:100%;display:grid!important;grid-template-columns:minmax(0,1.4fr) minmax(200px,.65fr) auto;align-items:center;gap:22px;min-height:0
+  }
+  .page[data-page-content="programar"] .prog-colab{flex:none!important;gap:16px}
+  .page[data-page-content="programar"] .prog-data-campo{padding-left:27px!important;border-left:1px solid rgba(222,227,233,.14)!important;column-gap:16px}
+  .page[data-page-content="programar"] .prog-data-campo input{width:100%;max-width:173px;color-scheme:dark}
+  .page[data-page-content="programar"] .prog-rotulo,
+  .page[data-page-content="programar"] .prog-data-campo > span{margin:0 0 0!important}
+  .page[data-page-content="programar"] .prog-colab-campo{gap:7px}
+
+  /* Avatar: silhueta de pessoa num círculo cinza, como no mockup */
+  .page[data-page-content="programar"] .prog-avatar,
+  .page[data-page-content="programar"] .prog-avatar.is-ok{
+    left:53px;bottom:8.5px;width:26px;height:26px;border-radius:100%;color:transparent;font-size:0;
+    background:#3A3B3E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23C4C7CA'%3E%3Ccircle cx='12' cy='8.5' r='4.2'/%3E%3Cpath d='M4.5 20.5c.9-3.9 3.9-6.2 7.5-6.2s6.6 2.3 7.5 6.2z'/%3E%3C/svg%3E") center/17px no-repeat
+  }
+  .page[data-page-content="programar"] .prog-avatar svg{display:none}
+  .page[data-page-content="programar"] #progColab{font:600 15px/1 Inter,Roboto,Arial,sans-serif;text-overflow:ellipsis}
+
+  /* Selo do termo: pílula logo depois do nome (posição calculada no programar.js) */
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo{gap:5px;height:25px;padding:0 11px;font:650 12px/1 Inter,Roboto,Arial,sans-serif}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-ok{color:#BFF5CB;background:#12361F;border:1px solid rgba(53,201,109,.22)}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-ok svg{color:#35C96D;stroke-width:3}
+
+  /* O.S. ativa, com a divisória à esquerda */
+  .page[data-page-content="programar"] .prog-os-chip{
+    position:relative;margin:0 0 0 5px;justify-self:end;padding:10px 13px;border-radius:11px;gap:8px;
+    color:#F0D3BD;background:rgba(116,52,9,.32);border:1px solid rgba(255,116,0,.75);font:500 12.5px/1.1 Inter,Roboto,Arial,sans-serif
+  }
+  .page[data-page-content="programar"] .prog-os-chip::before{content:"";position:absolute;left:-28px;top:-14px;bottom:-14px;width:1px;background:rgba(222,227,233,.14)}
+  .page[data-page-content="programar"] .prog-os-chip em{font-style:normal;font-weight:700;color:#FF8A2A}
+  .page[data-page-content="programar"] .prog-os-chip svg{width:17px;height:17px;color:#FF8A2A}
+  .page[data-page-content="programar"] .prog-os-chip.is-ok{color:#BFF5CB}
+  .page[data-page-content="programar"] .prog-os-chip.is-ok em{color:#35C96D}
+}
+@media (min-width:721px){
+  .page[data-page-content="programar"] #progColab{background:#101113 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D5D5D8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 13px center/16px no-repeat!important;border:1px solid #45464A!important;border-radius:11px!important;height:43px!important}
+}
+
+/* Etapa 7d: encaixe final do mockup também em telas menores: faixa dentro da
+   coluna da esquerda e Resumo ao lado desde o topo. Até 1599 px o Resumo fica
+   com 290 px, a área usa 10 px a mais de cada lado e a faixa fica compacta. */
+@media (min-width:1101px) and (max-width:1599px){
+  .page[data-page-content="programar"] .prog-layout{grid-template-columns:minmax(0,1fr) 290px;gap:18px;margin-inline:-10px}
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child{padding:12px 18px}
+  .page[data-page-content="programar"] .prog-topo{grid-template-columns:minmax(0,1fr) auto auto;gap:16px}
+  .page[data-page-content="programar"] .prog-colab{gap:12px}
+  .page[data-page-content="programar"] .prog-colab::before,
+  .page[data-page-content="programar"] .prog-data-campo::before{flex-basis:22px;width:22px;height:22px}
+  .page[data-page-content="programar"] .prog-avatar,
+  .page[data-page-content="programar"] .prog-avatar.is-ok{left:47px;width:24px;height:24px;bottom:9.5px;background-size:15px}
+  .page[data-page-content="programar"] #progColab{padding-left:42px!important;font-size:14px}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo{height:23px;padding:0 9px;font-size:11px}
+  .page[data-page-content="programar"] .prog-data-campo{grid-template-columns:22px auto;column-gap:12px;padding-left:18px!important}
+  .page[data-page-content="programar"] .prog-data-campo input{width:132px;padding:0 10px;font-size:14px}
+  .page[data-page-content="programar"] .prog-os-chip{padding:8px 10px;gap:6px;font-size:11px;margin-left:3px}
+  .page[data-page-content="programar"] .prog-os-chip svg{width:15px;height:15px}
+  .page[data-page-content="programar"] .prog-os-chip::before{left:-20px}
+}
+@media (min-width:721px){
+  /* Selo do termo só com o ícone quando o nome não cabe junto */
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-curto{width:23px;padding:0;justify-content:center;font-size:0;gap:0}
+  .page[data-page-content="programar"] .prog-colab-campo .prog-termo.is-curto svg{width:13px;height:13px}
+}
+@media (min-width:1101px) and (max-width:1599px){
+  /* Resumo de 290 px: linhas sem quebrar */
+  .page[data-page-content="programar"] .prog-res-quem dt,.page[data-page-content="programar"] .prog-res-quem dd{white-space:nowrap}
+  .page[data-page-content="programar"] .prog-res-quem dt{font-size:12.5px}
 }
