@@ -1852,3 +1852,8 @@
     background:linear-gradient(90deg,rgba(255,102,0,.30) 0%,rgba(255,102,0,.08) 12%,rgba(255,255,255,.05) 28%,rgba(255,255,255,.03) 58%,rgba(255,255,255,.05) 82%,rgba(255,102,0,.12) 100%)
   }
 }
+
+/* Etapa 7l: faixa do colaborador mais perto do título (~25 px do subtítulo, como no mockup) */
+@media (min-width:721px){
+  .content .section-title.prog-head{min-height:0!important;padding-bottom:4px!important;margin-bottom:16px!important}
+}
