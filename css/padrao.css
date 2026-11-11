@@ -1835,3 +1835,20 @@
   .page[data-page-content="programar"] .prog-add{padding:9px 2px!important;gap:8px!important;font-size:13.5px!important}
   .page[data-page-content="programar"] .prog-add svg{width:16px!important;height:16px!important}
 }
+
+/* Etapa 7k: brilho laranja do canto direito da faixa do colaborador bem mais
+   fraco, como na referência (fundo, reflexo e ponta da borda). */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child{
+    background:
+      radial-gradient(1200px 260px at 100% 0%,rgba(255,102,0,.05) 0%,rgba(255,102,0,.025) 18%,rgba(255,102,0,0) 42%),
+      radial-gradient(700px 260px at 38% 50%,rgba(55,86,128,.06) 0%,rgba(55,86,128,.02) 38%,rgba(55,86,128,0) 70%),
+      linear-gradient(180deg,#111317 0%,#0D0F13 42%,#0A0B0E 100%)!important
+  }
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child::after{
+    background:radial-gradient(420px 90px at 96% 4%,rgba(255,120,40,.05) 0%,rgba(255,120,40,.025) 35%,rgba(255,120,40,0) 70%)
+  }
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child::before{
+    background:linear-gradient(90deg,rgba(255,102,0,.30) 0%,rgba(255,102,0,.08) 12%,rgba(255,255,255,.05) 28%,rgba(255,255,255,.03) 58%,rgba(255,255,255,.05) 82%,rgba(255,102,0,.12) 100%)
+  }
+}
