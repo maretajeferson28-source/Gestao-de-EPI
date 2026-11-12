@@ -2716,3 +2716,26 @@
 .collab-menu.do-pc [data-colab-action="editar"],
 .collab-menu.do-pc [data-colab-action="termo"],
 .collab-menu.do-pc [data-colab-action="ativo"]{display:none!important}
+/* Colaboradores (PC): bolinhas de perfil com anel laranja e um arco
+   brilhante só em cima (gradiente cônico na borda, border-box), com o
+   brilho de fora puxado para cima. Vale com iniciais e com foto. */
+@media (min-width:721px){
+  .colab-det-avatar,.colab-det-avatar.tem-foto,
+  .g-employee-avatar,.g-employee-avatar.tem-foto{
+    border:2.5px solid transparent!important;
+    background:
+      radial-gradient(circle at 50% 42%,#2A190E 0%,#120D0A 48%,#07090C 78%) padding-box,
+      conic-gradient(from 0deg,#FFE2B8 0deg,#FFA040 26deg,#FF6A00 52deg,#D95000 80deg,#D24C00 180deg,#D95000 280deg,#FF6A00 308deg,#FFA040 334deg,#FFE2B8 360deg) border-box!important;
+    box-shadow:
+      0 0 0 1px rgba(255,140,40,.14),
+      0 -3px 9px -1px rgba(255,150,50,.65),
+      0 -6px 18px -4px rgba(255,110,10,.45),
+      0 0 10px rgba(255,102,0,.22),
+      inset 0 0 12px rgba(255,110,10,.28),
+      inset 0 1px 2px rgba(255,220,170,.25)!important
+  }
+  .g-employee-avatar,.g-employee-avatar.tem-foto{
+    border-width:1.5px!important;
+    box-shadow:0 0 0 1px rgba(255,140,40,.1),0 -2px 6px -1px rgba(255,150,50,.6),0 0 6px rgba(255,102,0,.2),inset 0 0 6px rgba(255,110,10,.22)!important
+  }
+}
