@@ -955,6 +955,25 @@ function montarFiltrosMov(){
   encher('movFEpi','EPI',unicos(x=>x.epi).map(v=>[v,v]));
   encher('movFResp','Responsável',unicos(x=>x.responsavel).map(v=>[v,v]));
 }
+// Paginação de Movimentações no PC (mesmo rodapé da tabela de Colaboradores).
+let movPagina=1;
+function movPorPagina(){
+  const wrap=document.querySelector('.mov-table-wrap');
+  const topo=wrap&&wrap.offsetParent?wrap.getBoundingClientRect().top:150;
+  // 38 cabeçalho, 50 rodapé, 22 de folga embaixo; 38 por linha
+  return Math.max(6,Math.floor((window.innerHeight-topo-38-50-22)/38));
+}
+function renderRodapeMov(mostrando,total,paginas,noPc){
+  const rod=$('movRodape'); if(!rod) return;
+  rod.hidden=!noPc;
+  if(!noPc) return;
+  const fmt=n=>new Intl.NumberFormat('pt-BR').format(n);
+  let ini=Math.max(1,movPagina-2); const fim=Math.min(paginas,ini+4); ini=Math.max(1,fim-4);
+  let nums=''; for(let p=ini;p<=fim;p++) nums+=`<button type="button" class="g-employee-page${p===movPagina?' is-current':''}" data-mov-pagina="${p}"${p===movPagina?' aria-current="page"':''} aria-label="Página ${p}">${p}</button>`;
+  rod.innerHTML=`<span class="g-employee-count">Exibindo ${fmt(mostrando)} de ${fmt(total)} ${total===1?'movimentação':'movimentações'}</span>`+(paginas>1?`<nav class="g-employee-pagination" aria-label="Páginas">
+    <button type="button" class="g-employee-page" data-mov-pagina="${movPagina-1}"${movPagina<=1?' disabled':''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>${nums}
+    <button type="button" class="g-employee-page" data-mov-pagina="${movPagina+1}"${movPagina>=paginas?' disabled':''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>`:'');
+}
 function renderMovs(){
   montarFiltrosMov();
   const q=$('movSearch').value.trim().toLowerCase();
@@ -965,7 +984,15 @@ function renderMovs(){
     .filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)))
     .filter(x=>(!mes||String(x.data||'').slice(3)===mes)&&(!setor||setorDaMov(x)===setor)&&(!epi||String(x.epi||'').trim()===epi)&&(!resp||String(x.responsavel||'').trim()===resp));
 
-  $('movBody').innerHTML=arr.map(x=>{
+  // No PC: páginas (sem rolagem), com quantas linhas cabem na tela.
+  const noPc=window.matchMedia('(min-width:721px)').matches;
+  const porPag=noPc?movPorPagina():arr.length||1;
+  const paginas=Math.max(1,Math.ceil(arr.length/porPag));
+  if(movPagina>paginas) movPagina=paginas;
+  const daPagina=noPc?arr.slice((movPagina-1)*porPag,movPagina*porPag):arr;
+  renderRodapeMov(daPagina.length,arr.length,paginas,noPc);
+
+  $('movBody').innerHTML=daPagina.map(x=>{
     const actions=x.pendente
       ? '<span class="mov-pendente" title="Guardada no aparelho; vai para o banco ao sincronizar">Pendente</span>'
       : currentIsAdmin
@@ -1074,8 +1101,18 @@ async function saveMovementEdit(){
   closeMovementEdit();
   await loadAll(false);
 }
-$('movSearch').addEventListener('input',renderMovs);
-['movFMes','movFSetor','movFEpi','movFResp'].forEach(id=>$(id)?.addEventListener('change',renderMovs));
+$('movSearch').addEventListener('input',()=>{movPagina=1;renderMovs()});
+['movFMes','movFSetor','movFEpi','movFResp'].forEach(id=>$(id)?.addEventListener('change',()=>{movPagina=1;renderMovs()}));
+$('movRodape')?.addEventListener('click',e=>{
+  const b=e.target.closest('[data-mov-pagina]');
+  if(!b||b.disabled) return;
+  movPagina=Number(b.dataset.movPagina)||1;
+  renderMovs();
+});
+{
+  let t=null;
+  window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(()=>{if(document.querySelector('.page[data-page-content="movimentacoes"].active')) renderMovs()},150)});
+}
 if($('movementEditClose')) $('movementEditClose').addEventListener('click',closeMovementEdit);
 if($('movementEditCancel')) $('movementEditCancel').addEventListener('click',closeMovementEdit);
 if($('movementEditSave')) $('movementEditSave').addEventListener('click',saveMovementEdit);
