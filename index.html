@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261112-31">
+<link rel="stylesheet" href="css/padrao.css?v=20261112-32">
 </head>
 <body>
 
@@ -300,7 +300,7 @@
       </section>
 
       <section class="page" data-page-content="movimentacoes">
-        <div class="section-title"><div><h2>Movimentações</h2><p>Histórico completo salvo no sistema.</p></div></div>
+        <div class="section-title mov-head"><div><span class="mov-head-ic" aria-hidden="true"><i data-lucide="arrow-right-left"></i></span><h2>Movimentações</h2><p>Histórico completo salvo no sistema.</p></div></div>
         <div class="panel">
           <div class="search-row"><input id="movSearch" placeholder="Pesquisar por colaborador, EPI, CA ou responsável..."><button class="btn" id="exportCsv"><i data-lucide="file-down" aria-hidden="true"></i>Exportar CSV</button><button class="btn" id="refreshData"><i data-lucide="refresh-cw" aria-hidden="true"></i>Atualizar</button></div>
           <div class="table-wrap mov-table-wrap" style="max-height:600px"><table class="movement-table"><colgroup><col class="col-date"><col class="col-colab"><col class="col-epi"><col class="col-qtd"><col class="col-ca"><col class="col-tam"><col class="col-resp"><col class="col-action"></colgroup><thead><tr><th>Data</th><th>Colaborador</th><th>EPI</th><th>Qtd</th><th>C.A</th><th>Tam.</th><th>Responsável</th><th class="action-head">Ação</th></tr></thead><tbody id="movBody"></tbody></table></div>
