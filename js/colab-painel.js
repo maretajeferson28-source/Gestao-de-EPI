@@ -276,8 +276,7 @@
     const data = ult.get(c.id);
     return `<tr data-colab-linha="${esc(c.id)}" tabindex="0" aria-label="${esc(c.nome)}">
       <td><div class="g-employee-person"><span class="g-employee-avatar" aria-hidden="true">${esc(iniciais(c.nome))}</span>
-        <span class="g-employee-identity"><span class="g-employee-name" title="${esc(c.nome)}">${esc(c.nome)}</span>
-        <span class="g-employee-id">${c.matricula ? `Mat. ${esc(c.matricula)}` : 'Sem matrícula'}</span></span></div></td>
+        <span class="g-employee-identity"><span class="g-employee-name" title="${esc(c.nome)}${c.matricula ? ` · Mat. ${esc(c.matricula)}` : ''}">${esc(c.nome)}</span></span></div></td>
       <td><span class="g-employee-cell-clip" title="${esc(funcao)}">${funcao ? esc(funcao) : falta}</span></td>
       <td>${termo}</td>
       <td>${data ? esc(dataBR(data)) : falta}</td>
