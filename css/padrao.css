@@ -2630,3 +2630,8 @@
 @media (min-width:721px){
   .g-employee-table td:nth-child(3){padding-right:4px}
 }
+/* Colaboradores (PC): tabela e card descem 18 px (vão maior abaixo da
+   barra de busca), aproveitando a sobra embaixo da tela. */
+@media (min-width:721px){
+  .page[data-page-content="colaboradores"] .colab-pc{row-gap:34px!important}
+}
