@@ -245,7 +245,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-historico]')) {
     const historicoScript = document.createElement('script');
-    historicoScript.src = 'js/historico-colab.js?v=20261112-2';
+    historicoScript.src = 'js/historico-colab.js?v=20261112-3';
     historicoScript.dataset.historico = 'true';
     document.body.appendChild(historicoScript);
   }

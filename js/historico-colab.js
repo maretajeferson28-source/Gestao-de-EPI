@@ -15,6 +15,16 @@
   // "dd/mm/aaaa" -> número para ordenar
   const chave = (br) => { const [d, m, a] = String(br || '').split('/'); return Number(`${a || 0}${m || '00'}${d || '00'}`); };
   const isoBR = (iso) => { const [a, m, d] = String(iso || '').slice(0, 10).split('-'); return d ? `${d}/${m}/${a}` : ''; };
+  // KPI de data: "20 out 2026" com o dia em destaque e "há N dias" ao lado.
+  const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  function dataKpi(br) {
+    const [d, m, a] = String(br || '').split('/').map(Number);
+    if (!d || !m || !a) return '<strong>—</strong>';
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const dias = Math.round((hoje - new Date(a, m - 1, d)) / 86400000);
+    const rel = dias <= 0 ? 'hoje' : dias === 1 ? 'ontem' : `há ${dias} dias`;
+    return `<strong class="hk-data"><b>${String(d).padStart(2, '0')}</b><i>${MESES[m - 1]} ${a}</i><em>${rel}</em></strong>`;
+  }
 
   function montar() {
     if ($('historicoModal')) return;
@@ -54,7 +64,7 @@
     $('historicoSub').textContent = [c.cargo, c.setor].filter(Boolean).join(' • ') || 'Sem cargo informado';
     $('historicoBody').innerHTML = lista.length ? `
       <div class="historico-kpis">
-        <div class="hk hk--green"><span><i data-lucide="clock-3"></i>Data</span><strong>${escHtml(data)}</strong></div>
+        <div class="hk hk--green"><span><i data-lucide="clock-3"></i>Data</span>${dataKpi(data)}</div>
         <div class="hk hk--orange"><span><i data-lucide="hard-hat"></i>Itens recebidos</span><strong>${fmtNum(total)}</strong></div>
         <div class="hk hk--blue"><span><i data-lucide="package"></i>EPIs</span><strong>${fmtNum(lista.length)}</strong></div>
         <div class="hk hk--purple"><span><i data-lucide="user-round"></i>Responsável</span><strong>${escHtml(resp || '—')}</strong></div>
@@ -100,8 +110,8 @@
       <div class="historico-kpis">
         <div class="hk hk--orange"><span><i data-lucide="hard-hat"></i>Itens recebidos</span><strong>${fmtNum(total)}</strong></div>
         <div class="hk hk--blue"><span><i data-lucide="package"></i>Entregas</span><strong>${fmtNum(lista.length)}</strong></div>
-        <div class="hk hk--purple"><span><i data-lucide="calendar-days"></i>Primeira entrega</span><strong>${escHtml(lista.at(-1)?.data || '—')}</strong></div>
-        <div class="hk hk--green"><span><i data-lucide="clock-3"></i>Última entrega</span><strong>${escHtml(lista[0]?.data || '—')}</strong></div>
+        <div class="hk hk--purple"><span><i data-lucide="calendar-days"></i>Primeira entrega</span>${dataKpi(lista.at(-1)?.data)}</div>
+        <div class="hk hk--green"><span><i data-lucide="clock-3"></i>Última entrega</span>${dataKpi(lista[0]?.data)}</div>
       </div>
       ${lista.length ? `
       <h4 class="historico-titulo">Por item</h4>

@@ -2827,3 +2827,10 @@
 .historico-kpis .hk--blue{background:radial-gradient(ellipse at 0% 0%,rgba(0,160,255,.22) 0%,transparent 68%),linear-gradient(145deg,rgba(15,30,45,.92),rgba(12,17,22,.82) 76%)!important;border-color:rgba(37,163,245,.36)!important;box-shadow:none!important}
 .historico-kpis .hk--purple{background:radial-gradient(ellipse at 0% 0%,rgba(139,89,225,.25) 0%,transparent 68%),linear-gradient(145deg,rgba(33,25,48,.92),rgba(12,17,22,.82) 76%)!important;border-color:rgba(173,121,237,.36)!important;box-shadow:none!important}
 .historico-kpis .hk--green{background:radial-gradient(ellipse at 0% 0%,rgba(27,214,106,.21) 0%,transparent 68%),linear-gradient(145deg,rgba(15,36,26,.92),rgba(12,17,22,.82) 76%)!important;border-color:rgba(27,214,106,.36)!important;box-shadow:none!important}
+/* Histórico: KPIs de data com o dia em destaque, mês/ano menor e "há N dias". */
+.historico-kpis .hk-data{display:flex!important;align-items:baseline;gap:7px;min-width:0;white-space:nowrap}
+.historico-kpis .hk-data b{font:700 24px/1 Roboto,Arial,sans-serif;color:#F3F5F7}
+.historico-kpis .hk-data i{font:600 13px/1 Roboto,Arial,sans-serif;font-style:normal;color:#D5DAE0;text-transform:capitalize}
+.historico-kpis .hk-data em{margin-left:auto;font:500 11px/1 Roboto,Arial,sans-serif;font-style:normal;color:#8E98A3}
+.historico-kpis .hk--purple .hk-data em{color:#B79BE8}
+.historico-kpis .hk--green .hk-data em{color:#6FD39A}
