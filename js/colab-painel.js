@@ -91,7 +91,8 @@
     if (!box) return;
     const c = atual();
     box.hidden = fechado || !c;
-    if (!c || fechado) { box.innerHTML = ''; return; }
+    $('colabPc')?.classList.toggle('sem-det', fechado || !c);
+    if (!c || fechado) { box.innerHTML = ''; marcarSelecao(); return; }
     atualId = c.id;
     const s = situacao(c);
     const termo = window.EPI_TERMO?.termoDe?.(c.id) || null;
@@ -144,12 +145,13 @@
         <button type="button" class="colab-det-desativar${c.ativo === false ? ' is-reativar' : ''}" data-det-acao="ativo"><i data-lucide="${c.ativo === false ? 'user-check' : 'user-x'}"></i><span>${c.ativo === false ? 'Reativar' : 'Desativar'}</span></button>
       </div>` : ''}`;
     icons();
+    marcarSelecao();
   }
 
   async function atualizar() {
-    const c = atual();
-    if (c?.os_id) await carregarOrdens();
+    await carregarOrdens(); // a coluna O.S. da tabela precisa de todas
     render();
+    renderTabela();
   }
 
   document.addEventListener('click', async (e) => {
@@ -167,7 +169,7 @@
   });
 
   // Os termos (termo.js) carregam logo depois dos dados: redesenha de novo em seguida.
-  window.addEventListener('epi:data-loaded', () => { ordens = null; atualizar(); setTimeout(render, 1500); });
+  window.addEventListener('epi:data-loaded', () => { ordens = null; atualizar(); setTimeout(() => { render(); renderTabela(); }, 1500); });
 
   // ---- Topo: botão Novo colaborador, busca e filtros ----
   // Os filtros guardam a escolha; a tabela (próxima etapa) lê com filtros().
@@ -224,6 +226,153 @@
   window.addEventListener('epi:data-loaded', montarTopo);
   document.fonts?.ready?.then(ajustarTodos);
   montarTopo();
+
+  // ---- Tabela de colaboradores (coluna da esquerda) ----
+  // Dados reais; filtros do topo; ordenação por nome; 8 por página; clicar na
+  // linha mostra o colaborador no card; "…" abre o mesmo menu de antes
+  // (openColabMenu do app.js: alterar, termo, afastar, desativar, excluir).
+  const POR_PAGINA = 8;
+  let pagina = 1;
+  let ordemAsc = true;
+  const semAcento = (v) => String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR').trim();
+
+  function ultimasEntregas() {
+    const m = new Map();
+    for (const mv of lista('movements')) {
+      if (!mv.colaborador_id) continue;
+      const iso = isoDeBR(mv.data);
+      if (iso && (!m.has(mv.colaborador_id) || iso > m.get(mv.colaborador_id))) m.set(mv.colaborador_id, iso);
+    }
+    return m;
+  }
+  const statusDe = (c) => (c.ativo === false ? 'desativado' : c.afastado === true ? 'afastado' : 'ativo');
+  const temTermoAssinado = (c) => !!window.EPI_TERMO?.termoDe?.(c.id);
+
+  function linhasFiltradas() {
+    const f = filtros();
+    const q = semAcento(f.busca);
+    const qDig = f.busca.replace(/\D+/g, '');
+    return lista('collaborators').filter((c) => {
+      if (q) {
+        const alvo = semAcento([c.nome, c.matricula, c.funcao, c.cargo].filter(Boolean).join(' '));
+        if (!alvo.includes(q) && !(qDig && String(c.matricula || '').replace(/\D+/g, '').includes(qDig))) return false;
+      }
+      if (f.setor && String(c.setor || '').trim() !== f.setor) return false;
+      if (f.funcao && String(c.funcao || c.cargo || '').trim() !== f.funcao) return false;
+      if (f.status && statusDe(c) !== f.status) return false;
+      if (f.termo === 'assinado' && !temTermoAssinado(c)) return false;
+      if (f.termo === 'pendente' && temTermoAssinado(c)) return false;
+      return true;
+    }).sort((a, b) => (ordemAsc ? 1 : -1) * String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+  }
+
+  const selo = (cls, ic, txt) => `<span class="g-employee-badge ${cls}">${ic ? `<i data-lucide="${ic}"></i>` : ''}${esc(txt)}</span>`;
+  const falta = '<span class="g-employee-missing" aria-label="Não se aplica">—</span>';
+
+  function linhaTabela(c, ult) {
+    const st = statusDe(c);
+    const vinculo = st === 'ativo' ? selo('is-good', '', 'Ativo') : st === 'afastado' ? selo('is-warning', '', 'Afastado') : selo('is-danger', '', 'Desativado');
+    const termo = temTermoAssinado(c) ? selo('is-good', 'check', 'Assinado') : st === 'desativado' ? falta : selo('is-warning', 'clock-3', 'Pendente');
+    const os = osDe(c) ? selo('is-good', 'check', 'Vigente') : falta;
+    const funcao = c.funcao || c.cargo || '';
+    const data = ult.get(c.id);
+    return `<tr data-colab-linha="${esc(c.id)}" tabindex="0" aria-label="${esc(c.nome)}">
+      <td><div class="g-employee-person"><span class="g-employee-avatar" aria-hidden="true">${esc(iniciais(c.nome))}</span>
+        <span class="g-employee-identity"><span class="g-employee-name" title="${esc(c.nome)}">${esc(c.nome)}</span>
+        <span class="g-employee-id">${c.matricula ? `Mat. ${esc(c.matricula)}` : 'Sem matrícula'}</span></span></div></td>
+      <td><span class="g-employee-cell-clip" title="${esc(funcao)}">${funcao ? esc(funcao) : falta}</span></td>
+      <td><span class="g-employee-cell-clip" title="${esc(c.setor || '')}">${c.setor ? esc(c.setor) : falta}</span></td>
+      <td>${vinculo}</td>
+      <td>${termo}</td>
+      <td>${os}</td>
+      <td>${data ? esc(dataBR(data)) : falta}</td>
+      <td class="g-employee-acoes">${isAdmin() ? `<button type="button" class="g-employee-more" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções de ${esc(c.nome)}"><i data-lucide="ellipsis"></i></button>` : ''}</td>
+    </tr>`;
+  }
+
+  function paginacao(total, paginas) {
+    if (paginas <= 1) return '';
+    let ini = Math.max(1, pagina - 2);
+    const fim = Math.min(paginas, ini + 4);
+    ini = Math.max(1, fim - 4);
+    let nums = '';
+    for (let p = ini; p <= fim; p++) nums += `<button type="button" class="g-employee-page${p === pagina ? ' is-current' : ''}" data-pagina="${p}"${p === pagina ? ' aria-current="page"' : ''} aria-label="Página ${p}">${p}</button>`;
+    return `<nav class="g-employee-pagination" aria-label="Páginas">
+      <button type="button" class="g-employee-page" data-pagina="${pagina - 1}"${pagina <= 1 ? ' disabled' : ''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>
+      ${nums}
+      <button type="button" class="g-employee-page" data-pagina="${pagina + 1}"${pagina >= paginas ? ' disabled' : ''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button>
+    </nav>`;
+  }
+
+  function renderTabela() {
+    const box = $('colabPcLista');
+    if (!box) return;
+    const todas = linhasFiltradas();
+    const paginas = Math.max(1, Math.ceil(todas.length / POR_PAGINA));
+    if (pagina > paginas) pagina = paginas;
+    const daPagina = todas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+    const ult = ultimasEntregas();
+    const plural = todas.length === 1 ? 'colaborador' : 'colaboradores';
+    box.innerHTML = `<section class="g-employee-panel" aria-label="Lista de colaboradores">
+      <div class="g-employee-table-scroll">
+        <div class="g-employee-selecao" aria-hidden="true"></div>
+        <table class="g-employee-table">
+          <colgroup><col><col><col><col><col><col><col><col></colgroup>
+          <thead><tr>
+            <th scope="col" aria-sort="${ordemAsc ? 'ascending' : 'descending'}"><button type="button" class="g-employee-sort" data-ordenar title="Ordenar por nome">Colaborador<i data-lucide="chevrons-up-down"></i></button></th>
+            <th scope="col">Função</th><th scope="col">Setor</th><th scope="col">Vínculo</th><th scope="col">Termo</th>
+            <th scope="col">O.S.</th><th scope="col">Última entrega</th><th scope="col"><span class="sr-only">Ações</span></th>
+          </tr></thead>
+          <tbody>${daPagina.map((c) => linhaTabela(c, ult)).join('') || `<tr class="g-employee-vazio"><td colspan="8">Nenhum colaborador encontrado com esses filtros.</td></tr>`}</tbody>
+        </table>
+      </div>
+      <footer class="g-employee-footer">
+        <span class="g-employee-count">Exibindo ${fmt(daPagina.length)} de ${fmt(todas.length)} ${plural}</span>
+        ${paginacao(todas.length, paginas)}
+      </footer>
+    </section>`;
+    icons();
+    marcarSelecao();
+  }
+
+  // Destaque da linha escolhida: uma camada só, desenhada atrás da linha
+  // (com cantos arredondados, o que o fundo de <tr> não permite).
+  function marcarSelecao() {
+    const box = $('colabPcLista');
+    if (!box) return;
+    const id = fechado ? null : atual()?.id;
+    let alvo = null;
+    box.querySelectorAll('tr[data-colab-linha]').forEach((tr) => {
+      const sel = tr.dataset.colabLinha === id;
+      tr.classList.toggle('is-selected', sel);
+      tr.setAttribute('aria-selected', sel ? 'true' : 'false');
+      if (sel) alvo = tr;
+    });
+    const camada = box.querySelector('.g-employee-selecao');
+    if (!camada) return;
+    if (!alvo) { camada.hidden = true; return; }
+    camada.hidden = false;
+    camada.style.top = alvo.offsetTop + 'px';
+    camada.style.height = alvo.offsetHeight + 'px';
+  }
+
+  document.addEventListener('click', (e) => {
+    const lista_ = e.target.closest('#colabPcLista');
+    if (!lista_) return;
+    const menu = e.target.closest('.g-employee-more[data-colab-menu]');
+    if (menu) { e.stopPropagation(); if (typeof openColabMenu === 'function') openColabMenu(menu); return; }
+    const pg = e.target.closest('[data-pagina]');
+    if (pg && !pg.disabled) { pagina = Number(pg.dataset.pagina) || 1; renderTabela(); return; }
+    if (e.target.closest('[data-ordenar]')) { ordemAsc = !ordemAsc; renderTabela(); return; }
+    const tr = e.target.closest('tr[data-colab-linha]');
+    if (tr) { atualId = tr.dataset.colabLinha; fechado = false; render(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    const tr = e.target.closest?.('#colabPcLista tr[data-colab-linha]');
+    if (tr && e.target === tr && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tr.click(); }
+  });
+  window.addEventListener('epi:colab-filtros', () => { pagina = 1; renderTabela(); });
+  window.addEventListener('resize', marcarSelecao);
 
   window.EPI_COLAB_PAINEL = {
     filtros,
