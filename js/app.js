@@ -2778,7 +2778,7 @@ function montarCaptcha(){
   const sitekey=local?'1x00000000000000000000AA':window.EPI_CONFIG?.TURNSTILE_SITE_KEY;
   if(!sitekey) return;
   captchaId=window.turnstile.render(box,{
-    sitekey,theme:'dark',language:'pt-br',size:'flexible',
+    sitekey,theme:'dark',language:'pt-br',size:'flexible',appearance:'interaction-only',
     callback:t=>{captchaToken=t},
     'expired-callback':()=>{captchaToken=''},
     'error-callback':()=>{captchaToken=''}
@@ -2786,8 +2786,13 @@ function montarCaptcha(){
 }
 window.epiTurnstilePronto=montarCaptcha;
 if(window.turnstile) montarCaptcha();
-function usarCaptcha(){
+async function usarCaptcha(){
   if(captchaId===null) return {ok:true,token:undefined};
+  // A verificação roda por trás; se ainda não terminou, espera até 10 s.
+  if(!captchaToken){
+    $('authMsg').textContent='Verificando segurança...';
+    for(let i=0;i<40&&!captchaToken;i++) await new Promise(r=>setTimeout(r,250));
+  }
   if(!captchaToken){$('authMsg').textContent='Confirme a verificação de segurança acima dos botões.';return {ok:false}}
   const token=captchaToken;
   captchaToken='';
@@ -2797,7 +2802,7 @@ function usarCaptcha(){
 $('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const email=$('authEmail').value.trim(), password=$('authPassword').value;
-  const cap=usarCaptcha(); if(!cap.ok) return;
+  const cap=await usarCaptcha(); if(!cap.ok) return;
   $('authMsg').textContent='Entrando...';
   const {data,error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken:cap.token}});
   if(error){$('authMsg').textContent=error.message;return}
@@ -2806,7 +2811,7 @@ $('loginForm').addEventListener('submit',async e=>{
 $('signupBtn').addEventListener('click',async()=>{
   const email=$('authEmail').value.trim(), password=$('authPassword').value;
   if(!email||password.length<6){$('authMsg').textContent='Informe e-mail e senha com pelo menos 6 caracteres.';return}
-  const cap=usarCaptcha(); if(!cap.ok) return;
+  const cap=await usarCaptcha(); if(!cap.ok) return;
   $('authMsg').textContent='Criando conta...';
   const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl(),captchaToken:cap.token}});
   if(error){$('authMsg').textContent=error.message;return}

@@ -3026,3 +3026,7 @@
 .auth-captcha{margin:2px 0 12px;min-height:65px}
 .auth-captcha:empty{display:none}
 .auth-captcha iframe{border-radius:8px}
+/* Login: a caixinha da Cloudflare fica escondida e só aparece quando ela
+   pede que a pessoa clique (appearance: interaction-only). */
+.auth-captcha{min-height:0!important;margin:0 0 4px!important}
+.auth-captcha:has(iframe[style*="visibility: visible"]),.auth-captcha.pedindo{margin:2px 0 12px!important}
