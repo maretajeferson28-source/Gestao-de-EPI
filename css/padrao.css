@@ -2795,3 +2795,16 @@
 .historico-card .historico-tabela th,.historico-card .historico-tabela td{border-right:1px solid rgba(178,191,205,.08)}
 .historico-card .historico-tabela th:last-child,.historico-card .historico-tabela td:last-child{border-right:0}
 .historico-card .historico-tabela tbody tr:last-child td{border-bottom:0!important}
+/* Histórico / Última entrega: KPIs com a cor e o ícone dos cards do
+   Dashboard (laranja, azul, roxo, verde), sobre o fundo azul-aço. */
+.historico-kpis .hk{position:relative;overflow:hidden}
+.historico-kpis .hk > span{display:flex!important;align-items:center;gap:7px}
+.historico-kpis .hk > span svg{width:15px;height:15px;stroke-width:2;flex-shrink:0}
+.historico-kpis .hk--orange{background:radial-gradient(ellipse at 0% 4%,rgba(255,106,0,.17) 0%,transparent 66%),linear-gradient(145deg,rgba(32,23,19,.9),rgba(12,17,22,.8) 74%)!important;border-color:rgba(255,114,15,.25)!important}
+.historico-kpis .hk--blue{background:radial-gradient(ellipse at 0% 4%,rgba(0,160,255,.18) 0%,transparent 66%),linear-gradient(145deg,rgba(16,27,38,.9),rgba(12,17,22,.8) 74%)!important;border-color:rgba(37,163,245,.28)!important}
+.historico-kpis .hk--purple{background:radial-gradient(ellipse at 0% 4%,rgba(139,89,225,.2) 0%,transparent 66%),linear-gradient(145deg,rgba(29,24,39,.9),rgba(12,17,22,.8) 74%)!important;border-color:rgba(173,121,237,.26)!important}
+.historico-kpis .hk--green{background:radial-gradient(ellipse at 0% 4%,rgba(27,214,106,.16) 0%,transparent 66%),linear-gradient(145deg,rgba(15,31,23,.9),rgba(12,17,22,.8) 74%)!important;border-color:rgba(27,214,106,.28)!important}
+.historico-kpis .hk--orange > span svg{color:#FF7100}
+.historico-kpis .hk--blue > span svg{color:#03AEFF}
+.historico-kpis .hk--purple > span svg{color:#AF82F5}
+.historico-kpis .hk--green > span svg{color:#1BD66A}

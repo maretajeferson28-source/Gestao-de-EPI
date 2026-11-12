@@ -54,10 +54,10 @@
     $('historicoSub').textContent = [c.cargo, c.setor].filter(Boolean).join(' • ') || 'Sem cargo informado';
     $('historicoBody').innerHTML = lista.length ? `
       <div class="historico-kpis">
-        <div><span>Data</span><strong>${escHtml(data)}</strong></div>
-        <div><span>Itens recebidos</span><strong>${fmtNum(total)}</strong></div>
-        <div><span>EPIs</span><strong>${fmtNum(lista.length)}</strong></div>
-        <div><span>Responsável</span><strong>${escHtml(resp || '—')}</strong></div>
+        <div class="hk hk--green"><span><i data-lucide="clock-3"></i>Data</span><strong>${escHtml(data)}</strong></div>
+        <div class="hk hk--orange"><span><i data-lucide="hard-hat"></i>Itens recebidos</span><strong>${fmtNum(total)}</strong></div>
+        <div class="hk hk--blue"><span><i data-lucide="package"></i>EPIs</span><strong>${fmtNum(lista.length)}</strong></div>
+        <div class="hk hk--purple"><span><i data-lucide="user-round"></i>Responsável</span><strong>${escHtml(resp || '—')}</strong></div>
       </div>
       <div class="table-wrap"><table class="historico-tabela"><thead><tr><th>EPI / Item</th><th>Qtd</th><th>C.A.</th><th>Tamanho</th><th>Observação</th></tr></thead>
         <tbody>${lista.map((m) => `<tr><td>${escHtml(m.epi)}</td><td>${fmtNum(m.quantidade)}</td><td>${escHtml(m.ca || 'N/A')}</td><td>${escHtml(m.tamanho || 'N/A')}</td><td>${escHtml(m.observacao || '')}</td></tr>`).join('')}</tbody></table></div>`
@@ -98,10 +98,10 @@
     $('historicoBody').innerHTML = `
       <div class="historico-situacao">${situacao}</div>
       <div class="historico-kpis">
-        <div><span>Itens recebidos</span><strong>${fmtNum(total)}</strong></div>
-        <div><span>Entregas</span><strong>${fmtNum(lista.length)}</strong></div>
-        <div><span>Primeira entrega</span><strong>${escHtml(lista.at(-1)?.data || '—')}</strong></div>
-        <div><span>Última entrega</span><strong>${escHtml(lista[0]?.data || '—')}</strong></div>
+        <div class="hk hk--orange"><span><i data-lucide="hard-hat"></i>Itens recebidos</span><strong>${fmtNum(total)}</strong></div>
+        <div class="hk hk--blue"><span><i data-lucide="package"></i>Entregas</span><strong>${fmtNum(lista.length)}</strong></div>
+        <div class="hk hk--purple"><span><i data-lucide="calendar-days"></i>Primeira entrega</span><strong>${escHtml(lista.at(-1)?.data || '—')}</strong></div>
+        <div class="hk hk--green"><span><i data-lucide="clock-3"></i>Última entrega</span><strong>${escHtml(lista[0]?.data || '—')}</strong></div>
       </div>
       ${lista.length ? `
       <h4 class="historico-titulo">Por item</h4>
