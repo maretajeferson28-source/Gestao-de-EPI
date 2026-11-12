@@ -2818,3 +2818,12 @@
 .historico-kpis .hk--blue{background:radial-gradient(ellipse at 0% 0%,rgba(0,160,255,.32) 0%,transparent 70%),linear-gradient(145deg,rgba(14,36,56,.95),rgba(12,17,22,.85) 78%)!important;border-color:rgba(37,163,245,.5)!important;box-shadow:0 0 16px rgba(0,160,255,.10)!important}
 .historico-kpis .hk--purple{background:radial-gradient(ellipse at 0% 0%,rgba(139,89,225,.36) 0%,transparent 70%),linear-gradient(145deg,rgba(40,28,62,.95),rgba(12,17,22,.85) 78%)!important;border-color:rgba(173,121,237,.5)!important;box-shadow:0 0 16px rgba(139,89,225,.10)!important}
 .historico-kpis .hk--green{background:radial-gradient(ellipse at 0% 0%,rgba(27,214,106,.30) 0%,transparent 70%),linear-gradient(145deg,rgba(14,44,29,.95),rgba(12,17,22,.85) 78%)!important;border-color:rgba(27,214,106,.5)!important;box-shadow:0 0 16px rgba(27,214,106,.10)!important}
+/* Histórico: KPIs no meio-termo (entre a 1ª versão e a forte). */
+.historico-kpis .hk{min-height:80px;padding:12px 15px!important;border-radius:13px!important}
+.historico-kpis .hk > span{font-size:11px!important;gap:7px!important;color:#B9C1C9!important}
+.historico-kpis .hk > span svg{width:17px!important;height:17px!important}
+.historico-kpis .hk > strong{font-size:21px!important;margin-top:8px!important}
+.historico-kpis .hk--orange{background:radial-gradient(ellipse at 0% 0%,rgba(255,106,0,.22) 0%,transparent 68%),linear-gradient(145deg,rgba(40,26,19,.92),rgba(12,17,22,.82) 76%)!important;border-color:rgba(255,114,15,.34)!important;box-shadow:none!important}
+.historico-kpis .hk--blue{background:radial-gradient(ellipse at 0% 0%,rgba(0,160,255,.22) 0%,transparent 68%),linear-gradient(145deg,rgba(15,30,45,.92),rgba(12,17,22,.82) 76%)!important;border-color:rgba(37,163,245,.36)!important;box-shadow:none!important}
+.historico-kpis .hk--purple{background:radial-gradient(ellipse at 0% 0%,rgba(139,89,225,.25) 0%,transparent 68%),linear-gradient(145deg,rgba(33,25,48,.92),rgba(12,17,22,.82) 76%)!important;border-color:rgba(173,121,237,.36)!important;box-shadow:none!important}
+.historico-kpis .hk--green{background:radial-gradient(ellipse at 0% 0%,rgba(27,214,106,.21) 0%,transparent 68%),linear-gradient(145deg,rgba(15,36,26,.92),rgba(12,17,22,.82) 76%)!important;border-color:rgba(27,214,106,.36)!important;box-shadow:none!important}
