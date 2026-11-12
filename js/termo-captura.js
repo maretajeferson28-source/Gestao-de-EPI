@@ -392,30 +392,58 @@
     msg.dataset.tipo = '';
     const base = `${colaborador.id}/${new Date().toISOString().replace(/[:.]/g, '-')}`;
     const enviados = [];
+    let etapa = 'preparar a assinatura';
+    // Falha de rede ("Failed to fetch") no celular costuma ser passageira:
+    // cada envio tenta até 3 vezes antes de desistir, e a mensagem diz em
+    // qual etapa parou.
+    const ehRede = (e) => e instanceof TypeError || /fetch|network|load failed|rede/i.test(String(e?.message || e));
+    const tentar = async (fn) => {
+      for (let n = 1; ; n++) {
+        try {
+          const r = await fn();
+          if (r?.error) { if (n < 3 && ehRede(r.error)) throw r.error; return r; }
+          return r;
+        } catch (e) {
+          if (n >= 3 || !ehRede(e)) throw e;
+          msg.textContent = `Conexão instável, tentando de novo (${n + 1}/3)…`;
+          await new Promise((ok) => setTimeout(ok, 1200 * n));
+        }
+      }
+    };
     try {
       const sig = await assinatura.blob();
-      const up1 = await client.storage.from(bucket).upload(`${base}-selfie.jpg`, selfie, { contentType: 'image/jpeg', upsert: false });
+      if (!selfie || !sig) throw new Error('a foto ou a assinatura não foi gerada; refaça a captura.');
+      // Login renovado antes de enviar (o celular pode ter ficado parado com o login vencido).
+      etapa = 'renovar o login';
+      await tentar(() => client.auth.getSession());
+      etapa = 'enviar a selfie';
+      const up1 = await tentar(() => client.storage.from(bucket).upload(`${base}-selfie.jpg`, selfie, { contentType: 'image/jpeg', upsert: false }));
       if (up1.error) throw up1.error;
       enviados.push(`${base}-selfie.jpg`);
-      const up2 = await client.storage.from(bucket).upload(`${base}-assinatura.png`, sig, { contentType: 'image/png', upsert: false });
+      etapa = 'enviar a assinatura';
+      const up2 = await tentar(() => client.storage.from(bucket).upload(`${base}-assinatura.png`, sig, { contentType: 'image/png', upsert: false }));
       if (up2.error) throw up2.error;
       enviados.push(`${base}-assinatura.png`);
-      const { error } = await client.from('termos_epi').insert({
+      etapa = 'gravar o termo';
+      const { error } = await tentar(() => client.from('termos_epi').insert({
         colaborador_id: colaborador.id,
         texto: window.EPI_TERMO?.texto || '',
         selfie_path: `${base}-selfie.jpg`,
         assinatura_path: `${base}-assinatura.png`,
         dispositivo: navigator.userAgent.slice(0, 300)
-      });
+      }));
       if (error) throw error;
       await window.EPI_TERMO?.recarregar?.();
       msg.textContent = `Termo de ${colaborador.nome} assinado.`;
       msg.dataset.tipo = 'ok';
       setTimeout(fechar, 1600);
     } catch (err) {
-      console.error('[TERMO SALVAR]', err);
-      if (enviados.length) await client.storage.from(bucket).remove(enviados);
-      msg.textContent = 'Não foi possível salvar: ' + (err.message || err);
+      console.error('[TERMO SALVAR]', etapa, err);
+      if (enviados.length) await client.storage.from(bucket).remove(enviados).catch(() => {});
+      const semInternet = navigator.onLine === false;
+      msg.textContent = semInternet
+        ? `Sem internet no celular ao ${etapa}. Confira o Wi-Fi ou os dados e toque em confirmar de novo.`
+        : `Não foi possível ${etapa}: ${err.message || err}${ehRede(err) ? ' (falha de conexão; tente de novo ou troque de rede)' : ''}`;
       msg.dataset.tipo = 'erro';
       botao.disabled = false;
     }
