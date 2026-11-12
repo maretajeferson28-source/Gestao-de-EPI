@@ -2293,7 +2293,7 @@
    ===================================================================== */
 @media (min-width:721px){
   .main:has(> .content > .page[data-page-content="colaboradores"].active){
-    background:url("/assets/app-brand/colaboradores-fundo.webp?v=3") center top/cover no-repeat,#030810!important
+    background:url("/assets/app-brand/colaboradores-fundo-2.webp") center top/cover no-repeat,#030810!important
   }
   .page[data-page-content="colaboradores"].active > *:not(.colab-pc){display:none!important}
 }
@@ -2420,4 +2420,17 @@
 @media (min-width:721px){
   .colab-det{padding-bottom:16px!important}
   .colab-det-acoes{margin-top:17px!important}
+}
+
+/* Colaboradores (PC): fundo desenhado em código no lugar das imagens:
+   ondas de luz laranja + fios finos (colaboradores-ondas.svg) sobre base
+   grafite com luz fria fraca no topo e vinheta nas bordas. */
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="colaboradores"].active){
+    background:
+      url("/assets/app-brand/colaboradores-ondas.svg?v=5") right top/100% auto no-repeat,
+      radial-gradient(ellipse 55% 45% at 48% -8%,rgba(70,95,120,.16) 0%,rgba(40,55,70,.06) 50%,transparent 80%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.45) 100%),
+      linear-gradient(180deg,#0C0F13 0%,#090B0E 45%,#06080A 100%)!important
+  }
 }
