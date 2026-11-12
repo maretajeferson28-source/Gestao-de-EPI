@@ -925,11 +925,45 @@ $('saidaForm').addEventListener('submit',async e=>{
   }finally{setBusy(false)}
 });
 
+// Filtros da barra de Movimentações (Período, Setor, EPI, Responsável): as
+// opções saem das próprias movimentações; o escolhido fica marcado em laranja.
+const MESES_MOV=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let reguaMov=null;
+function larguraFiltroMov(sel){
+  if(!sel) return;
+  if(!reguaMov){reguaMov=document.createElement('span');reguaMov.style.cssText='position:absolute;visibility:hidden;white-space:pre;left:-9999px;top:0';document.body.appendChild(reguaMov)}
+  reguaMov.style.font=getComputedStyle(sel).font;
+  reguaMov.textContent=sel.options[sel.selectedIndex]?.text||'';
+  sel.style.width=Math.min(190,Math.ceil(reguaMov.offsetWidth)+11+26+6)+'px';
+  sel.classList.toggle('tem-valor',!!sel.value);
+}
+function setorDaMov(x){return String(collaborators.find(c=>c.id===x.colaborador_id)?.setor||'').trim()}
+function montarFiltrosMov(){
+  const encher=(id,rotulo,itens)=>{
+    const sel=$(id); if(!sel) return;
+    const atual=sel.value;
+    sel.innerHTML=`<option value="">${rotulo}</option>`+itens.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join('');
+    sel.value=itens.some(([v])=>v===atual)?atual:'';
+    larguraFiltroMov(sel);
+  };
+  const unicos=f=>[...new Set(movements.map(f).map(v=>String(v||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const meses=[...new Set(movements.map(x=>String(x.data||'').slice(3)).filter(m=>/^\d{2}\/\d{4}$/.test(m)))]
+    .sort((a,b)=>b.slice(3)+b.slice(0,2)>a.slice(3)+a.slice(0,2)?1:-1)
+    .map(m=>[m,`${MESES_MOV[Number(m.slice(0,2))-1]}/${m.slice(3)}`]);
+  encher('movFMes','Período',meses);
+  encher('movFSetor','Setor',unicos(setorDaMov).map(v=>[v,v]));
+  encher('movFEpi','EPI',unicos(x=>x.epi).map(v=>[v,v]));
+  encher('movFResp','Responsável',unicos(x=>x.responsavel).map(v=>[v,v]));
+}
 function renderMovs(){
+  montarFiltrosMov();
   const q=$('movSearch').value.trim().toLowerCase();
+  const fv=id=>$(id)?.value||'';
+  const mes=fv('movFMes'), setor=fv('movFSetor'), epi=fv('movFEpi'), resp=fv('movFResp');
   const arr=[...movements]
     .sort((a,b)=>parseBR(b.data)-parseBR(a.data)||String(b.id).localeCompare(String(a.id)))
-    .filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)));
+    .filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)))
+    .filter(x=>(!mes||String(x.data||'').slice(3)===mes)&&(!setor||setorDaMov(x)===setor)&&(!epi||String(x.epi||'').trim()===epi)&&(!resp||String(x.responsavel||'').trim()===resp));
 
   $('movBody').innerHTML=arr.map(x=>{
     const actions=x.pendente
@@ -1041,6 +1075,7 @@ async function saveMovementEdit(){
   await loadAll(false);
 }
 $('movSearch').addEventListener('input',renderMovs);
+['movFMes','movFSetor','movFEpi','movFResp'].forEach(id=>$(id)?.addEventListener('change',renderMovs));
 if($('movementEditClose')) $('movementEditClose').addEventListener('click',closeMovementEdit);
 if($('movementEditCancel')) $('movementEditCancel').addEventListener('click',closeMovementEdit);
 if($('movementEditSave')) $('movementEditSave').addEventListener('click',saveMovementEdit);

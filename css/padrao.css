@@ -2935,3 +2935,21 @@
   .page[data-page-content="movimentacoes"] .movement-table .col-epi{width:22%}
   .page[data-page-content="movimentacoes"] .movement-table .col-action{width:84px}
 }
+/* Movimentações (PC): barra de filtros igual à de Colaboradores (busca com
+   lupa + selects Período/Setor/EPI/Responsável); Exportar e Atualizar à
+   direita, na mesma altura de 32 px. */
+.mov-filtros{display:none}
+@media (min-width:721px){
+  .page[data-page-content="movimentacoes"] .mov-barra{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+  .page[data-page-content="movimentacoes"] .mov-busca{flex:0 1 340px}
+  .page[data-page-content="movimentacoes"] .mov-busca #movSearch{
+    height:100%!important;padding:0 12px 0 34px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important
+  }
+  .page[data-page-content="movimentacoes"] .mov-filtros{display:flex}
+  .page[data-page-content="movimentacoes"] .mov-barra .btn{height:32px!important;padding:0 12px!important;border-radius:8px!important;font-size:12.5px!important;gap:7px}
+  .page[data-page-content="movimentacoes"] .mov-barra .btn svg{width:15px;height:15px}
+  .page[data-page-content="movimentacoes"] .mov-barra #exportCsv{margin-left:auto}
+}
+@media (max-width:720px){
+  .mov-busca > svg{display:none}
+}
