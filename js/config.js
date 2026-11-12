@@ -2,7 +2,9 @@ window.EPI_CONFIG = {
   SUPABASE_URL: "https://jrzviiaywfjaawwkwgze.supabase.co",
   SUPABASE_PUBLISHABLE_KEY: "sb_publishable_6dGPVd27-e8WkjMYOjaByQ_lXqp7Ool",
   // Sem o serviço realtime no Railway: a tela recarrega após cada gravação.
-  REALTIME: false
+  REALTIME: false,
+  // Cloudflare Turnstile no login (chave pública do widget "Gestão de EPI - Login").
+  TURNSTILE_SITE_KEY: "0x4AAAAAAF-suAbxUXKjNMbD"
 };
 
 document.title = "Gestão de EPI";

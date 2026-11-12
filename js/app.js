@@ -2765,19 +2765,50 @@ function showAuth(message=''){
   refreshIcons();
 }
 
+// Cloudflare Turnstile no login: a caixinha "Verifique se você é humano" gera
+// um token de uso único, que vai junto no Entrar e no Criar conta e é
+// conferido pelo servidor de autenticação. No localhost usa a chave de teste
+// da Cloudflare (sempre passa). Se o script da Cloudflare não carregar, o
+// login segue sem token (o servidor decide).
+let captchaToken='', captchaId=null;
+function montarCaptcha(){
+  const box=$('authCaptcha');
+  if(!box||captchaId!==null||!window.turnstile) return;
+  const local=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const sitekey=local?'1x00000000000000000000AA':window.EPI_CONFIG?.TURNSTILE_SITE_KEY;
+  if(!sitekey) return;
+  captchaId=window.turnstile.render(box,{
+    sitekey,theme:'dark',language:'pt-br',size:'flexible',
+    callback:t=>{captchaToken=t},
+    'expired-callback':()=>{captchaToken=''},
+    'error-callback':()=>{captchaToken=''}
+  });
+}
+window.epiTurnstilePronto=montarCaptcha;
+if(window.turnstile) montarCaptcha();
+function usarCaptcha(){
+  if(captchaId===null) return {ok:true,token:undefined};
+  if(!captchaToken){$('authMsg').textContent='Confirme a verificação de segurança acima dos botões.';return {ok:false}}
+  const token=captchaToken;
+  captchaToken='';
+  try{window.turnstile.reset(captchaId)}catch(_){}
+  return {ok:true,token};
+}
 $('loginForm').addEventListener('submit',async e=>{
   e.preventDefault();
   const email=$('authEmail').value.trim(), password=$('authPassword').value;
+  const cap=usarCaptcha(); if(!cap.ok) return;
   $('authMsg').textContent='Entrando...';
-  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  const {data,error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken:cap.token}});
   if(error){$('authMsg').textContent=error.message;return}
   await showApp(data.session);
 });
 $('signupBtn').addEventListener('click',async()=>{
   const email=$('authEmail').value.trim(), password=$('authPassword').value;
   if(!email||password.length<6){$('authMsg').textContent='Informe e-mail e senha com pelo menos 6 caracteres.';return}
+  const cap=usarCaptcha(); if(!cap.ok) return;
   $('authMsg').textContent='Criando conta...';
-  const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl()}});
+  const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:authRedirectUrl(),captchaToken:cap.token}});
   if(error){$('authMsg').textContent=error.message;return}
   if(data.session){await showApp(data.session)}
   else $('authMsg').textContent='Conta criada. Confirme o e-mail enviado e depois entre.';

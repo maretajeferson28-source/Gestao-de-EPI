@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261112-37">
+<link rel="stylesheet" href="css/padrao.css?v=20261112-38">
 </head>
 <body>
 
@@ -37,6 +37,7 @@
     <form id="loginForm">
       <div class="field"><label>E-mail</label><input id="authEmail" type="email" autocomplete="email" required></div>
       <div class="field"><label>Senha</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div>
+      <div class="auth-captcha" id="authCaptcha" aria-label="Verificação de segurança"></div>
       <div class="auth-actions">
         <button class="btn primary" type="submit"><i data-lucide="log-in" aria-hidden="true"></i>Entrar</button>
         <button class="btn" type="button" id="signupBtn"><i data-lucide="user-plus" aria-hidden="true"></i>Criar conta</button>
@@ -876,9 +877,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="js/config.js"></script>
+<script src="js/config.js?v=20261112-1"></script>
 <script src="js/pdf-export.js"></script>
-<script src="js/app.js?v=20261112-3"></script>
+<script src="js/app.js?v=20261112-4"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=epiTurnstilePronto" async defer></script>
 <script src="js/mobile.js"></script>
 <script src="js/pwa.js"></script>
 </body>
