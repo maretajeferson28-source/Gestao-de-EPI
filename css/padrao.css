@@ -2704,3 +2704,9 @@
 @media (min-width:721px){
   .colab-det-acoes{margin-top:8px!important}
 }
+/* Colaboradores (PC): matrícula | admissão com o mesmo respiro em volta de
+   cada texto (borda, divisória e borda à mesma distância). */
+@media (min-width:721px){
+  .colab-det-contato{display:flex!important;justify-content:space-evenly!important;padding:0!important}
+  .colab-det-contato-item{flex:0 1 auto!important}
+}
