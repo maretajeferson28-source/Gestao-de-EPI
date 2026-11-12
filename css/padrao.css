@@ -2643,3 +2643,24 @@
   .g-employee-table col:nth-child(4){width:15%!important}
   .g-employee-table col:nth-child(5){width:6%!important}
 }
+
+/* Colaboradores (PC): com 4 colunas sobra espaço; conteúdo da tabela maior
+   (mesma altura de linha, 44 px, para continuar alinhada com o card). */
+@media (min-width:721px){
+  .g-employee-table th{font-size:12px!important}
+  .g-employee-sort svg{width:14px!important;height:14px!important}
+  .g-employee-table td{font-size:12.5px!important}
+  .g-employee-person{gap:12px!important}
+  .g-employee-avatar{flex:0 0 34px!important;width:34px!important;height:34px!important;font-size:12px!important}
+  .g-employee-identity{gap:3px!important}
+  .g-employee-name{font-size:13px!important}
+  .g-employee-id{font-size:11px!important}
+  .g-employee-badge{min-height:22px!important;padding:3px 10px!important;gap:5px!important;font-size:11px!important}
+  .g-employee-badge svg{width:12px!important;height:12px!important}
+  .g-employee-missing{font-size:13px!important}
+  .g-employee-more{width:30px!important;height:30px!important}
+  .g-employee-more svg{width:19px!important;height:19px!important}
+  .g-employee-count{font-size:12px!important}
+  .g-employee-page{min-width:25px!important;height:25px!important;font-size:12px!important}
+  .g-employee-page svg{width:14px!important;height:14px!important}
+}
