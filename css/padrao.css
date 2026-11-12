@@ -2428,7 +2428,7 @@
 @media (min-width:721px){
   .main:has(> .content > .page[data-page-content="colaboradores"].active){
     background:
-      url("/assets/app-brand/colaboradores-ondas.svg?v=6") right top/100% auto no-repeat,
+      url("/assets/app-brand/colaboradores-ondas.svg?v=7") right top/100% auto no-repeat,
       radial-gradient(ellipse 55% 45% at 48% -8%,rgba(70,95,120,.16) 0%,rgba(40,55,70,.06) 50%,transparent 80%),
       radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.45) 100%),
       linear-gradient(180deg,#0C0F13 0%,#090B0E 45%,#06080A 100%)!important
