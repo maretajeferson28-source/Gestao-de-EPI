@@ -2627,11 +2627,19 @@
   .g-employee-panel{border-radius:12px}
   .g-employee-footer{padding:10px 12px;flex-wrap:wrap}
 }
-@media (min-width:721px){
-  .g-employee-table td:nth-child(3){padding-right:4px}
-}
 /* Colaboradores (PC): tabela e card descem 18 px (vão maior abaixo da
    barra de busca), aproveitando a sobra embaixo da tela. */
 @media (min-width:721px){
   .page[data-page-content="colaboradores"] .colab-pc{row-gap:34px!important}
+}
+
+/* Colaboradores (PC): tabela só com Colaborador, Função, Termo e Última
+   entrega (setor, vínculo e O.S. ficam no card). Colunas redistribuídas. */
+@media (min-width:721px){
+  .g-employee-table{min-width:520px!important}
+  .g-employee-table col:nth-child(1){width:40%!important}
+  .g-employee-table col:nth-child(2){width:24%!important}
+  .g-employee-table col:nth-child(3){width:15%!important}
+  .g-employee-table col:nth-child(4){width:15%!important}
+  .g-employee-table col:nth-child(5){width:6%!important}
 }

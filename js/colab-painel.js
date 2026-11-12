@@ -271,9 +271,7 @@
 
   function linhaTabela(c, ult) {
     const st = statusDe(c);
-    const vinculo = st === 'ativo' ? selo('is-good', '', 'Ativo') : st === 'afastado' ? selo('is-warning', '', 'Afastado') : selo('is-danger', '', 'Desativado');
     const termo = temTermoAssinado(c) ? selo('is-good', 'check', 'Assinado') : st === 'desativado' ? falta : selo('is-warning', 'clock-3', 'Pendente');
-    const os = osDe(c) ? selo('is-good', 'check', 'Vigente') : falta;
     const funcao = c.funcao || c.cargo || '';
     const data = ult.get(c.id);
     return `<tr data-colab-linha="${esc(c.id)}" tabindex="0" aria-label="${esc(c.nome)}">
@@ -281,10 +279,7 @@
         <span class="g-employee-identity"><span class="g-employee-name" title="${esc(c.nome)}">${esc(c.nome)}</span>
         <span class="g-employee-id">${c.matricula ? `Mat. ${esc(c.matricula)}` : 'Sem matrícula'}</span></span></div></td>
       <td><span class="g-employee-cell-clip" title="${esc(funcao)}">${funcao ? esc(funcao) : falta}</span></td>
-      <td><span class="g-employee-cell-clip" title="${esc(c.setor || '')}">${c.setor ? esc(c.setor) : falta}</span></td>
-      <td>${vinculo}</td>
       <td>${termo}</td>
-      <td>${os}</td>
       <td>${data ? esc(dataBR(data)) : falta}</td>
       <td class="g-employee-acoes">${isAdmin() ? `<button type="button" class="g-employee-more" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções de ${esc(c.nome)}"><i data-lucide="ellipsis"></i></button>` : ''}</td>
     </tr>`;
@@ -317,13 +312,12 @@
       <div class="g-employee-table-scroll">
         <div class="g-employee-selecao" aria-hidden="true"></div>
         <table class="g-employee-table">
-          <colgroup><col><col><col><col><col><col><col><col></colgroup>
+          <colgroup><col><col><col><col><col></colgroup>
           <thead><tr>
             <th scope="col" aria-sort="${ordemAsc ? 'ascending' : 'descending'}"><button type="button" class="g-employee-sort" data-ordenar title="Ordenar por nome">Colaborador<i data-lucide="chevrons-up-down"></i></button></th>
-            <th scope="col">Função</th><th scope="col">Setor</th><th scope="col">Vínculo</th><th scope="col">Termo</th>
-            <th scope="col">O.S.</th><th scope="col">Última entrega</th><th scope="col"><span class="sr-only">Ações</span></th>
+            <th scope="col">Função</th><th scope="col">Termo</th><th scope="col">Última entrega</th><th scope="col"><span class="sr-only">Ações</span></th>
           </tr></thead>
-          <tbody>${daPagina.map((c) => linhaTabela(c, ult)).join('') || `<tr class="g-employee-vazio"><td colspan="8">Nenhum colaborador encontrado com esses filtros.</td></tr>`}</tbody>
+          <tbody>${daPagina.map((c) => linhaTabela(c, ult)).join('') || `<tr class="g-employee-vazio"><td colspan="5">Nenhum colaborador encontrado com esses filtros.</td></tr>`}</tbody>
         </table>
       </div>
       <footer class="g-employee-footer">
