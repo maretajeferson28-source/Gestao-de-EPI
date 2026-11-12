@@ -2409,3 +2409,15 @@
   .colab-det-desativar:hover{background:rgba(170,30,30,.18)}
   .colab-det-desativar.is-reativar{background:rgba(20,110,55,.12);border-color:rgba(22,197,94,.55);color:#61F19A}
 }
+
+/* Colaboradores (PC), etapa 2b: card na posição do mockup: começa a 130 px
+   do topo (depois virão título, busca e filtros), encostado a 10 px da borda
+   direita e com 380 px de largura. */
+@media (min-width:721px){
+  .main:has(.page.active[data-page-content="colaboradores"]) > .content{padding-right:10px!important}
+  .page[data-page-content="colaboradores"] .colab-pc{grid-template-columns:minmax(0,1fr) 380px!important;padding-top:130px!important}
+}
+@media (min-width:721px){
+  .colab-det{padding-bottom:16px!important}
+  .colab-det-acoes{margin-top:17px!important}
+}
