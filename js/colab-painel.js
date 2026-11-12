@@ -357,13 +357,30 @@
     const lista_ = e.target.closest('#colabPcLista');
     if (!lista_) return;
     const menu = e.target.closest('.g-employee-more[data-colab-menu]');
-    if (menu) { e.stopPropagation(); if (typeof openColabMenu === 'function') openColabMenu(menu); return; }
+    if (menu) {
+      // No PC o card ao lado já tem editar, termo e desativar: o menu mostra
+      // só afastar e excluir (.do-pc), e a linha passa a ser a do card.
+      e.stopPropagation();
+      atualId = menu.dataset.colabMenu; fechado = false; render();
+      const caixa = document.getElementById('colabMenu');
+      caixa?.classList.add('do-pc');
+      if (typeof openColabMenu === 'function') openColabMenu(menu);
+      if (caixa && !caixa.classList.contains('hidden')) caixa.querySelector('[data-colab-action="afastar"]')?.focus({ preventScroll: true });
+      return;
+    }
     const pg = e.target.closest('[data-pagina]');
     if (pg && !pg.disabled) { pagina = Number(pg.dataset.pagina) || 1; renderTabela(); return; }
     if (e.target.closest('[data-ordenar]')) { ordemAsc = !ordemAsc; renderTabela(); return; }
     const tr = e.target.closest('tr[data-colab-linha]');
     if (tr) { atualId = tr.dataset.colabLinha; fechado = false; render(); }
   });
+  // Os três pontinhos dos cards do celular abrem o menu completo.
+  document.addEventListener('click', (e) => {
+    if (e.target.closest?.('[data-colab-menu]:not(.g-employee-more)')) document.getElementById('colabMenu')?.classList.remove('do-pc');
+  }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest?.('[data-colab-menu]:not(.g-employee-more)')) document.getElementById('colabMenu')?.classList.remove('do-pc');
+  }, true);
   document.addEventListener('keydown', (e) => {
     const tr = e.target.closest?.('#colabPcLista tr[data-colab-linha]');
     if (tr && e.target === tr && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tr.click(); }

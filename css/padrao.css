@@ -2710,3 +2710,9 @@
   .colab-det-contato{display:flex!important;justify-content:space-evenly!important;padding:0!important}
   .colab-det-contato-item{flex:0 1 auto!important}
 }
+
+/* Colaboradores (PC): no menu "…" da tabela ficam só afastar e excluir;
+   editar, termo e desativar já estão no card ao lado. */
+.collab-menu.do-pc [data-colab-action="editar"],
+.collab-menu.do-pc [data-colab-action="termo"],
+.collab-menu.do-pc [data-colab-action="ativo"]{display:none!important}
