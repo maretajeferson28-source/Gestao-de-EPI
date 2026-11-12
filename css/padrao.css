@@ -2909,3 +2909,29 @@
   .page[data-page-content="movimentacoes"] .movement-edit-btn:hover{border-color:rgba(255,121,0,.55)!important;color:#FF7A10!important}
   .page[data-page-content="movimentacoes"] .movement-delete-btn:hover{border-color:rgba(239,69,69,.55)!important;color:#FB7373!important}
 }
+/* Movimentações (PC): o card vira a própria tabela (busca e botões ficam
+   soltos sobre o fundo), ações centralizadas e linhas mais baixas. */
+@media (min-width:721px){
+  .page[data-page-content="movimentacoes"] > .panel{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
+  .page[data-page-content="movimentacoes"] .search-row{margin-bottom:12px}
+  .page[data-page-content="movimentacoes"] .mov-table-wrap{
+    border-radius:14px!important;border:1px solid rgba(178,191,205,.14)!important;
+    background:
+      radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.16) 0%,transparent 70%),
+      linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)!important;
+    max-height:calc(100vh - 205px)!important
+  }
+  .page[data-page-content="movimentacoes"] .movement-table th{height:38px;padding:0 10px!important}
+  .page[data-page-content="movimentacoes"] .movement-table td{padding:5px 10px!important;height:38px;font:500 12.5px/1.25 Inter,Roboto,Arial,sans-serif}
+  .page[data-page-content="movimentacoes"] .movement-table th.action-head,
+  .page[data-page-content="movimentacoes"] .movement-table td:last-child{text-align:center!important;padding:5px 8px!important}
+  .page[data-page-content="movimentacoes"] .movement-table td:last-child .table-action-group{justify-content:center;gap:6px}
+  .page[data-page-content="movimentacoes"] .movement-action-btn{width:27px!important;height:27px!important;min-height:0!important;padding:0!important;border-radius:7px!important}
+  .page[data-page-content="movimentacoes"] .movement-action-btn svg{width:14px;height:14px}
+}@media (min-width:721px){
+  .page[data-page-content="movimentacoes"] .movement-table .col-colab{width:26%}
+  .page[data-page-content="movimentacoes"] .movement-table .col-epi{width:22%}
+  .page[data-page-content="movimentacoes"] .movement-table .col-action{width:84px}
+}
