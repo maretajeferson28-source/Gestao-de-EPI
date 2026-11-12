@@ -2691,3 +2691,16 @@
 @media (min-width:721px){
   .colab-det-acoes{margin-top:11px!important}
 }
+/* Colaboradores (PC): selos do card com texto maior; faixa matrícula/admissão
+   em 3 colunas (metade | divisória | metade) para a divisória ficar no centro exato. */
+@media (min-width:721px){
+  .colab-selo{min-height:24px!important;padding:3px 12px!important;gap:6px!important;font-size:11.5px!important}
+  .colab-selo svg{width:12px!important;height:12px!important}
+  .colab-selo-ponto{width:7px!important;height:7px!important}
+  .colab-det-selos{gap:8px!important}
+  .colab-det-contato{display:grid!important;grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);align-items:center;padding:0 8px!important}
+  .colab-det-contato-div{margin:0!important}
+}
+@media (min-width:721px){
+  .colab-det-acoes{margin-top:8px!important}
+}
