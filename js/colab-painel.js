@@ -119,7 +119,7 @@
     box.innerHTML = `
       <svg class="colab-det-arco" viewBox="0 0 240 110" aria-hidden="true"><defs><linearGradient id="colabDetArco" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#FF6600" stop-opacity="0"/><stop offset="55%" stop-color="#FF6600" stop-opacity=".32"/><stop offset="100%" stop-color="#FF9A35" stop-opacity=".55"/></linearGradient></defs><path d="M 0 103 C 75 93, 125 48, 240 24" fill="none" stroke="url(#colabDetArco)" stroke-width="1.2"/></svg>
       <div class="colab-det-cab">
-        <div class="colab-det-avatar" aria-hidden="true">${esc(iniciais(c.nome))}</div>
+        <div class="colab-det-avatar" data-avatar="${esc(c.id)}" aria-hidden="true">${esc(iniciais(c.nome))}</div>
         <div class="colab-det-id">
           <h3 class="colab-det-nome" title="${esc(c.nome)}">${esc(c.nome)}</h3>
           ${funcao ? `<span class="colab-det-funcao">${esc(funcao)}</span>` : ''}
@@ -146,6 +146,7 @@
       </div>` : ''}`;
     icons();
     marcarSelecao();
+    aplicarFotos();
   }
 
   async function atualizar() {
@@ -169,7 +170,7 @@
   });
 
   // Os termos (termo.js) carregam logo depois dos dados: redesenha de novo em seguida.
-  window.addEventListener('epi:data-loaded', () => { ordens = null; atualizar(); setTimeout(() => { render(); renderTabela(); }, 1500); });
+  window.addEventListener('epi:data-loaded', () => { ordens = null; atualizar(); setTimeout(() => { render(); renderTabela(); carregarFotos(); }, 1500); });
 
   // ---- Topo: botão Novo colaborador, busca e filtros ----
   // Os filtros guardam a escolha; a tabela (próxima etapa) lê com filtros().
@@ -275,7 +276,7 @@
     const funcao = c.funcao || c.cargo || '';
     const data = ult.get(c.id);
     return `<tr data-colab-linha="${esc(c.id)}" tabindex="0" aria-label="${esc(c.nome)}">
-      <td><div class="g-employee-person"><span class="g-employee-avatar" aria-hidden="true">${esc(iniciais(c.nome))}</span>
+      <td><div class="g-employee-person"><span class="g-employee-avatar" data-avatar="${esc(c.id)}" aria-hidden="true">${esc(iniciais(c.nome))}</span>
         <span class="g-employee-identity"><span class="g-employee-name" title="${esc(c.nome)}${c.matricula ? ` · Mat. ${esc(c.matricula)}` : ''}">${esc(c.nome)}</span></span></div></td>
       <td><span class="g-employee-cell-clip" title="${esc(funcao)}">${funcao ? esc(funcao) : falta}</span></td>
       <td>${termo}</td>
@@ -326,6 +327,7 @@
     </section>`;
     icons();
     marcarSelecao();
+    aplicarFotos();
   }
 
   // Destaque da linha escolhida: uma camada só, desenhada atrás da linha
@@ -367,6 +369,37 @@
   window.addEventListener('epi:colab-filtros', () => { pagina = 1; renderTabela(); });
   window.addEventListener('resize', marcarSelecao);
 
+  // ---- Fotos: a selfie do termo assinado entra no lugar das iniciais ----
+  // Links assinados do bucket dos termos, pedidos de uma vez e renovados a
+  // cada 50 min. Sem foto (ou se a imagem falhar), ficam as iniciais.
+  const fotos = new Map(); // colaborador_id -> url
+  let fotosEm = 0;
+  async function carregarFotos(forcar) {
+    const cli = db();
+    const bucket = window.EPI_TERMO?.bucket;
+    if (!cli || !bucket || !window.EPI_TERMO?.termoDe) return;
+    if (!forcar && fotos.size && Date.now() - fotosEm < 50 * 60 * 1000) { aplicarFotos(); return; }
+    const pares = lista('collaborators').map((c) => [c.id, window.EPI_TERMO.termoDe(c.id)?.selfie_path]).filter((p) => p[1]);
+    if (!pares.length) return;
+    const { data, error } = await cli.storage.from(bucket).createSignedUrls(pares.map((p) => p[1]), 3600);
+    if (error || !Array.isArray(data)) { console.error('[colab-painel fotos]', error); return; }
+    fotos.clear();
+    data.forEach((d, i) => { if (d?.signedUrl) fotos.set(pares[i][0], d.signedUrl); });
+    fotosEm = Date.now();
+    aplicarFotos();
+  }
+  function aplicarFotos() {
+    document.querySelectorAll('#colabPc [data-avatar]').forEach((el) => {
+      const url = fotos.get(el.dataset.avatar);
+      if (!url || el.classList.contains('tem-foto')) return;
+      const img = new Image();
+      img.alt = '';
+      img.decoding = 'async';
+      img.onload = () => { el.textContent = ''; el.appendChild(img); el.classList.add('tem-foto'); };
+      img.src = url;
+    });
+  }
+
   window.EPI_COLAB_PAINEL = {
     filtros,
     mostrar(id) { atualId = id; fechado = false; atualizar(); },
@@ -374,4 +407,5 @@
     atualizar
   };
   atualizar();
+  setTimeout(() => carregarFotos(), 1800);
 })();
