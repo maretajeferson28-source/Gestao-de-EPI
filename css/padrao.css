@@ -2788,3 +2788,10 @@
 .termo-texto li{margin:0!important;padding:8px 0;border-bottom:1px solid rgba(178,191,205,.09)}
 .termo-texto li:last-child{border-bottom:0;padding-bottom:2px}
 .termo-texto p{padding-bottom:8px;margin:0!important;border-bottom:1px solid rgba(178,191,205,.09)}
+/* Histórico: tabelas fechadas (borda em volta e divisórias finas entre as
+   colunas), no mesmo tom azul-aço clarinho das linhas. */
+.historico-card .table-wrap{border:1px solid rgba(178,191,205,.12);border-radius:10px}
+.historico-card .historico-tabela{border-collapse:separate!important;border-spacing:0}
+.historico-card .historico-tabela th,.historico-card .historico-tabela td{border-right:1px solid rgba(178,191,205,.08)}
+.historico-card .historico-tabela th:last-child,.historico-card .historico-tabela td:last-child{border-right:0}
+.historico-card .historico-tabela tbody tr:last-child td{border-bottom:0!important}
