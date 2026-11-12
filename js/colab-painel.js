@@ -40,9 +40,8 @@
   let fechado = false;
   const atual = () => {
     const todos = lista('collaborators');
-    return todos.find((c) => c.id === atualId)
-      || [...todos].filter((c) => c.ativo !== false).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'))[0]
-      || null;
+    // Sem escolha ainda: o primeiro da lista (mesma ordem da tabela).
+    return todos.find((c) => c.id === atualId) || linhasFiltradas()[0] || null;
   };
 
   function situacao(c) {
@@ -93,7 +92,7 @@
     box.hidden = fechado || !c;
     $('colabPc')?.classList.toggle('sem-det', fechado || !c);
     if (!c || fechado) { box.innerHTML = ''; marcarSelecao(); return; }
-    atualId = c.id;
+    // (atualId só muda quando alguém clica: até lá o card segue o 1º da lista)
     const s = situacao(c);
     const termo = window.EPI_TERMO?.termoDe?.(c.id) || null;
     const temTermo = !!window.EPI_TERMO?.temTermo?.(c.id);
@@ -260,11 +259,15 @@
       }
       if (f.setor && String(c.setor || '').trim() !== f.setor) return false;
       if (f.funcao && String(c.funcao || c.cargo || '').trim() !== f.funcao) return false;
+      // Desativados só aparecem quando o filtro Status pede por eles.
+      if (!f.status && c.ativo === false) return false;
       if (f.status && statusDe(c) !== f.status) return false;
       if (f.termo === 'assinado' && !temTermoAssinado(c)) return false;
       if (f.termo === 'pendente' && temTermoAssinado(c)) return false;
       return true;
-    }).sort((a, b) => (ordemAsc ? 1 : -1) * String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+    // Termos assinados primeiro, pendentes depois; nome em ordem dentro de cada grupo.
+    }).sort((a, b) => (Number(!temTermoAssinado(a)) - Number(!temTermoAssinado(b)))
+      || (ordemAsc ? 1 : -1) * String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
   }
 
   const selo = (cls, ic, txt) => `<span class="g-employee-badge ${cls}">${ic ? `<i data-lucide="${ic}"></i>` : ''}${esc(txt)}</span>`;
