@@ -2285,3 +2285,20 @@
   .page[data-page-content="programar"] .prog-res-itens li,
   .page[data-page-content="programar"] .prog-res-itens li.prog-res-cab{grid-template-columns:minmax(0,1fr) 51px 27px 36px!important}
 }
+
+/* =====================================================================
+   Colaboradores (PC), etapa 1: fundo próprio (colaboradores-fundo.webp,
+   azul-grafite com riscos de luz laranja no canto superior direito).
+   Conteúdo antigo escondido enquanto a tela nova é montada.
+   ===================================================================== */
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="colaboradores"].active){
+    background:url("/assets/app-brand/colaboradores-fundo.webp?v=3") center top/cover no-repeat,#030810!important
+  }
+  .page[data-page-content="colaboradores"].active > *{display:none!important}
+}
+/* Colaboradores (PC): sem a barra de título do topo (o título vai para a
+   própria tela, como no Programar). Tela limpa só com o fundo. */
+@media (min-width:721px){
+  .main:has(.page.active[data-page-content="colaboradores"]) > .topbar{display:none}
+}
