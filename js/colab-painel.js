@@ -124,7 +124,6 @@
           ${funcao ? `<span class="colab-det-funcao">${esc(funcao)}</span>` : ''}
           ${c.setor ? `<span class="colab-det-setor">Setor: ${esc(c.setor)}</span>` : ''}
         </div>
-        <button type="button" class="colab-det-fechar" data-det-acao="fechar" title="Fechar" aria-label="Fechar detalhes"><i data-lucide="x"></i></button>
       </div>
       <div class="colab-det-selos">${selos}</div>
       <div class="colab-det-contato">
