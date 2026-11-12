@@ -2295,10 +2295,117 @@
   .main:has(> .content > .page[data-page-content="colaboradores"].active){
     background:url("/assets/app-brand/colaboradores-fundo.webp?v=3") center top/cover no-repeat,#030810!important
   }
-  .page[data-page-content="colaboradores"].active > *{display:none!important}
+  .page[data-page-content="colaboradores"].active > *:not(.colab-pc){display:none!important}
 }
 /* Colaboradores (PC): sem a barra de título do topo (o título vai para a
    própria tela, como no Programar). Tela limpa só com o fundo. */
 @media (min-width:721px){
   .main:has(.page.active[data-page-content="colaboradores"]) > .topbar{display:none}
+}
+
+/* =====================================================================
+   Colaboradores (PC), etapa 2: card de detalhes do colaborador (coluna da
+   direita), pela especificação do GPT. Lista entra na próxima etapa.
+   ===================================================================== */
+.colab-pc{display:none}
+@media (min-width:721px){
+  .page[data-page-content="colaboradores"] .colab-pc{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:16px;align-items:start;padding-top:24px}
+  .colab-det[hidden]{display:none!important}
+  .colab-det{
+    grid-column:2;position:relative;isolation:isolate;box-sizing:border-box;width:100%;min-width:0;padding:20px 16px 22px;border-radius:14px;overflow:hidden;
+    font-family:Roboto,Arial,sans-serif;color:#F5F6F8;
+    background:
+      radial-gradient(ellipse 90% 32% at 0% 0%,rgba(255,110,35,.18) 0%,rgba(110,53,27,.10) 40%,transparent 80%),
+      radial-gradient(ellipse 70% 36% at 100% 23%,rgba(255,102,0,.15) 0%,rgba(112,51,26,.07) 42%,transparent 82%),
+      radial-gradient(ellipse 85% 35% at 10% 100%,rgba(255,102,0,.075) 0%,transparent 78%),
+      linear-gradient(155deg,#17191D 0%,#101419 28%,#0C131B 66%,#080D13 100%);
+    border:1px solid rgba(255,255,255,.11);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 12px 32px rgba(0,0,0,.28)
+  }
+  .colab-det::before{
+    content:"";position:absolute;inset:0;padding:1px;border-radius:inherit;pointer-events:none;z-index:3;
+    background:linear-gradient(135deg,rgba(255,119,35,.38) 0%,rgba(186,92,45,.20) 13%,rgba(255,255,255,.09) 35%,rgba(255,255,255,.05) 60%,rgba(255,119,35,.12) 83%,rgba(255,255,255,.09) 100%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude
+  }
+  .colab-det > *{position:relative;z-index:1}
+  .colab-det > .colab-det-arco{position:absolute;z-index:0;width:240px;height:110px;right:-10px;top:78px;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,102,0,.14))}
+
+  /* Cabeçalho: avatar, nome, função, setor e fechar */
+  .colab-det-cab{display:flex;align-items:flex-start;gap:16px;min-height:72px;padding:0 4px 0 8px}
+  .colab-det-avatar{
+    display:flex;align-items:center;justify-content:center;width:60px;height:60px;flex-shrink:0;border-radius:50%;
+    background:radial-gradient(circle at 50% 45%,#21160F 0%,#090B0E 70%);border:1.5px solid #FF7900;
+    box-shadow:0 0 0 1px rgba(255,102,0,.12),0 0 18px rgba(255,102,0,.18),inset 0 0 14px rgba(255,102,0,.05);
+    color:#FF820C;font:700 20px/1 Roboto,Arial,sans-serif
+  }
+  .colab-det-id{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;padding-top:4px}
+  .colab-det-nome{margin:0;font:700 17px/1.2 Roboto,Arial,sans-serif;letter-spacing:-.25px;color:#F5F6F8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .colab-det-funcao{font:400 12px/1.3 Roboto,Arial,sans-serif;color:#D3D6DB}
+  .colab-det-setor{font:400 11px/1.3 Roboto,Arial,sans-serif;color:#AAB1BA}
+  .colab-det-fechar{
+    display:flex;align-items:center;justify-content:center;width:28px;height:28px;flex-shrink:0;padding:0;margin:-4px -2px 0 0;border-radius:7px;cursor:pointer;
+    background:#1B2026;border:1px solid rgba(255,255,255,.12);color:#E8EAED
+  }
+  .colab-det-fechar svg{width:15px;height:15px}
+  .colab-det-fechar:hover{border-color:rgba(255,255,255,.28)}
+
+  /* Selos */
+  .colab-det-selos{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;margin:8px 0 14px}
+  .colab-selo{
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:21px;box-sizing:border-box;padding:2px 10px;border-radius:999px;
+    font:600 10px/1.2 Roboto,Arial,sans-serif;white-space:nowrap
+  }
+  .colab-selo svg{width:11px;height:11px;stroke-width:2.4}
+  .colab-selo-ponto{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .colab-selo.is-ok{background:linear-gradient(180deg,#0A321D 0%,#082317 100%);border:1px solid rgba(22,197,94,.36);box-shadow:inset 0 1px 0 rgba(70,255,130,.06);color:#61F19A}
+  .colab-selo.is-ok .colab-selo-ponto{background:#16DC65}
+  .colab-selo.is-alerta{background:linear-gradient(180deg,#352708 0%,#241A06 100%);border:1px solid rgba(234,179,8,.40);color:#FACC15}
+  .colab-selo.is-off{background:rgba(135,25,25,.14);border:1px solid #8F2929;color:#FF7474}
+  .colab-selo.is-neutro{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);color:#9EA6B0}
+
+  /* Faixa de contato (matrícula e admissão: telefone e e-mail não existem no cadastro) */
+  .colab-det-contato{
+    display:flex;align-items:center;width:100%;min-height:36px;min-width:0;box-sizing:border-box;padding:0 12px;border-radius:9px;
+    background:linear-gradient(180deg,#1D232A 0%,#121820 100%);border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)
+  }
+  .colab-det-contato-item{display:flex;align-items:center;gap:8px;min-width:0;font:400 11px/1.2 Roboto,Arial,sans-serif;color:#E3E5E8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .colab-det-contato-item svg{width:15px;height:15px;flex-shrink:0;color:#E3E5E8;stroke-width:1.8}
+  .colab-det-contato-div{width:1px;height:20px;flex-shrink:0;margin:0 14px;background:rgba(255,255,255,.18)}
+
+  /* Quatro linhas de navegação */
+  .colab-det-links{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+  .colab-det-link{
+    display:flex;align-items:center;gap:10px;width:100%;min-height:42px;min-width:0;box-sizing:border-box;padding:5px 10px;margin:0;border-radius:10px;
+    background:linear-gradient(180deg,#1C2228 0%,#151B22 52%,#111820 100%);border:1px solid rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+    color:#F5F6F8;text-align:left;font:inherit;cursor:pointer;transition:background 160ms ease,border-color 160ms ease
+  }
+  .colab-det-link:hover:not(:disabled){background:linear-gradient(180deg,#242A30 0%,#192028 100%);border-color:rgba(255,102,0,.25)}
+  .colab-det-link:disabled{cursor:default}
+  .colab-det-link:focus-visible,.colab-det-acoes button:focus-visible,.colab-det-fechar:focus-visible{outline:2px solid #FF820C;outline-offset:2px}
+  .colab-det-link-ic{
+    display:flex;align-items:center;justify-content:center;width:31px;height:31px;flex-shrink:0;border-radius:8px;
+    background:linear-gradient(145deg,rgba(255,102,0,.13) 0%,rgba(69,37,23,.10) 100%);color:#FF820C
+  }
+  .colab-det-link-ic svg{width:17px;height:17px;stroke-width:1.9}
+  .colab-det-link-txt{display:flex;flex-direction:column;flex:1;min-width:0}
+  .colab-det-link-tit{font:600 12px/1.2 Roboto,Arial,sans-serif;color:#F5F6F8}
+  .colab-det-link-sub{margin-top:3px;font:400 10px/1.25 Roboto,Arial,sans-serif;color:#A9B0BA;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .colab-det-link-chev{width:16px;height:16px;flex-shrink:0;color:#C4C9D0;stroke-width:1.8}
+  .colab-det-link:disabled .colab-det-link-chev{opacity:.35}
+
+  /* Botões: Editar (laranja), Ver histórico (grafite), Desativar (contorno vermelho) */
+  .colab-det-acoes{display:grid;grid-template-columns:1.25fr 1.08fr .95fr;gap:10px;margin-top:22px}
+  .colab-det-acoes button{
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:34px;margin:0;padding:0 8px;box-sizing:border-box;border-radius:8px;
+    font:600 11px/1 Roboto,Arial,sans-serif;white-space:nowrap;cursor:pointer;transition:filter 160ms ease,border-color 160ms ease,background 160ms ease
+  }
+  .colab-det-acoes button svg{width:15px;height:15px;flex-shrink:0;stroke-width:1.9}
+  .colab-det-acoes button span{overflow:hidden;text-overflow:ellipsis}
+  .colab-det-editar{background:linear-gradient(180deg,#FF7900 0%,#FF6600 100%);border:1px solid rgba(255,160,65,.30);box-shadow:inset 0 1px 0 rgba(255,220,150,.20),0 4px 14px rgba(255,102,0,.17);color:#FFFFFF}
+  .colab-det-editar:hover{filter:brightness(1.08)}
+  .colab-det-historico{background:linear-gradient(180deg,#22262B 0%,#15191D 100%);border:1px solid rgba(255,255,255,.23);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);color:#F0F1F3}
+  .colab-det-historico:hover{border-color:rgba(255,255,255,.38)}
+  .colab-det-desativar{background:rgba(130,25,25,.10);border:1px solid rgba(220,55,55,.65);box-shadow:inset 0 1px 0 rgba(255,100,100,.025);color:#FF7474}
+  .colab-det-desativar:hover{background:rgba(170,30,30,.18)}
+  .colab-det-desativar.is-reativar{background:rgba(20,110,55,.12);border-color:rgba(22,197,94,.55);color:#61F19A}
 }
