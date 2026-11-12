@@ -2776,3 +2776,11 @@
 .termo-texto{color:#DDE2E7}
 .termo-provas figcaption{color:#A6AFB9}
 .termo-img.termo-assinatura{border-color:rgba(178,191,205,.12)}
+/* Ícones dos modais Termo, Histórico e Última entrega: mesmo estilo do
+   ícone do topo do Programar entrega (laranja sobre degradê marrom). */
+.historico-card .data-edit-icon,.termo-card .data-edit-icon{
+  color:#FF6600!important;border:1px solid rgba(255,111,25,.35)!important;
+  background:linear-gradient(135deg,#583018,#24160F 65%,#111214)!important;
+  box-shadow:0 0 22px rgba(255,102,0,.12)!important
+}
+.historico-card .data-edit-icon svg,.termo-card .data-edit-icon svg{color:#FF6600!important;stroke:#FF6600!important;stroke-width:1.9}
