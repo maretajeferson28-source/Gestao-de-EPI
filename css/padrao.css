@@ -2746,11 +2746,11 @@
     color:#fff!important
   }
 }
-/* Modal Histórico do colaborador: mesma identidade de cores do fundo da
+/* Modais Histórico do colaborador e Termo: mesma identidade de cores do fundo da
    aba Colaboradores (grafite azulado #090D12→#060A0E, névoa azul-aço
    rgba(70,87,105) e um toque de laranja no canto de cima, como as ondas).
    Caixas e borda em azul-aço translúcido no lugar do cinza puro. */
-.historico-card{
+.historico-card,.termo-card{
   background:
     radial-gradient(ellipse 55% 70% at 100% 0%,rgba(255,102,0,.10) 0%,transparent 60%),
     radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.20) 0%,transparent 70%),
@@ -2759,12 +2759,12 @@
   border:1px solid rgba(178,191,205,.14)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 90px rgba(0,0,0,.64)!important
 }
-.historico-card .data-edit-head{
+.historico-card .data-edit-head,.termo-card .data-edit-head{
   background:radial-gradient(ellipse 45% 120% at 92% 0%,rgba(255,102,0,.10) 0%,transparent 70%)!important;
   border-bottom-color:rgba(178,191,205,.10)!important
 }
-.historico-card .data-edit-close{background:rgba(20,27,35,.7)!important;border-color:rgba(178,191,205,.16)!important}
-.historico-kpis div{
+.historico-card .data-edit-close,.termo-card .data-edit-close{background:rgba(20,27,35,.7)!important;border-color:rgba(178,191,205,.16)!important}
+.historico-kpis div,.termo-texto,.termo-img:not(.termo-assinatura){
   background:linear-gradient(145deg,rgba(24,31,38,.75) 0%,rgba(12,17,22,.75) 100%)!important;
   border-color:rgba(178,191,205,.12)!important
 }
@@ -2772,4 +2772,7 @@
 .historico-kpis span{color:#A6AFB9}
 .historico-vazio{color:#9AA4AE}.historico-card .historico-tabela th{background:rgba(26,34,43,.92)!important;border-bottom-color:rgba(178,191,205,.12)!important}
 .historico-card .historico-tabela td{border-bottom-color:rgba(178,191,205,.08)!important}
-.historico-card .table-wrap{scrollbar-width:thin;scrollbar-color:#36404B transparent}
+.historico-card .table-wrap{scrollbar-width:thin;scrollbar-color:#36404B transparent}.historico-card,.termo-card{scrollbar-width:thin;scrollbar-color:#36404B transparent}
+.termo-texto{color:#DDE2E7}
+.termo-provas figcaption{color:#A6AFB9}
+.termo-img.termo-assinatura{border-color:rgba(178,191,205,.12)}
