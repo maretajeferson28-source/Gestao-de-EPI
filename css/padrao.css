@@ -2977,3 +2977,48 @@
   .content:has(> .page[data-page-content="movimentacoes"].active){padding-bottom:0!important;scrollbar-width:none}
   .content:has(> .page[data-page-content="movimentacoes"].active)::-webkit-scrollbar{display:none}
 }
+/* Modal Editar movimentação: mesma identidade dos modais Histórico/Termo
+   (fundo azul-aço com toque laranja, ícone do Programar entrega) e campos,
+   observação e botões no mesmo tom. */
+.movement-edit-card{
+  background:
+    radial-gradient(ellipse 55% 70% at 100% 0%,rgba(255,102,0,.10) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.20) 0%,transparent 70%),
+    radial-gradient(ellipse 70% 60% at 85% 100%,rgba(70,87,105,.14) 0%,transparent 72%),
+    linear-gradient(180deg,#0D131A 0%,#090D12 45%,#060A0E 100%)!important;
+  border:1px solid rgba(178,191,205,.14)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 90px rgba(0,0,0,.64)!important
+}
+.movement-edit-card .data-edit-head{
+  background:radial-gradient(ellipse 45% 120% at 92% 0%,rgba(255,102,0,.10) 0%,transparent 70%)!important;
+  border-bottom-color:rgba(178,191,205,.10)!important
+}
+.movement-edit-card .data-edit-close{background:rgba(20,27,35,.7)!important;border-color:rgba(178,191,205,.16)!important}
+.movement-edit-card .data-edit-icon{
+  color:#FF6600!important;border:1px solid rgba(255,111,25,.35)!important;
+  background:linear-gradient(135deg,#583018,#24160F 65%,#111214)!important;box-shadow:0 0 22px rgba(255,102,0,.12)!important
+}
+.movement-edit-card .data-edit-icon svg{color:#FF6600!important;stroke:#FF6600!important;stroke-width:1.9}
+.movement-edit-card .field label{color:#A6AFB9!important;letter-spacing:.06em}
+.movement-edit-card .field input,
+.movement-edit-card .field textarea{
+  box-sizing:border-box;width:100%;border-radius:9px!important;
+  background:rgba(14,20,27,.85)!important;border:1px solid rgba(178,191,205,.16)!important;
+  color:#F1F2F4!important;font:500 14px/1.3 Inter,Roboto,Arial,sans-serif!important;box-shadow:none!important;color-scheme:dark
+}
+.movement-edit-card .field input{height:40px;padding:0 12px}
+.movement-edit-card .field textarea{min-height:64px;padding:10px 12px;resize:vertical}
+.movement-edit-card .field input::placeholder,.movement-edit-card .field textarea::placeholder{color:#7F8893}
+.movement-edit-card .field input:focus,.movement-edit-card .field textarea:focus{outline:none;border-color:rgba(255,121,0,.55)!important;box-shadow:0 0 0 3px rgba(255,102,0,.08)!important}
+.movement-edit-card .data-edit-grid .field.wide:last-child{grid-column:1 / -1}
+.movement-edit-card .data-edit-note{background:rgba(14,20,27,.6)!important;border-color:rgba(178,191,205,.12)!important;color:#9AA4AE!important;font-size:11px!important}
+.movement-edit-card .data-edit-note svg{color:#FF7A10!important}
+.movement-edit-card #movementEditCancel{
+  background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.18)!important;
+  color:#E5E8EA!important;font:500 14px/1 Inter,Roboto,Arial,sans-serif!important
+}
+.movement-edit-card #movementEditCancel:hover{border-color:rgba(255,121,0,.45)!important}
+.movement-edit-card #movementEditSave{
+  background:linear-gradient(180deg,#FF7900 0%,#FF6600 100%)!important;border:1px solid rgba(255,160,65,.30)!important;
+  box-shadow:inset 0 1px 0 rgba(255,220,150,.20),0 4px 14px rgba(255,102,0,.20)!important;font:600 14px/1 Inter,Roboto,Arial,sans-serif!important
+}
