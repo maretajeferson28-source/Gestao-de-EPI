@@ -2971,3 +2971,9 @@
   .mov-rodape .g-employee-count{font:400 12.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#D5D8DB}
   .mov-rodape .g-employee-page{min-width:25px;height:25px;font-size:12px}
 }
+/* Movimentações (PC): sem a folga de 32 px embaixo do conteúdo, que fazia
+   aparecer a barra de rolagem da página à toa (a tabela já pagina). */
+@media (min-width:721px){
+  .content:has(> .page[data-page-content="movimentacoes"].active){padding-bottom:0!important;scrollbar-width:none}
+  .content:has(> .page[data-page-content="movimentacoes"].active)::-webkit-scrollbar{display:none}
+}
