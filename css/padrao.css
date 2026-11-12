@@ -2784,3 +2784,7 @@
   box-shadow:0 0 22px rgba(255,102,0,.12)!important
 }
 .historico-card .data-edit-icon svg,.termo-card .data-edit-icon svg{color:#FF6600!important;stroke:#FF6600!important;stroke-width:1.9}
+/* Termo: linha fininha e clara separando os tópicos. */
+.termo-texto li{margin:0!important;padding:8px 0;border-bottom:1px solid rgba(178,191,205,.09)}
+.termo-texto li:last-child{border-bottom:0;padding-bottom:2px}
+.termo-texto p{padding-bottom:8px;margin:0!important;border-bottom:1px solid rgba(178,191,205,.09)}
