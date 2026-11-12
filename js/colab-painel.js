@@ -162,7 +162,8 @@
     if (acao === 'fechar') { fechado = true; render(); return; }
     if (acao === 'termo') return window.EPI_TERMO?.abrir?.(c);
     if (acao === 'os') { const os = osDe(c); if (os) window.EPI_OS_FOLHA?.abrir?.({ os, colaborador: c }); return; }
-    if (acao === 'epis' || acao === 'ultima' || acao === 'historico') return window.EPI_HISTORICO?.abrir?.(c);
+    if (acao === 'ultima') return window.EPI_HISTORICO?.abrir?.(c, { ultima: true });
+    if (acao === 'epis' || acao === 'historico') return window.EPI_HISTORICO?.abrir?.(c);
     if (acao === 'editar' && typeof openColabEdit === 'function') return openColabEdit(c.id);
     if (acao === 'ativo' && typeof toggleColabActive === 'function') return toggleColabActive(c);
   });

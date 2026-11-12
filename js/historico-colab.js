@@ -29,7 +29,7 @@
         <button class="data-edit-close" id="historicoClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
         <div class="data-edit-head">
           <div class="data-edit-icon"><i data-lucide="history" aria-hidden="true"></i></div>
-          <div><span>HISTÓRICO DO COLABORADOR</span><h3 id="historicoTitle"></h3><p id="historicoSub"></p></div>
+          <div><span id="historicoRotulo">HISTÓRICO DO COLABORADOR</span><h3 id="historicoTitle"></h3><p id="historicoSub"></p></div>
         </div>
         <div class="data-edit-body" id="historicoBody"></div>
       </div>`;
@@ -40,9 +40,37 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) fechar(); });
   }
 
-  function abrir(c) {
+  // abrir(c) mostra todas as entregas; abrir(c, { ultima: true }) mostra só
+  // a última entrega (todos os itens lançados na data mais recente).
+  function abrirUltima(c) {
+    const todas = movs().filter((m) => m.colaborador_id === c.id)
+      .sort((a, b) => chave(b.data) - chave(a.data) || (b._order ?? 0) - (a._order ?? 0));
+    const data = todas[0]?.data || '';
+    const lista = data ? todas.filter((m) => m.data === data) : [];
+    const total = lista.reduce((s, m) => s + (Number(m.quantidade) || 0), 0);
+    const resp = [...new Set(lista.map((m) => m.responsavel).filter(Boolean))].join(', ');
+    $('historicoRotulo').textContent = 'ÚLTIMA ENTREGA';
+    $('historicoTitle').textContent = c.nome;
+    $('historicoSub').textContent = [c.cargo, c.setor].filter(Boolean).join(' • ') || 'Sem cargo informado';
+    $('historicoBody').innerHTML = lista.length ? `
+      <div class="historico-kpis">
+        <div><span>Data</span><strong>${escHtml(data)}</strong></div>
+        <div><span>Itens recebidos</span><strong>${fmtNum(total)}</strong></div>
+        <div><span>EPIs</span><strong>${fmtNum(lista.length)}</strong></div>
+        <div><span>Responsável</span><strong>${escHtml(resp || '—')}</strong></div>
+      </div>
+      <div class="table-wrap"><table class="historico-tabela"><thead><tr><th>EPI / Item</th><th>Qtd</th><th>C.A.</th><th>Tamanho</th><th>Observação</th></tr></thead>
+        <tbody>${lista.map((m) => `<tr><td>${escHtml(m.epi)}</td><td>${fmtNum(m.quantidade)}</td><td>${escHtml(m.ca || 'N/A')}</td><td>${escHtml(m.tamanho || 'N/A')}</td><td>${escHtml(m.observacao || '')}</td></tr>`).join('')}</tbody></table></div>`
+      : '<p class="historico-vazio">Nenhuma entrega registrada para este colaborador.</p>';
+    $('historicoModal').classList.remove('hidden');
+    icons();
+  }
+
+  function abrir(c, opcoes) {
     if (!c) return;
     montar();
+    if (opcoes?.ultima) return abrirUltima(c);
+    $('historicoRotulo').textContent = 'HISTÓRICO DO COLABORADOR';
     const lista = movs().filter((m) => m.colaborador_id === c.id)
       .sort((a, b) => chave(b.data) - chave(a.data) || (b._order ?? 0) - (a._order ?? 0));
     const total = lista.reduce((s, m) => s + (Number(m.quantidade) || 0), 0);

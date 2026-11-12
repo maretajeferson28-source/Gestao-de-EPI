@@ -238,14 +238,14 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-colab-painel]')) {
     const colabPainelScript = document.createElement('script');
-    colabPainelScript.src = 'js/colab-painel.js?v=20261112-12';
+    colabPainelScript.src = 'js/colab-painel.js?v=20261112-13';
     colabPainelScript.dataset.colabPainel = 'true';
     document.body.appendChild(colabPainelScript);
   }
 
   if (!document.querySelector('script[data-historico]')) {
     const historicoScript = document.createElement('script');
-    historicoScript.src = 'js/historico-colab.js?v=20261019-1';
+    historicoScript.src = 'js/historico-colab.js?v=20261112-1';
     historicoScript.dataset.historico = 'true';
     document.body.appendChild(historicoScript);
   }
