@@ -2735,3 +2735,14 @@
   }
 
 }
+/* Dashboard (PC): aba ativa do seletor (Geral / Por Colaborador / Por EPI /
+   Por Unidade) com o mesmo efeito do botão ativo da barra lateral:
+   degradê laranja que escurece para a direita, borda laranja e brilho. */
+@media (min-width:721px){
+  .gpi-hero__mode[aria-selected="true"]{
+    border:1px solid #FF7900!important;
+    background:linear-gradient(105deg,#FF7000 0%,#C04B02 35%,#682C06 65%,#361C0D 100%)!important;
+    box-shadow:0 0 17px rgba(255,102,0,.15),inset 0 1px 0 rgba(255,190,100,.22)!important;
+    color:#fff!important
+  }
+}
