@@ -960,8 +960,8 @@ let movPagina=1;
 function movPorPagina(){
   const wrap=document.querySelector('.mov-table-wrap');
   const topo=wrap&&wrap.offsetParent?wrap.getBoundingClientRect().top:150;
-  // 38 cabeçalho, 50 rodapé, 22 de folga embaixo; 38 por linha
-  return Math.max(6,Math.floor((window.innerHeight-topo-38-50-22)/38));
+  // 38 cabeçalho, 50 rodapé, 16 de folga embaixo; 38 por linha
+  return Math.max(6,Math.floor((window.innerHeight-topo-38-50-16)/38));
 }
 function renderRodapeMov(mostrando,total,paginas,noPc){
   const rod=$('movRodape'); if(!rod) return;
