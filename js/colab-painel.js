@@ -169,7 +169,64 @@
   // Os termos (termo.js) carregam logo depois dos dados: redesenha de novo em seguida.
   window.addEventListener('epi:data-loaded', () => { ordens = null; atualizar(); setTimeout(render, 1500); });
 
+  // ---- Topo: botão Novo colaborador, busca e filtros ----
+  // Os filtros guardam a escolha; a tabela (próxima etapa) lê com filtros().
+  const unicos = (campo) => [...new Set(lista('collaborators').map((c) => String(c[campo] || '').trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  function preencherSelect(id, rotulo, valores) {
+    const sel = $(id);
+    if (!sel) return;
+    const atualV = sel.value;
+    sel.innerHTML = `<option value="">${esc(rotulo)}</option>` + valores.map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    if (valores.includes(atualV)) sel.value = atualV;
+  }
+  // Cada filtro fica só com a largura do texto que mostra (o select do
+  // navegador estica até a opção mais comprida da lista).
+  let regua = null;
+  function ajustarLargura(sel) {
+    if (!sel) return;
+    if (!regua) { regua = document.createElement('span'); regua.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;left:-9999px;top:0'; document.body.appendChild(regua); }
+    const cs = getComputedStyle(sel);
+    regua.style.font = cs.font;
+    regua.textContent = sel.options[sel.selectedIndex]?.text || '';
+    sel.style.width = Math.min(170, Math.ceil(regua.offsetWidth) + 11 + 26 + 6) + 'px';
+  }
+  const ajustarTodos = () => document.querySelectorAll('.colab-filtro select').forEach(ajustarLargura);
+  function montarTopo() {
+    preencherSelect('colabFSetor', 'Setor', unicos('setor'));
+    const funcoes = [...new Set(lista('collaborators').map((c) => String(c.funcao || c.cargo || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    preencherSelect('colabFFuncao', 'Função', funcoes);
+    const novo = $('colabNovo');
+    if (novo) novo.hidden = !isAdmin();
+    document.querySelectorAll('.colab-filtro select').forEach((s) => s.classList.toggle('tem-valor', !!s.value));
+    ajustarTodos();
+  }
+  const filtros = () => ({
+    busca: ($('colabBusca')?.value || '').trim(),
+    setor: $('colabFSetor')?.value || '',
+    status: $('colabFStatus')?.value || '',
+    termo: $('colabFTermo')?.value || '',
+    funcao: $('colabFFuncao')?.value || ''
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#colabNovo') && typeof openColabEdit === 'function') openColabEdit(null);
+  });
+  document.addEventListener('change', (e) => {
+    const s = e.target.closest('.colab-filtro select');
+    if (!s) return;
+    s.classList.toggle('tem-valor', !!s.value);
+    ajustarLargura(s);
+    window.dispatchEvent(new CustomEvent('epi:colab-filtros', { detail: filtros() }));
+  });
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'colabBusca') window.dispatchEvent(new CustomEvent('epi:colab-filtros', { detail: filtros() }));
+  });
+  window.addEventListener('epi:data-loaded', montarTopo);
+  document.fonts?.ready?.then(ajustarTodos);
+  montarTopo();
+
   window.EPI_COLAB_PAINEL = {
+    filtros,
     mostrar(id) { atualId = id; fechado = false; atualizar(); },
     fechar() { fechado = true; render(); },
     atualizar

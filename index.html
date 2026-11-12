@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261112-08">
+<link rel="stylesheet" href="css/padrao.css?v=20261112-09">
 </head>
 <body>
 
@@ -350,7 +350,22 @@
         <div class="section-title"><div><h2>Colaboradores</h2><p>83 colaboradores ativos carregados da relação atual. Cadastre novos nomes quando necessário.</p></div></div>
         <div class="toolbar colab-toolbar"><button class="btn primary" id="addColab" type="button"><i data-lucide="user-plus" aria-hidden="true"></i>Novo funcionário</button><label class="colab-search"><i data-lucide="search" aria-hidden="true"></i><input id="colabSearch" type="search" placeholder="Filtrar por nome" autocomplete="off" aria-label="Filtrar colaboradores por nome"></label></div>
         <div class="cards-list" id="colabCards"></div>
-        <div class="colab-pc" id="colabPc"><div class="colab-pc-lista" id="colabPcLista"></div><aside class="colab-det" id="colabDet" aria-label="Detalhes do colaborador" hidden></aside></div>
+        <div class="colab-pc" id="colabPc">
+          <header class="colab-topo">
+            <h2 class="colab-topo-tit">Colaboradores</h2>
+            <p class="colab-topo-sub">Gestão de pessoas, funções, termos e vínculos operacionais.</p>
+            <div class="colab-barra">
+              <button type="button" class="colab-novo" id="colabNovo"><i data-lucide="user-plus" aria-hidden="true"></i><span>Novo colaborador</span></button>
+              <label class="colab-busca"><i data-lucide="search" aria-hidden="true"></i><input id="colabBusca" type="search" placeholder="Buscar por nome, matrícula ou função" autocomplete="off" aria-label="Buscar colaborador por nome, matrícula ou função"></label>
+              <div class="colab-filtros">
+                <label class="colab-filtro"><select id="colabFSetor" aria-label="Filtrar por setor"><option value="">Setor</option></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+                <label class="colab-filtro"><select id="colabFStatus" aria-label="Filtrar por status"><option value="">Status</option><option value="ativo">Ativo</option><option value="afastado">Afastado</option><option value="desativado">Desativado</option></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+                <label class="colab-filtro"><select id="colabFTermo" aria-label="Filtrar por termo"><option value="">Termo</option><option value="assinado">Assinado</option><option value="pendente">Pendente</option></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+                <label class="colab-filtro"><select id="colabFFuncao" aria-label="Filtrar por função"><option value="">Função</option></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+              </div>
+            </div>
+          </header>
+          <div class="colab-pc-lista" id="colabPcLista"></div><aside class="colab-det" id="colabDet" aria-label="Detalhes do colaborador" hidden></aside></div>
       </section>
 
       <div class="data-edit-modal hidden" id="colabEditModal" role="dialog" aria-modal="true" aria-labelledby="colabEditTitle">
