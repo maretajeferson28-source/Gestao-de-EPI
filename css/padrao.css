@@ -3648,3 +3648,7 @@
   .stg-grupo input:focus{outline:0;border-color:color-mix(in srgb,var(--t) 70%,transparent)}
   .stg-hero__bottom{gap:18px}
 }
+/* Tela Economia: "De" e "Até" como meses. */
+@media (min-width:721px){
+  .stg-filtro--mes{flex:0 0 190px}
+}

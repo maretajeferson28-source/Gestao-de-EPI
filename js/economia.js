@@ -133,8 +133,8 @@
           <p class="stg-hero__total"><strong data-econ-total>R$ 0,00</strong><span data-econ-periodo>economizados</span></p>
         </div>
         <div class="stg-hero__bottom">
-          <div class="stg-grupo"><span>Período</span><div><input type="date" data-econ="de" aria-label="Período: de"><input type="date" data-econ="ate" aria-label="Período: até"></div></div>
-          <div class="stg-grupo"><span>Comparar com</span><div><input type="date" data-econ="refDe" aria-label="Comparar com: de"><input type="date" data-econ="refAte" aria-label="Comparar com: até"></div></div>
+          <label class="stg-filtro stg-filtro--mes"><span>De</span><input type="month" data-econ-mes="ref" aria-label="Mês de partida"></label>
+          <label class="stg-filtro stg-filtro--mes"><span>Até</span><input type="month" data-econ-mes="atual" aria-label="Mês de chegada"></label>
           <label class="stg-filtro"><span>EPI / Item</span><select data-econ-epi></select></label>
         </div>
       </div>
@@ -148,20 +148,14 @@
         </div>
       </div>`;
     $('[data-stage-voltar]', el).addEventListener('click', voltar);
-    el.querySelectorAll('[data-econ]').forEach((inp) => {
-      inp.value = estado[inp.dataset.econ] || '';
-      inp.addEventListener('change', () => {
-        estado[inp.dataset.econ] = inp.value;
-        // Mudou o período escolhido: a comparação acompanha (período anterior).
-        if ((inp.dataset.econ === 'de' || inp.dataset.econ === 'ate') && estado.de && estado.ate) {
-          const ref = anterior(estado.de, estado.ate);
-          estado.refDe = ref.de; estado.refAte = ref.ate;
-          el.querySelector('[data-econ="refDe"]').value = ref.de;
-          el.querySelector('[data-econ="refAte"]').value = ref.ate;
-        }
-        atualizar();
-      });
-    });
+    // "De" = mês de partida (custo médio de antes); "Até" = mês de chegada
+    // (custo médio de agora, vezes o que foi entregue nele).
+    const mesInteiro = (ym) => { const [y, m] = ym.split('-').map(Number); return { de: `${ym}-01`, ate: dataIso(new Date(y, m, 0)) }; };
+    const mesRef = $('[data-econ-mes="ref"]', el), mesAtual = $('[data-econ-mes="atual"]', el);
+    mesRef.value = (estado.refDe || '').slice(0, 7);
+    mesAtual.value = (estado.de || '').slice(0, 7);
+    mesRef.addEventListener('change', () => { if (!mesRef.value) return; const p = mesInteiro(mesRef.value); estado.refDe = p.de; estado.refAte = p.ate; atualizar(); });
+    mesAtual.addEventListener('change', () => { if (!mesAtual.value) return; const p = mesInteiro(mesAtual.value); estado.de = p.de; estado.ate = p.ate; atualizar(); });
     $('[data-econ-epi]', el).addEventListener('change', (e) => { estado.epi = e.target.value; atualizar(); });
     atualizar();
   }
@@ -175,7 +169,7 @@
     const tot = $('[data-econ-total]', raiz);
     tot.innerHTML = `<small>R$</small>${semRs(Math.abs(total))}`; // o texto ao lado diz se foi economia ou gasto a mais
     tot.classList.toggle('is-neg', total < 0);
-    $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} em ${rotulo(estado.de, estado.ate)} comparado a ${rotulo(estado.refDe, estado.refAte)}`;
+    $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} de ${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
     $('[data-econ-th-ref]', raiz).textContent = rotulo(estado.refDe, estado.refAte);
     $('[data-econ-th-atual]', raiz).textContent = rotulo(estado.de, estado.ate);
     $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => `
@@ -193,7 +187,7 @@
   // Card Economia do Dashboard: mesma conta, com o período do Dashboard.
   function doCard() {
     const p = padrao();
-    return { total: calcular({ ...p, epi: '' }).total, texto: `${rotulo(p.de, p.ate)} vs ${rotulo(p.refDe, p.refAte)}` };
+    return { total: calcular({ ...p, epi: '' }).total, texto: `de ${rotulo(p.refDe, p.refAte)} até ${rotulo(p.de, p.ate)}` };
   }
 
   window.EPI_PALCO_ECONOMIA = { montar, atualizar };
