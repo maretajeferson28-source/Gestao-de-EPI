@@ -1588,7 +1588,7 @@ function renderEpiTabela(){
     try{
       const path=el.dataset.foto;
       const src=epiFotoRecorte.get(path)||await variantImageUrl(path).then(u=>u&&recortarFundoBranco(u)).then(r=>{ if(r) epiFotoRecorte.set(path,r); return r; });
-      if(src&&el.isConnected){ el.innerHTML=`<img src="${esc(src)}" alt="" loading="lazy">`; el.classList.add('tem-foto'); }
+      if(src&&el.isConnected){ el.innerHTML=`<img src="${esc(src)}" alt="">`; el.classList.add('tem-foto'); }
     }catch(_){}
   });
 }
@@ -1621,7 +1621,13 @@ function recortarFundoBranco(url){
           if(viz&&Math.min(px[i],px[i+1],px[i+2])>190) px[i+3]=110;
         }
         ctx.putImageData(d,0,0);
-        res(cv.toDataURL('image/png'));
+        // Apara a sobra transparente: cada produto ocupa a célula inteira.
+        let x0=w,y0=h,x1=-1,y1=-1;
+        for(let p=0;p<w*h;p++) if(px[p*4+3]>40){ const x=p%w,y=(p-x)/w; if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+        if(x1<x0){ res(cv.toDataURL('image/png')); return; }
+        const cw=x1-x0+1, ch=y1-y0+1, out=document.createElement('canvas'); out.width=cw; out.height=ch;
+        out.getContext('2d').drawImage(cv,x0,y0,cw,ch,0,0,cw,ch);
+        res(out.toDataURL('image/png'));
       }catch(_){ res(null); }
     };
     img.src=url;
