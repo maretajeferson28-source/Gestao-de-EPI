@@ -22,7 +22,7 @@
     { k: 'entregas', tom: 'blue', icone: 'package', rotulo: 'Entregas realizadas' },
     { k: 'colab', tom: 'purple', icone: 'users-round', rotulo: 'Colaboradores atendidos' },
     { k: 'valor', tom: 'red', icone: 'banknote', rotulo: 'Valor gasto', moeda: true },
-    { k: 'economia', tom: 'green', icone: 'piggy-bank', rotulo: 'Economia', moeda: true, dica: 'Quanto se economizou entregando o C.A. atual no lugar do C.A. antigo, mais caro' }
+    { k: 'economia', tom: 'green', icone: 'piggy-bank', rotulo: 'Economia', moeda: true, dica: 'Custo médio por unidade de cada item no período, comparado com o período anterior. Clique para ver os detalhes.' }
   ];
 
   function montar() {
@@ -129,6 +129,17 @@
       $('[data-badge]', card).hidden = true;
       const mesTxt = document.querySelector('[data-hero-periodo]')?.textContent.trim() || '';
       $('[data-sub]', card).textContent = !ant ? 'todo o período' : ant.periodo || !mesTxt || /todo/i.test(mesTxt) ? 'no período escolhido' : `em ${mesTxt}`;
+      // Economia: conta por período (js/economia.js), custo médio por unidade
+      // do período comparado com o período anterior.
+      if (c.k === 'economia' && window.EPI_ECONOMIA) {
+        const e = window.EPI_ECONOMIA.doCard();
+        const v = $('[data-valor]', card);
+        v.innerHTML = '';
+        // Negativo = gastou mais por unidade que no período anterior: "−R$ 0,84".
+        const rs = document.createElement('small'); rs.className = 'kpi-card__moeda'; rs.textContent = e.total < 0 ? '−R$' : 'R$';
+        v.append(rs, document.createTextNode(dinheiro(Math.abs(e.total)).replace(/^R\$\s*/, '')));
+        $('[data-sub]', card).textContent = e.texto;
+      }
     });
   }
 

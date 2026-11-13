@@ -193,13 +193,13 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-dash-kpis]')) {
     const dashKpisScript = document.createElement('script');
-    dashKpisScript.src = 'js/dash-kpis.js?v=20261113-2';
+    dashKpisScript.src = 'js/dash-kpis.js?v=20261113-4';
     dashKpisScript.dataset.dashKpis = 'true';
     document.body.appendChild(dashKpisScript);
   }
   if (!document.querySelector('script[data-economia]')) {
     const economiaScript = document.createElement('script');
-    economiaScript.src = 'js/economia.js?v=20261113-5';
+    economiaScript.src = 'js/economia.js?v=20261113-7';
     economiaScript.dataset.economia = 'true';
     document.body.appendChild(economiaScript);
   }

@@ -3635,3 +3635,16 @@
   .stg-hero__arte{display:none}
   .stg-hero__bottom{flex-wrap:wrap;bottom:24px}
 }
+/* Tela Economia: filtros "Período" e "Comparar com", cada um com duas datas lado a lado. */
+@media (min-width:721px){
+  .stg-grupo{display:flex;flex-direction:column;gap:6px;min-width:0;flex:0 0 auto}
+  .stg-grupo>span{font:700 10.5px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#C7CDD6}
+  .stg-grupo>div{display:flex;gap:6px}
+  .stg-grupo input{
+    width:150px;height:42px;box-sizing:border-box;padding:0 10px;border-radius:13px;color-scheme:dark;
+    color:#F5F6F8;font:500 13px/1 Inter,Roboto,Arial,sans-serif;
+    background:rgba(11,17,24,.82);border:1px solid rgba(209,220,232,.14);backdrop-filter:blur(14px)
+  }
+  .stg-grupo input:focus{outline:0;border-color:color-mix(in srgb,var(--t) 70%,transparent)}
+  .stg-hero__bottom{gap:18px}
+}

@@ -1,8 +1,12 @@
 (() => {
   'use strict';
-  // Tela "Economia" do Dashboard (abre pelo card Economia, js/dash-palco.js).
-  // Cada C.A. Atual é comparado com um C.A. Antigo do mesmo item, pelas
-  // entregas do período. Só lê dados.
+  // Economia por período (tela aberta pelo card Economia, js/dash-palco.js,
+  // e o próprio card do Dashboard, js/dash-kpis.js).
+  // Para cada EPI / item: custo médio por unidade no período de referência
+  // menos o custo médio no período escolhido, vezes a quantidade entregue no
+  // período escolhido. O custo de cada entrega é o preço cadastrado do C.A.
+  // entregue (C.A. desativado também vale). Entrega sem preço fica de fora.
+  // Só lê dados.
   if (window.__EPI_ECONOMIA__) return;
   window.__EPI_ECONOMIA__ = true;
 
@@ -13,70 +17,108 @@
   const num = (n) => new Intl.NumberFormat('pt-BR').format(n || 0);
   const iso = (br) => { const p = String(br || '').split('/'); return p[2] ? `${p[2]}-${p[1]}-${p[0]}` : ''; };
   const val = (id) => document.getElementById(id)?.value || '';
+  const pad = (n) => String(n).padStart(2, '0');
+  const dataIso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   // Globais do app.js (declaradas com let, visíveis entre scripts).
   const variantes = () => (typeof epiVariants !== 'undefined' && Array.isArray(epiVariants) ? epiVariants : []);
   const catalogo = () => (typeof epiCatalog !== 'undefined' && Array.isArray(epiCatalog) ? epiCatalog : []);
   const entregas = () => (typeof movements !== 'undefined' && Array.isArray(movements) ? movements : []);
   const chave = (ca) => { try { return caKey(ca); } catch (_) { return String(ca || '').replace(/\D+/g, ''); } };
-  const titulo = (ca) => { try { return codeTitle(ca); } catch (_) { return `C.A. ${ca}`; } };
-  const temPreco = (v) => v.preco !== null && v.preco !== undefined && v.preco !== '' && Number.isFinite(Number(v.preco));
-  const nomeEpi = (id) => catalogo().find((e) => e.id === id)?.nome || 'EPI / Item';
+  const temPreco = (v) => v.preco !== null && v.preco !== undefined && v.preco !== '' && Number.isFinite(Number(v.preco)) && Number(v.preco) > 0;
+  const nomeEpi = (id, m) => catalogo().find((e) => e.id === id)?.nome || m?.epi || 'EPI / Item';
 
-  const atuais = () => variantes()
-    .filter((v) => v.comparativo_status === 'atual' && v.ativo !== false && temPreco(v))
-    .sort((a, b) => nomeEpi(a.epi_id).localeCompare(nomeEpi(b.epi_id), 'pt-BR') || String(a.ca).localeCompare(String(b.ca), 'pt-BR', { numeric: true }));
-  const antigosDe = (epiId) => variantes()
-    .filter((v) => v.epi_id === epiId && v.comparativo_status === 'passada' && temPreco(v))
-    .sort((a, b) => Number(a.preco) - Number(b.preco));
+  function precoDe(m) {
+    const k = chave(m.ca);
+    if (!m.epi_id || !k) return null;
+    const v = variantes().find((x) => x.epi_id === m.epi_id && chave(x.ca) === k && temPreco(x));
+    return v ? Number(v.preco) : null;
+  }
 
-  // Mesmos filtros do card Economia (colaborador, EPI, responsável, busca do
-  // banner); o período é o da própria tela, que começa igual ao do Dashboard.
+  // Filtros do Dashboard que não são de data (colaborador, EPI, responsável, busca).
   const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  function entregasFiltradas() {
-    const { de, ate } = estado;
+  function passaFiltrosDash(x) {
     const c = val('fColab'), e = val('fEpi'), r = val('fResp');
+    if ((c && x.colaborador !== c) || (e && x.epi !== e) || (r && x.responsavel !== r)) return false;
     const b = window.EPI_BUSCA || {}, q = semAcento(b.texto);
-    return entregas().filter((x) => {
-      const d = iso(x.data);
-      if ((de && d < de) || (ate && d > ate) || (c && x.colaborador !== c) || (e && x.epi !== e) || (r && x.responsavel !== r)) return false;
-      if (!q) return true;
-      const col = semAcento(x.colaborador).includes(q), epi = semAcento(x.epi).includes(q);
-      return b.modo === 'colaborador' ? col : b.modo === 'epi' ? epi : (col || epi);
+    if (!q) return true;
+    const col = semAcento(x.colaborador).includes(q), epi = semAcento(x.epi).includes(q);
+    return b.modo === 'colaborador' ? col : b.modo === 'epi' ? epi : (col || epi);
+  }
+
+  // Período de comparação: mês inteiro → mês anterior; senão, o mesmo número de dias logo antes.
+  function anterior(de, ate) {
+    if (!de || !ate) return null;
+    const ini = new Date(`${de}T00:00:00`), fim = new Date(`${ate}T00:00:00`);
+    const mesInteiro = ini.getDate() === 1 && fim.getMonth() === ini.getMonth() && new Date(fim.getFullYear(), fim.getMonth(), fim.getDate() + 1).getDate() === 1;
+    if (mesInteiro) return { de: dataIso(new Date(ini.getFullYear(), ini.getMonth() - 1, 1)), ate: dataIso(new Date(ini.getFullYear(), ini.getMonth(), 0)) };
+    const dias = Math.round((fim - ini) / 86400000) + 1;
+    return { de: dataIso(new Date(ini.getFullYear(), ini.getMonth(), ini.getDate() - dias)), ate: dataIso(new Date(ini.getFullYear(), ini.getMonth(), ini.getDate() - 1)) };
+  }
+  // Sem período no Dashboard: último mês com entregas, comparado com o mês anterior.
+  function padrao() {
+    const de = val('fDe'), ate = val('fAte');
+    if (de && ate) { const ref = anterior(de, ate); return { de, ate, refDe: ref.de, refAte: ref.ate }; }
+    const ultima = entregas().map((m) => iso(m.data)).filter(Boolean).sort().pop();
+    const base = ultima ? new Date(`${ultima}T00:00:00`) : new Date();
+    const de2 = dataIso(new Date(base.getFullYear(), base.getMonth(), 1));
+    const ate2 = dataIso(new Date(base.getFullYear(), base.getMonth() + 1, 0));
+    const ref = anterior(de2, ate2);
+    return { de: de2, ate: ate2, refDe: ref.de, refAte: ref.ate };
+  }
+  // "out/2026" para mês inteiro; "01/10 a 15/10" para outros intervalos.
+  function rotulo(de, ate) {
+    if (!de || !ate) return 'todo o período';
+    const i = new Date(`${de}T00:00:00`);
+    const mesInteiro = i.getDate() === 1 && ate === dataIso(new Date(i.getFullYear(), i.getMonth() + 1, 0));
+    if (mesInteiro) return `${MES[i.getMonth()]}/${i.getFullYear()}`;
+    const br = (s) => s.split('-').reverse().slice(0, 2).join('/');
+    return `${br(de)} a ${br(ate)}`;
+  }
+
+  // Custo médio por unidade de cada item num intervalo.
+  function resumoPorItem(de, ate, epi) {
+    const mapa = new Map();
+    entregas().forEach((m) => {
+      const d = iso(m.data);
+      if (!d || (de && d < de) || (ate && d > ate) || (epi && m.epi_id !== epi) || !passaFiltrosDash(m)) return;
+      const k = m.epi_id || m.epi;
+      const o = mapa.get(k) || { id: m.epi_id, nome: nomeEpi(m.epi_id, m), qtd: 0, qtdPreco: 0, valor: 0, semPreco: 0 };
+      const q = Number(m.quantidade) || 0, p = precoDe(m);
+      o.qtd += q;
+      if (p == null) o.semPreco += q; else { o.qtdPreco += q; o.valor += p * q; }
+      mapa.set(k, o);
     });
+    mapa.forEach((o) => { o.medio = o.qtdPreco ? o.valor / o.qtdPreco : null; });
+    return mapa;
+  }
+
+  function calcular({ de, ate, refDe, refAte, epi }) {
+    const atual = resumoPorItem(de, ate, epi), ref = resumoPorItem(refDe, refAte, epi);
+    const linhas = [];
+    atual.forEach((a, k) => {
+      const r = ref.get(k);
+      if (a.medio == null || !r || r.medio == null) return;
+      const unit = r.medio - a.medio;
+      linhas.push({ nome: a.nome, ref: r, atual: a, unit, total: unit * a.qtdPreco });
+    });
+    linhas.sort((x, y) => y.total - x.total);
+    return { linhas, total: linhas.reduce((s, l) => s + l.total, 0) };
   }
 
   let raiz = null;
-  const estado = { de: '', ate: '', epi: '' };
+  const estado = { de: '', ate: '', refDe: '', refAte: '', epi: '' };
 
-  function calcular() {
-    const lista = entregasFiltradas();
-    const linhas = [];
-    // Cada C.A. Atual do item é comparado com o Antigo mais barato entre os que custavam mais que ele.
-    atuais().filter((v) => !estado.epi || v.epi_id === estado.epi).forEach((atual) => {
-      const preco = Number(atual.preco);
-      const antigos = antigosDe(atual.epi_id);
-      const base = antigos.find((v) => Number(v.preco) > preco);
-      if (!base) return;
-      const ca = chave(atual.ca);
-      const qtd = lista.filter((m) => m.epi_id === atual.epi_id && chave(m.ca) === ca).reduce((s, m) => s + (Number(m.quantidade) || 0), 0);
-      const unit = Number(base.preco) - preco;
-      linhas.push({ atual, base, qtd, unit, total: unit * qtd });
-    });
-    return linhas.sort((a, b) => b.total - a.total || b.unit - a.unit);
-  }
-
-  // Itens que têm pelo menos um C.A. Atual e um Antigo com preço.
   function opcoesEpi() {
-    const ids = [...new Set(atuais().map((v) => v.epi_id))].filter((id) => antigosDe(id).length);
-    return '<option value="">Todos os itens</option>' + ids
-      .map((id) => [id, nomeEpi(id)]).sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
+    const ids = new Map();
+    entregas().forEach((m) => { if (m.epi_id && !ids.has(m.epi_id)) ids.set(m.epi_id, nomeEpi(m.epi_id, m)); });
+    return '<option value="">Todos os itens</option>' + [...ids].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
       .map(([id, nome]) => `<option value="${esc(id)}"${id === estado.epi ? ' selected' : ''}>${esc(nome)}</option>`).join('');
   }
 
   function montar(el, voltar) {
     raiz = el;
-    estado.de = val('fDe');
-    estado.ate = val('fAte');
+    Object.assign(estado, padrao(), { epi: '' });
     el.innerHTML = `
       <div class="stg-hero stg-hero--green">
         <span class="stg-hero__slash" aria-hidden="true"></span>
@@ -91,54 +133,71 @@
           <p class="stg-hero__total"><strong data-econ-total>R$ 0,00</strong><span data-econ-periodo>economizados</span></p>
         </div>
         <div class="stg-hero__bottom">
-          <label class="stg-filtro stg-filtro--data"><span>De</span><input type="date" data-econ-de></label>
-          <label class="stg-filtro stg-filtro--data"><span>Até</span><input type="date" data-econ-ate></label>
+          <div class="stg-grupo"><span>Período</span><div><input type="date" data-econ="de" aria-label="Período: de"><input type="date" data-econ="ate" aria-label="Período: até"></div></div>
+          <div class="stg-grupo"><span>Comparar com</span><div><input type="date" data-econ="refDe" aria-label="Comparar com: de"><input type="date" data-econ="refAte" aria-label="Comparar com: até"></div></div>
           <label class="stg-filtro"><span>EPI / Item</span><select data-econ-epi></select></label>
         </div>
       </div>
       <div class="stg-painel">
-        <div class="stg-painel__head"><h3>Comparações</h3><p>Entram os C.A.s marcados como <b>Atual</b> ou <b>Antigo</b> no prontuário do EPI, com preço cadastrado.</p></div>
+        <div class="stg-painel__head"><h3>Custo por unidade em cada período</h3><p>Preço cadastrado do C.A. de cada entrega. Entrega de C.A. sem preço fica de fora da média.</p></div>
         <div class="stg-tabela-wrap">
           <table class="stg-tabela">
-            <thead><tr><th>EPI / Item</th><th>C.A. atual</th><th>Comparado com</th><th class="num">Entregues</th><th class="num">Por unidade</th><th class="num">Economia</th></tr></thead>
+            <thead><tr><th>EPI / Item</th><th class="num" data-econ-th-ref>Comparar com</th><th class="num" data-econ-th-atual>Período</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
             <tbody data-econ-corpo></tbody>
           </table>
         </div>
       </div>`;
     $('[data-stage-voltar]', el).addEventListener('click', voltar);
-    $('[data-econ-de]', el).value = estado.de;
-    $('[data-econ-ate]', el).value = estado.ate;
-    $('[data-econ-de]', el).addEventListener('change', (e) => { estado.de = e.target.value; atualizar(); });
-    $('[data-econ-ate]', el).addEventListener('change', (e) => { estado.ate = e.target.value; atualizar(); });
+    el.querySelectorAll('[data-econ]').forEach((inp) => {
+      inp.value = estado[inp.dataset.econ] || '';
+      inp.addEventListener('change', () => {
+        estado[inp.dataset.econ] = inp.value;
+        // Mudou o período escolhido: a comparação acompanha (período anterior).
+        if ((inp.dataset.econ === 'de' || inp.dataset.econ === 'ate') && estado.de && estado.ate) {
+          const ref = anterior(estado.de, estado.ate);
+          estado.refDe = ref.de; estado.refAte = ref.ate;
+          el.querySelector('[data-econ="refDe"]').value = ref.de;
+          el.querySelector('[data-econ="refAte"]').value = ref.ate;
+        }
+        atualizar();
+      });
+    });
     $('[data-econ-epi]', el).addEventListener('change', (e) => { estado.epi = e.target.value; atualizar(); });
     atualizar();
   }
 
+  const celula = (o) => `<b>${dinheiro(o.medio)}/un</b><small>${num(o.qtdPreco)} un${o.semPreco ? ` · ${num(o.semPreco)} sem preço` : ''}</small>`;
+
   function atualizar() {
     if (!raiz || !raiz.isConnected || !$('[data-econ-corpo]', raiz)) return;
-    if (estado.epi && !atuais().some((v) => v.epi_id === estado.epi)) estado.epi = '';
     $('[data-econ-epi]', raiz).innerHTML = opcoesEpi();
-
-    const linhas = calcular();
-    const total = linhas.reduce((s, l) => s + l.total, 0);
-    // Total grande no banner, no lugar dos cards.
+    const { linhas, total } = calcular(estado);
     const tot = $('[data-econ-total]', raiz);
-    tot.innerHTML = `<small>R$</small>${semRs(total)}`;
+    tot.innerHTML = `<small>R$</small>${semRs(Math.abs(total))}`; // o texto ao lado diz se foi economia ou gasto a mais
     tot.classList.toggle('is-neg', total < 0);
-    $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} ${!estado.de && !estado.ate ? 'em todo o período' : 'no período escolhido'}`;
-
+    $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} em ${rotulo(estado.de, estado.ate)} comparado a ${rotulo(estado.refDe, estado.refAte)}`;
+    $('[data-econ-th-ref]', raiz).textContent = rotulo(estado.refDe, estado.refAte);
+    $('[data-econ-th-atual]', raiz).textContent = rotulo(estado.de, estado.ate);
     $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => `
       <tr>
-        <td>${esc(nomeEpi(l.atual.epi_id))}${l.atual.apelido ? `<small>${esc(l.atual.apelido)}</small>` : ''}</td>
-        <td><b>${esc(titulo(l.atual.ca))}</b><small>${dinheiro(l.atual.preco)}</small></td>
-        <td><b>${esc(titulo(l.base.ca))}</b><small>${dinheiro(l.base.preco)}</small></td>
-        <td class="num">${num(l.qtd)}</td>
+        <td>${esc(l.nome)}</td>
+        <td class="num">${celula(l.ref)}</td>
+        <td class="num">${celula(l.atual)}</td>
         <td class="num${l.unit < 0 ? ' is-neg' : ''}">${dinheiro(l.unit)}</td>
         <td class="num stg-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
       </tr>`).join('')
-      : '<tr><td colspan="6" class="stg-vazio">Nenhuma comparação possível com esses filtros.</td></tr>';
+      : '<tr><td colspan="5" class="stg-vazio">Nenhum item com entregas com preço nos dois períodos.</td></tr>';
     window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   }
 
+  // Card Economia do Dashboard: mesma conta, com o período do Dashboard.
+  function doCard() {
+    const p = padrao();
+    return { total: calcular({ ...p, epi: '' }).total, texto: `${rotulo(p.de, p.ate)} vs ${rotulo(p.refDe, p.refAte)}` };
+  }
+
   window.EPI_PALCO_ECONOMIA = { montar, atualizar };
+  window.EPI_ECONOMIA = { doCard };
+  // Este arquivo pode carregar depois do card: pede para ele recalcular.
+  window.dispatchEvent(new CustomEvent('epi:busca'));
 })();
