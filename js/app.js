@@ -1607,7 +1607,10 @@ function recortarFundoBranco(url){
         const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
         const ctx=cv.getContext('2d'); ctx.drawImage(img,0,0,w,h);
         const d=ctx.getImageData(0,0,w,h), px=d.data;
-        const claro=i=>{ const r=px[i],g=px[i+1],b=px[i+2]; return px[i+3]<20||(Math.min(r,g,b)>226&&Math.max(r,g,b)-Math.min(r,g,b)<24); };
+        // Foto que já vem sem fundo (PNG transparente): fica como está, só aparada.
+        let transp=0; for(let i=3;i<px.length;i+=4) if(px[i]<250) transp++;
+        const jaSemFundo=transp>w*h*0.02;
+        const claro=i=>{ if(jaSemFundo) return false; const r=px[i],g=px[i+1],b=px[i+2]; return px[i+3]<20||(Math.min(r,g,b)>226&&Math.max(r,g,b)-Math.min(r,g,b)<24); };
         const vis=new Uint8Array(w*h), fila=[];
         const por=(x,y)=>{ const p=y*w+x; if(!vis[p]&&claro(p*4)){ vis[p]=1; fila.push(p); } };
         for(let x=0;x<w;x++){ por(x,0); por(x,h-1); }
