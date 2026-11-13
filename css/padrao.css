@@ -3300,3 +3300,8 @@
     -webkit-mask-composite:source-in!important;mask-composite:intersect!important
   }
 }
+/* EPIs (PC): nomes da coluna EPI e selos de Situação alinhados à direita. */
+@media (min-width:721px){
+  .epi-tab th:nth-child(2),.epi-tab td:nth-child(2),
+  .epi-tab th:nth-child(7),.epi-tab td:nth-child(7){text-align:right!important;padding-right:18px!important}
+}
