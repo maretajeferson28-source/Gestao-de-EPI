@@ -46,15 +46,16 @@
   }
 
   let raiz = null;
-  const estado = { de: '', ate: '', atual: '', base: '' };
+  const estado = { de: '', ate: '', epi: '' };
 
   function calcular() {
     const lista = entregasFiltradas();
     const linhas = [];
-    atuais().filter((v) => !estado.atual || v.id === estado.atual).forEach((atual) => {
+    // Cada C.A. Atual do item é comparado com o Antigo mais barato entre os que custavam mais que ele.
+    atuais().filter((v) => !estado.epi || v.epi_id === estado.epi).forEach((atual) => {
       const preco = Number(atual.preco);
       const antigos = antigosDe(atual.epi_id);
-      const base = estado.base ? antigos.find((v) => v.id === estado.base) : antigos.find((v) => Number(v.preco) > preco);
+      const base = antigos.find((v) => Number(v.preco) > preco);
       if (!base) return;
       const ca = chave(atual.ca);
       const qtd = lista.filter((m) => m.epi_id === atual.epi_id && chave(m.ca) === ca).reduce((s, m) => s + (Number(m.quantidade) || 0), 0);
@@ -64,15 +65,12 @@
     return linhas.sort((a, b) => b.total - a.total || b.unit - a.unit);
   }
 
-  function opcoesAtual() {
-    return '<option value="">Todos os C.A.s atuais</option>' + atuais()
-      .map((v) => `<option value="${esc(v.id)}"${v.id === estado.atual ? ' selected' : ''}>${esc(nomeEpi(v.epi_id))} · ${esc(titulo(v.ca))} (${dinheiro(v.preco)})</option>`).join('');
-  }
-  function opcoesBase() {
-    const atual = variantes().find((v) => v.id === estado.atual);
-    if (!atual) return '<option value="">Automático</option>';
-    return '<option value="">Automático (antigo mais barato acima do atual)</option>' + antigosDe(atual.epi_id)
-      .map((v) => `<option value="${esc(v.id)}"${v.id === estado.base ? ' selected' : ''}>${esc(titulo(v.ca))}${v.apelido ? ` · ${esc(v.apelido)}` : ''} (${dinheiro(v.preco)})</option>`).join('');
+  // Itens que têm pelo menos um C.A. Atual e um Antigo com preço.
+  function opcoesEpi() {
+    const ids = [...new Set(atuais().map((v) => v.epi_id))].filter((id) => antigosDe(id).length);
+    return '<option value="">Todos os itens</option>' + ids
+      .map((id) => [id, nomeEpi(id)]).sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
+      .map(([id, nome]) => `<option value="${esc(id)}"${id === estado.epi ? ' selected' : ''}>${esc(nome)}</option>`).join('');
   }
 
   function montar(el, voltar) {
@@ -95,8 +93,7 @@
         <div class="stg-hero__bottom">
           <label class="stg-filtro stg-filtro--data"><span>De</span><input type="date" data-econ-de></label>
           <label class="stg-filtro stg-filtro--data"><span>Até</span><input type="date" data-econ-ate></label>
-          <label class="stg-filtro"><span>C.A. atual</span><select data-econ-atual></select></label>
-          <label class="stg-filtro"><span>Comparar com</span><select data-econ-base></select></label>
+          <label class="stg-filtro"><span>EPI / Item</span><select data-econ-epi></select></label>
         </div>
       </div>
       <div class="stg-painel">
@@ -113,18 +110,14 @@
     $('[data-econ-ate]', el).value = estado.ate;
     $('[data-econ-de]', el).addEventListener('change', (e) => { estado.de = e.target.value; atualizar(); });
     $('[data-econ-ate]', el).addEventListener('change', (e) => { estado.ate = e.target.value; atualizar(); });
-    $('[data-econ-atual]', el).addEventListener('change', (e) => { estado.atual = e.target.value; estado.base = ''; atualizar(); });
-    $('[data-econ-base]', el).addEventListener('change', (e) => { estado.base = e.target.value; atualizar(); });
+    $('[data-econ-epi]', el).addEventListener('change', (e) => { estado.epi = e.target.value; atualizar(); });
     atualizar();
   }
 
   function atualizar() {
     if (!raiz || !raiz.isConnected || !$('[data-econ-corpo]', raiz)) return;
-    if (estado.atual && !atuais().some((v) => v.id === estado.atual)) { estado.atual = ''; estado.base = ''; }
-    const sa = $('[data-econ-atual]', raiz), sb = $('[data-econ-base]', raiz);
-    sa.innerHTML = opcoesAtual();
-    sb.innerHTML = opcoesBase();
-    sb.disabled = !estado.atual;
+    if (estado.epi && !atuais().some((v) => v.epi_id === estado.epi)) estado.epi = '';
+    $('[data-econ-epi]', raiz).innerHTML = opcoesEpi();
 
     const linhas = calcular();
     const total = linhas.reduce((s, l) => s + l.total, 0);
