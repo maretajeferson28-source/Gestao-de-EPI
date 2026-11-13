@@ -3382,14 +3382,15 @@
 /* Prontuário do EPI: painel "Adicionar C.A." só abre pelo botão do cabeçalho
    ou pelo Editar do card; a contagem de C.A.s vai para baixo do nome. */
 .epi-detail-modal .epi-detail-count{display:none!important}
+/* Botão secundário em aço; o laranja fica só no "+". */
 .epi-detail-modal .epi-add-ca-btn{
-  justify-self:end;align-self:center;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:10px;
-  font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;white-space:nowrap;color:#fff!important;
-  background:linear-gradient(180deg,#FF7A1A,#F06000)!important;border:1px solid rgba(255,138,42,.85)!important;
-  box-shadow:0 6px 18px rgba(255,102,0,.22)
+  justify-self:end;align-self:center;display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:11px;
+  font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;white-space:nowrap;color:#E8ECF0!important;
+  background:linear-gradient(180deg,rgba(24,32,41,.95),rgba(15,21,28,.95))!important;border:1px solid rgba(178,191,205,.20)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important
 }
-.epi-detail-modal .epi-add-ca-btn:hover{filter:brightness(1.08)}
-.epi-detail-modal .epi-add-ca-btn svg{width:15px;height:15px}
+.epi-detail-modal .epi-add-ca-btn:hover{border-color:rgba(255,121,0,.55)!important;color:#fff!important}
+.epi-detail-modal .epi-add-ca-btn svg{width:15px;height:15px;color:#FF7A1A}
 .epi-detail-modal .epi-add-ca-btn[hidden]{display:none!important}
 .epi-detail-modal #epiDetailCategory{color:#9FB0C2}
 /* Com o painel fechado, o prontuário usa a largura toda: campos em 3 colunas. */
@@ -3410,3 +3411,34 @@
 .epi-dossier-destaques b{display:block;font:700 16px/1.1 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
 /* Rodapé do card só com os botões, à direita. */
 .epi-dossier-footer{justify-content:flex-end!important}
+/* Prontuário do EPI (PC): topo numa linha só. Ícone e nome à esquerda;
+   seletor do C.A. e "Adicionar C.A." juntos à direita; o X separado por
+   um traço, como ação da janela. (:not(#_) só dá peso para vencer as
+   regras antigas de ca-user-tools.js.) */
+@media (min-width:761px){
+  #epiDetailModal .epi-detail-head:not(#_){
+    display:flex!important;align-items:center!important;gap:12px!important;
+    min-height:84px;box-sizing:border-box;padding:16px 84px 16px 20px!important
+  }
+  #epiDetailModal .epi-detail-head-copy{flex:1 1 auto;min-width:0}
+  #epiDetailModal #epiCaSelectorWrap{
+    position:relative!important;left:auto!important;top:auto!important;transform:none!important;
+    width:240px!important;flex:0 0 240px;margin:0!important
+  }
+  #epiDetailModal #epiCaSelectorLabel{display:none}
+  #epiDetailModal .epi-detail-head:not(#_)::after{
+    content:"";position:absolute;right:68px;top:50%;width:1px;height:28px;transform:translateY(-50%);
+    background:rgba(178,191,205,.16)
+  }
+  #epiDetailModal #epiDetailClose{top:25px!important;right:20px!important;width:38px!important;height:38px!important;border-radius:11px!important}
+}
+/* Seletor do C.A. em aço; laranja só ao passar o mouse ou com o menu aberto. */
+#epiDetailModal #epiCaSelectorButton{
+  height:38px;border-color:rgba(178,191,205,.20)!important;
+  background:linear-gradient(180deg,rgba(24,32,41,.95),rgba(15,21,28,.95))!important
+}
+#epiDetailModal #epiCaSelectorButton:hover,
+#epiDetailModal #epiCaSelectorButton[aria-expanded="true"]{border-color:rgba(255,121,0,.55)!important}
+/* Um C.A. só: vira etiqueta, sem setinha e sem abrir menu. */
+#epiDetailModal #epiCaSelectorButton.is-unico{pointer-events:none;cursor:default}
+#epiDetailModal #epiCaSelectorButton.is-unico .epi-ca-selector-chevron{display:none}

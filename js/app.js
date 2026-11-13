@@ -1803,6 +1803,7 @@ function renderEpiVariantList(){
     if(!rows.length){
       selectedVariantId=null;
       selectorButton.disabled=true;
+      selectorButton.classList.remove('is-unico');
       selectorButton.setAttribute('aria-expanded','false');
       selectorMenu.hidden=true;
       selectorMenu.innerHTML='';
@@ -1817,6 +1818,9 @@ function renderEpiVariantList(){
       const selectedMaker=String(selectedForHeader.fabricante||'Fabricante não informado').trim();
 
       selectorButton.disabled=false;
+      // Um C.A. só: o seletor vira etiqueta (sem setinha, sem menu).
+      selectorButton.classList.toggle('is-unico',rows.length===1);
+      selectorButton.tabIndex=rows.length===1?-1:0;
       selectorValue.innerHTML=`<strong>${esc(codeTitle(selectedForHeader.ca))}</strong><small>${esc(selectedMaker)}</small>`;
       if($('epiCaSelectorLabel')) $('epiCaSelectorLabel').textContent=`${codeTerm(selectedForHeader.ca)} EM EXIBIÇÃO`;
 
