@@ -2778,7 +2778,7 @@ function montarCaptcha(){
   const sitekey=local?'1x00000000000000000000AA':window.EPI_CONFIG?.TURNSTILE_SITE_KEY;
   if(!sitekey) return;
   captchaId=window.turnstile.render(box,{
-    sitekey,theme:'dark',language:'pt-br',size:'flexible',appearance:'interaction-only',
+    sitekey,theme:'dark',language:'pt-br',size:'normal',
     callback:t=>{captchaToken=t},
     'expired-callback':()=>{captchaToken=''},
     'error-callback':()=>{captchaToken=''}

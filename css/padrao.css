@@ -3030,3 +3030,12 @@
    pede que a pessoa clique (appearance: interaction-only). */
 .auth-captcha{min-height:0!important;margin:0 0 4px!important}
 .auth-captcha:has(iframe[style*="visibility: visible"]),.auth-captcha.pedindo{margin:2px 0 12px!important}
+/* Login: caixinha da Cloudflare sempre visível, no tamanho padrão (300x65)
+   reduzido a 85%, com a borda branca dela recortada (1 px para dentro) e
+   uma borda fina no tom do app no lugar. */
+.auth-captcha{
+  width:298px;height:63px;overflow:hidden;box-sizing:content-box;zoom:.85;
+  margin:4px 0 14px!important;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:#222
+}
+.auth-captcha > *{margin:-1px!important}
+.auth-captcha:has(iframe[style*="visibility: visible"]),.auth-captcha.pedindo{margin:4px 0 14px!important}
