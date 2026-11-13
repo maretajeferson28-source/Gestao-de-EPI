@@ -199,9 +199,15 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-economia]')) {
     const economiaScript = document.createElement('script');
-    economiaScript.src = 'js/economia.js?v=20261113-1';
+    economiaScript.src = 'js/economia.js?v=20261113-2';
     economiaScript.dataset.economia = 'true';
     document.body.appendChild(economiaScript);
+  }
+  if (!document.querySelector('script[data-dash-palco]')) {
+    const dashPalcoScript = document.createElement('script');
+    dashPalcoScript.src = 'js/dash-palco.js?v=20261113-1';
+    dashPalcoScript.dataset.dashPalco = 'true';
+    document.body.appendChild(dashPalcoScript);
   }
   if (!document.querySelector('script[data-moldura]')) {
     const molduraScript = document.createElement('script');
