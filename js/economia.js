@@ -113,8 +113,10 @@
       porItem.set(k, item);
     });
     const linhas = [];
-    porItem.forEach((item) => {
+    const refs = new Map(); // item → { medio, mes } do primeiro mês com preço (a "base")
+    porItem.forEach((item, k) => {
       const meses = [...item.meses.entries()].filter(([, o]) => o.qtdPreco).sort((a, b) => a[0].localeCompare(b[0]));
+      if (meses[0]) refs.set(k, { medio: meses[0][1].valor / meses[0][1].qtdPreco, mes: meses[0][0] });
       // Item sem comparação também aparece, com o motivo.
       if (meses.length < 2) {
         const qtd = [...item.meses.values()].reduce((s, o) => s + o.qtdPreco + o.semPreco, 0);
@@ -141,7 +143,14 @@
     // Com comparação primeiro (maior economia no topo); sem comparação depois, por nome.
     linhas.sort((x, y) => (x.motivo ? 1 : 0) - (y.motivo ? 1 : 0) || y.total - x.total || x.nome.localeCompare(y.nome, 'pt-BR'));
     lista.sort((a, b) => iso(b.data).localeCompare(iso(a.data)));
-    return { linhas, lista, total: linhas.reduce((s, l) => s + l.total, 0) };
+    // Economia de cada entrega: (custo médio da base do item − preço do C.A. entregue) × quantidade.
+    const econ = (m) => {
+      const p = precoDe(m), r = refs.get(m.epi_id || m.epi);
+      if (p == null) return { tipo: 'sem' };
+      if (!r || iso(m.data).slice(0, 7) <= r.mes) return { tipo: 'base', medio: r?.medio };
+      return { tipo: 'valor', valor: (r.medio - p) * (Number(m.quantidade) || 0), medio: r.medio, mes: r.mes };
+    };
+    return { linhas, lista, econ, total: linhas.reduce((s, l) => s + l.total, 0) };
   }
 
   // ---------------------------------------------------------------------
@@ -187,22 +196,11 @@
         </div>
 
         <div class="ecn-bloco">
-          <div class="ecn-bloco__titulo"><h3>Economia por item</h3><p>Cada item é comparado com o quanto custava no primeiro mês em que foi entregue no período. O custo vem do preço cadastrado no C.A. entregue.</p></div>
-          <div class="ecn-tabela-wrap ecn-tabela-wrap--solta">
-            <table class="ecn-tabela">
-              <colgroup><col><col class="c-med"><col class="c-med"><col class="c-num"><col class="c-num"></colgroup>
-              <thead><tr><th>EPI / Item</th><th class="num">Primeiro mês</th><th class="num">Meses seguintes</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
-              <tbody data-econ-corpo></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="ecn-bloco">
           <div class="ecn-bloco__titulo"><h3 data-econ-lista-titulo>Entregas do período</h3><p data-econ-lista-resumo></p></div>
           <div class="ecn-tabela-wrap">
             <table class="ecn-tabela">
-              <colgroup><col class="c-data"><col><col><col class="c-ca"><col class="c-qtd"><col class="c-num"><col class="c-num"></colgroup>
-              <thead><tr><th>Data</th><th>Colaborador</th><th>EPI</th><th>C.A</th><th class="num">Qtd</th><th class="num">Preço un.</th><th class="num">Custo</th></tr></thead>
+              <colgroup><col class="c-data"><col><col><col class="c-ca"><col class="c-qtd"><col class="c-num"><col class="c-num"><col class="c-num"></colgroup>
+              <thead><tr><th>Data</th><th>Colaborador</th><th>EPI</th><th>C.A</th><th class="num">Qtd</th><th class="num">Preço un.</th><th class="num">Custo</th><th class="num" title="Diferença entre o custo médio do item no primeiro mês do período (base) e o preço do C.A. entregue, vezes a quantidade">Economia</th></tr></thead>
               <tbody data-econ-lista></tbody>
             </table>
           </div>
@@ -273,32 +271,24 @@
     return lista.filter((m) => [m.data, m.colaborador, m.epi, m.ca, m.responsavel].some((v) => semAcento(v).includes(q)));
   }
 
+  // Coluna Economia: "base" no primeiro mês do item, valor nos meses seguintes.
+  function celulaEcon(e) {
+    if (e.tipo === 'sem') return '<span class="ecn-traco" title="C.A. sem preço cadastrado">—</span>';
+    if (e.tipo === 'base') return `<span class="ecn-base" title="Primeiro mês do item no período: é a base da comparação${e.medio != null ? ` (custo médio ${dinheiro(e.medio)}/un)` : ''}">base</span>`;
+    const t = `Comparado com ${dinheiro(e.medio)}/un, o custo médio em ${mesTxt(e.mes)}`;
+    if (Math.abs(e.valor) < 0.005) return `<span class="ecn-traco" title="${t}">R$ 0,00</span>`;
+    return `<b class="ecn-total${e.valor < 0 ? ' is-neg' : ''}" title="${t}">${e.valor > 0 ? '+' : '−'}${dinheiro(Math.abs(e.valor))}</b>`;
+  }
+
   function atualizar() {
-    if (!raiz || !raiz.isConnected || !$('[data-econ-corpo]', raiz)) return;
+    if (!raiz || !raiz.isConnected || !$('[data-econ-lista]', raiz)) return;
     $('[data-econ-epi]', raiz).innerHTML = opcoesEpi();
     $('[data-econ-epi]', raiz).classList.toggle('tem-valor', !!estado.epi);
-    const { linhas, lista, total } = calcular(estado);
+    const { lista, econ, total } = calcular(estado);
     const periodo = `${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
 
     // Subtítulo: o total do período.
     $('[data-econ-resumo]', raiz).innerHTML = `<strong class="${total < 0 ? 'is-neg' : ''}">${dinheiro(Math.abs(total))}</strong> ${total < 0 ? 'gastos a mais' : 'economizados'} de ${periodo}`;
-
-    // Economia por item (todos os itens; sem comparação aparece com o motivo).
-    $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => l.motivo ? `
-      <tr class="ecn-sem">
-        <td>${esc(l.nome)}</td>
-        <td class="num">${l.ref ? celula(l.ref) : '<span class="ecn-traco">—</span>'}</td>
-        <td class="num ecn-motivo" colspan="2">${esc(l.motivo)}</td>
-        <td class="num"><span class="ecn-traco">—</span></td>
-      </tr>` : `
-      <tr>
-        <td>${esc(l.nome)}</td>
-        <td class="num">${celula(l.ref)}</td>
-        <td class="num">${celula(l.atual)}</td>
-        <td class="num${l.unit < 0 ? ' is-neg' : ''}">${dinheiro(l.unit)}</td>
-        <td class="num ecn-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
-      </tr>`).join('')
-      : '<tr><td colspan="5" class="ecn-vazio">Nenhuma entrega nesse período.</td></tr>';
 
     // Entregas do período, com busca e páginas.
     const filtrada = listaFiltrada(lista);
@@ -319,8 +309,9 @@
         <td class="num">${num(q)}</td>
         <td class="num">${p == null ? '<span class="ecn-traco" title="C.A. sem preço cadastrado">sem preço</span>' : dinheiro(p)}</td>
         <td class="num">${p == null ? '<span class="ecn-traco">—</span>' : dinheiro(p * q)}</td>
+        <td class="num">${celulaEcon(econ(m))}</td>
       </tr>`;
-    }).join('') : '<tr><td colspan="7" class="ecn-vazio">Nenhuma entrega encontrada.</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="ecn-vazio">Nenhuma entrega encontrada.</td></tr>';
 
     // Rodapé igual ao de Movimentações.
     let ini = Math.max(1, estado.pagina - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);

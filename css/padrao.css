@@ -3807,3 +3807,8 @@
   .ecn-rodape .g-employee-page:focus-visible{outline-color:var(--v)}
 }
 @media (min-width:721px){ .ecn-btn{white-space:nowrap;flex:0 0 auto} .ecn-busca{min-width:200px} }
+/* Tela Economia: uma tabela só; "base" marca as entregas do primeiro mês do item. */
+@media (min-width:721px){
+  .ecn-base{display:inline-block;padding:3px 8px;border-radius:999px;font:600 11px/1 Inter,Roboto,Arial,sans-serif;color:#C4CDD6;background:rgba(178,191,205,.08);border:1px solid rgba(178,191,205,.16)}
+  .ecn-tabela .c-num{width:118px}
+}
