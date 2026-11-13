@@ -3255,3 +3255,35 @@
   .epi-tab .c-epi{width:22%}
   .epi-tab .c-sit{width:16%}
 }
+/* =====================================================================
+   Programar (PC): fundo grafite azulado das outras abas no lugar do preto
+   (o caminhão do topo continua) e cards na identidade aço, com bem menos
+   laranja nos brilhos e bordas.
+   ===================================================================== */
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="programar"].active){
+    background:
+      radial-gradient(ellipse 38% 30% at 34% 6%,rgba(70,87,105,.20) 0%,rgba(70,87,105,.06) 55%,transparent 80%),
+      radial-gradient(ellipse 34% 40% at 6% 62%,rgba(70,87,105,.13) 0%,transparent 75%),
+      radial-gradient(ellipse 40% 34% at 60% 100%,rgba(70,87,105,.12) 0%,transparent 75%),
+      radial-gradient(ellipse 30% 30% at 96% 70%,rgba(70,87,105,.10) 0%,transparent 75%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.40) 100%),
+      linear-gradient(180deg,#090D12 0%,#080C10 45%,#060A0E 100%)!important
+  }
+  .page[data-page-content="programar"] .prog-bloco,
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:first-child,
+  .page[data-page-content="programar"] .prog-main > .prog-bloco:nth-child(2),
+  .page[data-page-content="programar"] .prog-resumo{
+    background:
+      radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.18) 0%,transparent 70%),
+      linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%)!important;
+    border-color:rgba(178,191,205,.14)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)!important
+  }
+  /* Bordas pintadas e brilhos internos: laranja bem mais discreto. */
+  .page[data-page-content="programar"] .prog-bloco::before,
+  .page[data-page-content="programar"] .prog-resumo::before{opacity:.32!important}
+  .page[data-page-content="programar"] .prog-bloco::after,
+  .page[data-page-content="programar"] .prog-resumo::after{opacity:.35!important}
+}
