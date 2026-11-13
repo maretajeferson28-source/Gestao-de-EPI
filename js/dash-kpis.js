@@ -118,7 +118,13 @@
     const antes = ant ? medir(filtrar(ant.de, ant.ate)) : null;
     CARDS.forEach((c) => {
       const card = $(`#dashKpis [data-kpi="${c.k}"]`);
-      $('[data-valor]', card).textContent = c.moeda ? dinheiro(agora[c.k]) : num(agora[c.k]);
+      // Moeda: "R$" menor ao lado do número, que fica do tamanho das quantidades.
+      if (c.moeda) {
+        const v = $('[data-valor]', card);
+        v.innerHTML = '';
+        const rs = document.createElement('small'); rs.className = 'kpi-card__moeda'; rs.textContent = 'R$';
+        v.append(rs, document.createTextNode(dinheiro(agora[c.k]).replace(/^R\$\s*/, '')));
+      } else $('[data-valor]', card).textContent = num(agora[c.k]);
       badge($('[data-badge]', card), agora[c.k], antes ? antes[c.k] : null, c.k === 'valor');
       $('[data-sub]', card).textContent = !ant ? 'todo o período' : ant.periodo ? 'vs. período anterior' : 'vs. mês anterior';
     });

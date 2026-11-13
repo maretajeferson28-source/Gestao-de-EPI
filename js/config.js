@@ -193,7 +193,7 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-dash-kpis]')) {
     const dashKpisScript = document.createElement('script');
-    dashKpisScript.src = 'js/dash-kpis.js?v=20261110-8';
+    dashKpisScript.src = 'js/dash-kpis.js?v=20261113-1';
     dashKpisScript.dataset.dashKpis = 'true';
     document.body.appendChild(dashKpisScript);
   }

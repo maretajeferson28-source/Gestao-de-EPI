@@ -3039,3 +3039,8 @@
 }
 .auth-captcha > *{margin:-1px!important}
 .auth-captcha:has(iframe[style*="visibility: visible"]),.auth-captcha.pedindo{margin:4px 0 14px!important}
+/* Dashboard: Valor gasto e Economia no mesmo tamanho e altura dos números de
+   quantidade (antes eram menores e ficavam desalinhados). */
+@media (min-width:721px){
+  .kpi-card__value.kpi-card__value--currency{font-size:clamp(23px,2vw,30px)!important;letter-spacing:-.7px!important}
+}.kpi-card__moeda{font-size:.55em;font-weight:600;letter-spacing:0;margin-right:4px;color:#D5D9DF;vertical-align:.12em}
