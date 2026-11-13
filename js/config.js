@@ -197,6 +197,12 @@ window.addEventListener('load', () => {
     dashKpisScript.dataset.dashKpis = 'true';
     document.body.appendChild(dashKpisScript);
   }
+  if (!document.querySelector('script[data-economia]')) {
+    const economiaScript = document.createElement('script');
+    economiaScript.src = 'js/economia.js?v=20261113-1';
+    economiaScript.dataset.economia = 'true';
+    document.body.appendChild(economiaScript);
+  }
   if (!document.querySelector('script[data-moldura]')) {
     const molduraScript = document.createElement('script');
     molduraScript.src = 'js/moldura.js?v=20261110-1';

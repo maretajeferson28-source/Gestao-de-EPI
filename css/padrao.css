@@ -3515,3 +3515,47 @@
 @media (max-width:620px){
   #epiDetailModal .epi-price-compare-row{grid-template-columns:1fr!important}
 }
+/* =====================================================================
+   Economia por substituição (janela aberta pelo card Economia do
+   Dashboard). Usa a moldura dos modais Histórico/Termo (.historico-card).
+   ===================================================================== */
+#dashKpis [data-kpi="economia"]{cursor:pointer}
+#dashKpis [data-kpi="economia"]:hover{border-color:rgba(82,197,140,.45)!important}
+#dashKpis [data-kpi="economia"]:focus-visible{outline:2px solid rgba(82,197,140,.6);outline-offset:2px}
+.econ-card{width:min(980px,calc(100vw - 28px))!important}
+.econ-card .data-edit-head span{display:block;color:#FF8A24;font:800 10.5px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.12em;margin-bottom:5px}
+.econ-card .data-edit-head p{color:#B9C4CF!important;font-size:12.5px!important}
+.econ-filtros{display:grid;grid-template-columns:150px 150px minmax(0,1.2fr) minmax(0,1fr);gap:10px;margin-bottom:14px}
+.econ-campo{display:flex;flex-direction:column;gap:6px;min-width:0;margin:0}
+.econ-campo>span{font:700 10.5px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A9B6C3}
+.econ-campo input,.econ-campo select{
+  height:38px;box-sizing:border-box;width:100%;min-width:0;padding:0 10px;border-radius:9px;
+  background:rgba(6,10,14,.72);border:1px solid rgba(178,191,205,.18);color:#E9EDF1;font:500 13px/1 Inter,Roboto,Arial,sans-serif;color-scheme:dark
+}
+.econ-campo select:disabled{opacity:.55}
+.econ-campo input:focus,.econ-campo select:focus{outline:0;border-color:rgba(255,121,0,.6)}
+.econ-campo select option{background:#11171E;color:#E9EDF1}
+.econ-resumo{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.econ-kpi{padding:12px 14px;border-radius:12px;background:linear-gradient(145deg,rgba(24,31,38,.75),rgba(12,17,22,.75));border:1px solid rgba(178,191,205,.12)}
+.econ-kpi span{display:flex;align-items:center;gap:7px;margin-bottom:8px;font:700 10.5px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A9B6C3}
+.econ-kpi span svg{width:15px;height:15px;color:#FF8A24}
+.econ-kpi:first-child span svg{color:#52C58C}
+.econ-kpi strong{font:800 22px/1 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+.econ-kpi:first-child strong{color:#7BE0AA}
+.econ-kpi.is-neg strong{color:#FB7373}
+.econ-tabela{width:100%}
+.econ-tabela th{font-size:11px!important;color:#A9B6C3!important;text-align:left;padding:10px 12px!important}
+.econ-tabela td{font-size:13px!important;color:#E3E8ED;padding:10px 12px!important;vertical-align:middle}
+.econ-tabela td b{display:block;font-weight:700;color:#F2F4F6}
+.econ-tabela td small{display:block;margin-top:3px;font-size:11.5px;color:#9FB0C2}
+.econ-tabela td:first-child small{display:inline;margin:0}
+.econ-tabela .num{text-align:right!important;white-space:nowrap}
+.econ-tabela .econ-total{font-weight:800;color:#7BE0AA}
+.econ-tabela .is-neg{color:#FB7373!important}
+.econ-vazio{text-align:center!important;color:#9FB0C2!important;padding:22px!important}
+.econ-nota{margin:12px 0 4px;font-size:12px;line-height:1.5;color:#9FB0C2}
+@media (max-width:760px){
+  .econ-filtros{grid-template-columns:1fr 1fr}
+  .econ-campo--largo{grid-column:1/-1}
+  .econ-resumo{grid-template-columns:1fr}
+}
