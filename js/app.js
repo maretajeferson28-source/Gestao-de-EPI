@@ -1896,7 +1896,6 @@ function renderEpiVariantList(){
         ${field('Marca',v.marca,'tag')}
         ${field('Referência / modelo',v.referencia,'hash')}
         ${field('Norma',v.norma,'scale')}
-        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Antigo':'—'),'arrow-left-right')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
 
@@ -2255,7 +2254,6 @@ async function saveEpiVariant(){
     norma:$('epiVarNorma').value.trim()||null,
     caracteristicas:$('epiVarCaracteristicas').value.trim()||null,
     preco:$('epiVarPreco').value===''?null:Number($('epiVarPreco').value),
-    comparativo_status:$('epiVarComparativoAtual')?.checked?'atual':($('epiVarComparativoPassada')?.checked?'passada':null),
     fornecedor:$('epiVarFornecedor').value.trim()||null,
     unidade:'un',
     observacao:$('epiVarObservacao').value.trim()||null,

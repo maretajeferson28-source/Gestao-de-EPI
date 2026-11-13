@@ -459,11 +459,9 @@
 
     sectionTitle('Dados comerciais');
 
+    // Preço e fornecedor lado a lado (o "Comparativo" saiu: a economia agora é por período).
     fieldCard('Preço', moneyBR(variant.preco), margin, col);
-    fieldCard('Comparativo', variant.comparativo_status==='atual'?'Atual':(variant.comparativo_status==='passada'?'Antigo':'—'), margin + col + gap, col);
-    y += 21;
-
-    fieldCard('Fornecedor', variant.fornecedor, margin, contentW);
+    fieldCard('Fornecedor', variant.fornecedor, margin + col + gap, col);
     y += 22;
 
     sectionTitle('Informações técnicas');
