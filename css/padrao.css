@@ -2495,7 +2495,8 @@
   }
   .colab-filtro select:hover{border-color:rgba(255,255,255,.30)}
   .colab-filtro select:focus-visible{border-color:rgba(255,102,0,.6);box-shadow:0 0 0 3px rgba(255,102,0,.10)}
-  .colab-filtro select.tem-valor{border-color:rgba(255,120,25,.55);color:#FFB37A}
+  /* Filtro ativo: só a borda laranja (fica até limpar o filtro); o texto continua branco. */
+  .colab-filtro select.tem-valor{border-color:rgba(255,120,25,.70)}
   .colab-filtro select option{background:#15181C;color:#E6E8EB}
   .colab-filtro svg{position:absolute;right:9px;width:13px;height:13px;color:#C9CDD2;stroke-width:2;pointer-events:none}
   .colab-novo:focus-visible{outline:2px solid #FF820C;outline-offset:2px}
