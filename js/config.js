@@ -199,7 +199,7 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-economia]')) {
     const economiaScript = document.createElement('script');
-    economiaScript.src = 'js/economia.js?v=20261113-11';
+    economiaScript.src = 'js/economia.js?v=20261113-12';
     economiaScript.dataset.economia = 'true';
     document.body.appendChild(economiaScript);
   }

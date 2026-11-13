@@ -3698,3 +3698,112 @@
 }
 /* Tela Economia: o banner rola junto (a lista de entregas é longa). */
 @media (min-width:721px){ .stg-hero{position:relative} }
+/* =====================================================================
+   Tela Economia (card Economia do Dashboard) no estilo de Movimentações:
+   cabeçalho com ícone, barra de filtros em pílulas, tabelas fechadas
+   azul-aço e rodapé com páginas. Verde no lugar do laranja.
+   ===================================================================== */
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="dashboard"].stage-ativo){
+    background:
+      url("/assets/app-brand/colaboradores-ondas.svg?v=8") right -70px top -18px/100% auto no-repeat,
+      radial-gradient(ellipse 38% 30% at 34% 6%,rgba(70,87,105,.20) 0%,rgba(70,87,105,.06) 55%,transparent 80%),
+      radial-gradient(ellipse 34% 40% at 6% 62%,rgba(70,87,105,.13) 0%,transparent 75%),
+      radial-gradient(ellipse 40% 34% at 60% 100%,rgba(70,87,105,.12) 0%,transparent 75%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.40) 100%),
+      linear-gradient(180deg,#090D12 0%,#080C10 45%,#060A0E 100%)!important
+  }
+  .ecn{--v:#1BD66A;--v2:#12A853;--v-tint:rgba(27,214,106,.14);padding-bottom:24px}
+
+  /* Cabeçalho */
+  .ecn-head{display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto;column-gap:18px;align-items:center;margin:0 0 18px;padding:24px 0 0}
+  .ecn-head-ic{
+    display:grid;grid-row:1 / span 2;place-items:center;width:56px;height:56px;border-radius:14px;color:var(--v);
+    border:1px solid rgba(27,214,106,.35);background:linear-gradient(135deg,#17442B,#0E2418 65%,#111214);box-shadow:0 0 22px rgba(27,214,106,.12)
+  }
+  .ecn-head-ic svg{width:27px;height:27px;stroke-width:1.9}
+  .ecn-head h2{margin:0;font:700 34px/1.15 Inter,Roboto,Arial,sans-serif;letter-spacing:-1px;color:#F7F7F8}
+  .ecn-head p{margin:2px 0 0;font:400 14px/1.3 Inter,Roboto,Arial,sans-serif;color:#C4C8CE}
+  .ecn-head p strong{font-weight:800;color:var(--v)}
+  .ecn-head p strong.is-neg{color:#FB7373}
+
+  /* Barra: busca, pílulas e botões (32 px, como em Movimentações) */
+  .ecn-barra{display:flex;align-items:center;gap:10px;flex-wrap:nowrap;margin:0 0 12px}
+  .ecn-busca{flex:0 1 340px}
+  .ecn-busca svg{color:var(--v)!important}
+  .ecn-busca:focus-within{border-color:rgba(27,214,106,.55)!important;box-shadow:0 0 0 3px rgba(27,214,106,.08)!important}
+  .ecn-filtros{display:flex;align-items:center;gap:9px;margin-left:4px;flex-shrink:0}
+  .ecn-filtro select.tem-valor{border-color:rgba(27,214,106,.7)!important}
+  .ecn-filtro select:focus-visible{border-color:rgba(27,214,106,.6)!important;box-shadow:0 0 0 3px rgba(27,214,106,.10)!important}
+  .ecn-btn{
+    height:32px!important;padding:0 12px!important;border-radius:8px!important;gap:7px;
+    background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;
+    color:#E5E8EA!important;font:500 12.5px/1 Inter,Roboto,Arial,sans-serif!important
+  }
+  .ecn-btn svg{width:15px;height:15px;color:var(--v)}
+  .ecn-btn:hover{border-color:rgba(27,214,106,.45)!important}
+  .ecn-btn--csv{margin-left:auto}
+
+  /* Seletor de mês como pílula (igual aos selects de filtro) */
+  .ecn-mes{position:relative}
+  .ecn-mes .stg-mes__botao{
+    width:auto;height:32px;padding:0 10px 0 11px;gap:8px;border-radius:8px;backdrop-filter:none;
+    background:linear-gradient(180deg,#1B1F24 0%,#12161A 100%);border:1px solid rgba(27,214,106,.55);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);font:500 12.5px/1 Inter,Roboto,Arial,sans-serif;color:#E6E8EB
+  }
+  .ecn-mes .stg-mes__botao span{flex:0 0 auto}
+  .ecn-mes .stg-mes__botao em{font-style:normal;color:#A9B6C3;margin-right:2px}
+  .ecn-mes .stg-mes__botao svg{width:13px;height:13px;flex:0 0 13px;color:#C9CDD2}
+  .ecn-mes .stg-mes__botao:hover,.ecn-mes .stg-mes__botao[aria-expanded="true"]{border-color:rgba(27,214,106,.8)}
+  .ecn-mes .stg-mes__painel{top:calc(100% + 6px);bottom:auto;--t:var(--v);--t2:var(--v2)}
+
+  /* Blocos */
+  .ecn-bloco{margin:0 0 18px}
+  .ecn-bloco__titulo{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin:0 2px 8px}
+  .ecn-bloco__titulo h3{margin:0;font:700 15px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .ecn-bloco__titulo p{margin:0;font:400 12px/1.35 Inter,Roboto,Arial,sans-serif;color:#A9B6C3;text-align:right}
+
+  /* Tabela fechada (mesma de Movimentações) */
+  .ecn-tabela-wrap{
+    overflow-x:auto;border:1px solid rgba(178,191,205,.14);border-bottom:0;border-radius:14px 14px 0 0;
+    background:
+      radial-gradient(ellipse 55% 50% at 100% 0%,rgba(27,214,106,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.16) 0%,transparent 70%),
+      linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);scrollbar-width:thin;scrollbar-color:#36404B transparent
+  }
+  .ecn-tabela-wrap--solta{border-bottom:1px solid rgba(178,191,205,.14);border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)}
+  .ecn-tabela{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
+  .ecn-tabela .c-data{width:110px}.ecn-tabela .c-ca{width:90px}.ecn-tabela .c-qtd{width:64px}.ecn-tabela .c-num{width:130px}.ecn-tabela .c-med{width:22%}
+  .ecn-tabela th{
+    height:38px;padding:0 10px;text-align:left;background:rgb(26,34,43);color:#DFE3E7;font:600 12px/1.2 Inter,Roboto,Arial,sans-serif;
+    border-bottom:1px solid rgba(178,191,205,.12);border-right:1px solid rgba(178,191,205,.08)
+  }
+  .ecn-tabela td{
+    height:38px;padding:5px 10px;color:#E5E8EA;font:500 12.5px/1.25 Inter,Roboto,Arial,sans-serif;
+    border-bottom:1px solid rgba(178,191,205,.08);border-right:1px solid rgba(178,191,205,.08);vertical-align:middle;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .ecn-tabela th:last-child,.ecn-tabela td:last-child{border-right:0}
+  .ecn-tabela-wrap--solta .ecn-tabela tbody tr:last-child td{border-bottom:0}
+  .ecn-tabela tbody tr:hover td{background:rgba(255,255,255,.03)}
+  .ecn-tabela td:first-child{color:#C9D0D7}
+  .ecn-tabela td b{font-weight:600;color:#F2F4F6}
+  .ecn-tabela td small{display:block;margin-top:2px;font-size:11px;color:#9FB0C2}
+  .ecn-tabela td:first-child b{color:#F2F4F6}
+  .ecn-tabela .num{text-align:right}
+  .ecn-tabela .ecn-total{font-weight:800;color:#5BE39A}
+  .ecn-tabela .is-neg{color:#FB7373!important}
+  .ecn-tabela .ecn-sem td{color:#AEB8C2}
+  .ecn-tabela .ecn-motivo{font-size:12px;color:#9FB0C2}
+  .ecn-traco{color:#7F8C99}
+  .ecn-vazio{height:70px!important;text-align:center!important;color:#9FB0C2!important}
+
+  /* Rodapé com páginas: verde no lugar do laranja */
+  .ecn-rodape .g-employee-page.is-current{
+    background:linear-gradient(180deg,#22E474,#12A853)!important;color:#05140B!important;
+    box-shadow:0 0 0 1px rgba(27,214,106,.25),0 0 13px rgba(27,214,106,.35),inset 0 1px 0 rgba(200,255,220,.25)!important
+  }
+  .ecn-rodape .g-employee-page:focus-visible{outline-color:var(--v)}
+}
+@media (min-width:721px){ .ecn-btn{white-space:nowrap;flex:0 0 auto} .ecn-busca{min-width:200px} }

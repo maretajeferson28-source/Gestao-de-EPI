@@ -144,82 +144,100 @@
     return { linhas, lista, total: linhas.reduce((s, l) => s + l.total, 0) };
   }
 
+  // ---------------------------------------------------------------------
+  // Tela no estilo de Movimentações (cabeçalho com ícone, barra de filtros
+  // em pílulas, tabelas fechadas e rodapé com páginas), em verde.
+  // ---------------------------------------------------------------------
   let raiz = null;
-  const estado = { de: '', ate: '', refDe: '', refAte: '', epi: '' };
+  const estado = { de: '', ate: '', refDe: '', refAte: '', epi: '', busca: '', pagina: 1 };
+  const POR_PAGINA = 10;
 
   function opcoesEpi() {
     const ids = new Map();
     entregas().forEach((m) => { if (m.epi_id && !ids.has(m.epi_id)) ids.set(m.epi_id, nomeEpi(m.epi_id, m)); });
-    return '<option value="">Todos os itens</option>' + [...ids].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
+    return '<option value="">EPI</option>' + [...ids].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
       .map(([id, nome]) => `<option value="${esc(id)}"${id === estado.epi ? ' selected' : ''}>${esc(nome)}</option>`).join('');
   }
 
+  const mesTxt = (ym) => `${MES[Number(ym.slice(5, 7)) - 1]}/${ym.slice(0, 4)}`;
+  const celula = (o) => {
+    const quando = o.mes ? mesTxt(o.mes) : o.de === o.ate ? mesTxt(o.de) : `${mesTxt(o.de)} a ${mesTxt(o.ate)}`;
+    return `<b>${dinheiro(o.medio)}/un</b><small>${quando} · ${num(o.qtdPreco)} un${o.semPreco ? ` · ${num(o.semPreco)} sem preço` : ''}</small>`;
+  };
+
   function montar(el, voltar) {
     raiz = el;
-    Object.assign(estado, padrao(), { epi: '' });
+    Object.assign(estado, padrao(), { epi: '', busca: '', pagina: 1 });
     el.innerHTML = `
-      <div class="stg-hero stg-hero--green">
-        <span class="stg-hero__slash" aria-hidden="true"></span>
-        <div class="stg-hero__arte" aria-hidden="true">
-          <span class="stg-moeda stg-moeda--1">R$</span><span class="stg-moeda stg-moeda--2">R$</span><span class="stg-moeda stg-moeda--3">R$</span>
-          <span class="stg-hero__icone"><i data-lucide="piggy-bank"></i></span>
-          <span class="stg-hero__seta"><i data-lucide="trending-down"></i></span>
+      <div class="ecn">
+        <div class="ecn-head">
+          <span class="ecn-head-ic" aria-hidden="true"><i data-lucide="piggy-bank"></i></span>
+          <h2>Economia</h2>
+          <p data-econ-resumo></p>
         </div>
-        <div class="stg-hero__copy">
-          <button type="button" class="stg-voltar" data-stage-voltar><i data-lucide="arrow-left"></i>Voltar ao Dashboard</button>
-          <h2 class="stg-hero__title">Cada troca de C.A.<br><strong>vira economia</strong>.</h2>
-          <p class="stg-hero__total"><strong data-econ-total>R$ 0,00</strong><span data-econ-periodo>economizados</span></p>
+        <div class="ecn-barra">
+          <label class="colab-busca ecn-busca"><i data-lucide="search" aria-hidden="true"></i><input type="search" data-econ-busca placeholder="Buscar colaborador, EPI ou C.A." autocomplete="off" aria-label="Buscar entrega"></label>
+          <div class="ecn-filtros">
+            <div class="stg-mes ecn-mes" data-econ-mes="ref"></div>
+            <div class="stg-mes ecn-mes" data-econ-mes="atual"></div>
+            <label class="colab-filtro ecn-filtro"><select data-econ-epi aria-label="Filtrar por EPI"></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+          </div>
+          <button type="button" class="btn ecn-btn ecn-btn--csv" data-econ-csv><i data-lucide="file-down"></i>Exportar CSV</button>
+          <button type="button" class="btn ecn-btn" data-stage-voltar><i data-lucide="arrow-left"></i>Voltar ao Dashboard</button>
         </div>
-        <div class="stg-hero__bottom">
-          <div class="stg-filtro stg-filtro--mes"><span>De</span><div class="stg-mes" data-econ-mes="ref"></div></div>
-          <div class="stg-filtro stg-filtro--mes"><span>Até</span><div class="stg-mes" data-econ-mes="atual"></div></div>
-          <label class="stg-filtro"><span>EPI / Item</span><select data-econ-epi></select></label>
+
+        <div class="ecn-bloco">
+          <div class="ecn-bloco__titulo"><h3>Economia por item</h3><p>Cada item é comparado com o quanto custava no primeiro mês em que foi entregue no período. O custo vem do preço cadastrado no C.A. entregue.</p></div>
+          <div class="ecn-tabela-wrap ecn-tabela-wrap--solta">
+            <table class="ecn-tabela">
+              <colgroup><col><col class="c-med"><col class="c-med"><col class="c-num"><col class="c-num"></colgroup>
+              <thead><tr><th>EPI / Item</th><th class="num">Primeiro mês</th><th class="num">Meses seguintes</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
+              <tbody data-econ-corpo></tbody>
+            </table>
+          </div>
         </div>
-      </div>
-      <div class="stg-painel">
-        <div class="stg-painel__head"><h3>Economia por item</h3><p>Cada item é comparado com o quanto custava no primeiro mês em que foi entregue no período. O custo vem do preço cadastrado no C.A. entregue.</p></div>
-        <div class="stg-tabela-wrap">
-          <table class="stg-tabela">
-            <thead><tr><th>EPI / Item</th><th class="num">Primeiro mês</th><th class="num">Meses seguintes</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
-            <tbody data-econ-corpo></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="stg-painel">
-        <div class="stg-painel__head"><h3 data-econ-lista-titulo>Entregas do período</h3><p data-econ-lista-resumo></p></div>
-        <div class="stg-tabela-wrap stg-tabela-wrap--lista">
-          <table class="stg-tabela">
-            <thead><tr><th>Data</th><th>Colaborador</th><th>EPI / Item</th><th>C.A.</th><th class="num">Qtd</th><th class="num">Preço un.</th><th class="num">Custo</th></tr></thead>
-            <tbody data-econ-lista></tbody>
-          </table>
+
+        <div class="ecn-bloco">
+          <div class="ecn-bloco__titulo"><h3 data-econ-lista-titulo>Entregas do período</h3><p data-econ-lista-resumo></p></div>
+          <div class="ecn-tabela-wrap">
+            <table class="ecn-tabela">
+              <colgroup><col class="c-data"><col><col><col class="c-ca"><col class="c-qtd"><col class="c-num"><col class="c-num"></colgroup>
+              <thead><tr><th>Data</th><th>Colaborador</th><th>EPI</th><th>C.A</th><th class="num">Qtd</th><th class="num">Preço un.</th><th class="num">Custo</th></tr></thead>
+              <tbody data-econ-lista></tbody>
+            </table>
+          </div>
+          <footer class="g-employee-footer mov-rodape ecn-rodape" data-econ-rodape></footer>
         </div>
       </div>`;
-    $('[data-stage-voltar]', el).addEventListener('click', voltar);
-    // "De" = mês de partida (custo médio de antes); "Até" = mês de chegada
-    // (custo médio de agora, vezes o que foi entregue nele).
+    el.querySelector('[data-stage-voltar]').addEventListener('click', voltar);
     const mesInteiro = (ym) => { const [y, m] = ym.split('-').map(Number); return { de: `${ym}-01`, ate: dataIso(new Date(y, m, 0)) }; };
-    seletorMes($('[data-econ-mes="ref"]', el), (estado.refDe || '').slice(0, 7), (ym) => { const p = mesInteiro(ym); estado.refDe = p.de; estado.refAte = p.ate; atualizar(); });
-    seletorMes($('[data-econ-mes="atual"]', el), (estado.de || '').slice(0, 7), (ym) => { const p = mesInteiro(ym); estado.de = p.de; estado.ate = p.ate; atualizar(); });
-    $('[data-econ-epi]', el).addEventListener('change', (e) => { estado.epi = e.target.value; atualizar(); });
+    seletorMes($('[data-econ-mes="ref"]', el), (estado.refDe || '').slice(0, 7), 'De', (ym) => { const p = mesInteiro(ym); estado.refDe = p.de; estado.refAte = p.ate; estado.pagina = 1; atualizar(); });
+    seletorMes($('[data-econ-mes="atual"]', el), (estado.de || '').slice(0, 7), 'Até', (ym) => { const p = mesInteiro(ym); estado.de = p.de; estado.ate = p.ate; estado.pagina = 1; atualizar(); });
+    $('[data-econ-epi]', el).addEventListener('change', (e) => { estado.epi = e.target.value; estado.pagina = 1; atualizar(); });
+    $('[data-econ-busca]', el).addEventListener('input', (e) => { estado.busca = e.target.value; estado.pagina = 1; atualizar(); });
+    $('[data-econ-rodape]', el).addEventListener('click', (e) => {
+      const b = e.target.closest('[data-econ-pagina]');
+      if (b && !b.disabled) { estado.pagina = Number(b.dataset.econPagina); atualizar(); }
+    });
+    $('[data-econ-csv]', el).addEventListener('click', exportarCsv);
     atualizar();
   }
 
-  // Seletor de mês no tema (no lugar do calendário do navegador): botão com o
-  // mês e, ao clicar, painel com o ano (‹ ›) e os 12 meses. Meses com entregas
+  // Seletor de mês em pílula (no lugar do calendário do navegador): botão
+  // "De: ago/2026" e painel com o ano (‹ ›) e os 12 meses. Meses com entregas
   // ganham um pontinho.
-  const MES_LONGO = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-  function seletorMes(caixa, valor, aoMudar) {
+  function seletorMes(caixa, valor, prefixo, aoMudar) {
     let ym = valor || dataIso(new Date()).slice(0, 7);
     let ano = Number(ym.slice(0, 4));
     const comEntrega = new Set(entregas().map((m) => iso(m.data).slice(0, 7)).filter(Boolean));
     caixa.innerHTML = `
-      <button type="button" class="stg-mes__botao" aria-haspopup="dialog" aria-expanded="false"><i data-lucide="calendar-days"></i><span></span><i data-lucide="chevron-down"></i></button>
+      <button type="button" class="stg-mes__botao" aria-haspopup="dialog" aria-expanded="false"><span></span><i data-lucide="chevron-down"></i></button>
       <div class="stg-mes__painel" hidden>
         <div class="stg-mes__ano"><button type="button" data-ano="-1" aria-label="Ano anterior"><i data-lucide="chevron-left"></i></button><strong></strong><button type="button" data-ano="1" aria-label="Próximo ano"><i data-lucide="chevron-right"></i></button></div>
         <div class="stg-mes__grade"></div>
       </div>`;
     const botao = caixa.querySelector('.stg-mes__botao'), painel = caixa.querySelector('.stg-mes__painel');
-    const texto = () => { const [y, m] = ym.split('-').map(Number); botao.querySelector('span').textContent = `${MES_LONGO[m - 1]} de ${y}`; };
+    const texto = () => { botao.querySelector('span').innerHTML = `<em>${prefixo}:</em> ${mesTxt(ym)}`; };
     const grade = () => {
       painel.querySelector('strong').textContent = ano;
       painel.querySelector('.stg-mes__grade').innerHTML = MES.map((n, i) => {
@@ -248,55 +266,86 @@
     texto();
   }
 
-  const mesTxt = (ym) => `${MES[Number(ym.slice(5, 7)) - 1]}/${ym.slice(0, 4)}`;
-  const celula = (o) => {
-    const quando = o.mes ? mesTxt(o.mes) : o.de === o.ate ? mesTxt(o.de) : `${mesTxt(o.de)} a ${mesTxt(o.ate)}`;
-    return `<b>${dinheiro(o.medio)}/un</b><small>${quando} · ${num(o.qtdPreco)} un${o.semPreco ? ` · ${num(o.semPreco)} sem preço` : ''}</small>`;
-  };
+  // Lista das entregas com a busca da barra.
+  function listaFiltrada(lista) {
+    const q = semAcento(estado.busca.trim());
+    if (!q) return lista;
+    return lista.filter((m) => [m.data, m.colaborador, m.epi, m.ca, m.responsavel].some((v) => semAcento(v).includes(q)));
+  }
 
   function atualizar() {
     if (!raiz || !raiz.isConnected || !$('[data-econ-corpo]', raiz)) return;
     $('[data-econ-epi]', raiz).innerHTML = opcoesEpi();
+    $('[data-econ-epi]', raiz).classList.toggle('tem-valor', !!estado.epi);
     const { linhas, lista, total } = calcular(estado);
-    const tot = $('[data-econ-total]', raiz);
-    tot.innerHTML = `<small>R$</small>${semRs(Math.abs(total))}`; // o texto ao lado diz se foi economia ou gasto a mais
-    tot.classList.toggle('is-neg', total < 0);
-    $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} de ${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
+    const periodo = `${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
+
+    // Subtítulo: o total do período.
+    $('[data-econ-resumo]', raiz).innerHTML = `<strong class="${total < 0 ? 'is-neg' : ''}">${dinheiro(Math.abs(total))}</strong> ${total < 0 ? 'gastos a mais' : 'economizados'} de ${periodo}`;
+
+    // Economia por item (todos os itens; sem comparação aparece com o motivo).
     $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => l.motivo ? `
-      <tr class="stg-sem-comparacao">
+      <tr class="ecn-sem">
         <td>${esc(l.nome)}</td>
-        <td class="num">${l.ref ? celula(l.ref) : '<span class="stg-traco">—</span>'}</td>
-        <td class="num" colspan="2"><small>${esc(l.motivo)}</small></td>
-        <td class="num"><span class="stg-traco">—</span></td>
+        <td class="num">${l.ref ? celula(l.ref) : '<span class="ecn-traco">—</span>'}</td>
+        <td class="num ecn-motivo" colspan="2">${esc(l.motivo)}</td>
+        <td class="num"><span class="ecn-traco">—</span></td>
       </tr>` : `
       <tr>
         <td>${esc(l.nome)}</td>
         <td class="num">${celula(l.ref)}</td>
         <td class="num">${celula(l.atual)}</td>
         <td class="num${l.unit < 0 ? ' is-neg' : ''}">${dinheiro(l.unit)}</td>
-        <td class="num stg-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
+        <td class="num ecn-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
       </tr>`).join('')
-      : '<tr><td colspan="5" class="stg-vazio">Nenhuma entrega nesse período.</td></tr>';
+      : '<tr><td colspan="5" class="ecn-vazio">Nenhuma entrega nesse período.</td></tr>';
 
-    // Lista das entregas do período (mesmos filtros).
-    const periodo = `${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
-    const qtdTotal = lista.reduce((s, m) => s + (Number(m.quantidade) || 0), 0);
-    const custoTotal = lista.reduce((s, m) => { const p = precoDe(m); return s + (p == null ? 0 : p * (Number(m.quantidade) || 0)); }, 0);
+    // Entregas do período, com busca e páginas.
+    const filtrada = listaFiltrada(lista);
+    const qtdTotal = filtrada.reduce((s, m) => s + (Number(m.quantidade) || 0), 0);
+    const custoTotal = filtrada.reduce((s, m) => { const p = precoDe(m); return s + (p == null ? 0 : p * (Number(m.quantidade) || 0)); }, 0);
     $('[data-econ-lista-titulo]', raiz).textContent = `Entregas de ${periodo}`;
-    $('[data-econ-lista-resumo]', raiz).textContent = `${num(lista.length)} ${lista.length === 1 ? 'entrega' : 'entregas'} · ${num(qtdTotal)} ${qtdTotal === 1 ? 'item' : 'itens'} · ${dinheiro(custoTotal)} em custo`;
-    $('[data-econ-lista]', raiz).innerHTML = lista.length ? lista.map((m) => {
+    $('[data-econ-lista-resumo]', raiz).textContent = `${num(qtdTotal)} ${qtdTotal === 1 ? 'item entregue' : 'itens entregues'} · ${dinheiro(custoTotal)} em custo`;
+    const paginas = Math.max(1, Math.ceil(filtrada.length / POR_PAGINA));
+    if (estado.pagina > paginas) estado.pagina = paginas;
+    const daPagina = filtrada.slice((estado.pagina - 1) * POR_PAGINA, estado.pagina * POR_PAGINA);
+    $('[data-econ-lista]', raiz).innerHTML = daPagina.length ? daPagina.map((m) => {
       const p = precoDe(m), q = Number(m.quantidade) || 0;
       return `<tr>
         <td>${esc(m.data)}</td>
-        <td>${esc(m.colaborador || '—')}</td>
-        <td>${esc(m.epi || nomeEpi(m.epi_id, m))}</td>
-        <td>${esc(m.ca || '—')}</td>
+        <td><b>${esc(m.colaborador || '—')}</b></td>
+        <td><b>${esc(m.epi || nomeEpi(m.epi_id, m))}</b></td>
+        <td>${esc(m.ca || 'N/A')}</td>
         <td class="num">${num(q)}</td>
-        <td class="num">${p == null ? '<span class="stg-traco" title="C.A. sem preço cadastrado">sem preço</span>' : dinheiro(p)}</td>
-        <td class="num">${p == null ? '<span class="stg-traco">—</span>' : dinheiro(p * q)}</td>
+        <td class="num">${p == null ? '<span class="ecn-traco" title="C.A. sem preço cadastrado">sem preço</span>' : dinheiro(p)}</td>
+        <td class="num">${p == null ? '<span class="ecn-traco">—</span>' : dinheiro(p * q)}</td>
       </tr>`;
-    }).join('') : '<tr><td colspan="7" class="stg-vazio">Nenhuma entrega nesse período.</td></tr>';
+    }).join('') : '<tr><td colspan="7" class="ecn-vazio">Nenhuma entrega encontrada.</td></tr>';
+
+    // Rodapé igual ao de Movimentações.
+    let ini = Math.max(1, estado.pagina - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
+    let nums = '';
+    for (let p = ini; p <= fim; p++) nums += `<button type="button" class="g-employee-page${p === estado.pagina ? ' is-current' : ''}" data-econ-pagina="${p}"${p === estado.pagina ? ' aria-current="page"' : ''} aria-label="Página ${p}">${p}</button>`;
+    $('[data-econ-rodape]', raiz).innerHTML = `<span class="g-employee-count">Exibindo ${num(daPagina.length)} de ${num(filtrada.length)} ${filtrada.length === 1 ? 'entrega' : 'entregas'}</span>` + (paginas > 1 ? `<nav class="g-employee-pagination" aria-label="Páginas">
+      <button type="button" class="g-employee-page" data-econ-pagina="${estado.pagina - 1}"${estado.pagina <= 1 ? ' disabled' : ''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>${nums}
+      <button type="button" class="g-employee-page" data-econ-pagina="${estado.pagina + 1}"${estado.pagina >= paginas ? ' disabled' : ''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>` : '');
     window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
+  }
+
+  // CSV das entregas do período (com a busca e o filtro de EPI aplicados).
+  function exportarCsv() {
+    const { lista } = calcular(estado);
+    const linhas = [['Data', 'Colaborador', 'EPI', 'C.A.', 'Quantidade', 'Preço unitário', 'Custo']];
+    listaFiltrada(lista).forEach((m) => {
+      const p = precoDe(m), q = Number(m.quantidade) || 0;
+      linhas.push([m.data, m.colaborador || '', m.epi || '', m.ca || '', q, p == null ? '' : p.toFixed(2).replace('.', ','), p == null ? '' : (p * q).toFixed(2).replace('.', ',')]);
+    });
+    const csv = '﻿' + linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = `economia_${(estado.refDe || '').slice(0, 7)}_a_${(estado.de || '').slice(0, 7)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
 
   // Card Economia do Dashboard: mesma conta, com o período do Dashboard.
