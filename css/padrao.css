@@ -3222,3 +3222,12 @@
   }
   .epi-tab-foto.tem-foto img{width:88%;height:88%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
 }
+/* EPIs (PC): sem o quadradinho em volta da foto; a célula da tabela já é a
+   moldura. Foto maior, solta, e ícone dos itens sem foto também solto. */
+@media (min-width:721px){
+  .epi-tab .c-foto{width:64px}
+  .epi-tab td.foto{padding:3px 6px!important;text-align:center}
+  .epi-tab-foto,.epi-tab-foto.tem-foto{width:100%;height:40px;border:0;border-radius:0;background:none;margin:0 auto}
+  .epi-tab-foto svg{width:20px;height:20px}
+  .epi-tab-foto.tem-foto img{width:100%;height:100%;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+}
