@@ -1560,7 +1560,7 @@ function renderEpiTabela(){
     const caTxt=ca.v?`${isCiCode(ca.v.ca)?'':'CA '}${esc(ca.v.ca)}`:'<span class="epi-tab-vazio">Sem C.A.</span>';
     return `<tr data-epi-id="${esc(c.id)}" tabindex="0">
       <td class="foto"><span class="epi-tab-foto"${ca.foto?` data-foto="${esc(ca.foto)}"`:''}><i data-lucide="${epiCardIcon(c)}" aria-hidden="true"></i></span></td>
-      <td><strong class="epi-tab-nome" title="${esc(c.nome)}">${esc(c.nome)}</strong>${c.categoria&&normalize(c.categoria)!=='epi'?`<small class="epi-tab-cat">${esc(c.categoria)}</small>`:''}</td>
+      <td><strong class="epi-tab-nome" title="${esc(c.nome)}">${esc(c.nome)}</strong></td>
       <td>${caTxt}</td>
       <td class="var">${ca.total?`<span class="epi-tab-var">${ca.total}</span>`:'<span class="epi-tab-vazio">—</span>'}</td>
       <td class="num">${saldo==null?'<span class="epi-tab-vazio">—</span>':`<b class="epi-tab-saldo${saldo<=0?' is-zero':''}">${fmt(saldo)}</b>`}</td>
