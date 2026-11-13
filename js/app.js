@@ -2598,8 +2598,10 @@ function renderSideUserProfile(session){
 }
 
 let profilePreviewObjectUrl='';
+let profileRemoverFoto=false;
 
 function closeProfileEditor(){
+  profileRemoverFoto=false;
   if(profilePreviewObjectUrl){
     URL.revokeObjectURL(profilePreviewObjectUrl);
     profilePreviewObjectUrl='';
@@ -2619,9 +2621,28 @@ async function openProfileEditor(){
   $('profileFileName').textContent='Nenhuma nova imagem selecionada.';
   $('profileMsg').textContent='';
   setProfileImage($('profilePreviewImg'),$('profilePreviewInitial'),name,avatar);
+  // Conta (e-mail do login) e nível de acesso, só para leitura.
+  if($('profileEmail')) $('profileEmail').textContent=session.user?.email||'';
+  if($('profileAcesso')){
+    $('profileAcesso').textContent=currentIsAdmin?'Administrador':'Usuário';
+    $('profileAcesso').classList.toggle('is-admin',!!currentIsAdmin);
+  }
+  profileRemoverFoto=false;
+  if($('profileRemoveBtn')) $('profileRemoveBtn').hidden=!avatar;
   $('profileModal').classList.remove('hidden');
   refreshIcons();
 }
+
+// "Remover foto": volta às iniciais; só vale depois de Salvar perfil.
+if($('profileRemoveBtn')) $('profileRemoveBtn').addEventListener('click',()=>{
+  profileRemoverFoto=true;
+  if(profilePreviewObjectUrl){URL.revokeObjectURL(profilePreviewObjectUrl);profilePreviewObjectUrl=''}
+  if($('profilePhotoInput')) $('profilePhotoInput').value='';
+  const name=$('profileNameInput').value.trim()||'Usuário';
+  setProfileImage($('profilePreviewImg'),$('profilePreviewInitial'),name,'');
+  $('profileFileName').textContent='A foto será removida ao salvar.';
+  $('profileRemoveBtn').hidden=true;
+});
 
 if($('sideUserProfile')) $('sideUserProfile').addEventListener('click',openProfileEditor);
 if($('profileModalClose')) $('profileModalClose').addEventListener('click',closeProfileEditor);
@@ -2656,6 +2677,8 @@ if($('profilePhotoInput')) $('profilePhotoInput').addEventListener('change',asyn
   if(profilePreviewObjectUrl) URL.revokeObjectURL(profilePreviewObjectUrl);
   profilePreviewObjectUrl=URL.createObjectURL(file);
   $('profileFileName').textContent=file.name;
+  profileRemoverFoto=false;
+  if($('profileRemoveBtn')) $('profileRemoveBtn').hidden=false;
 
   const name=$('profileNameInput').value.trim()||'Usuário';
   setProfileImage($('profilePreviewImg'),$('profilePreviewInitial'),name,profilePreviewObjectUrl);
@@ -2687,7 +2710,7 @@ if($('profileForm')) $('profileForm').addEventListener('submit',async e=>{
     if(!user) throw new Error('Sessão não encontrada.');
 
     const meta=user.user_metadata||{};
-    let avatarUrl=String(meta.epi_avatar_url||'');
+    let avatarUrl=profileRemoverFoto?'':String(meta.epi_avatar_url||'');
 
     if(file){
       const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
