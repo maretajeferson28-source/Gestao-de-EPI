@@ -133,8 +133,8 @@
           <p class="stg-hero__total"><strong data-econ-total>R$ 0,00</strong><span data-econ-periodo>economizados</span></p>
         </div>
         <div class="stg-hero__bottom">
-          <label class="stg-filtro stg-filtro--mes"><span>De</span><input type="month" data-econ-mes="ref" aria-label="Mês de partida"></label>
-          <label class="stg-filtro stg-filtro--mes"><span>Até</span><input type="month" data-econ-mes="atual" aria-label="Mês de chegada"></label>
+          <div class="stg-filtro stg-filtro--mes"><span>De</span><div class="stg-mes" data-econ-mes="ref"></div></div>
+          <div class="stg-filtro stg-filtro--mes"><span>Até</span><div class="stg-mes" data-econ-mes="atual"></div></div>
           <label class="stg-filtro"><span>EPI / Item</span><select data-econ-epi></select></label>
         </div>
       </div>
@@ -151,13 +151,54 @@
     // "De" = mês de partida (custo médio de antes); "Até" = mês de chegada
     // (custo médio de agora, vezes o que foi entregue nele).
     const mesInteiro = (ym) => { const [y, m] = ym.split('-').map(Number); return { de: `${ym}-01`, ate: dataIso(new Date(y, m, 0)) }; };
-    const mesRef = $('[data-econ-mes="ref"]', el), mesAtual = $('[data-econ-mes="atual"]', el);
-    mesRef.value = (estado.refDe || '').slice(0, 7);
-    mesAtual.value = (estado.de || '').slice(0, 7);
-    mesRef.addEventListener('change', () => { if (!mesRef.value) return; const p = mesInteiro(mesRef.value); estado.refDe = p.de; estado.refAte = p.ate; atualizar(); });
-    mesAtual.addEventListener('change', () => { if (!mesAtual.value) return; const p = mesInteiro(mesAtual.value); estado.de = p.de; estado.ate = p.ate; atualizar(); });
+    seletorMes($('[data-econ-mes="ref"]', el), (estado.refDe || '').slice(0, 7), (ym) => { const p = mesInteiro(ym); estado.refDe = p.de; estado.refAte = p.ate; atualizar(); });
+    seletorMes($('[data-econ-mes="atual"]', el), (estado.de || '').slice(0, 7), (ym) => { const p = mesInteiro(ym); estado.de = p.de; estado.ate = p.ate; atualizar(); });
     $('[data-econ-epi]', el).addEventListener('change', (e) => { estado.epi = e.target.value; atualizar(); });
     atualizar();
+  }
+
+  // Seletor de mês no tema (no lugar do calendário do navegador): botão com o
+  // mês e, ao clicar, painel com o ano (‹ ›) e os 12 meses. Meses com entregas
+  // ganham um pontinho.
+  const MES_LONGO = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  function seletorMes(caixa, valor, aoMudar) {
+    let ym = valor || dataIso(new Date()).slice(0, 7);
+    let ano = Number(ym.slice(0, 4));
+    const comEntrega = new Set(entregas().map((m) => iso(m.data).slice(0, 7)).filter(Boolean));
+    caixa.innerHTML = `
+      <button type="button" class="stg-mes__botao" aria-haspopup="dialog" aria-expanded="false"><i data-lucide="calendar-days"></i><span></span><i data-lucide="chevron-down"></i></button>
+      <div class="stg-mes__painel" hidden>
+        <div class="stg-mes__ano"><button type="button" data-ano="-1" aria-label="Ano anterior"><i data-lucide="chevron-left"></i></button><strong></strong><button type="button" data-ano="1" aria-label="Próximo ano"><i data-lucide="chevron-right"></i></button></div>
+        <div class="stg-mes__grade"></div>
+      </div>`;
+    const botao = caixa.querySelector('.stg-mes__botao'), painel = caixa.querySelector('.stg-mes__painel');
+    const texto = () => { const [y, m] = ym.split('-').map(Number); botao.querySelector('span').textContent = `${MES_LONGO[m - 1]} de ${y}`; };
+    const grade = () => {
+      painel.querySelector('strong').textContent = ano;
+      painel.querySelector('.stg-mes__grade').innerHTML = MES.map((n, i) => {
+        const v = `${ano}-${pad(i + 1)}`;
+        return `<button type="button" data-mes="${v}" class="${v === ym ? 'is-sel' : ''}${comEntrega.has(v) ? ' tem-entrega' : ''}">${n}</button>`;
+      }).join('');
+    };
+    const abrir = (sim) => {
+      painel.hidden = !sim;
+      botao.setAttribute('aria-expanded', sim ? 'true' : 'false');
+      if (sim) { ano = Number(ym.slice(0, 4)); grade(); window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } }); }
+    };
+    botao.addEventListener('click', () => {
+      document.querySelectorAll('.stg-mes__painel:not([hidden])').forEach((p) => { if (p !== painel) p.hidden = true; });
+      abrir(painel.hidden);
+    });
+    painel.addEventListener('click', (e) => {
+      const passo = e.target.closest('[data-ano]');
+      if (passo) { ano += Number(passo.dataset.ano); grade(); return; }
+      const mes = e.target.closest('[data-mes]');
+      if (mes) { ym = mes.dataset.mes; texto(); abrir(false); botao.focus(); aoMudar(ym); }
+    });
+    const fora = (e) => { if (!caixa.isConnected) { document.removeEventListener('click', fora); return; } if (!caixa.contains(e.target)) abrir(false); };
+    document.addEventListener('click', fora);
+    caixa.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !painel.hidden) { e.stopPropagation(); abrir(false); botao.focus(); } });
+    texto();
   }
 
   const celula = (o) => `<b>${dinheiro(o.medio)}/un</b><small>${num(o.qtdPreco)} un${o.semPreco ? ` · ${num(o.semPreco)} sem preço` : ''}</small>`;

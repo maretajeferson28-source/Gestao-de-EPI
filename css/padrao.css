@@ -3652,3 +3652,39 @@
 @media (min-width:721px){
   .stg-filtro--mes{flex:0 0 190px}
 }
+/* Tela Economia: seletor de mês no tema (no lugar do calendário do
+   navegador). O painel abre para cima, porque o banner corta o que passa
+   da borda de baixo. */
+@media (min-width:721px){
+  .stg-mes{position:relative}
+  .stg-mes__botao{
+    display:flex;align-items:center;gap:9px;width:100%;height:42px;box-sizing:border-box;padding:0 12px;border-radius:13px;cursor:pointer;
+    color:#F5F6F8;font:500 13px/1 Inter,Roboto,Arial,sans-serif;text-align:left;
+    background:rgba(11,17,24,.82);border:1px solid rgba(209,220,232,.14);backdrop-filter:blur(14px)
+  }
+  .stg-mes__botao span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stg-mes__botao svg{width:16px;height:16px;flex:0 0 16px;color:#AEB8C2}
+  .stg-mes__botao svg:first-child{color:var(--t)}
+  .stg-mes__botao:hover,.stg-mes__botao[aria-expanded="true"]{border-color:color-mix(in srgb,var(--t) 60%,transparent)}
+  .stg-mes__botao:focus-visible{outline:2px solid var(--t);outline-offset:2px}
+  .stg-mes__painel{
+    position:absolute;z-index:20;left:0;bottom:calc(100% + 8px);width:250px;box-sizing:border-box;padding:12px;border-radius:14px;
+    background:linear-gradient(180deg,#121A22,#0B1117);border:1px solid rgba(178,191,205,.18);
+    box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.2)
+  }
+  .stg-mes__painel[hidden]{display:none}
+  .stg-mes__ano{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .stg-mes__ano strong{font:700 14px/1 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .stg-mes__ano button{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;cursor:pointer;color:#C9D2DB;background:rgba(178,191,205,.06);border:1px solid rgba(178,191,205,.14)}
+  .stg-mes__ano button:hover{color:#fff;border-color:color-mix(in srgb,var(--t) 55%,transparent)}
+  .stg-mes__ano button svg{width:15px;height:15px}
+  .stg-mes__grade{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .stg-mes__grade button{
+    position:relative;height:34px;border-radius:9px;cursor:pointer;font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;text-transform:capitalize;
+    color:#C9D2DB;background:transparent;border:1px solid transparent
+  }
+  .stg-mes__grade button:hover{background:rgba(178,191,205,.08);color:#fff}
+  .stg-mes__grade button.tem-entrega::after{content:"";position:absolute;left:50%;bottom:5px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--t);opacity:.8}
+  .stg-mes__grade button.is-sel{color:#06120C;background:var(--t);border-color:var(--t);font-weight:800}
+  .stg-mes__grade button.is-sel::after{background:#06120C}
+}
