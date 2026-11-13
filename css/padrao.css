@@ -3556,9 +3556,9 @@
     position:absolute;z-index:2;left:38px;top:-25px;width:5px;height:128px;transform:rotate(33deg);
     background:linear-gradient(180deg,var(--t),var(--t2) 78%,transparent);box-shadow:0 0 17px var(--t-tint);pointer-events:none
   }
-  .stg-hero__copy{position:absolute;z-index:3;top:26px;left:71px;max-width:560px}
+  .stg-hero__copy{position:absolute;z-index:3;top:18px;left:71px;max-width:560px}
   .stg-voltar{
-    display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;margin:0 0 16px;border-radius:10px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;margin:0 0 12px;border-radius:10px;cursor:pointer;
     font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;color:#E3E8ED;
     background:rgba(11,17,24,.7);border:1px solid rgba(209,220,232,.16);backdrop-filter:blur(10px)
   }
@@ -3588,7 +3588,7 @@
   .stg-moeda--3{width:28px;height:28px;right:34px;bottom:8px;font-size:10px;opacity:.7}
 
   /* Filtros na base do banner, no lugar do período/abas do Dashboard */
-  .stg-hero__bottom{position:absolute;z-index:5;left:28px;right:28px;bottom:58px;display:flex;align-items:flex-end;gap:12px}
+  .stg-hero__bottom{position:absolute;z-index:5;left:28px;right:28px;bottom:46px;display:flex;align-items:flex-end;gap:12px}
   .stg-filtro{display:flex;flex-direction:column;gap:6px;margin:0;min-width:0;flex:1 1 260px;max-width:320px}
   .stg-filtro--data{flex:0 0 160px}
   .stg-filtro>span{font:700 10.5px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#C7CDD6}
@@ -3601,10 +3601,12 @@
   .stg-filtro select:disabled{opacity:.55}
   .stg-filtro select option{background:#11171E;color:#E9EDF1}
 
-  /* KPIs da tela: mesmo componente dos KPIs do Dashboard */
-  .stg-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:2px 0 18px;font-family:"Roboto",Arial,sans-serif;font-variant-numeric:tabular-nums;
-    --kpi-text:#F7F8FB;--kpi-text-muted:#A8ADB6;--kpi-orange:#FF7100;--kpi-cyan:#03AEFF;--kpi-purple:#AF82F5;--kpi-red:#FF4054}
-  .stg-kpis .kpi-card__sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Total da economia no banner, logo abaixo do título */
+  .stg-hero__total{display:flex;align-items:baseline;gap:10px;margin:12px 0 0;flex-wrap:wrap}
+  .stg-hero__total strong{font:800 34px/1 Inter,Roboto,Arial,sans-serif;color:var(--t);letter-spacing:-.6px;font-variant-numeric:tabular-nums;text-shadow:0 0 22px var(--t-tint)}
+  .stg-hero__total strong small{font-size:.5em;font-weight:700;margin-right:5px;color:#D5DAE1}
+  .stg-hero__total strong.is-neg{color:#FB7373;text-shadow:none}
+  .stg-hero__total span{font-size:15px;color:#D5DAE1}
 
   /* Tabela das comparações */
   .stg-painel{
@@ -3631,6 +3633,5 @@
 }
 @media (min-width:721px) and (max-width:1100px){
   .stg-hero__arte{display:none}
-  .stg-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stg-hero__bottom{flex-wrap:wrap;bottom:24px}
 }

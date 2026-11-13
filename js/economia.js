@@ -75,16 +75,6 @@
       .map((v) => `<option value="${esc(v.id)}"${v.id === estado.base ? ' selected' : ''}>${esc(titulo(v.ca))}${v.apelido ? ` · ${esc(v.apelido)}` : ''} (${dinheiro(v.preco)})</option>`).join('');
   }
 
-  const kpi = (tom, icone, rotulo, valor, sub, moeda) => `
-    <article class="kpi-card kpi-card--${tom}">
-      <div class="kpi-card__icon" aria-hidden="true"><i data-lucide="${icone}"></i></div>
-      <div class="kpi-card__body">
-        <p class="kpi-card__label">${rotulo}</p>
-        <div class="kpi-card__value-row"><strong class="kpi-card__value${moeda ? ' kpi-card__value--currency' : ''}">${valor}</strong></div>
-        <p class="kpi-card__sub">${sub}</p>
-      </div>
-    </article>`;
-
   function montar(el, voltar) {
     raiz = el;
     estado.de = val('fDe');
@@ -100,7 +90,7 @@
         <div class="stg-hero__copy">
           <button type="button" class="stg-voltar" data-stage-voltar><i data-lucide="arrow-left"></i>Voltar ao Dashboard</button>
           <h2 class="stg-hero__title">Cada troca de C.A.<br><strong>vira economia</strong>.</h2>
-          <p class="stg-hero__subtitle">Quanto se economizou entregando o C.A. atual no lugar do antigo, mais caro.</p>
+          <p class="stg-hero__total"><strong data-econ-total>R$ 0,00</strong><span data-econ-periodo>economizados</span></p>
         </div>
         <div class="stg-hero__bottom">
           <label class="stg-filtro stg-filtro--data"><span>De</span><input type="date" data-econ-de></label>
@@ -109,7 +99,6 @@
           <label class="stg-filtro"><span>Comparar com</span><select data-econ-base></select></label>
         </div>
       </div>
-      <section class="stg-kpis" data-econ-kpis></section>
       <div class="stg-painel">
         <div class="stg-painel__head"><h3>Comparações</h3><p>Entram os C.A.s marcados como <b>Atual</b> ou <b>Antigo</b> no prontuário do EPI, com preço cadastrado.</p></div>
         <div class="stg-tabela-wrap">
@@ -139,15 +128,11 @@
 
     const linhas = calcular();
     const total = linhas.reduce((s, l) => s + l.total, 0);
-    const qtd = linhas.reduce((s, l) => s + l.qtd, 0);
-    const maior = linhas.find((l) => l.total > 0);
-    const periodo = !estado.de && !estado.ate ? 'todo o período' : 'no período escolhido';
-    const rs = '<small class="kpi-card__moeda">R$</small>';
-    $('[data-econ-kpis]', raiz).innerHTML =
-      kpi('green', 'piggy-bank', 'Economia', `${rs}${semRs(total)}`, periodo, true) +
-      kpi('blue', 'package', 'Itens comparados', num(qtd), 'entregas de C.A.s atuais') +
-      kpi('purple', 'arrow-left-right', 'Comparações', num(linhas.length), linhas.length === 1 ? 'C.A. atual com antigo' : 'C.A.s atuais com antigo') +
-      kpi('orange', 'trophy', 'Maior economia', maior ? `${rs}${semRs(maior.total)}` : '—', maior ? `${esc(nomeEpi(maior.atual.epi_id))} · ${esc(titulo(maior.atual.ca))}` : 'nenhuma no período', !!maior);
+    // Total grande no banner, no lugar dos cards.
+    const tot = $('[data-econ-total]', raiz);
+    tot.innerHTML = `<small>R$</small>${semRs(total)}`;
+    tot.classList.toggle('is-neg', total < 0);
+    $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} ${!estado.de && !estado.ate ? 'em todo o período' : 'no período escolhido'}`;
 
     $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => `
       <tr>
