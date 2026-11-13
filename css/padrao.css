@@ -3175,7 +3175,7 @@
   .epi-tab .num{text-align:right}
   .epi-tab th.acao,.epi-tab td.acao{text-align:center;padding:4px 8px}
   .epi-tab td.acao .table-action-group{justify-content:center;gap:6px}
-  .epi-tab tbody tr{cursor:pointer;transition:background 120ms ease}
+  .epi-tab tbody tr{cursor:default;transition:background 120ms ease}
   .epi-tab tbody tr:hover td{background:rgba(255,255,255,.03)}
   .epi-tab tbody tr:focus-visible{outline:1px solid rgba(255,121,0,.55);outline-offset:-1px}
 

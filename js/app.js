@@ -1558,7 +1558,7 @@ function renderEpiTabela(){
   body.innerHTML=daPagina.map(({c,ca,s})=>{
     const saldo=epiEstoque?.saldo.get(c.id), min=epiEstoque?.minimo.get(c.id), ult=epiEstoque?.ultima.get(c.id);
     const caTxt=ca.v?`${isCiCode(ca.v.ca)?'':'CA '}${esc(ca.v.ca)}`:'<span class="epi-tab-vazio">Sem C.A.</span>';
-    return `<tr data-epi-id="${esc(c.id)}" tabindex="0">
+    return `<tr data-epi-id="${esc(c.id)}">
       <td class="foto"><span class="epi-tab-foto"${ca.foto?` data-foto="${esc(ca.foto)}"`:''}><i data-lucide="${epiCardIcon(c)}" aria-hidden="true"></i></span></td>
       <td><strong class="epi-tab-nome" title="${esc(c.nome)}">${esc(c.nome)}</strong></td>
       <td>${caTxt}</td>
@@ -1642,11 +1642,8 @@ function recortarFundoBranco(url){
   body.addEventListener('click',e=>{
     const del=e.target.closest('[data-epi-delete]'); if(del){ e.stopPropagation(); deleteEpiCatalogItem(del.dataset.epiDelete); return; }
     const ed=e.target.closest('[data-epi-edit]'); if(ed){ e.stopPropagation(); openEpiCatalogEdit(ed.dataset.epiEdit); return; }
-    const tr=e.target.closest('tr[data-epi-id]'); if(tr) openEpiDetail(tr.dataset.epiId);
-  });
-  body.addEventListener('keydown',e=>{
-    if(e.key!=='Enter'||e.target.closest('button')) return;
-    const tr=e.target.closest('tr[data-epi-id]'); if(tr){ e.preventDefault(); openEpiDetail(tr.dataset.epiId); }
+    // O prontuário abre só pelo botão da coluna Ação (clicar na linha não faz nada).
+    const pr=e.target.closest('.epi-tab-prontuario'); const tr=pr&&pr.closest('tr[data-epi-id]'); if(tr) openEpiDetail(tr.dataset.epiId);
   });
   const refaz=()=>{ epiTabPagina=1; renderEpiTabela(); };
   $('epiTabBusca')?.addEventListener('input',refaz);
