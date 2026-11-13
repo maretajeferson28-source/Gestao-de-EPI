@@ -93,14 +93,38 @@
     return mapa;
   }
 
-  function calcular({ de, ate, refDe, refAte, epi }) {
-    const atual = resumoPorItem(de, ate, epi), ref = resumoPorItem(refDe, refAte, epi);
+  // Intervalo inteiro, do mês "De" (refDe) ao mês "Até" (ate). Para cada item,
+  // a partida é o primeiro mês do intervalo em que ele teve entrega com preço;
+  // tudo o que foi entregue nos meses seguintes é comparado com o custo médio
+  // dessa partida, mês a mês (cada mês com o seu custo médio).
+  function calcular({ ate, refDe, epi }) {
+    const porItem = new Map();
+    entregas().forEach((m) => {
+      const d = iso(m.data);
+      if (!d || (refDe && d < refDe) || (ate && d > ate) || (epi && m.epi_id !== epi) || !passaFiltrosDash(m)) return;
+      const k = m.epi_id || m.epi, mes = d.slice(0, 7);
+      const item = porItem.get(k) || { nome: nomeEpi(m.epi_id, m), meses: new Map() };
+      const o = item.meses.get(mes) || { qtdPreco: 0, valor: 0, semPreco: 0 };
+      const q = Number(m.quantidade) || 0, p = precoDe(m);
+      if (p == null) o.semPreco += q; else { o.qtdPreco += q; o.valor += p * q; }
+      item.meses.set(mes, o);
+      porItem.set(k, item);
+    });
     const linhas = [];
-    atual.forEach((a, k) => {
-      const r = ref.get(k);
-      if (a.medio == null || !r || r.medio == null) return;
-      const unit = r.medio - a.medio;
-      linhas.push({ nome: a.nome, ref: r, atual: a, unit, total: unit * a.qtdPreco });
+    porItem.forEach((item) => {
+      const meses = [...item.meses.entries()].filter(([, o]) => o.qtdPreco).sort((a, b) => a[0].localeCompare(b[0]));
+      if (meses.length < 2) return;
+      const [mesRef, r] = meses[0];
+      const ref = { medio: r.valor / r.qtdPreco, qtdPreco: r.qtdPreco, semPreco: r.semPreco, mes: mesRef };
+      const depois = { qtdPreco: 0, valor: 0, semPreco: 0 };
+      let total = 0;
+      meses.slice(1).forEach(([, o]) => {
+        total += (ref.medio - o.valor / o.qtdPreco) * o.qtdPreco;
+        depois.qtdPreco += o.qtdPreco; depois.valor += o.valor; depois.semPreco += o.semPreco;
+      });
+      depois.medio = depois.valor / depois.qtdPreco;
+      depois.de = meses[1][0]; depois.ate = meses[meses.length - 1][0];
+      linhas.push({ nome: item.nome, ref, atual: depois, unit: ref.medio - depois.medio, total });
     });
     linhas.sort((x, y) => y.total - x.total);
     return { linhas, total: linhas.reduce((s, l) => s + l.total, 0) };
@@ -139,10 +163,10 @@
         </div>
       </div>
       <div class="stg-painel">
-        <div class="stg-painel__head"><h3>Custo por unidade em cada período</h3><p>Preço cadastrado do C.A. de cada entrega. Entrega de C.A. sem preço fica de fora da média.</p></div>
+        <div class="stg-painel__head"><h3>Custo por unidade no intervalo</h3><p>Partida: primeiro mês do item no intervalo. Preço cadastrado do C.A. de cada entrega; sem preço fica de fora.</p></div>
         <div class="stg-tabela-wrap">
           <table class="stg-tabela">
-            <thead><tr><th>EPI / Item</th><th class="num" data-econ-th-ref>Comparar com</th><th class="num" data-econ-th-atual>Período</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
+            <thead><tr><th>EPI / Item</th><th class="num">Partida</th><th class="num">Depois</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
             <tbody data-econ-corpo></tbody>
           </table>
         </div>
@@ -201,7 +225,11 @@
     texto();
   }
 
-  const celula = (o) => `<b>${dinheiro(o.medio)}/un</b><small>${num(o.qtdPreco)} un${o.semPreco ? ` · ${num(o.semPreco)} sem preço` : ''}</small>`;
+  const mesTxt = (ym) => `${MES[Number(ym.slice(5, 7)) - 1]}/${ym.slice(0, 4)}`;
+  const celula = (o) => {
+    const quando = o.mes ? mesTxt(o.mes) : o.de === o.ate ? mesTxt(o.de) : `${mesTxt(o.de)} a ${mesTxt(o.ate)}`;
+    return `<b>${dinheiro(o.medio)}/un</b><small>${quando} · ${num(o.qtdPreco)} un${o.semPreco ? ` · ${num(o.semPreco)} sem preço` : ''}</small>`;
+  };
 
   function atualizar() {
     if (!raiz || !raiz.isConnected || !$('[data-econ-corpo]', raiz)) return;
@@ -211,8 +239,6 @@
     tot.innerHTML = `<small>R$</small>${semRs(Math.abs(total))}`; // o texto ao lado diz se foi economia ou gasto a mais
     tot.classList.toggle('is-neg', total < 0);
     $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} de ${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
-    $('[data-econ-th-ref]', raiz).textContent = rotulo(estado.refDe, estado.refAte);
-    $('[data-econ-th-atual]', raiz).textContent = rotulo(estado.de, estado.ate);
     $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => `
       <tr>
         <td>${esc(l.nome)}</td>
@@ -221,7 +247,7 @@
         <td class="num${l.unit < 0 ? ' is-neg' : ''}">${dinheiro(l.unit)}</td>
         <td class="num stg-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
       </tr>`).join('')
-      : '<tr><td colspan="5" class="stg-vazio">Nenhum item com entregas com preço nos dois períodos.</td></tr>';
+      : '<tr><td colspan="5" class="stg-vazio">Nenhum item com entregas com preço em mais de um mês desse intervalo.</td></tr>';
     window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   }
 

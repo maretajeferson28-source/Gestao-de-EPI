@@ -3650,7 +3650,7 @@
 }
 /* Tela Economia: "De" e "Até" como meses. */
 @media (min-width:721px){
-  .stg-filtro--mes{flex:0 0 190px}
+  .stg-filtro--mes{flex:0 0 215px}
 }
 /* Tela Economia: seletor de mês no tema (no lugar do calendário do
    navegador). O painel abre para cima, porque o banner corta o que passa
