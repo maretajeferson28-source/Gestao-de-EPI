@@ -3254,6 +3254,7 @@
 @media (min-width:721px){
   .epi-tab .c-epi{width:18%}
   .epi-tab .c-sit{width:13%}
+  .epi-tab .c-acao{width:124px} /* três botões: prontuário, editar, excluir */
 }
 /* =====================================================================
    Programar (PC): fundo grafite azulado das outras abas no lugar do preto

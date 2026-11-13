@@ -1568,6 +1568,7 @@ function renderEpiTabela(){
       <td>${s?`<span class="epi-sit epi-sit--${s.k}">${s.t}</span>`:'<span class="epi-tab-vazio">…</span>'}</td>
       <td>${ult?ult.split('-').reverse().join('/'):'<span class="epi-tab-vazio">—</span>'}</td>
       <td class="acao"><div class="table-action-group">
+        <button class="btn movement-action-btn epi-tab-prontuario" type="button" title="Abrir prontuário" aria-label="Abrir prontuário"><i data-lucide="file-text" aria-hidden="true"></i></button>
         <button class="btn movement-action-btn movement-edit-btn" type="button" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></button>
         <button class="btn movement-action-btn movement-delete-btn" type="button" data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></button>
       </div></td></tr>`;
