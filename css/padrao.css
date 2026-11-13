@@ -3287,3 +3287,7 @@
   .page[data-page-content="programar"] .prog-bloco::after,
   .page[data-page-content="programar"] .prog-resumo::after{opacity:.35!important}
 }
+/* EPIs (PC): tudo centralizado nas células (cabeçalho e conteúdo). */
+@media (min-width:721px){
+  .epi-tab th,.epi-tab td,.epi-tab .num,.epi-tab th.var,.epi-tab td.var{text-align:center!important}
+}
