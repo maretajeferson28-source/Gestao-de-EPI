@@ -3255,6 +3255,10 @@
   .epi-tab .c-epi{width:18%}
   .epi-tab .c-sit{width:13%}
   .epi-tab .c-acao{width:124px} /* três botões: prontuário, editar, excluir */
+  /* As porcentagens somam ~79%: a sobra da tabela fica nelas, e não esticando Foto e Ação. */
+  .epi-tab .c-ca{width:12%}
+  .epi-tab .c-var{width:10%}
+  .epi-tab .c-data{width:12%}
 }
 /* =====================================================================
    Programar (PC): fundo grafite azulado das outras abas no lugar do preto
