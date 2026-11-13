@@ -3044,3 +3044,9 @@
 @media (min-width:721px){
   .kpi-card__value.kpi-card__value--currency{font-size:clamp(23px,2vw,30px)!important;letter-spacing:-.7px!important}
 }.kpi-card__moeda{font-size:.55em;font-weight:600;letter-spacing:0;margin-right:4px;color:#D5D9DF;vertical-align:.12em}
+/* Dashboard: KPIs com título em cima, número no meio e "todo o período"
+   embaixo, ocupando a altura toda do card (antes sobrava espaço embaixo). */
+@media (min-width:721px){
+  .kpi-grid .kpi-card__body{display:flex;flex-direction:column;justify-content:space-between;min-height:100%}
+  .kpi-grid .kpi-card__label,.kpi-grid .kpi-card__sub{margin-top:0!important;margin-bottom:0!important}
+}
