@@ -3443,3 +3443,52 @@
 /* Um C.A. só: vira etiqueta, sem setinha e sem abrir menu. */
 #epiDetailModal #epiCaSelectorButton.is-unico{pointer-events:none;cursor:default}
 #epiDetailModal #epiCaSelectorButton.is-unico .epi-ca-selector-chevron{display:none}
+/* =====================================================================
+   Prontuário do EPI: leitura. Nenhum texto abaixo de 10px; rótulos em
+   cinza claro azulado, textos quase brancos e ícones mais claros.
+   Só tamanho e cor; nada muda de lugar.
+   ===================================================================== */
+#epiDetailModal{--pr-rotulo:#A9B6C3;--pr-texto:#E9EDF1;--pr-suave:#B9C4CF}
+/* Topo */
+#epiDetailModal .epi-detail-kicker{font-size:10.5px!important;letter-spacing:.12em!important}
+#epiDetailModal .epi-detail-head p{font-size:12.5px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-detail-close{color:#C9D2DB!important}
+#epiDetailModal .epi-ca-selector-value strong{font-size:12.5px!important}
+#epiDetailModal .epi-ca-selector-value small{font-size:10px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-ca-selector-chevron{color:#AEB8C2!important;width:15px!important;height:15px!important}
+#epiDetailModal .epi-ca-selector-option-copy strong{font-size:12.5px!important}
+#epiDetailModal .epi-ca-selector-option-copy small{font-size:10.5px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-ca-selector-option{min-height:50px}
+/* Card do C.A. */
+#epiDetailModal .epi-dossier-kicker{font-size:10.5px!important;letter-spacing:.1em!important}
+#epiDetailModal .epi-variant-state,
+#epiDetailModal .epi-ca-inativo{font-size:10.5px!important;color:#D5DCE3!important}
+#epiDetailModal .epi-dossier-image>span small{font-size:10.5px!important;color:var(--pr-rotulo)!important}
+#epiDetailModal .epi-dossier-image>span svg{color:#AEB8C2!important}
+#epiDetailModal .epi-dossier-identity>span{font-size:10.5px!important;color:var(--pr-rotulo)!important;letter-spacing:.09em!important}
+#epiDetailModal .epi-dossier-identity>strong{font-size:17px!important}
+#epiDetailModal .epi-dossier-identity>small{font-size:12.5px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-dossier-destaques span{font-size:10.5px!important;color:var(--pr-rotulo)!important}
+#epiDetailModal .epi-dossier-destaques span svg{width:14px!important;height:14px!important;color:#FF8A24!important}
+#epiDetailModal .epi-dossier-destaques b{font-size:18px!important}
+#epiDetailModal .epi-dossier-field-label{font-size:10.5px!important;color:var(--pr-rotulo)!important;letter-spacing:.07em!important;gap:7px!important}
+#epiDetailModal .epi-dossier-field-label svg{width:15px!important;height:15px!important;color:#FF8A24!important}
+#epiDetailModal .epi-dossier-field>strong{font-size:13.5px!important;color:var(--pr-texto)!important;line-height:1.35!important}
+#epiDetailModal .epi-dossier-text>span{font-size:10.5px!important;color:var(--pr-rotulo)!important;letter-spacing:.08em!important}
+#epiDetailModal .epi-dossier-text>p{font-size:13px!important;line-height:1.6!important;color:#DCE2E8!important}
+#epiDetailModal .epi-variant-actions .btn{font-size:12.5px!important;color:#E3E8ED!important}
+/* Painel de cadastro (direita) */
+#epiDetailModal .epi-detail-section-head h3{font-size:16px!important}
+#epiDetailModal .epi-detail-section-head p{font-size:12px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-detail-section-head .btn{font-size:12.5px!important}
+#epiDetailModal .epi-variant-editor .field>label{font-size:11px!important;color:var(--pr-rotulo)!important}
+#epiDetailModal .epi-var-lookup-status{font-size:11.5px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-compare-label{font-size:11px!important;color:var(--pr-rotulo)!important}
+#epiDetailModal .epi-compare-button span{font-size:12px!important}
+#epiDetailModal .epi-compare-button:not(:has(input:checked)){color:#C4CDD6!important}
+#epiDetailModal .epi-compare-button svg{width:15px!important;height:15px!important}
+#epiDetailModal .epi-variant-image-empty strong{font-size:12.5px!important}
+#epiDetailModal .epi-variant-image-empty span{font-size:11px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-variant-image-file strong{font-size:12px!important}
+#epiDetailModal .epi-variant-image-file span{font-size:11px!important;color:var(--pr-suave)!important}
+#epiDetailModal .epi-variant-image-buttons .btn{font-size:12.5px!important}
