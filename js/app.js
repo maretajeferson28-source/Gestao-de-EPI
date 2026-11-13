@@ -1558,11 +1558,11 @@ function renderEpiTabela(){
   body.innerHTML=daPagina.map(({c,ca,s})=>{
     const saldo=epiEstoque?.saldo.get(c.id), min=epiEstoque?.minimo.get(c.id), ult=epiEstoque?.ultima.get(c.id);
     const caTxt=ca.v?`${isCiCode(ca.v.ca)?'':'CA '}${esc(ca.v.ca)}`:'<span class="epi-tab-vazio">Sem C.A.</span>';
-    const mais=ca.total>1?`<span class="epi-tab-mais" title="${ca.total} C.A.s vinculados">+${ca.total-1}</span>`:'';
     return `<tr data-epi-id="${esc(c.id)}" tabindex="0">
       <td class="foto"><span class="epi-tab-foto"${ca.foto?` data-foto="${esc(ca.foto)}"`:''}><i data-lucide="${epiCardIcon(c)}" aria-hidden="true"></i></span></td>
       <td><strong class="epi-tab-nome" title="${esc(c.nome)}">${esc(c.nome)}</strong><small class="epi-tab-cat">${esc(c.categoria||'Sem categoria')}</small></td>
-      <td>${caTxt}${mais}</td>
+      <td>${caTxt}</td>
+      <td class="var">${ca.total?`<span class="epi-tab-var">${ca.total}</span>`:'<span class="epi-tab-vazio">—</span>'}</td>
       <td class="num">${saldo==null?'<span class="epi-tab-vazio">—</span>':`<b class="epi-tab-saldo${saldo<=0?' is-zero':''}">${fmt(saldo)}</b>`}</td>
       <td class="num">${min==null?'<span class="epi-tab-vazio" title="Sem estoque mínimo cadastrado">—</span>':fmt(min)}</td>
       <td>${s?`<span class="epi-sit epi-sit--${s.k}">${s.t}</span>`:'<span class="epi-tab-vazio">…</span>'}</td>
@@ -1571,7 +1571,7 @@ function renderEpiTabela(){
         <button class="btn movement-action-btn movement-edit-btn" type="button" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></button>
         <button class="btn movement-action-btn movement-delete-btn" type="button" data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></button>
       </div></td></tr>`;
-  }).join('')||'<tr><td colspan="8" class="epi-tab-nada">Nenhum EPI encontrado.</td></tr>';
+  }).join('')||'<tr><td colspan="9" class="epi-tab-nada">Nenhum EPI encontrado.</td></tr>';
   // Rodapé com páginas (mesmo de Movimentações)
   const rod=$('epiTabRodape');
   if(rod){

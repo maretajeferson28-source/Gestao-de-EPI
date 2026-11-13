@@ -3236,3 +3236,22 @@
   .epi-tab-foto,.epi-tab-foto.tem-foto{display:flex;align-items:center;justify-content:center;overflow:visible}
   .epi-tab-foto.tem-foto img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}
 }
+/* EPIs (PC): coluna Variações (quantos C.A.s o item tem) e colunas mais
+   justas para o que cabe nelas. */
+@media (min-width:721px){
+  .epi-tab .c-epi{width:24%}
+  .epi-tab .c-ca{width:11%}
+  .epi-tab .c-var{width:9%}
+  .epi-tab .c-num{width:7%}
+  .epi-tab .c-sit{width:14%}
+  .epi-tab .c-data{width:11%}
+  .epi-tab th.var,.epi-tab td.var{text-align:center}
+  .epi-tab-var{
+    display:inline-grid;place-items:center;min-width:24px;height:22px;padding:0 7px;box-sizing:border-box;border-radius:999px;
+    font:600 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#DCE2E8;background:rgba(178,191,205,.10);border:1px solid rgba(178,191,205,.18)
+  }
+}
+@media (min-width:721px){
+  .epi-tab .c-epi{width:22%}
+  .epi-tab .c-sit{width:16%}
+}
