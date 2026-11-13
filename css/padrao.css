@@ -3492,3 +3492,26 @@
 #epiDetailModal .epi-variant-image-file strong{font-size:12px!important}
 #epiDetailModal .epi-variant-image-file span{font-size:11px!important;color:var(--pr-suave)!important}
 #epiDetailModal .epi-variant-image-buttons .btn{font-size:12.5px!important}
+/* Prontuário do EPI: "Comparativo de economia" como um seletor de duas
+   opções (Antigo / Atual) no lugar dos dois botões soltos. */
+#epiDetailModal .epi-price-compare-row{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)!important;align-items:end}
+#epiDetailModal .epi-compare-seg-wrap{min-width:0}
+#epiDetailModal .epi-compare-seg{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;height:42px;padding:3px;box-sizing:border-box;border-radius:11px;
+  background:rgba(6,10,14,.72);border:1px solid rgba(178,191,205,.16)
+}
+#epiDetailModal .epi-compare-seg .epi-compare-button{
+  height:100%!important;border:1px solid transparent!important;border-radius:8px!important;background:transparent!important;color:#B9C4CF!important
+}
+#epiDetailModal .epi-compare-seg .epi-compare-button:hover{background:rgba(178,191,205,.08)!important;color:#fff!important}
+#epiDetailModal .epi-compare-seg .epi-compare-button.past:has(input:checked){
+  background:rgba(255,138,36,.14)!important;border-color:rgba(255,138,36,.45)!important;color:#FFB070!important
+}
+#epiDetailModal .epi-compare-seg .epi-compare-button.current:has(input:checked){
+  background:rgba(82,197,140,.14)!important;border-color:rgba(82,197,140,.45)!important;color:#7BE0AA!important
+}
+#epiDetailModal .epi-compare-seg .epi-compare-button:has(input:focus-visible){outline:2px solid rgba(255,121,0,.6);outline-offset:1px}
+#epiDetailModal .epi-compare-dica{grid-column:1/-1;margin:2px 0 0;font-size:11.5px;line-height:1.45;color:#9FB0C2}
+@media (max-width:620px){
+  #epiDetailModal .epi-price-compare-row{grid-template-columns:1fr!important}
+}

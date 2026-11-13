@@ -355,51 +355,41 @@ function spendingSummary(arr){
   const replacementRows=[];
   const activeVariants=epiVariants.filter(v=>v.ativo!==false);
 
+  // Economia: cada C.A. "Atual" (pode haver vários no item) é comparado com o
+  // C.A. "Antigo" mais barato entre os que custavam mais que ele, vezes a
+  // quantidade entregue do atual no período. Antigo desativado no Estoque
+  // continua valendo como base de comparação.
+  const temPreco=v=>v.preco!==null&&v.preco!==undefined&&v.preco!==''&&Number.isFinite(Number(v.preco));
   epiCatalog.forEach(epi=>{
-    const variants=activeVariants.filter(v=>v.epi_id===epi.id);
-    const current=variants.find(v=>
-      v.comparativo_status==='atual' &&
-      v.preco!==null &&
-      v.preco!==undefined &&
-      v.preco!=='' &&
-      Number.isFinite(Number(v.preco))
-    );
-
-    const past=variants
-      .filter(v=>
-        v.comparativo_status==='passada' &&
-        v.preco!==null &&
-        v.preco!==undefined &&
-        v.preco!=='' &&
-        Number.isFinite(Number(v.preco))
-      )
+    const currents=activeVariants.filter(v=>v.epi_id===epi.id&&v.comparativo_status==='atual'&&temPreco(v));
+    const past=epiVariants
+      .filter(v=>v.epi_id===epi.id&&v.comparativo_status==='passada'&&temPreco(v))
       .sort((a,b)=>Number(a.preco)-Number(b.preco));
+    if(!currents.length||!past.length) return;
 
-    if(!current||!past.length) return;
+    currents.forEach(current=>{
+      const currentPrice=Number(current.preco);
+      const base=past.find(p=>Number(p.preco)>currentPrice);
+      if(!base) return;
+      const pastPrice=Number(base.preco);
+      const unitSaving=pastPrice-currentPrice;
 
-    const cheapestPast=past[0];
-    const currentPrice=Number(current.preco);
-    const pastPrice=Number(cheapestPast.preco);
-    const unitSaving=pastPrice-currentPrice;
-    if(!(unitSaving>0)) return;
+      const currentCa=caKey(current.ca);
+      const currentQuantity=arr
+        .filter(m=>m.epi_id===epi.id && caKey(m.ca)===currentCa)
+        .reduce((sum,m)=>sum+(Number(m.quantidade)||0),0);
 
-    const currentCa=caKey(current.ca);
-    const currentQuantity=arr
-      .filter(m=>m.epi_id===epi.id && caKey(m.ca)===currentCa)
-      .reduce((sum,m)=>sum+(Number(m.quantidade)||0),0);
-
-    const totalSaving=unitSaving*currentQuantity;
-
-    replacementRows.push({
-      epi:epi.nome||'EPI / Item',
-      epiId:epi.id,
-      currentCa:String(current.ca||''),
-      pastCa:String(cheapestPast.ca||''),
-      currentPrice,
-      pastPrice,
-      unitSaving,
-      currentQuantity,
-      totalSaving
+      replacementRows.push({
+        epi:epi.nome||'EPI / Item',
+        epiId:epi.id,
+        currentCa:String(current.ca||''),
+        pastCa:String(base.ca||''),
+        currentPrice,
+        pastPrice,
+        unitSaving,
+        currentQuantity,
+        totalSaving:unitSaving*currentQuantity
+      });
     });
   });
 
@@ -492,7 +482,8 @@ function renderDashboard(){
 
   const hasSavings=savingsRows.length>0;
   makeChart('cSavings','doughnut',{
-    labels:hasSavings?savingsRows.map(x=>x.epi):['Sem substituição comparável'],
+    // O mesmo item pode ter vários C.A.s atuais: a legenda mostra o C.A.
+    labels:hasSavings?savingsRows.map(x=>savingsRows.filter(y=>y.epi===x.epi).length>1?`${x.epi} ${codeTitle(x.currentCa)}`:x.epi):['Sem substituição comparável'],
     datasets:[{
       data:hasSavings?savingsRows.map(x=>Number(x.totalSaving.toFixed(2))):[1],
       backgroundColor:hasSavings
@@ -1905,7 +1896,7 @@ function renderEpiVariantList(){
         ${field('Marca',v.marca,'tag')}
         ${field('Referência / modelo',v.referencia,'hash')}
         ${field('Norma',v.norma,'scale')}
-        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passado':'—'),'arrow-left-right')}
+        ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Antigo':'—'),'arrow-left-right')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
 
@@ -2275,29 +2266,8 @@ async function saveEpiVariant(){
 
   $('epiVariantMsg').textContent='Salvando...';
 
-  if(payload.comparativo_status==='atual'){
-    let unmarkQuery=sb.from('epi_variantes')
-      .update({comparativo_status:null,updated_at:new Date().toISOString()})
-      .eq('epi_id',selectedEpi.id)
-      .eq('comparativo_status','atual');
-
-    if(editingVariantId) unmarkQuery=unmarkQuery.neq('id',editingVariantId);
-
-    const unmark=await unmarkQuery;
-    if(unmark.error){
-      $('epiVariantMsg').textContent=unmark.error.message;
-      return;
-    }
-
-    epiVariants=epiVariants.map(v=>
-      v.epi_id===selectedEpi.id &&
-      v.id!==editingVariantId &&
-      v.comparativo_status==='atual'
-        ? {...v,comparativo_status:null}
-        : v
-    );
-  }
-
+  // Vários C.A.s podem ser "Atual" no mesmo item (ex.: macacões em uso ao mesmo tempo):
+  // marcar um não desmarca os outros.
   let result;
   if(editingVariantId){
     result=await sb.from('epi_variantes').update(payload).eq('id',editingVariantId).select().single();

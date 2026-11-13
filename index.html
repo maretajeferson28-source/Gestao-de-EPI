@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261113-27">
+<link rel="stylesheet" href="css/padrao.css?v=20261113-28">
 </head>
 <body>
 
@@ -604,23 +604,22 @@
                     <input id="epiVarPreco" type="number" min="0" step="0.01" placeholder="0,00">
                   </div>
 
-                  <div class="epi-compare-compact">
-                    <span class="epi-compare-label">Passado</span>
-                    <label class="epi-compare-button past">
-                      <input id="epiVarComparativoPassada" type="checkbox">
-                      <i data-lucide="history" aria-hidden="true"></i>
-                      <span>Usada antes</span>
-                    </label>
+                  <div class="epi-compare-seg-wrap">
+                    <span class="epi-compare-label">Comparativo de economia</span>
+                    <div class="epi-compare-seg" role="group" aria-label="Comparativo de economia">
+                      <label class="epi-compare-button past">
+                        <input id="epiVarComparativoPassada" type="checkbox">
+                        <i data-lucide="history" aria-hidden="true"></i>
+                        <span>Antigo</span>
+                      </label>
+                      <label class="epi-compare-button current">
+                        <input id="epiVarComparativoAtual" type="checkbox">
+                        <i data-lucide="circle-check" aria-hidden="true"></i>
+                        <span>Atual</span>
+                      </label>
+                    </div>
                   </div>
-
-                  <div class="epi-compare-compact">
-                    <span class="epi-compare-label">Atual</span>
-                    <label class="epi-compare-button current">
-                      <input id="epiVarComparativoAtual" type="checkbox">
-                      <i data-lucide="circle-check" aria-hidden="true"></i>
-                      <span>Em uso</span>
-                    </label>
-                  </div>
+                  <p class="epi-compare-dica">Pode marcar vários atuais e antigos. Cada atual é comparado com o antigo mais barato que custava mais que ele.</p>
                 </div>
                 <div class="field wide"><label>Fornecedor</label><input id="epiVarFornecedor" placeholder="Fornecedor / distribuidor"></div>
                 <div class="field full"><label>Observações</label><textarea id="epiVarObservacao" rows="2" placeholder="Observações de compra, uso ou substituição"></textarea></div>
@@ -893,8 +892,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="js/config.js?v=20261112-1"></script>
-<script src="js/pdf-export.js"></script>
-<script src="js/app.js?v=20261113-12"></script>
+<script src="js/pdf-export.js?v=20261113-1"></script>
+<script src="js/app.js?v=20261113-13"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=epiTurnstilePronto" async defer></script>
 <script src="js/mobile.js"></script>
 <script src="js/pwa.js"></script>
