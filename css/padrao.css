@@ -3688,3 +3688,13 @@
   .stg-mes__grade button.is-sel{color:#06120C;background:var(--t);border-color:var(--t);font-weight:800}
   .stg-mes__grade button.is-sel::after{background:#06120C}
 }
+/* Tela Economia: itens sem comparação e lista das entregas do período. */
+@media (min-width:721px){
+  .stg-tabela .stg-sem-comparacao td{color:#AEB8C2}
+  .stg-tabela .stg-sem-comparacao td small{margin:0;font-size:12px;color:#9FB0C2}
+  .stg-traco{color:#7F8C99}
+  .stg-tabela-wrap--lista{max-height:420px}
+  .stg-tabela-wrap--lista th{position:sticky;top:0;z-index:1}
+}
+/* Tela Economia: o banner rola junto (a lista de entregas é longa). */
+@media (min-width:721px){ .stg-hero{position:relative} }

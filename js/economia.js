@@ -99,9 +99,11 @@
   // dessa partida, mês a mês (cada mês com o seu custo médio).
   function calcular({ ate, refDe, epi }) {
     const porItem = new Map();
+    const lista = [];
     entregas().forEach((m) => {
       const d = iso(m.data);
       if (!d || (refDe && d < refDe) || (ate && d > ate) || (epi && m.epi_id !== epi) || !passaFiltrosDash(m)) return;
+      lista.push(m);
       const k = m.epi_id || m.epi, mes = d.slice(0, 7);
       const item = porItem.get(k) || { nome: nomeEpi(m.epi_id, m), meses: new Map() };
       const o = item.meses.get(mes) || { qtdPreco: 0, valor: 0, semPreco: 0 };
@@ -113,7 +115,17 @@
     const linhas = [];
     porItem.forEach((item) => {
       const meses = [...item.meses.entries()].filter(([, o]) => o.qtdPreco).sort((a, b) => a[0].localeCompare(b[0]));
-      if (meses.length < 2) return;
+      // Item sem comparação também aparece, com o motivo.
+      if (meses.length < 2) {
+        const qtd = [...item.meses.values()].reduce((s, o) => s + o.qtdPreco + o.semPreco, 0);
+        const r = meses[0];
+        linhas.push({
+          nome: item.nome, total: 0, unit: null, qtd,
+          ref: r ? { medio: r[1].valor / r[1].qtdPreco, qtdPreco: r[1].qtdPreco, semPreco: r[1].semPreco, mes: r[0] } : null,
+          motivo: r ? `só teve entrega com preço em ${mesTxt(r[0])}` : 'C.A. sem preço cadastrado'
+        });
+        return;
+      }
       const [mesRef, r] = meses[0];
       const ref = { medio: r.valor / r.qtdPreco, qtdPreco: r.qtdPreco, semPreco: r.semPreco, mes: mesRef };
       const depois = { qtdPreco: 0, valor: 0, semPreco: 0 };
@@ -126,8 +138,10 @@
       depois.de = meses[1][0]; depois.ate = meses[meses.length - 1][0];
       linhas.push({ nome: item.nome, ref, atual: depois, unit: ref.medio - depois.medio, total });
     });
-    linhas.sort((x, y) => y.total - x.total);
-    return { linhas, total: linhas.reduce((s, l) => s + l.total, 0) };
+    // Com comparação primeiro (maior economia no topo); sem comparação depois, por nome.
+    linhas.sort((x, y) => (x.motivo ? 1 : 0) - (y.motivo ? 1 : 0) || y.total - x.total || x.nome.localeCompare(y.nome, 'pt-BR'));
+    lista.sort((a, b) => iso(b.data).localeCompare(iso(a.data)));
+    return { linhas, lista, total: linhas.reduce((s, l) => s + l.total, 0) };
   }
 
   let raiz = null;
@@ -163,11 +177,20 @@
         </div>
       </div>
       <div class="stg-painel">
-        <div class="stg-painel__head"><h3>Custo por unidade no intervalo</h3><p>Partida: primeiro mês do item no intervalo. Preço cadastrado do C.A. de cada entrega; sem preço fica de fora.</p></div>
+        <div class="stg-painel__head"><h3>Economia por item</h3><p>Cada item é comparado com o quanto custava no primeiro mês em que foi entregue no período. O custo vem do preço cadastrado no C.A. entregue.</p></div>
         <div class="stg-tabela-wrap">
           <table class="stg-tabela">
-            <thead><tr><th>EPI / Item</th><th class="num">Partida</th><th class="num">Depois</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
+            <thead><tr><th>EPI / Item</th><th class="num">Primeiro mês</th><th class="num">Meses seguintes</th><th class="num">Diferença por un.</th><th class="num">Economia</th></tr></thead>
             <tbody data-econ-corpo></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="stg-painel">
+        <div class="stg-painel__head"><h3 data-econ-lista-titulo>Entregas do período</h3><p data-econ-lista-resumo></p></div>
+        <div class="stg-tabela-wrap stg-tabela-wrap--lista">
+          <table class="stg-tabela">
+            <thead><tr><th>Data</th><th>Colaborador</th><th>EPI / Item</th><th>C.A.</th><th class="num">Qtd</th><th class="num">Preço un.</th><th class="num">Custo</th></tr></thead>
+            <tbody data-econ-lista></tbody>
           </table>
         </div>
       </div>`;
@@ -234,12 +257,18 @@
   function atualizar() {
     if (!raiz || !raiz.isConnected || !$('[data-econ-corpo]', raiz)) return;
     $('[data-econ-epi]', raiz).innerHTML = opcoesEpi();
-    const { linhas, total } = calcular(estado);
+    const { linhas, lista, total } = calcular(estado);
     const tot = $('[data-econ-total]', raiz);
     tot.innerHTML = `<small>R$</small>${semRs(Math.abs(total))}`; // o texto ao lado diz se foi economia ou gasto a mais
     tot.classList.toggle('is-neg', total < 0);
     $('[data-econ-periodo]', raiz).textContent = `${total < 0 ? 'gastos a mais' : 'economizados'} de ${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
-    $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => `
+    $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => l.motivo ? `
+      <tr class="stg-sem-comparacao">
+        <td>${esc(l.nome)}</td>
+        <td class="num">${l.ref ? celula(l.ref) : '<span class="stg-traco">—</span>'}</td>
+        <td class="num" colspan="2"><small>${esc(l.motivo)}</small></td>
+        <td class="num"><span class="stg-traco">—</span></td>
+      </tr>` : `
       <tr>
         <td>${esc(l.nome)}</td>
         <td class="num">${celula(l.ref)}</td>
@@ -247,7 +276,26 @@
         <td class="num${l.unit < 0 ? ' is-neg' : ''}">${dinheiro(l.unit)}</td>
         <td class="num stg-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
       </tr>`).join('')
-      : '<tr><td colspan="5" class="stg-vazio">Nenhum item com entregas com preço em mais de um mês desse intervalo.</td></tr>';
+      : '<tr><td colspan="5" class="stg-vazio">Nenhuma entrega nesse período.</td></tr>';
+
+    // Lista das entregas do período (mesmos filtros).
+    const periodo = `${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
+    const qtdTotal = lista.reduce((s, m) => s + (Number(m.quantidade) || 0), 0);
+    const custoTotal = lista.reduce((s, m) => { const p = precoDe(m); return s + (p == null ? 0 : p * (Number(m.quantidade) || 0)); }, 0);
+    $('[data-econ-lista-titulo]', raiz).textContent = `Entregas de ${periodo}`;
+    $('[data-econ-lista-resumo]', raiz).textContent = `${num(lista.length)} ${lista.length === 1 ? 'entrega' : 'entregas'} · ${num(qtdTotal)} ${qtdTotal === 1 ? 'item' : 'itens'} · ${dinheiro(custoTotal)} em custo`;
+    $('[data-econ-lista]', raiz).innerHTML = lista.length ? lista.map((m) => {
+      const p = precoDe(m), q = Number(m.quantidade) || 0;
+      return `<tr>
+        <td>${esc(m.data)}</td>
+        <td>${esc(m.colaborador || '—')}</td>
+        <td>${esc(m.epi || nomeEpi(m.epi_id, m))}</td>
+        <td>${esc(m.ca || '—')}</td>
+        <td class="num">${num(q)}</td>
+        <td class="num">${p == null ? '<span class="stg-traco" title="C.A. sem preço cadastrado">sem preço</span>' : dinheiro(p)}</td>
+        <td class="num">${p == null ? '<span class="stg-traco">—</span>' : dinheiro(p * q)}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7" class="stg-vazio">Nenhuma entrega nesse período.</td></tr>';
     window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   }
 
