@@ -1583,9 +1583,48 @@ function renderEpiTabela(){
       <button type="button" class="g-employee-page" data-epi-pagina="${epiTabPagina+1}"${epiTabPagina>=paginas?' disabled':''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>`:'');
   }
   refreshIcons();
-  // Fotos dos C.A.s (URL assinada, com cache)
+  // Fotos dos C.A.s (URL assinada, com cache), sem o fundo branco.
   body.querySelectorAll('.epi-tab-foto[data-foto]').forEach(async el=>{
-    try{ const url=await variantImageUrl(el.dataset.foto); if(url){ el.innerHTML=`<img src="${esc(url)}" alt="" loading="lazy">`; el.classList.add('tem-foto'); } }catch(_){}
+    try{
+      const path=el.dataset.foto;
+      const src=epiFotoRecorte.get(path)||await variantImageUrl(path).then(u=>u&&recortarFundoBranco(u)).then(r=>{ if(r) epiFotoRecorte.set(path,r); return r; });
+      if(src&&el.isConnected){ el.innerHTML=`<img src="${esc(src)}" alt="" loading="lazy">`; el.classList.add('tem-foto'); }
+    }catch(_){}
+  });
+}
+// Tira o fundo branco/claro que encosta na borda da foto (preenchimento a
+// partir das bordas), para o produto ficar "solto" no fundo escuro. Se a
+// imagem não puder ser lida (CORS), devolve null e fica o ícone.
+const epiFotoRecorte=new Map();
+function recortarFundoBranco(url){
+  return new Promise(res=>{
+    const img=new Image(); img.crossOrigin='anonymous';
+    img.onerror=()=>res(null);
+    img.onload=()=>{
+      try{
+        const k=Math.min(1,120/Math.max(img.naturalWidth,img.naturalHeight));
+        const w=Math.max(1,Math.round(img.naturalWidth*k)), h=Math.max(1,Math.round(img.naturalHeight*k));
+        const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        const ctx=cv.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+        const d=ctx.getImageData(0,0,w,h), px=d.data;
+        const claro=i=>{ const r=px[i],g=px[i+1],b=px[i+2]; return px[i+3]<20||(Math.min(r,g,b)>226&&Math.max(r,g,b)-Math.min(r,g,b)<24); };
+        const vis=new Uint8Array(w*h), fila=[];
+        const por=(x,y)=>{ const p=y*w+x; if(!vis[p]&&claro(p*4)){ vis[p]=1; fila.push(p); } };
+        for(let x=0;x<w;x++){ por(x,0); por(x,h-1); }
+        for(let y=0;y<h;y++){ por(0,y); por(w-1,y); }
+        while(fila.length){ const p=fila.pop(), x=p%w, y=(p-x)/w; if(x>0)por(x-1,y); if(x<w-1)por(x+1,y); if(y>0)por(x,y-1); if(y<h-1)por(x,y+1); }
+        for(let p=0;p<w*h;p++){
+          if(vis[p]){ px[p*4+3]=0; continue; }
+          // Borda suave: pixel claro encostado no fundo removido fica meio transparente.
+          const x=p%w, y=(p-x)/w, i=p*4;
+          const viz=(x>0&&vis[p-1])||(x<w-1&&vis[p+1])||(y>0&&vis[p-w])||(y<h-1&&vis[p+w]);
+          if(viz&&Math.min(px[i],px[i+1],px[i+2])>190) px[i+3]=110;
+        }
+        ctx.putImageData(d,0,0);
+        res(cv.toDataURL('image/png'));
+      }catch(_){ res(null); }
+    };
+    img.src=url;
   });
 }
 (()=>{

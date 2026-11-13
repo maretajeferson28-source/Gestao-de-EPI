@@ -3213,3 +3213,12 @@
   /* Rodapé */
   .epi-rodape:not([hidden]){display:flex}
 }
+/* EPIs (PC): foto sem fundo branco (recortada no navegador) sobre a peça
+   escura, com sombra leve para o produto "saltar". */
+@media (min-width:721px){
+  .epi-tab-foto.tem-foto{
+    background:radial-gradient(circle at 50% 40%,rgba(178,191,205,.14) 0%,rgba(20,27,35,.9) 70%),#111820;
+    border-color:rgba(178,191,205,.18)
+  }
+  .epi-tab-foto.tem-foto img{width:88%;height:88%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+}
