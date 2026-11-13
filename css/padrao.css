@@ -3379,3 +3379,34 @@
 .epi-detail-modal .btn:not(.primary):hover,
 .epi-detail-modal .epi-compare-button:not(:has(input:checked)):hover{background:rgba(178,191,205,.11)!important}
 .epi-detail-modal .epi-compare-button:has(input:checked){background:rgba(178,191,205,.06)!important}
+/* Prontuário do EPI: painel "Adicionar C.A." só abre pelo botão do cabeçalho
+   ou pelo Editar do card; a contagem de C.A.s vai para baixo do nome. */
+.epi-detail-modal .epi-detail-count{display:none!important}
+.epi-detail-modal .epi-add-ca-btn{
+  justify-self:end;align-self:center;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:10px;
+  font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;white-space:nowrap;color:#fff!important;
+  background:linear-gradient(180deg,#FF7A1A,#F06000)!important;border:1px solid rgba(255,138,42,.85)!important;
+  box-shadow:0 6px 18px rgba(255,102,0,.22)
+}
+.epi-detail-modal .epi-add-ca-btn:hover{filter:brightness(1.08)}
+.epi-detail-modal .epi-add-ca-btn svg{width:15px;height:15px}
+.epi-detail-modal .epi-add-ca-btn[hidden]{display:none!important}
+.epi-detail-modal #epiDetailCategory{color:#9FB0C2}
+/* Com o painel fechado, o prontuário usa a largura toda: campos em 3 colunas. */
+@media (min-width:761px){
+  .epi-detail-card:has(#epiVariantEditor[hidden]) .epi-dossier-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* Validade e preço em destaque ao lado da foto. */
+.epi-dossier-destaques{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.epi-dossier-destaques>div{
+  min-width:128px;padding:9px 12px;border-radius:10px;
+  background:rgba(178,191,205,.05);border:1px solid rgba(178,191,205,.14)
+}
+.epi-dossier-destaques span{
+  display:flex;align-items:center;gap:6px;margin-bottom:5px;
+  font:700 8.5px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#8C9AA8
+}
+.epi-dossier-destaques span svg{width:12px;height:12px;color:#FF7A1A}
+.epi-dossier-destaques b{display:block;font:700 16px/1.1 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+/* Rodapé do card só com os botões, à direita. */
+.epi-dossier-footer{justify-content:flex-end!important}

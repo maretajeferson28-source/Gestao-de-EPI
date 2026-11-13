@@ -1779,7 +1779,6 @@ function clearEpiVariantForm(){
   if($('epiVarLookupStatus')) $('epiVarLookupStatus').textContent='Digite um C.A. ou um C.I. (ex.: CI-0001) para buscar os dados.';
   if($('epiVariantEditorTitle')) $('epiVariantEditorTitle').textContent='Adicionar C.A.';
   if($('epiVariantSave')) $('epiVariantSave').innerHTML='<i data-lucide="save" aria-hidden="true"></i>Salvar C.A.';
-  if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').classList.add('hidden');
   resetVariantImageEditor();
   refreshIcons();
 }
@@ -1797,6 +1796,8 @@ function renderEpiVariantList(){
 
   const onlyCi=rows.length>0&&rows.every(v=>isCiCode(v.ca));
   $('epiDetailCount').textContent=`${rows.length} ${onlyCi?(rows.length===1?'C.I. vinculado':'C.I.s vinculados'):(rows.length===1?'C.A. vinculado':'C.A.s vinculados')}`;
+  // A contagem fica embaixo do nome do item (no lugar da categoria).
+  if($('epiDetailCategory')) $('epiDetailCategory').textContent=rows.length?$('epiDetailCount').textContent:'Nenhum C.A. vinculado';
 
   if(selectorButton&&selectorValue&&selectorMenu){
     if(!rows.length){
@@ -1888,6 +1889,10 @@ function renderEpiVariantList(){
           <span>FABRICANTE</span>
           <strong>${esc(v.fabricante||'Fabricante não informado')}</strong>
           <small>${esc([v.marca,v.referencia].filter(Boolean).join(' • ')||'Marca / referência não informada')}</small>
+          <div class="epi-dossier-destaques">
+            <div><span><i data-lucide="calendar-check" aria-hidden="true"></i>Validade do ${codeTerm(v.ca)}</span><b>${esc(dateBR(v.data_validade)||'—')}</b></div>
+            <div><span><i data-lucide="banknote" aria-hidden="true"></i>Preço</span><b>${esc(v.preco!=null&&v.preco!==''?moneyBR(v.preco):'—')}</b></div>
+          </div>
         </div>
       </div>
 
@@ -1895,9 +1900,7 @@ function renderEpiVariantList(){
         ${field('CNPJ',v.cnpj,'building-2')}
         ${field('Marca',v.marca,'tag')}
         ${field('Referência / modelo',v.referencia,'hash')}
-        ${field(`Validade do ${codeTerm(v.ca)}`,dateBR(v.data_validade),'calendar-check')}
         ${field('Norma',v.norma,'scale')}
-        ${field('Preço',moneyBR(v.preco),'banknote')}
         ${field('Comparativo',v.comparativo_status==='atual'?'Atual':(v.comparativo_status==='passada'?'Passado':'—'),'arrow-left-right')}
         ${field('Fornecedor',v.fornecedor,'truck')}
       </div>
@@ -1909,10 +1912,6 @@ function renderEpiVariantList(){
       </div>
 
       <div class="epi-dossier-footer">
-        <div class="epi-dossier-source">
-          <i data-lucide="shield-check" aria-hidden="true"></i>
-          <span>Dados técnicos e comerciais cadastrados para este ${codeTerm(v.ca)}</span>
-        </div>
         <div class="epi-variant-actions">
           <button class="btn compact" type="button" data-variant-edit="${esc(v.id)}"><i data-lucide="pencil"></i>Editar</button>
           <button class="btn compact danger" type="button" data-variant-delete="${esc(v.id)}"><i data-lucide="trash-2"></i>Excluir</button>
@@ -1963,12 +1962,18 @@ function openEpiDetail(epiId){
   if($('epiCaSelectorButton')) $('epiCaSelectorButton').setAttribute('aria-expanded','false');
   if(!selectedEpi) return;
   $('epiDetailTitle').textContent=selectedEpi.nome;
-  $('epiDetailCategory').textContent=selectedEpi.categoria||'Categoria não informada';
-  $('epiVariantEditor').hidden=!currentIsAdmin;
   clearEpiVariantForm();
   renderEpiVariantList();
+  // O painel de cadastro só abre pelo "Adicionar C.A." ou pelo Editar do card;
+  // item ainda sem nenhum C.A. já abre com ele.
+  setEpiVariantEditor(!epiVariants.some(v=>v.epi_id===selectedEpi.id));
   $('epiDetailModal').classList.remove('hidden');
   refreshIcons();
+}
+function setEpiVariantEditor(aberto){
+  const ed=$('epiVariantEditor'); if(!ed) return;
+  ed.hidden=!(currentIsAdmin&&aberto);
+  if($('epiAddCaBtn')) $('epiAddCaBtn').hidden=!currentIsAdmin||!ed.hidden;
 }
 function closeEpiDetail(){
   if($('epiDetailModal')) $('epiDetailModal').classList.add('hidden');
@@ -2319,6 +2324,7 @@ async function saveEpiVariant(){
   if(!imageFailed) $('epiVariantMsg').textContent=`${codeTerm(ca)} salvo.`;
 
   clearEpiVariantForm();
+  setEpiVariantEditor(false);
   renderEpiVariantList();
   renderEpis();
 }
@@ -2452,12 +2458,13 @@ if($('epiVarComparativoAtual')) $('epiVarComparativoAtual').addEventListener('ch
   if(e.target.checked && $('epiVarComparativoPassada')) $('epiVarComparativoPassada').checked=false;
 });
 if($('epiVariantSave')) $('epiVariantSave').addEventListener('click',saveEpiVariant);
-if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').addEventListener('click',clearEpiVariantForm);
+if($('epiVariantCancelEdit')) $('epiVariantCancelEdit').addEventListener('click',()=>{ clearEpiVariantForm(); setEpiVariantEditor(false); });
+if($('epiAddCaBtn')) $('epiAddCaBtn').addEventListener('click',()=>{ clearEpiVariantForm(); setEpiVariantEditor(true); $('epiVarCa')?.focus(); });
 if($('epiVariantList')) $('epiVariantList').addEventListener('click',e=>{
   const edit=e.target.closest('[data-variant-edit]');
   if(edit){
     const row=epiVariants.find(v=>v.id===edit.dataset.variantEdit);
-    if(row) fillEpiVariantForm(row);
+    if(row){ fillEpiVariantForm(row); setEpiVariantEditor(true); }
     return;
   }
   const del=e.target.closest('[data-variant-delete]');
