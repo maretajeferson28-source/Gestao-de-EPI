@@ -125,8 +125,10 @@
         const rs = document.createElement('small'); rs.className = 'kpi-card__moeda'; rs.textContent = 'R$';
         v.append(rs, document.createTextNode(dinheiro(agora[c.k]).replace(/^R\$\s*/, '')));
       } else $('[data-valor]', card).textContent = num(agora[c.k]);
-      badge($('[data-badge]', card), agora[c.k], antes ? antes[c.k] : null, c.k === 'valor');
-      $('[data-sub]', card).textContent = !ant ? 'todo o período' : ant.periodo ? 'vs. período anterior' : 'vs. mês anterior';
+      // Sem os selos de comparação (poluíam o card): o subtítulo diz o período.
+      $('[data-badge]', card).hidden = true;
+      const mesTxt = document.querySelector('[data-hero-periodo]')?.textContent.trim() || '';
+      $('[data-sub]', card).textContent = !ant ? 'todo o período' : ant.periodo || !mesTxt || /todo/i.test(mesTxt) ? 'no período escolhido' : `em ${mesTxt}`;
     });
   }
 
