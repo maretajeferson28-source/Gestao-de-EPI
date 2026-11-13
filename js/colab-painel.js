@@ -387,6 +387,8 @@
     if (tr && e.target === tr && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tr.click(); }
   });
   window.addEventListener('epi:colab-filtros', () => { pagina = 1; renderTabela(); });
+  // Termos chegaram (podem vir depois da lista): refaz ordem, selos e fotos.
+  window.addEventListener('epi:termos-carregados', () => { render(); renderTabela(); carregarFotos(); });
   window.addEventListener('resize', marcarSelecao);
 
   // ---- Fotos: a selfie do termo assinado entra no lugar das iniciais ----

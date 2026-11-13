@@ -159,6 +159,9 @@
     recarregar: carregar
   };
 
-  window.addEventListener('epi:data-loaded', carregar);
-  carregar();
+  // Avisa as telas (Colaboradores) quando os termos chegam: a lista pode ter
+  // sido montada antes, com todo mundo como "Pendente".
+  const carregarEAvisar = () => carregar().finally(() => window.dispatchEvent(new Event('epi:termos-carregados')));
+  window.addEventListener('epi:data-loaded', carregarEAvisar);
+  carregarEAvisar();
 })();

@@ -226,7 +226,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-termo]')) {
     const termoScript = document.createElement('script');
-    termoScript.src = 'js/termo.js?v=20261019-8';
+    termoScript.src = 'js/termo.js?v=20261113-1';
     termoScript.dataset.termo = 'true';
     document.body.appendChild(termoScript);
   }
@@ -240,7 +240,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-colab-painel]')) {
     const colabPainelScript = document.createElement('script');
-    colabPainelScript.src = 'js/colab-painel.js?v=20261112-13';
+    colabPainelScript.src = 'js/colab-painel.js?v=20261113-1';
     colabPainelScript.dataset.colabPainel = 'true';
     document.body.appendChild(colabPainelScript);
   }
