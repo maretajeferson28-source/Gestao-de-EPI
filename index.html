@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261113-4">
+<link rel="stylesheet" href="css/padrao.css?v=20261113-5">
 </head>
 <body>
 
@@ -488,7 +488,19 @@
       </div>
 
       <section class="page" data-page-content="epis">
-        <div class="section-title"><div><h2>EPIs / Itens</h2><p>Catálogo usado no lançamento e nos filtros.</p></div></div>
+        <div class="section-title epi-head"><div><span class="mov-head-ic epi-head-ic" aria-hidden="true"><i data-lucide="hard-hat"></i></span><h2>EPIs / Itens</h2><p>Catálogo com saldo, mínimo e situação de cada item.</p></div></div>
+        <div class="epi-barra">
+          <label class="colab-busca epi-busca"><i data-lucide="search" aria-hidden="true"></i><input id="epiTabBusca" type="search" placeholder="Buscar EPI, categoria ou C.A." autocomplete="off" aria-label="Buscar EPI"></label>
+          <div class="colab-filtros">
+            <label class="colab-filtro"><select id="epiTabCat" aria-label="Filtrar por categoria"><option value="">Categoria</option></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+            <label class="colab-filtro"><select id="epiTabSit" aria-label="Filtrar por situação"><option value="">Situação</option><option value="ok">Em dia</option><option value="atencao">Atenção</option><option value="critico">Crítico</option><option value="sem">Sem estoque</option></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+          </div>
+          <button class="colab-novo epi-novo" id="epiTabNovo" type="button"><i data-lucide="plus" aria-hidden="true"></i>Adicionar EPI</button>
+        </div>
+        <div class="epi-tab-wrap"><table class="epi-tab"><colgroup><col class="c-foto"><col class="c-epi"><col class="c-ca"><col class="c-num"><col class="c-num"><col class="c-sit"><col class="c-data"><col class="c-acao"></colgroup>
+          <thead><tr><th>Foto</th><th>EPI</th><th>C.A.</th><th class="num">Saldo</th><th class="num">Mínimo</th><th>Situação</th><th>Última entrada</th><th class="acao">Ação</th></tr></thead>
+          <tbody id="epiTabBody"></tbody></table></div>
+        <footer class="g-employee-footer mov-rodape epi-rodape" id="epiTabRodape" hidden></footer>
         <div class="toolbar"><input id="newEpiNome" class="btn" style="cursor:text;min-width:260px" placeholder="Nome do EPI / item"><input id="newEpiCat" class="btn" style="cursor:text" placeholder="Categoria"><button class="btn primary" id="addEpi"><i data-lucide="package-plus" aria-hidden="true"></i>Adicionar</button></div>
         <div class="cards-list" id="epiCards"></div>
       </section>
@@ -881,7 +893,7 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="js/config.js?v=20261112-1"></script>
 <script src="js/pdf-export.js"></script>
-<script src="js/app.js?v=20261113-1"></script>
+<script src="js/app.js?v=20261113-2"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=epiTurnstilePronto" async defer></script>
 <script src="js/mobile.js"></script>
 <script src="js/pwa.js"></script>

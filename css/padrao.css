@@ -3117,4 +3117,99 @@
   color:#FB7373;font:600 11.5px/1 Inter,Roboto,Arial,sans-serif}
 .profile-remover svg{width:13px;height:13px}
 .profile-remover:hover{background:rgba(239,69,69,.10)}
-.profile-remover[hidden]{display:none}
+.profile-remover[hidden]{display:none}/* =====================================================================
+   EPIs / Itens (PC): mesma linha de Movimentações. Fundo de Colaboradores,
+   título com ícone, barra de busca + filtros, tabela que é o próprio card
+   (foto, EPI, C.A., saldo, mínimo, situação, última entrada) e rodapé com
+   páginas. No celular continuam os cards.
+   ===================================================================== */
+.epi-barra,.epi-tab-wrap,.epi-rodape{display:none}
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="epis"].active){
+    background:
+      url("/assets/app-brand/colaboradores-ondas.svg?v=8") right -70px top -18px/100% auto no-repeat,
+      radial-gradient(ellipse 38% 30% at 34% 6%,rgba(70,87,105,.20) 0%,rgba(70,87,105,.06) 55%,transparent 80%),
+      radial-gradient(ellipse 34% 40% at 6% 62%,rgba(70,87,105,.13) 0%,transparent 75%),
+      radial-gradient(ellipse 40% 34% at 60% 100%,rgba(70,87,105,.12) 0%,transparent 75%),
+      radial-gradient(ellipse 30% 30% at 96% 70%,rgba(70,87,105,.10) 0%,transparent 75%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.40) 100%),
+      linear-gradient(180deg,#090D12 0%,#080C10 45%,#060A0E 100%)!important
+  }
+  .main:has(> .content > .page[data-page-content="epis"].active) > .topbar{display:none!important}
+  .content:has(> .page[data-page-content="epis"].active){padding-bottom:0!important;scrollbar-width:none}
+  .content:has(> .page[data-page-content="epis"].active)::-webkit-scrollbar{display:none}
+  .page[data-page-content="epis"] > .toolbar,.page[data-page-content="epis"] > #epiCards{display:none!important}
+
+  /* Título */
+  .page[data-page-content="epis"] .section-title.epi-head{display:block!important;margin:0 0 18px;padding:24px 0 0;border:0;background:none}
+  .page[data-page-content="epis"] .epi-head > div{display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto;column-gap:18px;align-items:center}
+  .page[data-page-content="epis"] .epi-head h2{display:block!important;margin:0;font:700 34px/1.15 Inter,Roboto,Arial,sans-serif;letter-spacing:-1px;color:#F7F7F8}
+  .page[data-page-content="epis"] .epi-head p{display:block!important;margin:2px 0 0;font:400 14px/1.3 Inter,Roboto,Arial,sans-serif;color:#C4C8CE}
+
+  /* Barra */
+  .epi-barra{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+  .epi-barra .epi-busca{flex:0 1 340px}
+  .epi-barra .epi-novo{margin-left:auto;height:32px;padding:0 14px;border-radius:8px}
+
+  /* Tabela = card */
+  .epi-tab-wrap{
+    display:block;overflow-x:auto;overflow-y:hidden;border:1px solid rgba(178,191,205,.14);border-bottom:0;border-radius:14px 14px 0 0;
+    background:
+      radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.16) 0%,transparent 70%),
+      linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05)
+  }
+  .epi-tab{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
+  .epi-tab .c-foto{width:62px}.epi-tab .c-epi{width:27%}.epi-tab .c-ca{width:14%}.epi-tab .c-num{width:9%}
+  .epi-tab .c-sit{width:16%}.epi-tab .c-data{width:13%}.epi-tab .c-acao{width:84px}
+  .epi-tab th{
+    height:38px;padding:0 12px;text-align:left;background:rgb(26,34,43);color:#DFE3E7;font:600 12px/1.2 Inter,Roboto,Arial,sans-serif;
+    border-bottom:1px solid rgba(178,191,205,.12);border-right:1px solid rgba(178,191,205,.08);white-space:nowrap
+  }
+  .epi-tab td{
+    height:46px;padding:4px 12px;color:#E5E8EA;font:500 12.5px/1.25 Inter,Roboto,Arial,sans-serif;vertical-align:middle;
+    border-bottom:1px solid rgba(178,191,205,.08);border-right:1px solid rgba(178,191,205,.08);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .epi-tab th:last-child,.epi-tab td:last-child{border-right:0}
+  .epi-tab .num{text-align:right}
+  .epi-tab th.acao,.epi-tab td.acao{text-align:center;padding:4px 8px}
+  .epi-tab td.acao .table-action-group{justify-content:center;gap:6px}
+  .epi-tab tbody tr{cursor:pointer;transition:background 120ms ease}
+  .epi-tab tbody tr:hover td{background:rgba(255,255,255,.03)}
+  .epi-tab tbody tr:focus-visible{outline:1px solid rgba(255,121,0,.55);outline-offset:-1px}
+
+  .epi-tab td.foto{padding:4px 0 4px 12px}
+  .epi-tab-foto{
+    display:grid;place-items:center;width:38px;height:38px;border-radius:9px;overflow:hidden;color:#FF7A10;
+    background:linear-gradient(135deg,#2A1A10,#151A20 70%);border:1px solid rgba(255,111,25,.22)
+  }
+  .epi-tab-foto svg{width:18px;height:18px;stroke-width:1.9}
+  .epi-tab-foto.tem-foto{background:#F2F3F5;border-color:rgba(178,191,205,.20)}
+  .epi-tab-foto img{width:100%;height:100%;object-fit:contain}
+  .epi-tab-nome{display:block;overflow:hidden;text-overflow:ellipsis;font:600 13px/1.25 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .epi-tab-cat{display:block;overflow:hidden;text-overflow:ellipsis;margin-top:2px;font:400 11.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#8E98A3}
+  .epi-tab-mais{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:999px;font:600 10.5px/1.4 Inter,Roboto,Arial,sans-serif;color:#C9D0D7;background:rgba(178,191,205,.10);border:1px solid rgba(178,191,205,.16)}
+  .epi-tab-saldo{font-weight:700;color:#F2F4F6}
+  .epi-tab-saldo.is-zero{color:#FB7373}
+  .epi-tab-vazio{color:#6F7883;font-weight:400}
+  .epi-tab-nada{text-align:center!important;color:#8E98A3!important;height:80px!important}
+
+  /* Selos de situação */
+  .epi-sit{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;font:600 11.5px/1 Inter,Roboto,Arial,sans-serif;border:1px solid}
+  .epi-sit::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+  .epi-sit--ok{color:#4ADE80;background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.30)}
+  .epi-sit--atencao{color:#FACC15;background:rgba(234,179,8,.10);border-color:rgba(234,179,8,.32)}
+  .epi-sit--critico{color:#F87171;background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.32)}
+  .epi-sit--sem{color:#9AA4AF;background:rgba(178,191,205,.06);border-color:rgba(178,191,205,.18)}
+  .epi-sit--sem::before{box-shadow:none}
+
+  /* Ações */
+  .epi-tab .movement-action-btn{width:27px!important;height:27px!important;min-height:0!important;padding:0!important;border-radius:7px!important;background:rgba(20,27,35,.85)!important;border:1px solid rgba(178,191,205,.16)!important;color:#AAB1BA!important}
+  .epi-tab .movement-action-btn svg{width:14px;height:14px}
+  .epi-tab .movement-edit-btn:hover{border-color:rgba(255,121,0,.55)!important;color:#FF7A10!important}
+  .epi-tab .movement-delete-btn:hover{border-color:rgba(239,69,69,.55)!important;color:#FB7373!important}
+
+  /* Rodapé */
+  .epi-rodape:not([hidden]){display:flex}
+}

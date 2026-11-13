@@ -1478,8 +1478,140 @@ function renderEpis(){
       </div>
     </button>`;
   }).join('')||'<div class="empty">Nenhum EPI.</div>';
+  renderEpiTabela();
   refreshIcons();
 }
+
+// ===== Aba EPIs (PC): tabela com foto, C.A., saldo, mínimo, situação e
+// última entrada. Saldo vem de epi_stock_por_item (o mesmo do Estoque); a
+// última entrada é a data mais recente entre NF-e e entradas manuais.
+let epiEstoque=null, epiEstoqueEm=0, epiEstoqueCarregando=false, epiTabPagina=1;
+async function carregarEpiEstoque(){
+  if(epiEstoqueCarregando||!currentIsAdmin) return;
+  epiEstoqueCarregando=true;
+  try{
+    const [itens,mins,manuais,notas]=await Promise.all([
+      sb.rpc('epi_stock_por_item',{p_busca:''}),
+      sb.from('epis').select('id,estoque_minimo'),
+      sb.from('estoque_entradas_manuais').select('epi_id,data'),
+      sb.from('nfe_entrada_itens').select('epi_id,nfe_entradas!inner(data_emissao,status)').not('epi_id','is',null).eq('nfe_entradas.status','entrada')
+    ]);
+    const e={saldo:new Map(),minimo:new Map(),ultima:new Map()};
+    (itens.data||[]).forEach(r=>e.saldo.set(r.epi_id,Number(r.saldo)||0));
+    (mins.data||[]).forEach(r=>{ if(r.estoque_minimo!=null) e.minimo.set(r.id,Number(r.estoque_minimo)); });
+    const marcar=(id,d)=>{ if(!id||!d) return; const iso=String(d).slice(0,10); if(!e.ultima.has(id)||e.ultima.get(id)<iso) e.ultima.set(id,iso); };
+    (manuais.data||[]).forEach(r=>marcar(r.epi_id,r.data));
+    (notas.data||[]).forEach(r=>marcar(r.epi_id,r.nfe_entradas?.data_emissao));
+    [itens,mins,manuais,notas].forEach(r=>{ if(r.error) console.warn('[EPIs] estoque',r.error); });
+    epiEstoque=e; epiEstoqueEm=Date.now();
+  }catch(err){ console.warn('[EPIs] estoque',err); }
+  finally{ epiEstoqueCarregando=false; }
+  renderEpiTabela();
+}
+function epiSituacao(id){
+  if(!epiEstoque) return null;
+  if(!epiEstoque.saldo.has(id)) return {k:'sem',t:'Sem estoque'};
+  const s=epiEstoque.saldo.get(id), m=epiEstoque.minimo.get(id);
+  if(s<=0||(m!=null&&s<m)) return {k:'critico',t:'Crítico'};
+  if(m!=null&&s<=m*1.5) return {k:'atencao',t:'Atenção'};
+  return {k:'ok',t:'Em dia'};
+}
+function epiCaPrincipal(id){
+  const ativos=epiVariants.filter(v=>v.epi_id===id&&v.ativo!==false);
+  const valido=v=>String(v.situacao||'').toLocaleUpperCase('pt-BR').includes('VÁLID');
+  const ord=ativos.slice().sort((a,b)=>(valido(b)-valido(a))||String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
+  return {v:ord[0]||null,total:ativos.length,foto:(ord.find(v=>v.imagem_path)||{}).imagem_path||null};
+}
+function epiTabPorPagina(){
+  const wrap=document.querySelector('.epi-tab-wrap');
+  const topo=wrap&&wrap.offsetParent?wrap.getBoundingClientRect().top:200;
+  return Math.max(5,Math.floor((window.innerHeight-topo-38-50-16)/46));
+}
+function renderEpiTabela(){
+  const body=$('epiTabBody'); if(!body) return;
+  const abertaEpis=!!document.querySelector('.page[data-page-content="epis"].active');
+  if(abertaEpis&&(!epiEstoque||Date.now()-epiEstoqueEm>30000)) carregarEpiEstoque();
+  // Filtro de categoria
+  const selCat=$('epiTabCat');
+  if(selCat){
+    const atual=selCat.value;
+    const cats=[...new Set(epiCatalog.map(c=>String(c.categoria||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    selCat.innerHTML='<option value="">Categoria</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    selCat.value=cats.includes(atual)?atual:'';
+    selCat.classList.toggle('tem-valor',!!selCat.value);
+  }
+  $('epiTabSit')?.classList.toggle('tem-valor',!!$('epiTabSit').value);
+  const q=normalize($('epiTabBusca')?.value||''), cat=selCat?.value||'', sit=$('epiTabSit')?.value||'';
+  const fmt=n=>new Intl.NumberFormat('pt-BR').format(n);
+  const linhas=epiCatalog.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({c,ca:epiCaPrincipal(c.id),s:epiSituacao(c.id)}))
+    .filter(({c,ca,s})=>{
+      if(cat&&String(c.categoria||'').trim()!==cat) return false;
+      if(sit&&s?.k!==sit) return false;
+      if(!q) return true;
+      const cas=epiVariants.filter(v=>v.epi_id===c.id).map(v=>v.ca).join(' ');
+      return normalize(`${c.nome} ${c.categoria||''} ${cas}`).includes(q);
+    });
+  const porPag=epiTabPorPagina();
+  const paginas=Math.max(1,Math.ceil(linhas.length/porPag));
+  if(epiTabPagina>paginas) epiTabPagina=paginas;
+  const daPagina=linhas.slice((epiTabPagina-1)*porPag,epiTabPagina*porPag);
+  body.innerHTML=daPagina.map(({c,ca,s})=>{
+    const saldo=epiEstoque?.saldo.get(c.id), min=epiEstoque?.minimo.get(c.id), ult=epiEstoque?.ultima.get(c.id);
+    const caTxt=ca.v?`${isCiCode(ca.v.ca)?'':'CA '}${esc(ca.v.ca)}`:'<span class="epi-tab-vazio">Sem C.A.</span>';
+    const mais=ca.total>1?`<span class="epi-tab-mais" title="${ca.total} C.A.s vinculados">+${ca.total-1}</span>`:'';
+    return `<tr data-epi-id="${esc(c.id)}" tabindex="0">
+      <td class="foto"><span class="epi-tab-foto"${ca.foto?` data-foto="${esc(ca.foto)}"`:''}><i data-lucide="${epiCardIcon(c)}" aria-hidden="true"></i></span></td>
+      <td><strong class="epi-tab-nome" title="${esc(c.nome)}">${esc(c.nome)}</strong><small class="epi-tab-cat">${esc(c.categoria||'Sem categoria')}</small></td>
+      <td>${caTxt}${mais}</td>
+      <td class="num">${saldo==null?'<span class="epi-tab-vazio">—</span>':`<b class="epi-tab-saldo${saldo<=0?' is-zero':''}">${fmt(saldo)}</b>`}</td>
+      <td class="num">${min==null?'<span class="epi-tab-vazio" title="Sem estoque mínimo cadastrado">—</span>':fmt(min)}</td>
+      <td>${s?`<span class="epi-sit epi-sit--${s.k}">${s.t}</span>`:'<span class="epi-tab-vazio">…</span>'}</td>
+      <td>${ult?ult.split('-').reverse().join('/'):'<span class="epi-tab-vazio">—</span>'}</td>
+      <td class="acao"><div class="table-action-group">
+        <button class="btn movement-action-btn movement-edit-btn" type="button" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></button>
+        <button class="btn movement-action-btn movement-delete-btn" type="button" data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+      </div></td></tr>`;
+  }).join('')||'<tr><td colspan="8" class="epi-tab-nada">Nenhum EPI encontrado.</td></tr>';
+  // Rodapé com páginas (mesmo de Movimentações)
+  const rod=$('epiTabRodape');
+  if(rod){
+    rod.hidden=false;
+    let ini=Math.max(1,epiTabPagina-2); const fim=Math.min(paginas,ini+4); ini=Math.max(1,fim-4);
+    let nums=''; for(let p=ini;p<=fim;p++) nums+=`<button type="button" class="g-employee-page${p===epiTabPagina?' is-current':''}" data-epi-pagina="${p}"${p===epiTabPagina?' aria-current="page"':''} aria-label="Página ${p}">${p}</button>`;
+    rod.innerHTML=`<span class="g-employee-count">Exibindo ${fmt(daPagina.length)} de ${fmt(linhas.length)} ${linhas.length===1?'item':'itens'}</span>`+(paginas>1?`<nav class="g-employee-pagination" aria-label="Páginas">
+      <button type="button" class="g-employee-page" data-epi-pagina="${epiTabPagina-1}"${epiTabPagina<=1?' disabled':''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>${nums}
+      <button type="button" class="g-employee-page" data-epi-pagina="${epiTabPagina+1}"${epiTabPagina>=paginas?' disabled':''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>`:'');
+  }
+  refreshIcons();
+  // Fotos dos C.A.s (URL assinada, com cache)
+  body.querySelectorAll('.epi-tab-foto[data-foto]').forEach(async el=>{
+    try{ const url=await variantImageUrl(el.dataset.foto); if(url){ el.innerHTML=`<img src="${esc(url)}" alt="" loading="lazy">`; el.classList.add('tem-foto'); } }catch(_){}
+  });
+}
+(()=>{
+  const body=$('epiTabBody'); if(!body) return;
+  body.addEventListener('click',e=>{
+    const del=e.target.closest('[data-epi-delete]'); if(del){ e.stopPropagation(); deleteEpiCatalogItem(del.dataset.epiDelete); return; }
+    const ed=e.target.closest('[data-epi-edit]'); if(ed){ e.stopPropagation(); openEpiCatalogEdit(ed.dataset.epiEdit); return; }
+    const tr=e.target.closest('tr[data-epi-id]'); if(tr) openEpiDetail(tr.dataset.epiId);
+  });
+  body.addEventListener('keydown',e=>{
+    if(e.key!=='Enter'||e.target.closest('button')) return;
+    const tr=e.target.closest('tr[data-epi-id]'); if(tr){ e.preventDefault(); openEpiDetail(tr.dataset.epiId); }
+  });
+  const refaz=()=>{ epiTabPagina=1; renderEpiTabela(); };
+  $('epiTabBusca')?.addEventListener('input',refaz);
+  $('epiTabCat')?.addEventListener('change',refaz);
+  $('epiTabSit')?.addEventListener('change',refaz);
+  $('epiTabNovo')?.addEventListener('click',()=>openEpiCatalogEdit(null));
+  $('epiTabRodape')?.addEventListener('click',e=>{
+    const b=e.target.closest('[data-epi-pagina]'); if(!b||b.disabled) return;
+    epiTabPagina=Number(b.dataset.epiPagina)||1; renderEpiTabela();
+  });
+  let t=null; window.addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(()=>{ if(document.querySelector('.page[data-page-content="epis"].active')) renderEpiTabela(); },150); });
+  // Entradas/saídas mudam o saldo: recarrega junto com os dados.
+  window.addEventListener('epi:data-loaded',()=>{ epiEstoque=null; if(document.querySelector('.page[data-page-content="epis"].active')) renderEpiTabela(); });
+})();
 
 async function deleteEpiCatalogItem(id){
   if(!currentIsAdmin) return;
@@ -1511,12 +1643,20 @@ async function deleteEpiCatalogItem(id){
   await loadAll(false);
 }
 
+// id null = novo item (botão "Adicionar EPI" da tabela).
 function openEpiCatalogEdit(id){
   if(!currentIsAdmin) return;
-  const epi=epiCatalog.find(x=>x.id===id);
+  const novo=id==null;
+  const epi=novo?{nome:'',categoria:''}:epiCatalog.find(x=>x.id===id);
   if(!epi) return;
 
-  editingCatalogEpiId=id;
+  editingCatalogEpiId=novo?'__novo__':id;
+  const card=$('epiCatalogEditModal');
+  card.querySelector('.data-edit-head span').textContent=novo?'NOVO ITEM':'CADASTRO DO ITEM';
+  $('epiCatalogEditTitle').textContent=novo?'Adicionar EPI / Item':'Editar EPI / Item';
+  card.querySelector('.data-edit-head p').textContent=novo?'Cadastre o nome e a categoria. Os C.A.s entram depois, na ficha do item.':'Altere o nome canônico e a categoria do card.';
+  card.querySelector('.data-edit-note').hidden=novo;
+  $('epiCatalogEditSave').lastChild.textContent=novo?'Adicionar item':'Salvar item';
   $('epiCatalogEditNome').value=epi.nome||'';
   $('epiCatalogEditCategoria').value=epi.categoria||'';
   $('epiCatalogEditMsg').textContent='';
@@ -1533,7 +1673,8 @@ function closeEpiCatalogEdit(){
 async function saveEpiCatalogEdit(){
   if(!currentIsAdmin||!editingCatalogEpiId) return;
 
-  const epi=epiCatalog.find(x=>x.id===editingCatalogEpiId);
+  const novo=editingCatalogEpiId==='__novo__';
+  const epi=novo?{}:epiCatalog.find(x=>x.id===editingCatalogEpiId);
   if(!epi) return;
 
   const nome=$('epiCatalogEditNome').value.trim();
@@ -1541,6 +1682,16 @@ async function saveEpiCatalogEdit(){
 
   if(!nome){
     $('epiCatalogEditMsg').textContent='Informe o nome do EPI / item.';
+    return;
+  }
+
+  if(novo){
+    if(epiCatalog.some(x=>normalize(x.nome)===normalize(nome))){ $('epiCatalogEditMsg').textContent='Esse EPI/item já está cadastrado.'; return; }
+    $('epiCatalogEditMsg').textContent='Salvando...';
+    const {error}=await sb.from('epis').insert({nome,categoria:categoria||null,ativo:true,origem:'Site Gestão EPI'});
+    if(error){ $('epiCatalogEditMsg').textContent=error.message; return; }
+    closeEpiCatalogEdit();
+    await loadAll(false);
     return;
   }
 
