@@ -1,14 +1,15 @@
 (() => {
   'use strict';
-  // Conteúdo do palco "Economia" do Dashboard (js/dash-palco.js).
+  // Tela "Economia" do Dashboard (abre pelo card Economia, js/dash-palco.js).
   // Cada C.A. Atual é comparado com um C.A. Antigo do mesmo item, pelas
-  // entregas do período e dos filtros do Dashboard. Só lê dados.
+  // entregas do período. Só lê dados.
   if (window.__EPI_ECONOMIA__) return;
   window.__EPI_ECONOMIA__ = true;
 
   const $ = (sel, r = document) => r.querySelector(sel);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const dinheiro = (n) => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const semRs = (n) => dinheiro(n).replace(/^-?R\$\s*/, (m) => (m.startsWith('-') ? '-' : ''));
   const num = (n) => new Intl.NumberFormat('pt-BR').format(n || 0);
   const iso = (br) => { const p = String(br || '').split('/'); return p[2] ? `${p[2]}-${p[1]}-${p[0]}` : ''; };
   const val = (id) => document.getElementById(id)?.value || '';
@@ -28,11 +29,12 @@
     .filter((v) => v.epi_id === epiId && v.comparativo_status === 'passada' && temPreco(v))
     .sort((a, b) => Number(a.preco) - Number(b.preco));
 
-  // Mesmos filtros do card Economia (dash-kpis.js): período, colaborador,
-  // EPI, responsável e a busca do banner.
+  // Mesmos filtros do card Economia (colaborador, EPI, responsável, busca do
+  // banner); o período é o da própria tela, que começa igual ao do Dashboard.
   const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  function doDashboard() {
-    const de = val('fDe'), ate = val('fAte'), c = val('fColab'), e = val('fEpi'), r = val('fResp');
+  function entregasFiltradas() {
+    const { de, ate } = estado;
+    const c = val('fColab'), e = val('fEpi'), r = val('fResp');
     const b = window.EPI_BUSCA || {}, q = semAcento(b.texto);
     return entregas().filter((x) => {
       const d = iso(x.data);
@@ -44,10 +46,10 @@
   }
 
   let raiz = null;
-  const estado = { atual: '', base: '' };
+  const estado = { de: '', ate: '', atual: '', base: '' };
 
   function calcular() {
-    const lista = doDashboard();
+    const lista = entregasFiltradas();
     const linhas = [];
     atuais().filter((v) => !estado.atual || v.id === estado.atual).forEach((atual) => {
       const preco = Number(atual.preco);
@@ -73,46 +75,80 @@
       .map((v) => `<option value="${esc(v.id)}"${v.id === estado.base ? ' selected' : ''}>${esc(titulo(v.ca))}${v.apelido ? ` · ${esc(v.apelido)}` : ''} (${dinheiro(v.preco)})</option>`).join('');
   }
 
-  function montar(el) {
+  const kpi = (tom, icone, rotulo, valor, sub, moeda) => `
+    <article class="kpi-card kpi-card--${tom}">
+      <div class="kpi-card__icon" aria-hidden="true"><i data-lucide="${icone}"></i></div>
+      <div class="kpi-card__body">
+        <p class="kpi-card__label">${rotulo}</p>
+        <div class="kpi-card__value-row"><strong class="kpi-card__value${moeda ? ' kpi-card__value--currency' : ''}">${valor}</strong></div>
+        <p class="kpi-card__sub">${sub}</p>
+      </div>
+    </article>`;
+
+  function montar(el, voltar) {
     raiz = el;
+    estado.de = val('fDe');
+    estado.ate = val('fAte');
     el.innerHTML = `
-      <div class="palco-econ">
-        <div class="palco-lado">
-          <span class="palco-kicker">ECONOMIA POR SUBSTITUIÇÃO</span>
-          <strong class="palco-grande" data-econ-total>R$ 0,00</strong>
-          <p class="palco-sub" data-econ-sub></p>
-          <label class="palco-campo"><span>C.A. atual</span><select data-econ-atual></select></label>
-          <label class="palco-campo"><span>Comparar com</span><select data-econ-base disabled></select></label>
-          <p class="palco-nota">Entram os C.A.s marcados como <b>Atual</b> ou <b>Antigo</b> no prontuário, com preço cadastrado.</p>
+      <div class="stg-hero stg-hero--green">
+        <span class="stg-hero__slash" aria-hidden="true"></span>
+        <div class="stg-hero__arte" aria-hidden="true">
+          <span class="stg-moeda stg-moeda--1">R$</span><span class="stg-moeda stg-moeda--2">R$</span><span class="stg-moeda stg-moeda--3">R$</span>
+          <span class="stg-hero__icone"><i data-lucide="piggy-bank"></i></span>
+          <span class="stg-hero__seta"><i data-lucide="trending-down"></i></span>
         </div>
-        <div class="palco-tabela-wrap">
-          <table class="palco-tabela">
+        <div class="stg-hero__copy">
+          <button type="button" class="stg-voltar" data-stage-voltar><i data-lucide="arrow-left"></i>Voltar ao Dashboard</button>
+          <h2 class="stg-hero__title">Cada troca de C.A.<br><strong>vira economia</strong>.</h2>
+          <p class="stg-hero__subtitle">Quanto se economizou entregando o C.A. atual no lugar do antigo, mais caro.</p>
+        </div>
+        <div class="stg-hero__bottom">
+          <label class="stg-filtro stg-filtro--data"><span>De</span><input type="date" data-econ-de></label>
+          <label class="stg-filtro stg-filtro--data"><span>Até</span><input type="date" data-econ-ate></label>
+          <label class="stg-filtro"><span>C.A. atual</span><select data-econ-atual></select></label>
+          <label class="stg-filtro"><span>Comparar com</span><select data-econ-base></select></label>
+        </div>
+      </div>
+      <section class="stg-kpis" data-econ-kpis></section>
+      <div class="stg-painel">
+        <div class="stg-painel__head"><h3>Comparações</h3><p>Entram os C.A.s marcados como <b>Atual</b> ou <b>Antigo</b> no prontuário do EPI, com preço cadastrado.</p></div>
+        <div class="stg-tabela-wrap">
+          <table class="stg-tabela">
             <thead><tr><th>EPI / Item</th><th>C.A. atual</th><th>Comparado com</th><th class="num">Entregues</th><th class="num">Por unidade</th><th class="num">Economia</th></tr></thead>
             <tbody data-econ-corpo></tbody>
           </table>
         </div>
       </div>`;
+    $('[data-stage-voltar]', el).addEventListener('click', voltar);
+    $('[data-econ-de]', el).value = estado.de;
+    $('[data-econ-ate]', el).value = estado.ate;
+    $('[data-econ-de]', el).addEventListener('change', (e) => { estado.de = e.target.value; atualizar(); });
+    $('[data-econ-ate]', el).addEventListener('change', (e) => { estado.ate = e.target.value; atualizar(); });
     $('[data-econ-atual]', el).addEventListener('change', (e) => { estado.atual = e.target.value; estado.base = ''; atualizar(); });
     $('[data-econ-base]', el).addEventListener('change', (e) => { estado.base = e.target.value; atualizar(); });
     atualizar();
   }
 
   function atualizar() {
-    if (!raiz || !raiz.isConnected) return;
+    if (!raiz || !raiz.isConnected || !$('[data-econ-corpo]', raiz)) return;
     if (estado.atual && !atuais().some((v) => v.id === estado.atual)) { estado.atual = ''; estado.base = ''; }
     const sa = $('[data-econ-atual]', raiz), sb = $('[data-econ-base]', raiz);
     sa.innerHTML = opcoesAtual();
     sb.innerHTML = opcoesBase();
     sb.disabled = !estado.atual;
+
     const linhas = calcular();
     const total = linhas.reduce((s, l) => s + l.total, 0);
     const qtd = linhas.reduce((s, l) => s + l.qtd, 0);
-    const tot = $('[data-econ-total]', raiz);
-    tot.textContent = dinheiro(total);
-    tot.classList.toggle('is-neg', total < 0);
-    const mes = document.querySelector('[data-hero-periodo]')?.textContent.trim() || '';
-    const periodo = !val('fDe') && !val('fAte') ? 'em todo o período' : mes && !/todo/i.test(mes) ? `em ${mes}` : 'no período escolhido';
-    $('[data-econ-sub]', raiz).textContent = `${periodo} · ${num(qtd)} ${qtd === 1 ? 'item comparado' : 'itens comparados'} · ${num(linhas.length)} ${linhas.length === 1 ? 'comparação' : 'comparações'}`;
+    const maior = linhas.find((l) => l.total > 0);
+    const periodo = !estado.de && !estado.ate ? 'todo o período' : 'no período escolhido';
+    const rs = '<small class="kpi-card__moeda">R$</small>';
+    $('[data-econ-kpis]', raiz).innerHTML =
+      kpi('green', 'piggy-bank', 'Economia', `${rs}${semRs(total)}`, periodo, true) +
+      kpi('blue', 'package', 'Itens comparados', num(qtd), 'entregas de C.A.s atuais') +
+      kpi('purple', 'arrow-left-right', 'Comparações', num(linhas.length), linhas.length === 1 ? 'C.A. atual com antigo' : 'C.A.s atuais com antigo') +
+      kpi('orange', 'trophy', 'Maior economia', maior ? `${rs}${semRs(maior.total)}` : '—', maior ? `${esc(nomeEpi(maior.atual.epi_id))} · ${esc(titulo(maior.atual.ca))}` : 'nenhuma no período', !!maior);
+
     $('[data-econ-corpo]', raiz).innerHTML = linhas.length ? linhas.map((l) => `
       <tr>
         <td>${esc(nomeEpi(l.atual.epi_id))}${l.atual.apelido ? `<small>${esc(l.atual.apelido)}</small>` : ''}</td>
@@ -120,9 +156,10 @@
         <td><b>${esc(titulo(l.base.ca))}</b><small>${dinheiro(l.base.preco)}</small></td>
         <td class="num">${num(l.qtd)}</td>
         <td class="num${l.unit < 0 ? ' is-neg' : ''}">${dinheiro(l.unit)}</td>
-        <td class="num palco-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
+        <td class="num stg-total${l.total < 0 ? ' is-neg' : ''}">${dinheiro(l.total)}</td>
       </tr>`).join('')
-      : '<tr><td colspan="6" class="palco-vazio">Nenhuma comparação possível com esses filtros.</td></tr>';
+      : '<tr><td colspan="6" class="stg-vazio">Nenhuma comparação possível com esses filtros.</td></tr>';
+    window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   }
 
   window.EPI_PALCO_ECONOMIA = { montar, atualizar };

@@ -1,97 +1,92 @@
 (() => {
   'use strict';
-  // Palco do Dashboard (PC): espaço abaixo dos KPIs onde o card escolhido
-  // "abre" com a cor dele, arte e informações. Troca com transição suave.
-  // Cada palco tem seu módulo (por enquanto só Economia: js/economia.js).
+  // Telas dos KPIs do Dashboard (PC). Clicar num card troca a tela inteira
+  // do Dashboard (banner, KPIs, tudo) por uma tela no tema daquele card, com
+  // transição suave; "Voltar ao Dashboard" (ou Esc) faz o caminho inverso.
+  // O Dashboard em si não muda. Cada tela tem seu módulo; por enquanto só
+  // Economia (js/economia.js).
   if (window.__EPI_DASH_PALCO__) return;
   window.__EPI_DASH_PALCO__ = true;
 
-  const PALCOS = {
-    economia: { tom: 'green', icone: 'piggy-bank', modulo: () => window.EPI_PALCO_ECONOMIA }
-  };
-  const CHAVE = 'epi:palco';
-  const lerEscolha = () => { try { return localStorage.getItem(CHAVE); } catch (_) { return null; } };
-  const salvarEscolha = (k) => { try { localStorage.setItem(CHAVE, k); } catch (_) {} };
-  let atual = PALCOS[lerEscolha()] ? lerEscolha() : 'economia';
+  const TELAS = { economia: () => window.EPI_PALCO_ECONOMIA };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
+  const pagina = () => document.querySelector('.page[data-page-content="dashboard"]');
+  const noPc = () => matchMedia('(min-width:721px)').matches;
+  let aberta = null;
 
-  function garantir() {
-    const topo = document.getElementById('dashTopo');
-    if (!topo) return null;
-    let palco = document.getElementById('dashPalco');
-    if (!palco) {
-      palco = document.createElement('section');
-      palco.id = 'dashPalco';
-      palco.className = 'dash-palco pv-dash-novo';
-      palco.setAttribute('aria-live', 'polite');
-      palco.innerHTML = '<div class="dash-palco__arte" aria-hidden="true"></div><div class="dash-palco__conteudo"></div>';
-      topo.after(palco);
+  function palco() {
+    const pg = pagina();
+    if (!pg) return null;
+    let el = document.getElementById('dashStage');
+    if (!el) {
+      el = document.createElement('section');
+      el.id = 'dashStage';
+      el.className = 'dash-stage pv-dash-novo';
+      el.setAttribute('aria-live', 'polite');
+      pg.appendChild(el);
     }
-    // Cards que têm palco ficam clicáveis.
-    Object.keys(PALCOS).forEach((k) => {
-      const card = document.querySelector(`#dashKpis [data-kpi="${k}"]`);
-      if (card && !card.classList.contains('tem-palco')) {
-        card.classList.add('tem-palco');
-        card.tabIndex = 0;
-        card.setAttribute('role', 'button');
-        card.removeAttribute('title');
-      }
-    });
-    return palco;
+    return el;
   }
 
-  function mostrar(k, animar) {
-    const palco = garantir();
-    const def = PALCOS[k];
-    if (!palco || !def || !def.modulo()) return;
-    const trocar = () => {
-      atual = k;
-      palco.dataset.tom = def.tom;
-      palco.querySelector('.dash-palco__arte').innerHTML = `<i data-lucide="${def.icone}"></i>`;
-      def.modulo().montar(palco.querySelector('.dash-palco__conteudo'));
-      document.querySelectorAll('#dashKpis .kpi-card').forEach((c) => c.classList.toggle('is-palco', c.dataset.kpi === k));
+  function abrir(k) {
+    const mod = TELAS[k]?.();
+    const pg = pagina(), el = palco();
+    if (!mod || !pg || !el || !noPc() || aberta === k) return;
+    aberta = k;
+    pg.classList.add('stage-saindo');
+    setTimeout(() => {
+      el.dataset.tela = k;
+      mod.montar(el, fechar);
       icons();
-      palco.classList.remove('is-saindo');
-    };
-    if (animar && palco.dataset.tom) {
-      palco.classList.add('is-saindo');
-      setTimeout(trocar, 180);
-    } else trocar();
+      pg.classList.remove('stage-saindo');
+      pg.classList.add('stage-ativo');
+      window.scrollTo({ top: 0 });
+      document.querySelector('.main')?.scrollTo?.({ top: 0 });
+      el.querySelector('[data-stage-voltar]')?.focus({ preventScroll: true });
+    }, 220);
   }
 
-  function atualizar() {
-    const palco = garantir();
-    if (!palco) return;
-    if (!palco.dataset.tom) { mostrar(atual, false); return; }
-    PALCOS[atual]?.modulo()?.atualizar();
-    document.querySelectorAll('#dashKpis .kpi-card').forEach((c) => c.classList.toggle('is-palco', c.dataset.kpi === atual));
+  function fechar() {
+    const pg = pagina(), el = document.getElementById('dashStage');
+    if (!pg || !aberta) return;
+    const k = aberta;
+    aberta = null;
+    pg.classList.add('stage-fechando');
+    setTimeout(() => {
+      pg.classList.remove('stage-ativo', 'stage-fechando');
+      if (el) el.innerHTML = '';
+      pg.classList.add('stage-voltando');
+      setTimeout(() => pg.classList.remove('stage-voltando'), 320);
+      document.querySelector(`#dashKpis [data-kpi="${k}"]`)?.focus({ preventScroll: true });
+    }, 220);
   }
+  window.EPI_DASH_STAGE = { abrir, fechar };
 
-  function escolher(card) {
-    const k = card?.dataset.kpi;
-    if (!PALCOS[k]) return;
-    salvarEscolha(k);
-    if (k !== atual) mostrar(k, true);
-    document.getElementById('dashPalco')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-  document.addEventListener('click', (e) => { const c = e.target.closest('#dashKpis .kpi-card.tem-palco'); if (c) escolher(c); });
-  document.addEventListener('keydown', (e) => {
-    const c = e.target.closest?.('#dashKpis .kpi-card.tem-palco');
-    if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); escolher(c); }
+  // Cards com tela própria: clique, Enter ou espaço abrem.
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('#dashKpis .kpi-card');
+    if (card && TELAS[card.dataset.kpi]) abrir(card.dataset.kpi);
   });
-
-  // Acompanha os KPIs: quando eles recalculam (período, filtros, dados), o palco também.
-  let pendente = null;
-  const agendar = () => { clearTimeout(pendente); pendente = setTimeout(atualizar, 60); };
-  let observado = null;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && aberta && !document.querySelector('.data-edit-modal:not(.hidden),.epi-detail-modal:not(.hidden)')) { fechar(); return; }
+    const card = e.target.closest?.('#dashKpis .kpi-card');
+    if (card && TELAS[card.dataset.kpi] && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); abrir(card.dataset.kpi); }
+  });
+  // Só deixa o card focável pelo teclado (sem mudar o visual).
   setInterval(() => {
-    const kpis = document.getElementById('dashKpis');
-    if (kpis && kpis !== observado) {
-      observado = kpis;
-      new MutationObserver(agendar).observe(kpis, { childList: true, characterData: true, subtree: true });
-      agendar();
+    Object.keys(TELAS).forEach((k) => {
+      const c = document.querySelector(`#dashKpis [data-kpi="${k}"]`);
+      if (c && !c.hasAttribute('tabindex')) { c.tabIndex = 0; c.setAttribute('role', 'button'); }
+    });
+    // Saiu do Dashboard com uma tela aberta: volta ao normal sem animação.
+    const pg = pagina();
+    if (aberta && pg && !pg.classList.contains('active')) {
+      aberta = null;
+      pg.classList.remove('stage-ativo', 'stage-saindo', 'stage-fechando');
+      const el = document.getElementById('dashStage'); if (el) el.innerHTML = '';
     }
   }, 800);
-  window.addEventListener('epi:data-loaded', agendar);
-  window.addEventListener('epi:busca', agendar);
+
+  // Dados recarregados: a tela aberta se atualiza.
+  window.addEventListener('epi:data-loaded', () => { if (aberta) TELAS[aberta]?.()?.atualizar(); });
 })();
