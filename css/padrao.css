@@ -3310,3 +3310,72 @@
   .epi-tab th:nth-child(2),.epi-tab td:nth-child(2),
   .epi-tab th:nth-child(7),.epi-tab td:nth-child(7){text-align:left!important;padding-left:16px!important}
 }
+/* =====================================================================
+   Prontuário do EPI (modal "Cadastro técnico do item"): identidade aço.
+   Só cores, fundos e bordas; a estrutura do modal não muda. A borda
+   colorida do card do C.A. (válido/vencido) continua.
+   ===================================================================== */
+.epi-detail-modal{background:rgba(4,7,10,.82)!important}
+.epi-detail-modal .epi-detail-card{
+  background:
+    radial-gradient(circle at 100% 0%,rgba(255,102,0,.05),transparent 32%),
+    radial-gradient(circle at 0% 100%,rgba(70,87,105,.16),transparent 45%),
+    linear-gradient(180deg,#0B1016 0%,#080C11 55%,#060A0E 100%)!important;
+  border-color:rgba(178,191,205,.14)!important;
+  box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.03)!important
+}
+.epi-detail-modal .epi-detail-head{
+  background:
+    radial-gradient(circle at 85% 0%,rgba(255,102,0,.06),transparent 35%),
+    linear-gradient(180deg,rgba(18,25,33,.9),rgba(11,16,22,.9))!important;
+  border-bottom-color:rgba(178,191,205,.12)!important
+}
+.epi-detail-modal .epi-detail-close,
+.epi-detail-modal .epi-detail-count,
+.epi-detail-modal .epi-ca-selector-option-mark{
+  background:rgba(178,191,205,.06)!important;border-color:rgba(178,191,205,.16)!important
+}
+.epi-detail-modal .epi-ca-selector-trigger{
+  background:linear-gradient(180deg,rgba(18,25,33,.95),rgba(11,16,22,.95))!important
+}
+.epi-detail-modal .epi-ca-selector-menu{
+  background:linear-gradient(180deg,#111821,#0A0F15)!important;border-color:rgba(178,191,205,.16)!important
+}
+/* Card do C.A. */
+.epi-detail-modal .epi-ca-dossier{
+  background:
+    radial-gradient(circle at 92% 4%,rgba(255,102,0,.05),transparent 30%),
+    radial-gradient(circle at 0% 100%,rgba(70,87,105,.16),transparent 50%),
+    linear-gradient(180deg,rgba(13,19,26,.94),rgba(9,13,18,.94) 55%,rgba(6,10,14,.94))!important
+}
+.epi-detail-modal .epi-dossier-image,
+.epi-detail-modal .epi-variant-image-preview{
+  background:radial-gradient(circle at 50% 40%,rgba(178,191,205,.07),transparent 55%),rgba(6,10,14,.7)!important;
+  border-color:rgba(178,191,205,.12)!important
+}
+.epi-detail-modal .epi-dossier-field,
+.epi-detail-modal .epi-dossier-text{
+  background:rgba(178,191,205,.035)!important;border-color:rgba(178,191,205,.12)!important
+}
+.epi-detail-modal .epi-dossier-footer{border-top-color:rgba(178,191,205,.12)!important}
+/* Painel de edição à direita */
+.epi-detail-modal .epi-variant-editor{
+  background:linear-gradient(180deg,rgba(14,20,27,.92),rgba(9,13,18,.92))!important;
+  border-left:1px solid rgba(178,191,205,.10)!important
+}
+.epi-detail-modal input,
+.epi-detail-modal textarea,
+.epi-detail-modal select,
+.epi-detail-modal .epi-variant-image-editor{
+  background:rgba(6,10,14,.72)!important;border-color:rgba(178,191,205,.16)!important
+}
+.epi-detail-modal input:focus,
+.epi-detail-modal textarea:focus,
+.epi-detail-modal select:focus{border-color:rgba(255,121,0,.6)!important}
+.epi-detail-modal .btn:not(.primary),
+.epi-detail-modal .epi-compare-button:not(:has(input:checked)){
+  background:rgba(178,191,205,.06)!important;border-color:rgba(178,191,205,.16)!important
+}
+.epi-detail-modal .btn:not(.primary):hover,
+.epi-detail-modal .epi-compare-button:not(:has(input:checked)):hover{background:rgba(178,191,205,.11)!important}
+.epi-detail-modal .epi-compare-button:has(input:checked){background:rgba(178,191,205,.06)!important}
