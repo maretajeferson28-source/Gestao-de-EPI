@@ -3684,9 +3684,7 @@
     color:#C9D2DB;background:transparent;border:1px solid transparent
   }
   .stg-mes__grade button:hover{background:rgba(178,191,205,.08);color:#fff}
-  .stg-mes__grade button.tem-entrega::after{content:"";position:absolute;left:50%;bottom:5px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--t);opacity:.8}
   .stg-mes__grade button.is-sel{color:#06120C;background:var(--t);border-color:var(--t);font-weight:800}
-  .stg-mes__grade button.is-sel::after{background:#06120C}
 }
 /* Tela Economia: itens sem comparação e lista das entregas do período. */
 @media (min-width:721px){

@@ -227,7 +227,6 @@
   function seletorMes(caixa, valor, prefixo, aoMudar) {
     let ym = valor || dataIso(new Date()).slice(0, 7);
     let ano = Number(ym.slice(0, 4));
-    const comEntrega = new Set(entregas().map((m) => iso(m.data).slice(0, 7)).filter(Boolean));
     caixa.innerHTML = `
       <button type="button" class="stg-mes__botao" aria-haspopup="dialog" aria-expanded="false"><span></span><i data-lucide="chevron-down"></i></button>
       <div class="stg-mes__painel" hidden>
@@ -240,7 +239,7 @@
       painel.querySelector('strong').textContent = ano;
       painel.querySelector('.stg-mes__grade').innerHTML = MES.map((n, i) => {
         const v = `${ano}-${pad(i + 1)}`;
-        return `<button type="button" data-mes="${v}" class="${v === ym ? 'is-sel' : ''}${comEntrega.has(v) ? ' tem-entrega' : ''}">${n}</button>`;
+        return `<button type="button" data-mes="${v}" class="${v === ym ? 'is-sel' : ''}">${n}</button>`;
       }).join('');
     };
     const abrir = (sim) => {
