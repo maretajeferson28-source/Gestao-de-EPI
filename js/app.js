@@ -1668,16 +1668,15 @@ function recortarFundoBranco(url){
   body.addEventListener('click',e=>{
     const del=e.target.closest('[data-epi-delete]'); if(del){ e.stopPropagation(); deleteEpiCatalogItem(del.dataset.epiDelete); return; }
     const ed=e.target.closest('[data-epi-edit]'); if(ed){ e.stopPropagation(); openEpiCatalogEdit(ed.dataset.epiEdit); return; }
-    // Seta da coluna Variações: item inteiro → modelo 1 → 2 → … → item inteiro.
+    // Seta da coluna Variações: o item inteiro já mostra o 1º modelo, então o
+    // primeiro clique vai direto para o 2º → 3º → … → volta ao item inteiro.
     const prox=e.target.closest('[data-epi-var-prox]');
     if(prox){
       e.stopPropagation();
       const id=prox.dataset.epiVarProx, n=epiModelos(id).length, sel=epiTabCaSel.get(id);
-      if(sel==null) epiTabCaSel.set(id,0); else if(sel+1<n) epiTabCaSel.set(id,sel+1); else epiTabCaSel.delete(id);
+      if(sel==null) { if(n>1) epiTabCaSel.set(id,1); } else if(sel+1<n) epiTabCaSel.set(id,sel+1); else epiTabCaSel.delete(id);
       if(epiTabCaSel.has(id)) carregarSaldoPorCa(id);
       renderEpiTabela();
-      const linha=body.querySelector(`tr[data-epi-id="${CSS.escape(id)}"]`);
-      if(linha){ linha.classList.add('is-troca'); setTimeout(()=>linha.classList.remove('is-troca'),450); }
       return;
     }
     // O prontuário abre só pelo botão da coluna Ação (clicar na linha não faz nada).

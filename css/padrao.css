@@ -4014,3 +4014,8 @@
   .epi-tab-var-prox:disabled:hover{border-color:rgba(178,191,205,.14);color:#8C9AA8}
   .epi-tab-var.is-vazio{color:#6F7883}
 }
+/* EPIs (PC): troca de modelo sem destaque laranja (selo e linha neutros). */
+@media (min-width:721px){
+  .epi-tab-var.is-modelo{color:#DCE2E8!important;background:rgba(178,191,205,.10)!important;border-color:rgba(178,191,205,.18)!important}
+  .epi-tab tr.is-modelo td:first-child{box-shadow:none!important}
+}
