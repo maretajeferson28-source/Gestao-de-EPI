@@ -4241,3 +4241,20 @@
   .estq-uni-tab .c-sit{width:13%}
 }
 @media (min-width:721px){ .estq-tams{max-height:none;overflow:visible} .estq-uni-tab td{padding-top:6px;padding-bottom:6px} }
+/* Estoque, salas de uniforme: botão "Adicionar peça" e a janela da peça
+   (tamanhos com − e + e um tamanho novo). */
+#estqPecaNova{display:none!important}
+@media (min-width:721px){
+  .page[data-page-content="estoque"].estq-uni #estqPecaNova:not([hidden]){display:inline-flex!important;margin-left:auto}
+  .uni-tams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:2px 0 14px;max-height:52vh;overflow:auto;scrollbar-width:thin;scrollbar-color:#36404B transparent}
+  .uni-tam{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 8px 14px;border-radius:10px;border:1px solid rgba(178,191,205,.14);background:rgba(6,10,14,.55)}
+  .uni-tam__nome{font:700 14px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .uni-tam.is-pouco{border-color:rgba(234,179,8,.38)}
+  .uni-tam.is-pouco .uni-tam__nome{color:#FACC15}
+  .uni-tam.is-zero{border-color:rgba(239,68,68,.36)}
+  .uni-tam.is-zero .uni-tam__nome,.uni-tam.is-zero .dep-qtd strong{color:#F87171}
+  .uni-vazio{margin:6px 0 12px;color:#9FB0C2;font-size:13px}
+  .uni-novo-tam{display:grid;grid-template-columns:minmax(0,1fr) 120px auto;gap:10px;align-items:end;padding-top:14px;border-top:1px solid rgba(178,191,205,.12)}
+  .uni-novo-tam .field{margin:0}
+  .uni-novo-tam .btn{height:38px;white-space:nowrap}
+}
