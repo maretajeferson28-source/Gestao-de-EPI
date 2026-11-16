@@ -1552,7 +1552,9 @@ function renderEpiTabela(){
   $('epiTabSit')?.classList.toggle('tem-valor',!!$('epiTabSit').value);
   const q=normalize($('epiTabBusca')?.value||''), cat=selCat?.value||'', sit=$('epiTabSit')?.value||'';
   const fmt=n=>new Intl.NumberFormat('pt-BR').format(n);
-  const linhas=epiCatalog.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({c,ca:epiCaPrincipal(c.id),s:epiSituacao(c.id)}))
+  // Itens com mais de um C.A. ativo vêm primeiro (depois por nome); os filtros continuam valendo.
+  const variosCa=id=>epiModelos(id).length>1?0:1;
+  const linhas=epiCatalog.slice().sort((a,b)=>variosCa(a.id)-variosCa(b.id)||a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({c,ca:epiCaPrincipal(c.id),s:epiSituacao(c.id)}))
     .filter(({c,ca,s})=>{
       if(cat&&String(c.categoria||'').trim()!==cat) return false;
       if(sit&&s?.k!==sit) return false;
