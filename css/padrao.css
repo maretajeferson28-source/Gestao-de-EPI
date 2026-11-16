@@ -3979,3 +3979,15 @@
 #stockEntryModal .stock-ca-card{
   background:linear-gradient(145deg,rgba(24,31,38,.75),rgba(12,17,22,.75))!important;border-color:rgba(178,191,205,.14)!important
 }
+/* Lista de sugestões dos campos (js/autocompletar.js), em todas as telas:
+   identidade aço, rolagem fina e destaque laranja na opção ativa. */
+.auto-lista{
+  background:linear-gradient(180deg,#111821 0%,#0B1117 100%)!important;border:1px solid rgba(178,191,205,.18)!important;
+  border-radius:12px!important;box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.2)!important;padding:5px!important;
+  scrollbar-width:thin;scrollbar-color:#36404B transparent
+}
+.auto-lista::-webkit-scrollbar{width:8px}
+.auto-lista::-webkit-scrollbar-thumb{background:#36404B;border-radius:8px}
+.auto-lista::-webkit-scrollbar-track{background:transparent}
+.auto-op{color:#D5DCE3!important;font:500 13px/1.2 Inter,Roboto,Arial,sans-serif}
+.auto-op:hover,.auto-op.is-ativo{background:rgba(178,191,205,.08)!important;color:#fff!important;box-shadow:inset 3px 0 0 #FF7A00!important}
