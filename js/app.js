@@ -1477,6 +1477,23 @@ function renderEpis(){
 // última entrada. Saldo vem de epi_stock_por_item (o mesmo do Estoque); a
 // última entrada é a data mais recente entre NF-e e entradas manuais.
 let epiEstoque=null, epiEstoqueEm=0, epiEstoqueCarregando=false, epiTabPagina=1;
+// Seta da coluna Variações: qual C.A. cada linha está mostrando (sem valor =
+// visão do item inteiro) e o saldo por C.A. já consultado (epi_stock_por_ca).
+const epiTabCaSel=new Map(), epiCaSaldo=new Map();
+function epiCaNorm(ca){ const t=String(ca||'').trim(); return /^CI-/i.test(t)?t.toUpperCase():t.replace(/\D+/g,'').replace(/^0+/,''); }
+function epiModelos(id){
+  const valido=v=>String(v.situacao||'').toLocaleUpperCase('pt-BR').includes('VÁLID');
+  return epiVariants.filter(v=>v.epi_id===id&&v.ativo!==false)
+    .sort((a,b)=>(valido(b)-valido(a))||String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
+}
+async function carregarSaldoPorCa(id){
+  if(epiCaSaldo.has(id)) return;
+  epiCaSaldo.set(id,null); // carregando
+  const {data,error}=await sb.rpc('epi_stock_por_ca',{p_epi:id});
+  if(error){ console.warn('[EPIs] saldo por C.A.',error); epiCaSaldo.delete(id); return; }
+  epiCaSaldo.set(id,new Map((data||[]).map(r=>[epiCaNorm(r.ca),Number(r.saldo)||0])));
+  renderEpiTabela();
+}
 async function carregarEpiEstoque(){
   if(epiEstoqueCarregando||!currentIsAdmin) return;
   epiEstoqueCarregando=true;
@@ -1484,15 +1501,16 @@ async function carregarEpiEstoque(){
     const [itens,mins,manuais,notas]=await Promise.all([
       sb.rpc('epi_stock_por_item',{p_busca:''}),
       sb.from('epis').select('id,estoque_minimo'),
-      sb.from('estoque_entradas_manuais').select('epi_id,data'),
-      sb.from('nfe_entrada_itens').select('epi_id,nfe_entradas!inner(data_emissao,status)').not('epi_id','is',null).eq('nfe_entradas.status','entrada')
+      sb.from('estoque_entradas_manuais').select('epi_id,data,ca'),
+      sb.from('nfe_entrada_itens').select('epi_id,ca_detectado,nfe_entradas!inner(data_emissao,status)').not('epi_id','is',null).eq('nfe_entradas.status','entrada')
     ]);
-    const e={saldo:new Map(),minimo:new Map(),ultima:new Map()};
+    const e={saldo:new Map(),minimo:new Map(),ultima:new Map(),ultimaCa:new Map()};
     (itens.data||[]).forEach(r=>e.saldo.set(r.epi_id,Number(r.saldo)||0));
     (mins.data||[]).forEach(r=>{ if(r.estoque_minimo!=null) e.minimo.set(r.id,Number(r.estoque_minimo)); });
-    const marcar=(id,d)=>{ if(!id||!d) return; const iso=String(d).slice(0,10); if(!e.ultima.has(id)||e.ultima.get(id)<iso) e.ultima.set(id,iso); };
-    (manuais.data||[]).forEach(r=>marcar(r.epi_id,r.data));
-    (notas.data||[]).forEach(r=>marcar(r.epi_id,r.nfe_entradas?.data_emissao));
+    const marcarEm=(mapa,id,d)=>{ if(!id||!d) return; const iso=String(d).slice(0,10); if(!mapa.has(id)||mapa.get(id)<iso) mapa.set(id,iso); };
+    const marcar=(id,d,ca)=>{ marcarEm(e.ultima,id,d); if(ca) marcarEm(e.ultimaCa,id+'|'+epiCaNorm(ca),d); };
+    (manuais.data||[]).forEach(r=>marcar(r.epi_id,r.data,r.ca));
+    (notas.data||[]).forEach(r=>marcar(r.epi_id,r.nfe_entradas?.data_emissao,r.ca_detectado));
     [itens,mins,manuais,notas].forEach(r=>{ if(r.error) console.warn('[EPIs] estoque',r.error); });
     epiEstoque=e; epiEstoqueEm=Date.now();
   }catch(err){ console.warn('[EPIs] estoque',err); }
@@ -1547,14 +1565,28 @@ function renderEpiTabela(){
   if(epiTabPagina>paginas) epiTabPagina=paginas;
   const daPagina=linhas.slice((epiTabPagina-1)*porPag,epiTabPagina*porPag);
   body.innerHTML=daPagina.map(({c,ca,s})=>{
-    const saldo=epiEstoque?.saldo.get(c.id), min=epiEstoque?.minimo.get(c.id), ult=epiEstoque?.ultima.get(c.id);
-    const caTxt=ca.v?`${isCiCode(ca.v.ca)?'':'CA '}${esc(ca.v.ca)}`:'<span class="epi-tab-vazio">Sem C.A.</span>';
-    return `<tr data-epi-id="${esc(c.id)}">
-      <td class="foto"><span class="epi-tab-foto"${ca.foto?` data-foto="${esc(ca.foto)}"`:''}><i data-lucide="${epiCardIcon(c)}" aria-hidden="true"></i></span></td>
+    let saldo=epiEstoque?.saldo.get(c.id), min=epiEstoque?.minimo.get(c.id), ult=epiEstoque?.ultima.get(c.id);
+    let caV=ca.v, foto=ca.foto, varTxt=ca.total?`<span class="epi-tab-var">${ca.total}</span>`:'<span class="epi-tab-vazio">—</span>';
+    // Seta da coluna Variações: a linha mostra um C.A. específico (foto, código,
+    // saldo, situação e última entrada daquele modelo). Sem seleção = item inteiro.
+    const modelos=epiModelos(c.id), sel=epiTabCaSel.get(c.id);
+    const modelo=sel!=null?modelos[sel]:null;
+    if(modelo){
+      const k=epiCaNorm(modelo.ca), saldos=epiCaSaldo.get(c.id);
+      caV=modelo; foto=modelo.imagem_path||null;
+      saldo=saldos?(saldos.has(k)?saldos.get(k):undefined):null;
+      ult=epiEstoque?.ultimaCa.get(c.id+'|'+k);
+      s=saldos===null||saldos===undefined?null:saldo==null?{k:'sem',t:'Sem estoque'}:saldo<=0?{k:'critico',t:'Crítico'}:{k:'ok',t:'Em dia'};
+      varTxt=`<span class="epi-tab-var is-modelo" title="Mostrando o modelo ${sel+1} de ${modelos.length}">${sel+1}/${modelos.length}</span>`;
+    }
+    const seta=modelos.length>1?`<button type="button" class="epi-tab-var-prox" data-epi-var-prox="${esc(c.id)}" title="${modelo?(sel+1<modelos.length?'Próximo modelo':'Voltar ao item inteiro'):'Ver cada modelo (C.A.)'}" aria-label="Trocar o modelo mostrado"><i data-lucide="chevron-right" aria-hidden="true"></i></button>`:'';
+    const caTxt=caV?`${isCiCode(caV.ca)?'':'CA '}${esc(caV.ca)}`:'<span class="epi-tab-vazio">Sem C.A.</span>';
+    return `<tr data-epi-id="${esc(c.id)}"${modelo?' class="is-modelo"':''}>
+      <td class="foto"><span class="epi-tab-foto"${foto?` data-foto="${esc(foto)}"`:''}><i data-lucide="${epiCardIcon(c)}" aria-hidden="true"></i></span></td>
       <td><strong class="epi-tab-nome" title="${esc(c.nome)}">${esc(c.nome)}</strong></td>
       <td>${caTxt}</td>
-      <td class="var">${ca.total?`<span class="epi-tab-var">${ca.total}</span>`:'<span class="epi-tab-vazio">—</span>'}</td>
-      <td class="num">${saldo==null?'<span class="epi-tab-vazio">—</span>':`<b class="epi-tab-saldo${saldo<=0?' is-zero':''}">${fmt(saldo)}</b>`}</td>
+      <td class="var"><span class="epi-tab-var-box">${varTxt}${seta}</span></td>
+      <td class="num">${saldo===null?'<span class="epi-tab-vazio">…</span>':saldo==null?'<span class="epi-tab-vazio">—</span>':`<b class="epi-tab-saldo${saldo<=0?' is-zero':''}">${fmt(saldo)}</b>`}</td>
       <td class="num">${min==null?'<span class="epi-tab-vazio" title="Sem estoque mínimo cadastrado">—</span>':fmt(min)}</td>
       <td>${s?`<span class="epi-sit epi-sit--${s.k}">${s.t}</span>`:'<span class="epi-tab-vazio">…</span>'}</td>
       <td>${ult?ult.split('-').reverse().join('/'):'<span class="epi-tab-vazio">—</span>'}</td>
@@ -1633,6 +1665,18 @@ function recortarFundoBranco(url){
   body.addEventListener('click',e=>{
     const del=e.target.closest('[data-epi-delete]'); if(del){ e.stopPropagation(); deleteEpiCatalogItem(del.dataset.epiDelete); return; }
     const ed=e.target.closest('[data-epi-edit]'); if(ed){ e.stopPropagation(); openEpiCatalogEdit(ed.dataset.epiEdit); return; }
+    // Seta da coluna Variações: item inteiro → modelo 1 → 2 → … → item inteiro.
+    const prox=e.target.closest('[data-epi-var-prox]');
+    if(prox){
+      e.stopPropagation();
+      const id=prox.dataset.epiVarProx, n=epiModelos(id).length, sel=epiTabCaSel.get(id);
+      if(sel==null) epiTabCaSel.set(id,0); else if(sel+1<n) epiTabCaSel.set(id,sel+1); else epiTabCaSel.delete(id);
+      if(epiTabCaSel.has(id)) carregarSaldoPorCa(id);
+      renderEpiTabela();
+      const linha=body.querySelector(`tr[data-epi-id="${CSS.escape(id)}"]`);
+      if(linha){ linha.classList.add('is-troca'); setTimeout(()=>linha.classList.remove('is-troca'),450); }
+      return;
+    }
     // O prontuário abre só pelo botão da coluna Ação (clicar na linha não faz nada).
     const pr=e.target.closest('.epi-tab-prontuario'); const tr=pr&&pr.closest('tr[data-epi-id]'); if(tr) openEpiDetail(tr.dataset.epiId);
   });
@@ -1647,7 +1691,7 @@ function recortarFundoBranco(url){
   });
   let t=null; window.addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(()=>{ if(document.querySelector('.page[data-page-content="epis"].active')) renderEpiTabela(); },150); });
   // Entradas/saídas mudam o saldo: recarrega junto com os dados.
-  window.addEventListener('epi:data-loaded',()=>{ epiEstoque=null; if(document.querySelector('.page[data-page-content="epis"].active')) renderEpiTabela(); });
+  window.addEventListener('epi:data-loaded',()=>{ epiEstoque=null; epiCaSaldo.clear(); if(document.querySelector('.page[data-page-content="epis"].active')) renderEpiTabela(); });
 })();
 
 async function deleteEpiCatalogItem(id){

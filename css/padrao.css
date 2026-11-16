@@ -3991,3 +3991,19 @@
 .auto-lista::-webkit-scrollbar-track{background:transparent}
 .auto-op{color:#D5DCE3!important;font:500 13px/1.2 Inter,Roboto,Arial,sans-serif}
 .auto-op:hover,.auto-op.is-ativo{background:rgba(178,191,205,.08)!important;color:#fff!important;box-shadow:inset 3px 0 0 #FF7A00!important}
+/* EPIs (PC): seta da coluna Variações. Troca o modelo (C.A.) mostrado na
+   linha; a linha inteira acompanha (foto, C.A., saldo, situação, entrada). */
+@media (min-width:721px){
+  .epi-tab-var-box{display:inline-flex;align-items:center;gap:6px}
+  .epi-tab-var-prox{
+    display:inline-grid;place-items:center;width:22px;height:22px;padding:0;border-radius:7px;cursor:pointer;
+    color:#C9D2DB;background:rgba(20,27,35,.85);border:1px solid rgba(178,191,205,.18);transition:border-color .15s,color .15s
+  }
+  .epi-tab-var-prox svg{width:14px;height:14px;stroke-width:2.2}
+  .epi-tab-var-prox:hover{border-color:rgba(255,121,0,.6);color:#FF8A24}
+  .epi-tab-var-prox:focus-visible{outline:2px solid rgba(255,121,0,.6);outline-offset:1px}
+  .epi-tab-var.is-modelo{color:#FFB070;background:rgba(255,138,36,.12);border-color:rgba(255,138,36,.40)}
+  .epi-tab tr.is-modelo td:first-child{box-shadow:inset 3px 0 0 rgba(255,122,16,.75)}
+  .epi-tab tr.is-troca td{animation:epiTroca .45s ease}
+  @keyframes epiTroca{from{background:rgba(255,122,16,.10)}to{background:transparent}}
+}
