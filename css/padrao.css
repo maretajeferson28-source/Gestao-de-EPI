@@ -3900,3 +3900,35 @@
   .page[data-page-content="estoque"] > #stockStatus{grid-area:status}
   .estq-kpis .kpi-card{min-height:96px}
 }
+/* Estoque (PC): barra de busca em cima, na largura toda (encostada no lado
+   da sidebar); embaixo, KPIs mais quadrados numa coluna estreita e a
+   tabela mais larga, as duas começando na mesma altura. */
+@media (min-width:721px){
+  .page[data-page-content="estoque"].active{
+    grid-template-columns:158px minmax(0,1fr)!important;column-gap:14px!important;
+    grid-template-areas:"head head" "barra barra" "kpis tabela" "kpis rodape" ". status"!important
+  }
+  .page[data-page-content="estoque"] > .kpi-grid.estq-kpis{grid-template-rows:repeat(4,minmax(0,1fr));align-self:stretch!important;gap:10px}
+  .estq-kpis .kpi-card{min-height:0!important;grid-template-columns:1fr!important;grid-template-rows:auto 1fr;row-gap:8px;padding:14px!important}
+  .estq-kpis .kpi-card__icon{width:26px;height:26px}
+  .estq-kpis .kpi-card__body{display:flex;flex-direction:column;justify-content:space-between}
+  .estq-kpis .kpi-card__sub{white-space:normal;line-height:1.25}
+}
+/* Estoque (PC): KPIs compactos (ícone ao lado do nome) para a coluna caber
+   na altura da tabela sem empurrar o rodapé. */
+@media (min-width:721px){
+  .estq-kpis .kpi-card{
+    display:grid!important;grid-template-columns:22px minmax(0,1fr)!important;grid-template-rows:auto auto 1fr!important;
+    grid-template-areas:"ic rot" "val val" "sub sub";column-gap:8px!important;row-gap:6px!important;padding:12px 12px 12px 14px!important;align-content:start
+  }
+  .estq-kpis .kpi-card__body{display:contents!important}
+  .estq-kpis .kpi-card__icon{grid-area:ic;width:20px!important;height:20px!important;align-self:center}
+  .estq-kpis .kpi-card__label{grid-area:rot;margin:0!important;align-self:center;font-size:12px}
+  .estq-kpis .kpi-card__value-row{grid-area:val;margin:0}
+  .estq-kpis .kpi-card__value{font-size:26px!important;line-height:1!important}
+  .estq-kpis .kpi-card__sub{grid-area:sub;margin:0!important;font-size:11px!important;line-height:1.25!important;white-space:normal!important;align-self:end}
+}
+@media (min-width:721px){
+  .estq-kpis .kpi-card{row-gap:4px!important;padding:10px 12px 10px 14px!important}
+  .content:has(> .page[data-page-content="estoque"].active){padding-bottom:12px!important}
+}
