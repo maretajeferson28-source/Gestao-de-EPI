@@ -4094,3 +4094,47 @@
   .dep-vazio h3{margin:6px 0 0;font:700 17px/1.25 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
   .dep-vazio p{margin:0;max-width:460px;font:400 13.5px/1.45 Inter,Roboto,Arial,sans-serif;color:#B9C4CF}
 }
+/* Tela Depósitos: botão "Adicionar depósito", cartões dos depósitos e a
+   janela de cadastro (identidade aço, igual à Entrada no estoque). */
+@media (min-width:721px){
+  .ecn.dep .dep-novo{margin-right:auto}
+  .dep-carregando{margin:24px 2px;color:#9FB0C2;font-size:13px}
+  .dep-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .dep-card{
+    display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:14px;border:1px solid rgba(178,191,205,.14);
+    background:
+      radial-gradient(ellipse 55% 60% at 100% 0%,rgba(255,102,0,.07) 0%,transparent 60%),
+      linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)
+  }
+  .dep-card__ic{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:12px;color:#FF6600;border:1px solid rgba(255,111,25,.35);background:linear-gradient(135deg,#583018,#24160F 65%,#111214)}
+  .dep-card__ic svg{width:21px;height:21px}
+  .dep-card__corpo{min-width:0}
+  .dep-card h3{margin:2px 0 6px;font:700 16px/1.25 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .dep-card p{display:flex;align-items:center;gap:6px;margin:0 0 4px;font:400 13px/1.35 Inter,Roboto,Arial,sans-serif;color:#C4CDD6}
+  .dep-card p svg{width:14px;height:14px;flex:0 0 14px;color:#8C9AA8}
+  .dep-card small{display:block;margin-top:6px;font-size:12px;line-height:1.4;color:#9FB0C2}
+}
+#depositoModal{background:rgba(4,7,10,.82)!important}
+#depositoModal .dep-janela{
+  width:min(560px,calc(100vw - 28px));
+  background:
+    radial-gradient(ellipse 55% 70% at 100% 0%,rgba(255,102,0,.10) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.20) 0%,transparent 70%),
+    linear-gradient(180deg,#0D131A 0%,#090D12 45%,#060A0E 100%)!important;
+  border:1px solid rgba(178,191,205,.14)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 90px rgba(0,0,0,.64)!important
+}
+#depositoModal .data-edit-head{background:radial-gradient(ellipse 45% 120% at 92% 0%,rgba(255,102,0,.10) 0%,transparent 70%)!important;border-bottom-color:rgba(178,191,205,.10)!important}
+#depositoModal .data-edit-head p{color:#B9C4CF!important}
+#depositoModal .data-edit-close{background:rgba(20,27,35,.7)!important;border-color:rgba(178,191,205,.16)!important;color:#C9D2DB!important}
+#depositoModal .data-edit-icon{color:#FF6600!important;border:1px solid rgba(255,111,25,.35)!important;background:linear-gradient(135deg,#583018,#24160F 65%,#111214)!important;box-shadow:0 0 22px rgba(255,102,0,.12)!important}
+#depositoModal .data-edit-icon svg{color:#FF6600!important;stroke:#FF6600!important}
+#depositoModal .data-edit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#depositoModal .dep-col-cheia{grid-column:1 / -1}
+#depositoModal .field label{color:#A9B6C3!important}
+#depositoModal input{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;color-scheme:dark}
+#depositoModal input::placeholder{color:#7F8C99!important}
+#depositoModal input:focus{border-color:rgba(255,121,0,.6)!important;outline:0}
+#depositoModal .btn:not(.primary){background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;color:#E5E8EA!important}
+#depositoModal .btn:not(.primary):hover{border-color:rgba(255,121,0,.5)!important}
