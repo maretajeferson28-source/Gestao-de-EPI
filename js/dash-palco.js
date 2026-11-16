@@ -8,7 +8,7 @@
   if (window.__EPI_DASH_PALCO__) return;
   window.__EPI_DASH_PALCO__ = true;
 
-  const TELAS = { economia: () => window.EPI_PALCO_ECONOMIA };
+  const TELAS = { economia: () => window.EPI_PALCO_ECONOMIA, valor: () => window.EPI_PALCO_VALOR };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   const pagina = () => document.querySelector('.page[data-page-content="dashboard"]');
   const noPc = () => matchMedia('(min-width:721px)').matches;

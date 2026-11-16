@@ -339,7 +339,7 @@
   }
 
   window.EPI_PALCO_ECONOMIA = { montar, atualizar };
-  window.EPI_ECONOMIA = { doCard };
+  window.EPI_ECONOMIA = { doCard, seletorData };
   // Este arquivo pode carregar depois do card: pede para ele recalcular.
   window.dispatchEvent(new CustomEvent('epi:busca'));
 })();

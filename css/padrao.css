@@ -4019,3 +4019,46 @@
   .epi-tab-var.is-modelo{color:#DCE2E8!important;background:rgba(178,191,205,.10)!important;border-color:rgba(178,191,205,.18)!important}
   .epi-tab tr.is-modelo td:first-child{box-shadow:none!important}
 }
+/* =====================================================================
+   Tela Valor gasto (card Valor gasto do Dashboard): mesmo molde da
+   Economia (.ecn-*), em vermelho, com a tabela por item.
+   ===================================================================== */
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="dashboard"].stage-ativo #dashStage[data-tela="valor"]){
+    background:
+      url("/assets/app-brand/colaboradores-ondas-vermelho.svg?v=1") right -70px top -18px/100% auto no-repeat,
+      radial-gradient(ellipse 38% 30% at 34% 6%,rgba(70,87,105,.20) 0%,rgba(70,87,105,.06) 55%,transparent 80%),
+      radial-gradient(ellipse 34% 40% at 6% 62%,rgba(70,87,105,.13) 0%,transparent 75%),
+      radial-gradient(ellipse 40% 34% at 60% 100%,rgba(70,87,105,.12) 0%,transparent 75%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.40) 100%),
+      linear-gradient(180deg,#090D12 0%,#080C10 45%,#060A0E 100%)!important
+  }
+  .ecn.vgs{--v:#FF4054;--v2:#C9202F;--v-tint:rgba(255,64,84,.14)}
+  .ecn.vgs .ecn-head-ic{border-color:rgba(255,64,84,.35);background:linear-gradient(135deg,#4A1820,#24100F 65%,#111214);box-shadow:0 0 22px rgba(255,64,84,.12)}
+  .ecn.vgs .ecn-busca:focus-within{border-color:rgba(255,64,84,.55)!important;box-shadow:0 0 0 3px rgba(255,64,84,.08)!important}
+  .ecn.vgs .ecn-filtro select.tem-valor{border-color:rgba(255,64,84,.7)!important}
+  .ecn.vgs .ecn-filtro select:focus-visible{border-color:rgba(255,64,84,.6)!important;box-shadow:0 0 0 3px rgba(255,64,84,.10)!important}
+  .ecn.vgs .ecn-filtro select{max-width:230px}
+  .ecn.vgs .ecn-btn:hover{border-color:rgba(255,64,84,.45)!important}
+  .ecn.vgs .ecn-mes .stg-mes__botao{border-color:rgba(255,64,84,.55)}
+  .ecn.vgs .ecn-mes .stg-mes__botao:hover,.ecn.vgs .ecn-mes .stg-mes__botao[aria-expanded="true"]{border-color:rgba(255,64,84,.8)}
+  .ecn.vgs .stg-cal__dias button.is-sel{color:#fff}
+  .ecn.vgs .ecn-tabela-wrap{
+    background:
+      radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,64,84,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.16) 0%,transparent 70%),
+      linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%)
+  }
+  .ecn.vgs .ecn-rodape .g-employee-page.is-current{
+    background:linear-gradient(180deg,#FF5A6B,#C9202F)!important;color:#fff!important;
+    box-shadow:0 0 0 1px rgba(255,64,84,.25),0 0 13px rgba(255,64,84,.35),inset 0 1px 0 rgba(255,220,225,.25)!important
+  }
+  .vgs-tabela .c-cas{width:130px}.vgs-tabela .c-qtd{width:70px}.vgs-tabela .c-num{width:130px}.vgs-tabela .c-fatia{width:210px}
+  .vgs-tabela .vgs-total{font-weight:700;color:#F2F4F6}
+  .vgs-tabela td small{display:inline;margin:0 0 0 6px;color:#9FB0C2}
+  .vgs-fatia{display:flex;align-items:center;gap:10px}
+  .vgs-fatia__barra{flex:1;height:6px;border-radius:999px;background:rgba(178,191,205,.10);overflow:hidden}
+  .vgs-fatia__barra i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#C9202F,#FF4054)}
+  .vgs-fatia em{flex:0 0 46px;font-style:normal;text-align:right;font-variant-numeric:tabular-nums;color:#DFE3E7}
+}
+@media (min-width:721px){ .vgs-tabela .vgs-aviso{margin-left:3px;color:#FF8A96;font-weight:700} }
