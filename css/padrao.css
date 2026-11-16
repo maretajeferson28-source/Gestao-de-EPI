@@ -3835,3 +3835,24 @@
   .stg-cal__dias button.is-hoje{border-color:rgba(27,214,106,.55)}
   .stg-cal__dias button.is-sel{color:#06120C;background:var(--t,#1BD66A);border-color:var(--t,#1BD66A);font-weight:800}
 }
+/* =====================================================================
+   Estoque (PC), passo 1: cabeçalho padrão (ícone + título) e KPIs com o
+   componente do Dashboard, nas cores de antes (verde, laranja, amarelo,
+   vermelho). No celular continuam os cartões antigos.
+   ===================================================================== */
+.estq-head{display:none}
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="estoque"].active) > .topbar{display:none!important}
+  .page[data-page-content="estoque"] .stock-kpis{display:none!important}
+  .estq-head{display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto;column-gap:18px;align-items:center;margin:0 0 18px;padding:24px 0 0}
+  .estq-head-ic{
+    display:grid;grid-row:1 / span 2;place-items:center;width:56px;height:56px;border-radius:14px;color:#FF6600;
+    border:1px solid rgba(255,111,25,.35);background:linear-gradient(135deg,#583018,#24160F 65%,#111214);box-shadow:0 0 22px rgba(255,102,0,.12)
+  }
+  .estq-head-ic svg{width:27px;height:27px;stroke-width:1.9}
+  .estq-head h2{margin:0;font:700 34px/1.15 Inter,Roboto,Arial,sans-serif;letter-spacing:-1px;color:#F7F7F8}
+  .estq-head p{margin:2px 0 0;font:400 14px/1.3 Inter,Roboto,Arial,sans-serif;color:#C4C8CE}
+  .page[data-page-content="estoque"] .kpi-grid.estq-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))!important;width:100%!important;margin:0 0 6px}
+  .kpi-card--yellow{--tone:#FFB800;--tint:rgba(255,184,0,.16);border-color:rgba(255,184,0,.30);--base:#211C0F}
+  .kpi-card--green{--tone:#1BD66A;--tint:rgba(27,214,106,.16);border-color:rgba(27,214,106,.28);--base:#0F1F17}
+}

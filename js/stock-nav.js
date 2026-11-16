@@ -116,6 +116,13 @@
     const minSub = minValue?.parentElement?.querySelector('.sub');
     if (minSub) minSub.textContent = comMinimo.length ? 'no mínimo ou abaixo' : 'ainda não configurado';
     if (criticalValue) criticalValue.textContent = stockSummary ? formatNumber(stockSummary.criticos) : '—';
+    // Mesmos números nos KPIs do PC.
+    const pc = (id, txt) => { const el = page.querySelector('#' + id); if (el) el.textContent = txt; };
+    pc('estqKpiStock', stockValue?.textContent || '—');
+    pc('estqKpiOut', outValue?.textContent || '—');
+    pc('estqKpiMin', minValue?.textContent || '—');
+    pc('estqKpiMinSub', minSub?.textContent || 'no mínimo ou abaixo');
+    pc('estqKpiCritical', criticalValue?.textContent || '—');
   }
 
   // Saldo por EPI: cartões no computador e lista no celular (css/mobile.css).
@@ -203,7 +210,21 @@
     if (!page || page.dataset.stockKpisReady === 'true') return;
 
     ensureStockStyles();
+    // No PC: cabeçalho padrão das outras telas e KPIs com o componente do
+    // Dashboard (css/padrao.css, "Estoque (PC)"). No celular continuam os
+    // cartões antigos (.stock-kpis).
     page.innerHTML = `
+      <div class="estq-head">
+        <span class="estq-head-ic" aria-hidden="true"><i data-lucide="warehouse"></i></span>
+        <h2>Estoque</h2>
+        <p>Saldo de cada item: o que entrou, o que saiu e o que está em falta.</p>
+      </div>
+      <section class="kpi-grid estq-kpis" aria-label="Resumo do estoque">
+        <article class="kpi-card kpi-card--green"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="boxes"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Estoque</p><div class="kpi-card__value-row"><strong class="kpi-card__value" id="estqKpiStock">–</strong></div><p class="kpi-card__sub">entradas menos saídas</p></div></article>
+        <article class="kpi-card kpi-card--orange"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="package-minus"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Saídas</p><div class="kpi-card__value-row"><strong class="kpi-card__value" id="estqKpiOut">–</strong></div><p class="kpi-card__sub">baixas do estoque por notas</p></div></article>
+        <article class="kpi-card kpi-card--yellow"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="gauge"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Mínimo</p><div class="kpi-card__value-row"><strong class="kpi-card__value" id="estqKpiMin">–</strong></div><p class="kpi-card__sub" id="estqKpiMinSub">no mínimo ou abaixo</p></div></article>
+        <article class="kpi-card kpi-card--red"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="triangle-alert"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Crítico</p><div class="kpi-card__value-row"><strong class="kpi-card__value" id="estqKpiCritical">–</strong></div><p class="kpi-card__sub">itens com saldo zero ou negativo</p></div></article>
+      </section>
       <div class="kpis stock-kpis">
         <div class="kpi stock-kpi stock-kpi-stock">
           <div class="label">Estoque</div>
