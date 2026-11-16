@@ -4175,3 +4175,69 @@
   .ecn.dep .ecn-rodape .g-employee-page:focus-visible{outline-color:#FF6600}
 }
 @media (min-width:721px){ .ecn.dep{padding-bottom:0} .content:has(> .page.stage-ativo #dashStage[data-tela="unidade"]){padding-bottom:6px!important} }
+/* =====================================================================
+   Estoque (PC): seletor "Depósito" e a visão das salas de uniforme
+   (js/estoque-salas.js). Mesmo layout da Sala de EPI.
+   ===================================================================== */
+.estq-dep,.estq-uni-kpis,.estq-uni-wrap,#estqUniRodape{display:none}
+@media (min-width:721px){
+  .estq-dep{display:block;position:relative;margin-left:22px;flex-shrink:0}
+  .estq-dep__botao{
+    display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px 0 11px;border-radius:8px;cursor:pointer;white-space:nowrap;
+    background:linear-gradient(180deg,#1B1F24 0%,#12161A 100%);border:1px solid rgba(178,191,205,.18);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);font:500 12.5px/1 Inter,Roboto,Arial,sans-serif;color:#E6E8EA
+  }
+  .estq-dep__botao em{font-style:normal;color:#A9B6C3;margin-right:2px}
+  .estq-dep__botao svg{width:15px;height:15px;flex:0 0 15px;color:#FF7A10}
+  .estq-dep__botao svg:last-child{width:13px;height:13px;flex-basis:13px;color:#C9CDD2}
+  .estq-dep__botao:hover,.estq-dep__botao[aria-expanded="true"],.estq-dep__botao.tem-valor{border-color:rgba(255,121,0,.6)}
+  .estq-dep__botao:focus-visible{outline:2px solid #FF6600;outline-offset:2px}
+  .estq-dep__painel{
+    position:absolute;z-index:30;top:calc(100% + 6px);left:0;min-width:260px;padding:6px;border-radius:12px;
+    background:linear-gradient(180deg,#121A22,#0B1117);border:1px solid rgba(178,191,205,.18);box-shadow:0 18px 40px rgba(0,0,0,.55)
+  }
+  .estq-dep__painel[hidden]{display:none}
+  .estq-dep__painel button{
+    display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border:0;border-radius:8px;cursor:pointer;text-align:left;
+    background:transparent;color:#E5E8EA;font:500 13px/1.2 Inter,Roboto,Arial,sans-serif
+  }
+  .estq-dep__painel button svg{width:16px;height:16px;flex:0 0 16px;color:#8C9AA8}
+  .estq-dep__painel button small{margin-left:auto;font-size:11.5px;color:#8C9AA8}
+  .estq-dep__painel button:hover{background:rgba(178,191,205,.08)}
+  .estq-dep__painel button.is-sel{background:rgba(255,102,0,.12);color:#fff}
+  .estq-dep__painel button.is-sel svg{color:#FF7A10}
+
+  /* Sala de uniforme: troca os blocos da Sala de EPI pelos da sala */
+  .page[data-page-content="estoque"].estq-uni > .estq-kpis:not(.estq-uni-kpis),
+  .page[data-page-content="estoque"].estq-uni > .estq-tab-wrap:not(.estq-uni-wrap),
+  .page[data-page-content="estoque"].estq-uni > #estqRodape,
+  .page[data-page-content="estoque"].estq-uni #estqSit,
+  .page[data-page-content="estoque"].estq-uni #estqSit + svg,
+  .page[data-page-content="estoque"].estq-uni #estqCadastro{display:none!important}
+  .page[data-page-content="estoque"].estq-uni .colab-filtro:has(#estqSit){display:none!important}
+  .page[data-page-content="estoque"].estq-uni > .estq-uni-kpis{display:grid}
+  .page[data-page-content="estoque"].estq-uni > .estq-uni-wrap{display:block}
+  .page[data-page-content="estoque"].estq-uni > #estqUniRodape{display:flex;grid-area:rodape}
+  .page[data-page-content="estoque"].estq-uni .estq-dep{margin-left:0}
+
+  .estq-uni-tab .c-epi{width:28%}
+  .estq-uni-tab .c-tams{width:auto}
+  .estq-uni-tab .c-num{width:9%}
+  .estq-uni-tab .c-sit{width:12%}
+  .estq-uni-ca{display:block;margin-top:2px;font-size:11px;color:#9FB0C2}
+  .estq-tams{display:flex;flex-wrap:wrap;gap:4px;max-height:44px;overflow:hidden}
+  .estq-tam{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:6px;font:500 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#C4CDD6;background:rgba(178,191,205,.07);border:1px solid rgba(178,191,205,.14);font-variant-numeric:tabular-nums}
+  .estq-tam b{font-weight:700;color:#F2F4F6}
+  .estq-tam.is-pouco{border-color:rgba(234,179,8,.38);background:rgba(234,179,8,.08)}
+  .estq-tam.is-pouco b{color:#FACC15}
+  .estq-tam.is-zero{border-color:rgba(239,68,68,.36);background:rgba(239,68,68,.08);color:#F87171}
+  .estq-tam.is-zero b{color:#F87171}
+}
+@media (min-width:721px){
+  .estq-dep__painel{min-width:310px}
+  .estq-dep__painel button{white-space:nowrap}
+  .estq-uni-tab .c-epi{width:31%}
+  .estq-uni-tab .c-num{width:7%}
+  .estq-uni-tab .c-sit{width:13%}
+}
+@media (min-width:721px){ .estq-tams{max-height:none;overflow:visible} .estq-uni-tab td{padding-top:6px;padding-bottom:6px} }

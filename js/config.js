@@ -137,6 +137,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(stockNavScript);
   }
 
+  if (!document.querySelector('script[data-estoque-salas]')) {
+    const estoqueSalasScript = document.createElement('script');
+    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261116-2';
+    estoqueSalasScript.dataset.estoqueSalas = 'true';
+    document.body.appendChild(estoqueSalasScript);
+  }
+
   if (!document.querySelector('script[data-stock-entry]')) {
     const stockEntryScript = document.createElement('script');
     stockEntryScript.src = 'js/stock-entry.js?v=20261023-4';
