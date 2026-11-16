@@ -3810,3 +3810,13 @@
   .ecn-base{display:inline-block;padding:3px 8px;border-radius:999px;font:600 11px/1 Inter,Roboto,Arial,sans-serif;color:#C4CDD6;background:rgba(178,191,205,.08);border:1px solid rgba(178,191,205,.16)}
   .ecn-tabela .c-num{width:118px}
 }
+/* Histórico do colaborador: botão "Baixar PDF" ao lado do X. */
+.historico-card .historico-pdf{
+  position:absolute;z-index:2;top:13px;right:57px;display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:10px;cursor:pointer;
+  font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;color:#E5E8EA!important;white-space:nowrap;
+  background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important
+}
+.historico-card .historico-pdf svg{width:15px;height:15px;color:#FF7A10}
+.historico-card .historico-pdf:hover{border-color:rgba(255,121,0,.5)!important}
+.historico-card .historico-pdf:disabled{opacity:.6;cursor:wait}
+.historico-card .historico-pdf[hidden]{display:none}

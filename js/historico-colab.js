@@ -37,6 +37,7 @@
     modal.innerHTML = `
       <div class="data-edit-card historico-card">
         <button class="data-edit-close" id="historicoClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
+        <button class="btn historico-pdf" id="historicoPdf" type="button" hidden><i data-lucide="file-down" aria-hidden="true"></i>Baixar PDF</button>
         <div class="data-edit-head">
           <div class="data-edit-icon"><i data-lucide="history" aria-hidden="true"></i></div>
           <div><span id="historicoRotulo">HISTÓRICO DO COLABORADOR</span><h3 id="historicoTitle"></h3><p id="historicoSub"></p></div>
@@ -46,6 +47,30 @@
     document.body.appendChild(modal);
     const fechar = () => modal.classList.add('hidden');
     $('historicoClose').addEventListener('click', fechar);
+    // PDF do histórico completo (js/pdf-export.js).
+    $('historicoPdf').addEventListener('click', async () => {
+      const c = atual;
+      const btn = $('historicoPdf');
+      if (!c || !window.EPI_PDF?.downloadHistorico) return;
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-circle" aria-hidden="true"></i>Gerando…';
+      icons();
+      try {
+        await window.EPI_PDF.downloadHistorico({
+          colaborador: c,
+          entregas: movs().filter((m) => m.colaborador_id === c.id),
+          termoAssinado: !!window.EPI_TERMO?.temAssinatura?.(c.id)
+        });
+      } catch (e) {
+        console.error('[HISTORICO PDF]', e);
+        alert('Não foi possível gerar o PDF: ' + (e?.message || e));
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+        icons();
+      }
+    });
     modal.addEventListener('click', (e) => { if (e.target === modal) fechar(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) fechar(); });
   }
@@ -76,9 +101,13 @@
     icons();
   }
 
+  let atual = null; // colaborador aberto (para o PDF)
   function abrir(c, opcoes) {
     if (!c) return;
     montar();
+    atual = c;
+    // O PDF é do histórico completo; na "Última entrega" o botão some.
+    $('historicoPdf').hidden = !!opcoes?.ultima;
     if (opcoes?.ultima) return abrirUltima(c);
     $('historicoRotulo').textContent = 'HISTÓRICO DO COLABORADOR';
     const lista = movs().filter((m) => m.colaborador_id === c.id)

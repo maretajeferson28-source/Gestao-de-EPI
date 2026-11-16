@@ -789,9 +789,160 @@
     doc.save('OS_' + cleanFilename(os.funcao) + '_' + cleanFilename(colaborador.nome || 'modelo') + '.pdf');
   }
 
+  // Histórico do colaborador (modal Histórico, js/historico-colab.js): mesmo
+  // cabeçalho dos outros PDFs, identificação, 4 cartões de resumo, tabela por
+  // item e todas as entregas. Quebra de página repete o cabeçalho da tabela.
+  async function downloadHistorico(options = {}) {
+    const c = options.colaborador || {};
+    const lista = Array.isArray(options.entregas) ? options.entregas : [];
+    if (!window.jspdf?.jsPDF) throw new Error('Gerador de PDF não carregado.');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+    const pageW = mm.pageW, pageH = mm.pageH, margin = mm.margin, contentW = pageW - margin * 2;
+    const orange = [255, 102, 0], dark = [17, 17, 17], gray = [105, 105, 105], border = [226, 226, 226];
+    const setText = (rgb) => doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+    const setFill = (rgb) => doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+    const setDraw = (rgb) => doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+    const fmt = (n) => new Intl.NumberFormat('pt-BR').format(Number(n) || 0);
+    const chave = (br) => { const [d, m, a] = String(br || '').split('/'); return Number(`${a || 0}${m || '00'}${d || '00'}`); };
+    const logo = await getBrandLogoDataUrl();
+    const generatedAt = new Date().toLocaleString('pt-BR');
+
+    function header() {
+      setFill([250, 250, 250]); doc.rect(0, 0, pageW, pageH, 'F');
+      setFill(dark); doc.rect(0, 0, pageW, 31, 'F');
+      setFill(orange); doc.rect(0, 0, 4, 31, 'F');
+      if (logo) { try { doc.addImage(logo, 'PNG', 10.365, 4.4, 20.8, 20.8, 'EPI_HIST_BRAND'); } catch (_) {} }
+      setText([255, 255, 255]); doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text('GESTÃO DE EPI', 36.8, 13);
+      setText([175, 175, 175]); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.text('CONTROLE OPERACIONAL', 36.8, 18);
+      setText([210, 210, 210]); doc.setFontSize(7);
+      doc.text('HISTÓRICO DE ENTREGAS DE EPI', pageW - margin, 13, { align: 'right' });
+      doc.text('Gerado em ' + generatedAt, pageW - margin, 18, { align: 'right' });
+    }
+
+    header();
+    let y = 42;
+
+    // Identificação
+    setFill(orange); doc.rect(margin, y - 4, 2, 19, 'F');
+    setText(orange); doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.text('HISTÓRICO DO COLABORADOR', margin + 5, y);
+    setText(dark); doc.setFontSize(16); doc.text(doc.splitTextToSize(safe(c.nome, 'Colaborador'), contentW - 50)[0], margin + 5, y + 7.5);
+    setText(gray); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+    const cpf = c.cpf ? 'CPF ' + String(c.cpf).replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4') : null;
+    const ident = [cpf, c.matricula ? 'Matrícula ' + c.matricula : null, c.cargo, c.setor].filter(Boolean).join('  •  ') || 'Sem cargo informado';
+    doc.text(doc.splitTextToSize(ident, contentW - 50)[0], margin + 5, y + 13);
+
+    // Selos à direita: termo e situação do cadastro
+    const selos = [];
+    selos.push(options.termoAssinado ? { t: 'TERMO ASSINADO', cor: [42, 145, 98] } : { t: 'SEM TERMO ASSINADO', cor: [150, 150, 150] });
+    if (c.ativo === false) selos.push({ t: 'DESATIVADO', cor: [196, 66, 66] });
+    else if (c.afastado === true) selos.push({ t: 'AFASTADO', cor: [214, 140, 30] });
+    let sy = y - 3;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6.6);
+    selos.forEach((s) => {
+      const w = doc.getTextWidth(s.t) + 8;
+      setFill(s.cor); doc.roundedRect(pageW - margin - w, sy, w, 7, 3.5, 3.5, 'F');
+      setText([255, 255, 255]); doc.text(s.t, pageW - margin - w / 2, sy + 4.7, { align: 'center' });
+      sy += 9;
+    });
+    y += 22;
+
+    // Cartões de resumo
+    const ordenada = [...lista].sort((a, b) => chave(b.data) - chave(a.data));
+    const total = ordenada.reduce((s, m) => s + (Number(m.quantidade) || 0), 0);
+    const cards = [
+      { rot: 'ITENS RECEBIDOS', val: fmt(total), cor: [255, 113, 0] },
+      { rot: 'ENTREGAS', val: fmt(ordenada.length), cor: [3, 150, 230] },
+      { rot: 'PRIMEIRA ENTREGA', val: safe(ordenada.at(-1)?.data), cor: [140, 95, 220] },
+      { rot: 'ÚLTIMA ENTREGA', val: safe(ordenada[0]?.data), cor: [30, 170, 95] }
+    ];
+    const gap = 4, cw = (contentW - gap * 3) / 4, ch = 18;
+    cards.forEach((k, i) => {
+      const x = margin + i * (cw + gap);
+      setFill([255, 255, 255]); setDraw(border); doc.setLineWidth(0.3); doc.roundedRect(x, y, cw, ch, 2.4, 2.4, 'FD');
+      setFill(k.cor); doc.rect(x, y + 3, 1.4, ch - 6, 'F');
+      setText(k.cor); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.text(k.rot, x + 5, y + 6.5);
+      setText(dark); doc.setFontSize(13); doc.text(k.val, x + 5, y + 14);
+    });
+    y += ch + 9;
+
+    // Tabelas
+    function ensure(h, repetir) { if (y + h > pageH - 17) { doc.addPage(); header(); y = 40; if (repetir) repetir(); } }
+    function titulo(t) {
+      ensure(14);
+      setText(orange); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.text(t, margin, y + 3);
+      setDraw([225, 225, 225]); doc.setLineWidth(0.3); doc.line(margin + doc.getTextWidth(t) + 4, y + 2, pageW - margin, y + 2);
+      y += 7;
+    }
+    function tabela(colunas, linhas) {
+      const totalW = colunas.reduce((s, c2) => s + c2.w, 0);
+      const k = contentW / totalW;
+      const cols = colunas.map((c2) => ({ ...c2, w: c2.w * k }));
+      const cab = () => {
+        setFill([34, 40, 48]); doc.roundedRect(margin, y, contentW, 7.5, 1.6, 1.6, 'F');
+        setText([235, 238, 241]); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.2);
+        let x = margin;
+        cols.forEach((c2) => { doc.text(c2.t, c2.dir ? x + c2.w - 3 : x + 3, y + 5, c2.dir ? { align: 'right' } : undefined); x += c2.w; });
+        y += 7.5;
+      };
+      ensure(16); cab();
+      doc.setFontSize(7.8);
+      linhas.forEach((l, idx) => {
+        doc.setFont('helvetica', 'normal');
+        const partes = cols.map((c2, i) => doc.splitTextToSize(String(l[i] ?? ''), c2.w - 5));
+        const h = Math.max(6.6, Math.max(...partes.map((p) => p.length)) * 3.5 + 3);
+        ensure(h, cab);
+        setFill(idx % 2 ? [246, 247, 249] : [255, 255, 255]); doc.rect(margin, y, contentW, h, 'F');
+        setDraw([232, 232, 232]); doc.setLineWidth(0.2); doc.line(margin, y + h, margin + contentW, y + h);
+        let x = margin;
+        cols.forEach((c2, i) => {
+          setText(i === 0 ? dark : [60, 60, 60]); doc.setFont('helvetica', c2.negrito ? 'bold' : 'normal');
+          doc.text(partes[i], c2.dir ? x + c2.w - 3 : x + 3, y + 4.4, c2.dir ? { align: 'right' } : undefined);
+          x += c2.w;
+        });
+        y += h;
+      });
+      y += 8;
+    }
+
+    if (!ordenada.length) {
+      setText(gray); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+      doc.text('Nenhuma entrega registrada para este colaborador.', margin, y + 4);
+    } else {
+      const porItem = new Map();
+      ordenada.forEach((m) => {
+        const kk = m.epi || '—';
+        const it = porItem.get(kk) || { epi: kk, qtd: 0, vezes: 0, ultima: '' };
+        it.qtd += Number(m.quantidade) || 0; it.vezes += 1;
+        if (!it.ultima || chave(m.data) > chave(it.ultima)) it.ultima = m.data;
+        porItem.set(kk, it);
+      });
+      const itens = [...porItem.values()].sort((a, b) => b.qtd - a.qtd || a.epi.localeCompare(b.epi, 'pt-BR'));
+      titulo('POR ITEM');
+      tabela([{ t: 'EPI / Item', w: 90, negrito: true }, { t: 'Quantidade', w: 30, dir: true }, { t: 'Entregas', w: 30, dir: true }, { t: 'Última', w: 32 }],
+        itens.map((i) => [i.epi, fmt(i.qtd), fmt(i.vezes), i.ultima]));
+      titulo('TODAS AS ENTREGAS');
+      tabela([{ t: 'Data', w: 22 }, { t: 'EPI / Item', w: 52, negrito: true }, { t: 'Qtd', w: 12, dir: true }, { t: 'C.A.', w: 18 }, { t: 'Tamanho', w: 18 }, { t: 'Responsável', w: 26 }, { t: 'Observação', w: 40 }],
+        ordenada.map((m) => [m.data, m.epi, fmt(m.quantidade), m.ca || 'N/A', m.tamanho || 'N/A', m.responsavel || '—', m.observacao || '']));
+    }
+
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page += 1) {
+      doc.setPage(page);
+      setDraw([225, 225, 225]); doc.setLineWidth(0.25); doc.line(margin, pageH - 11, pageW - margin, pageH - 11);
+      setText([120, 120, 120]); doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+      doc.text('Gestão de EPI  •  Controle Operacional  •  Histórico de ' + safe(c.nome, 'colaborador'), margin, pageH - 6);
+      doc.text('Página ' + page + ' de ' + totalPages, pageW - margin, pageH - 6, { align: 'right' });
+    }
+    const hoje = new Date().toISOString().slice(0, 10);
+    doc.save('Historico_EPI_' + cleanFilename(c.nome) + '_' + hoje + '.pdf');
+  }
+
   window.EPI_PDF = {
     downloadVariantDossier,
     downloadTermo,
-    downloadOrdemServico
+    downloadOrdemServico,
+    downloadHistorico
   };
 })();
