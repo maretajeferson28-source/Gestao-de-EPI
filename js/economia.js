@@ -93,64 +93,40 @@
     return mapa;
   }
 
-  // Intervalo inteiro, do mês "De" (refDe) ao mês "Até" (ate). Para cada item,
-  // a partida é o primeiro mês do intervalo em que ele teve entrega com preço;
-  // tudo o que foi entregue nos meses seguintes é comparado com o custo médio
-  // dessa partida, mês a mês (cada mês com o seu custo médio).
+  // A base de cada item é o primeiro mês do HISTÓRICO INTEIRO em que ele teve
+  // entrega com preço (custo médio desse mês), não o primeiro mês do período
+  // escolhido: assim, trocar De/Até só muda quais entregas entram na conta, e a
+  // economia não zera. Cada entrega depois do mês-base vale
+  // (custo médio da base − preço do C.A. entregue) × quantidade.
   function calcular({ ate, refDe, epi }) {
-    const porItem = new Map();
+    const meses = new Map(); // item → mês → { qtdPreco, valor }
     const lista = [];
     entregas().forEach((m) => {
       const d = iso(m.data);
-      if (!d || (refDe && d < refDe) || (ate && d > ate) || (epi && m.epi_id !== epi) || !passaFiltrosDash(m)) return;
-      lista.push(m);
-      const k = m.epi_id || m.epi, mes = d.slice(0, 7);
-      const item = porItem.get(k) || { nome: nomeEpi(m.epi_id, m), meses: new Map() };
-      const o = item.meses.get(mes) || { qtdPreco: 0, valor: 0, semPreco: 0 };
-      const q = Number(m.quantidade) || 0, p = precoDe(m);
-      if (p == null) o.semPreco += q; else { o.qtdPreco += q; o.valor += p * q; }
-      item.meses.set(mes, o);
-      porItem.set(k, item);
+      if (!d || (epi && m.epi_id !== epi) || !passaFiltrosDash(m)) return;
+      if ((!refDe || d >= refDe) && (!ate || d <= ate)) lista.push(m);
+      const p = precoDe(m);
+      if (p == null) return;
+      const k = m.epi_id || m.epi, mes = d.slice(0, 7), q = Number(m.quantidade) || 0;
+      const item = meses.get(k) || new Map();
+      const o = item.get(mes) || { qtdPreco: 0, valor: 0 };
+      o.qtdPreco += q; o.valor += p * q;
+      item.set(mes, o); meses.set(k, item);
     });
-    const linhas = [];
-    const refs = new Map(); // item → { medio, mes } do primeiro mês com preço (a "base")
-    porItem.forEach((item, k) => {
-      const meses = [...item.meses.entries()].filter(([, o]) => o.qtdPreco).sort((a, b) => a[0].localeCompare(b[0]));
-      if (meses[0]) refs.set(k, { medio: meses[0][1].valor / meses[0][1].qtdPreco, mes: meses[0][0] });
-      // Item sem comparação também aparece, com o motivo.
-      if (meses.length < 2) {
-        const qtd = [...item.meses.values()].reduce((s, o) => s + o.qtdPreco + o.semPreco, 0);
-        const r = meses[0];
-        linhas.push({
-          nome: item.nome, total: 0, unit: null, qtd,
-          ref: r ? { medio: r[1].valor / r[1].qtdPreco, qtdPreco: r[1].qtdPreco, semPreco: r[1].semPreco, mes: r[0] } : null,
-          motivo: r ? `só teve entrega com preço em ${mesTxt(r[0])}` : 'C.A. sem preço cadastrado'
-        });
-        return;
-      }
-      const [mesRef, r] = meses[0];
-      const ref = { medio: r.valor / r.qtdPreco, qtdPreco: r.qtdPreco, semPreco: r.semPreco, mes: mesRef };
-      const depois = { qtdPreco: 0, valor: 0, semPreco: 0 };
-      let total = 0;
-      meses.slice(1).forEach(([, o]) => {
-        total += (ref.medio - o.valor / o.qtdPreco) * o.qtdPreco;
-        depois.qtdPreco += o.qtdPreco; depois.valor += o.valor; depois.semPreco += o.semPreco;
-      });
-      depois.medio = depois.valor / depois.qtdPreco;
-      depois.de = meses[1][0]; depois.ate = meses[meses.length - 1][0];
-      linhas.push({ nome: item.nome, ref, atual: depois, unit: ref.medio - depois.medio, total });
+    const refs = new Map(); // item → { medio, mes } do mês-base
+    meses.forEach((item, k) => {
+      const [mes, o] = [...item.entries()].filter(([, v]) => v.qtdPreco).sort((a, b) => a[0].localeCompare(b[0]))[0] || [];
+      if (mes) refs.set(k, { medio: o.valor / o.qtdPreco, mes });
     });
-    // Com comparação primeiro (maior economia no topo); sem comparação depois, por nome.
-    linhas.sort((x, y) => (x.motivo ? 1 : 0) - (y.motivo ? 1 : 0) || y.total - x.total || x.nome.localeCompare(y.nome, 'pt-BR'));
     lista.sort((a, b) => iso(b.data).localeCompare(iso(a.data)));
-    // Economia de cada entrega: (custo médio da base do item − preço do C.A. entregue) × quantidade.
     const econ = (m) => {
       const p = precoDe(m), r = refs.get(m.epi_id || m.epi);
-      if (p == null) return { tipo: 'sem' };
-      if (!r || iso(m.data).slice(0, 7) <= r.mes) return { tipo: 'base', medio: r?.medio };
-      return { tipo: 'valor', valor: (r.medio - p) * (Number(m.quantidade) || 0), medio: r.medio, mes: r.mes };
+      if (p == null) return { tipo: "sem" };
+      if (!r || iso(m.data).slice(0, 7) <= r.mes) return { tipo: "base", medio: r?.medio };
+      return { tipo: "valor", valor: (r.medio - p) * (Number(m.quantidade) || 0), medio: r.medio, mes: r.mes };
     };
-    return { linhas, lista, econ, total: linhas.reduce((s, l) => s + l.total, 0) };
+    const total = lista.reduce((s, m) => { const e = econ(m); return s + (e.tipo === "valor" ? e.valor : 0); }, 0);
+    return { lista, econ, total };
   }
 
   // ---------------------------------------------------------------------
