@@ -4263,3 +4263,8 @@
 /* Estoque: filtro de situação das salas de uniforme (só aparece nelas). */
 .estq-uni-sit{display:none!important}
 @media (min-width:721px){ .page[data-page-content="estoque"].estq-uni .estq-uni-sit{display:inline-flex!important} }
+/* Estoque: na Sala de EPI os blocos das salas de uniforme ficam escondidos
+   (o .kpi-grid tem display próprio e ganhava da regra simples). */
+.page[data-page-content="estoque"]:not(.estq-uni) > .estq-uni-kpis,
+.page[data-page-content="estoque"]:not(.estq-uni) > .estq-uni-wrap,
+.page[data-page-content="estoque"]:not(.estq-uni) > #estqUniRodape{display:none!important}
