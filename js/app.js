@@ -1566,7 +1566,7 @@ function renderEpiTabela(){
   const daPagina=linhas.slice((epiTabPagina-1)*porPag,epiTabPagina*porPag);
   body.innerHTML=daPagina.map(({c,ca,s})=>{
     let saldo=epiEstoque?.saldo.get(c.id), min=epiEstoque?.minimo.get(c.id), ult=epiEstoque?.ultima.get(c.id);
-    let caV=ca.v, foto=ca.foto, varTxt=ca.total?`<span class="epi-tab-var">${ca.total}</span>`:'<span class="epi-tab-vazio">—</span>';
+    let caV=ca.v, foto=ca.foto, varTxt=ca.total?`<span class="epi-tab-var">${ca.total}</span>`:'<span class="epi-tab-var is-vazio">—</span>';
     // Seta da coluna Variações: a linha mostra um C.A. específico (foto, código,
     // saldo, situação e última entrada daquele modelo). Sem seleção = item inteiro.
     const modelos=epiModelos(c.id), sel=epiTabCaSel.get(c.id);
@@ -1579,7 +1579,10 @@ function renderEpiTabela(){
       s=saldos===null||saldos===undefined?null:saldo==null?{k:'sem',t:'Sem estoque'}:saldo<=0?{k:'critico',t:'Crítico'}:{k:'ok',t:'Em dia'};
       varTxt=`<span class="epi-tab-var is-modelo" title="Mostrando o modelo ${sel+1} de ${modelos.length}">${sel+1}/${modelos.length}</span>`;
     }
-    const seta=modelos.length>1?`<button type="button" class="epi-tab-var-prox" data-epi-var-prox="${esc(c.id)}" title="${modelo?(sel+1<modelos.length?'Próximo modelo':'Voltar ao item inteiro'):'Ver cada modelo (C.A.)'}" aria-label="Trocar o modelo mostrado"><i data-lucide="chevron-right" aria-hidden="true"></i></button>`:'';
+    // A seta aparece em todas as linhas (números alinhados); sem outro modelo ativo fica apagada.
+    const seta=modelos.length>1
+      ?`<button type="button" class="epi-tab-var-prox" data-epi-var-prox="${esc(c.id)}" title="${modelo?(sel+1<modelos.length?'Próximo modelo':'Voltar ao item inteiro'):'Ver cada modelo (C.A.)'}" aria-label="Trocar o modelo mostrado"><i data-lucide="chevron-right" aria-hidden="true"></i></button>`
+      :`<button type="button" class="epi-tab-var-prox" disabled title="Só um modelo (C.A.) ativo" aria-label="Só um modelo ativo"><i data-lucide="chevron-right" aria-hidden="true"></i></button>`;
     const caTxt=caV?`${isCiCode(caV.ca)?'':'CA '}${esc(caV.ca)}`:'<span class="epi-tab-vazio">Sem C.A.</span>';
     return `<tr data-epi-id="${esc(c.id)}"${modelo?' class="is-modelo"':''}>
       <td class="foto"><span class="epi-tab-foto"${foto?` data-foto="${esc(foto)}"`:''}><i data-lucide="${epiCardIcon(c)}" aria-hidden="true"></i></span></td>

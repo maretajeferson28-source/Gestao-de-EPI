@@ -4007,3 +4007,10 @@
   .epi-tab tr.is-troca td{animation:epiTroca .45s ease}
   @keyframes epiTroca{from{background:rgba(255,122,16,.10)}to{background:transparent}}
 }
+/* EPIs (PC): seta em todas as linhas para os números ficarem alinhados;
+   apagada quando o item tem só um modelo ativo. */
+@media (min-width:721px){
+  .epi-tab-var-prox:disabled{opacity:.28;cursor:default;border-color:rgba(178,191,205,.14);color:#8C9AA8}
+  .epi-tab-var-prox:disabled:hover{border-color:rgba(178,191,205,.14);color:#8C9AA8}
+  .epi-tab-var.is-vazio{color:#6F7883}
+}
