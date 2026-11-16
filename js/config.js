@@ -211,7 +211,7 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-depositos]')) {
     const depositosScript = document.createElement('script');
-    depositosScript.src = 'js/depositos.js?v=20261116-2';
+    depositosScript.src = 'js/depositos.js?v=20261116-3';
     depositosScript.dataset.depositos = 'true';
     document.body.appendChild(depositosScript);
   }

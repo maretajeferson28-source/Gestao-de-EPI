@@ -4115,8 +4115,8 @@
   .dep-card p svg{width:14px;height:14px;flex:0 0 14px;color:#8C9AA8}
   .dep-card small{display:block;margin-top:6px;font-size:12px;line-height:1.4;color:#9FB0C2}
 }
-#depositoModal{background:rgba(4,7,10,.82)!important}
-#depositoModal .dep-janela{
+.dep-modal{background:rgba(4,7,10,.82)!important}
+.dep-modal .dep-janela{
   width:min(560px,calc(100vw - 28px));
   background:
     radial-gradient(ellipse 55% 70% at 100% 0%,rgba(255,102,0,.10) 0%,transparent 60%),
@@ -4125,16 +4125,44 @@
   border:1px solid rgba(178,191,205,.14)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 90px rgba(0,0,0,.64)!important
 }
-#depositoModal .data-edit-head{background:radial-gradient(ellipse 45% 120% at 92% 0%,rgba(255,102,0,.10) 0%,transparent 70%)!important;border-bottom-color:rgba(178,191,205,.10)!important}
-#depositoModal .data-edit-head p{color:#B9C4CF!important}
-#depositoModal .data-edit-close{background:rgba(20,27,35,.7)!important;border-color:rgba(178,191,205,.16)!important;color:#C9D2DB!important}
-#depositoModal .data-edit-icon{color:#FF6600!important;border:1px solid rgba(255,111,25,.35)!important;background:linear-gradient(135deg,#583018,#24160F 65%,#111214)!important;box-shadow:0 0 22px rgba(255,102,0,.12)!important}
-#depositoModal .data-edit-icon svg{color:#FF6600!important;stroke:#FF6600!important}
-#depositoModal .data-edit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-#depositoModal .dep-col-cheia{grid-column:1 / -1}
-#depositoModal .field label{color:#A9B6C3!important}
-#depositoModal input{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;color-scheme:dark}
-#depositoModal input::placeholder{color:#7F8C99!important}
-#depositoModal input:focus{border-color:rgba(255,121,0,.6)!important;outline:0}
-#depositoModal .btn:not(.primary){background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;color:#E5E8EA!important}
-#depositoModal .btn:not(.primary):hover{border-color:rgba(255,121,0,.5)!important}
+.dep-modal .data-edit-head{background:radial-gradient(ellipse 45% 120% at 92% 0%,rgba(255,102,0,.10) 0%,transparent 70%)!important;border-bottom-color:rgba(178,191,205,.10)!important}
+.dep-modal .data-edit-head p{color:#B9C4CF!important}
+.dep-modal .data-edit-close{background:rgba(20,27,35,.7)!important;border-color:rgba(178,191,205,.16)!important;color:#C9D2DB!important}
+.dep-modal .data-edit-icon{color:#FF6600!important;border:1px solid rgba(255,111,25,.35)!important;background:linear-gradient(135deg,#583018,#24160F 65%,#111214)!important;box-shadow:0 0 22px rgba(255,102,0,.12)!important}
+.dep-modal .data-edit-icon svg{color:#FF6600!important;stroke:#FF6600!important}
+.dep-modal .data-edit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dep-modal .dep-col-cheia{grid-column:1 / -1}
+.dep-modal .field label{color:#A9B6C3!important}
+.dep-modal input{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;color-scheme:dark}
+.dep-modal input::placeholder{color:#7F8C99!important}
+.dep-modal input:focus{border-color:rgba(255,121,0,.6)!important;outline:0}
+.dep-modal .btn:not(.primary){background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;color:#E5E8EA!important}
+.dep-modal .btn:not(.primary):hover{border-color:rgba(255,121,0,.5)!important}
+/* Depósitos: card clicável com o total de peças e a tabela da sala com − e +. */
+@media (min-width:721px){
+  .dep-card{width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;position:relative;transition:border-color .16s ease,transform .16s ease}
+  .dep-card:hover{border-color:rgba(255,121,0,.45);transform:translateY(-1px)}
+  .dep-card:focus-visible{outline:2px solid #FF6600;outline-offset:2px}
+  .dep-card__corpo{display:block;flex:1}
+  .dep-card__total{display:block;margin:2px 0 6px;font:800 30px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:-.6px;color:#FF7A10;font-variant-numeric:tabular-nums}
+  .dep-card__total small{font-size:13px;font-weight:600;letter-spacing:0;color:#B9C4CF}
+  .dep-card__seta{align-self:center;width:20px;height:20px;color:#8C9AA8}
+  .ecn.dep .dep-peca-novo{margin-left:auto}
+  .ecn.dep .dep-peca-novo + .ecn-btn--csv{margin-left:0}
+  .ecn.dep .ecn-busca svg{color:#FF7A10!important}
+  .ecn.dep .ecn-busca:focus-within{border-color:rgba(255,121,0,.55)!important;box-shadow:0 0 0 3px rgba(255,121,0,.08)!important}
+  .dep-tabela .c-tam{width:160px}.dep-tabela .c-qtd{width:190px}
+  .dep-tabela td small{display:block;margin-top:2px;font-size:11px;color:#9FB0C2}
+  .dep-tabela tr.dep-nova-peca td{border-top:1px solid rgba(178,191,205,.14)}
+  .dep-tabela tbody tr:first-child td{border-top:0}
+  .dep-tabela td{height:40px}
+  .dep-tabela tr.dep-zerado td:not(:first-child){color:#7F8C99}
+  .dep-qtd{display:inline-flex;align-items:center;gap:10px}
+  .dep-qtd strong{min-width:32px;text-align:center;font:700 14px/1 Inter,Roboto,Arial,sans-serif;color:#F2F4F6;font-variant-numeric:tabular-nums}
+  .dep-tabela tr.dep-zerado .dep-qtd strong{color:#7F8C99}
+  .dep-qtd__btn{display:grid;place-items:center;width:28px;height:28px;padding:0;border-radius:8px;cursor:pointer;color:#E5E8EA;background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95));border:1px solid rgba(178,191,205,.16)}
+  .dep-qtd__btn:hover:not(:disabled){border-color:rgba(255,121,0,.55);color:#FF7A10}
+  .dep-qtd__btn:disabled{opacity:.35;cursor:default}
+  .dep-qtd__btn svg{width:14px;height:14px}
+}
+@media (min-width:721px){ .dep-card .dep-card__total small{display:inline;margin:0 0 0 4px} }
