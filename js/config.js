@@ -181,7 +181,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-dash-hero]')) {
     const dashHeroScript = document.createElement('script');
-    dashHeroScript.src = 'js/dash-hero.js?v=20261110-11';
+    dashHeroScript.src = 'js/dash-hero.js?v=20261116-1';
     dashHeroScript.dataset.dashHero = 'true';
     document.body.appendChild(dashHeroScript);
   }
@@ -209,9 +209,15 @@ window.addEventListener('load', () => {
     valorGastoScript.dataset.valorGasto = 'true';
     document.body.appendChild(valorGastoScript);
   }
+  if (!document.querySelector('script[data-depositos]')) {
+    const depositosScript = document.createElement('script');
+    depositosScript.src = 'js/depositos.js?v=20261116-1';
+    depositosScript.dataset.depositos = 'true';
+    document.body.appendChild(depositosScript);
+  }
   if (!document.querySelector('script[data-dash-palco]')) {
     const dashPalcoScript = document.createElement('script');
-    dashPalcoScript.src = 'js/dash-palco.js?v=20261116-1';
+    dashPalcoScript.src = 'js/dash-palco.js?v=20261116-2';
     dashPalcoScript.dataset.dashPalco = 'true';
     document.body.appendChild(dashPalcoScript);
   }

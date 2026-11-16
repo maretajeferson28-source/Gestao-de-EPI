@@ -8,7 +8,7 @@
   if (window.__EPI_DASH_PALCO__) return;
   window.__EPI_DASH_PALCO__ = true;
 
-  const TELAS = { economia: () => window.EPI_PALCO_ECONOMIA, valor: () => window.EPI_PALCO_VALOR };
+  const TELAS = { economia: () => window.EPI_PALCO_ECONOMIA, valor: () => window.EPI_PALCO_VALOR, unidade: () => window.EPI_PALCO_UNIDADE };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   const pagina = () => document.querySelector('.page[data-page-content="dashboard"]');
   const noPc = () => matchMedia('(min-width:721px)').matches;
@@ -57,7 +57,7 @@
       if (el) el.innerHTML = '';
       pg.classList.add('stage-voltando');
       setTimeout(() => pg.classList.remove('stage-voltando'), 320);
-      document.querySelector(`#dashKpis [data-kpi="${k}"]`)?.focus({ preventScroll: true });
+      (document.querySelector(`#dashKpis [data-kpi="${k}"]`) || document.querySelector(`#dashHero [data-abre-tela="${k}"]`))?.focus({ preventScroll: true });
     }, 220);
   }
   window.EPI_DASH_STAGE = { abrir, fechar };
@@ -66,6 +66,8 @@
   document.addEventListener('click', (e) => {
     const card = e.target.closest('#dashKpis .kpi-card');
     if (card && TELAS[card.dataset.kpi]) abrir(card.dataset.kpi);
+    const aba = e.target.closest('#dashHero [data-abre-tela]');
+    if (aba && TELAS[aba.dataset.abreTela]) abrir(aba.dataset.abreTela);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && aberta && !document.querySelector('.data-edit-modal:not(.hidden),.epi-detail-modal:not(.hidden)')) { fechar(); return; }
