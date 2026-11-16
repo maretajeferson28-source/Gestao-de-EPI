@@ -3885,3 +3885,18 @@
 #epiDetailModal .epi-variant-image-buttons{flex-wrap:nowrap!important;justify-content:stretch!important;gap:8px!important}
 #epiDetailModal .epi-variant-image-buttons .btn{flex:1 1 0;justify-content:center;white-space:nowrap;min-width:0}
 #epiDetailModal .epi-variant-image-buttons .btn[hidden]{display:none!important}
+/* Estoque (PC): KPIs empilhados numa coluna à esquerda e a tabela maior à
+   direita (mais itens por página). Cabeçalho em cima, na largura toda. */
+@media (min-width:721px){
+  .page[data-page-content="estoque"].active{
+    display:grid!important;grid-template-columns:230px minmax(0,1fr);column-gap:16px;align-items:start;
+    grid-template-areas:"head head" "kpis barra" "kpis tabela" "kpis rodape" ". status";align-content:start
+  }
+  .page[data-page-content="estoque"] > .estq-head{grid-area:head}
+  .page[data-page-content="estoque"] > .kpi-grid.estq-kpis{grid-area:kpis;grid-template-columns:1fr!important;gap:10px;margin:0!important;align-self:start}
+  .page[data-page-content="estoque"] > .estq-barra{grid-area:barra}
+  .page[data-page-content="estoque"] > .estq-tab-wrap{grid-area:tabela}
+  .page[data-page-content="estoque"] > #estqRodape{grid-area:rodape}
+  .page[data-page-content="estoque"] > #stockStatus{grid-area:status}
+  .estq-kpis .kpi-card{min-height:96px}
+}
