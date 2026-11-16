@@ -108,6 +108,16 @@
       b.addEventListener('click', () => novaPeca());
       barra.appendChild(b);
     }
+    // Filtro de situação da sala (OK, Acabando, Zerado), ao lado do da Sala de EPI.
+    if (barra && !$('#estqUniSit', barra)) {
+      const l = document.createElement('label');
+      l.className = 'colab-filtro estq-uni-sit';
+      l.innerHTML = '<select id="estqUniSit" aria-label="Filtrar por situação"><option value="">Situação</option><option value="ok">OK</option><option value="acabando">Acabando</option><option value="zerado">Zerado</option></select><i data-lucide="chevron-down" aria-hidden="true"></i>';
+      const filtros = $('.colab-filtros', barra);
+      (filtros || barra).appendChild(l);
+      $('select', l).addEventListener('change', () => { pag = 1; menos = 0; desenhar(); });
+      icons();
+    }
     const nova = $('#estqPecaNova', pg);
     if (nova) nova.hidden = !admin();
     if (!$('#estqUniKpis', pg)) {
@@ -184,7 +194,9 @@
 
     // Tabela com a busca da barra
     const q = semAcento($('#estqBusca', pg)?.value.trim());
-    const filtradas = q ? linhas.filter((p) => semAcento(`${p.peca} ${p.ca || ''} ${p.tams.map((t) => t.tamanho).join(' ')}`).includes(q)) : linhas;
+    const selSit = $('#estqUniSit', pg), fSit = selSit?.value || '';
+    selSit?.classList.toggle('tem-valor', !!fSit);
+    const filtradas = linhas.filter((p) => (!q || semAcento(`${p.peca} ${p.ca || ''} ${p.tams.map((t) => t.tamanho).join(' ')}`).includes(q)) && (!fSit || p.sit === fSit));
     const por = Math.max(3, porPagina() - menos);
     const paginas = Math.max(1, Math.ceil(filtradas.length / por));
     if (pag > paginas) pag = paginas;
@@ -200,7 +212,7 @@
         <td><span class="epi-sit epi-sit--${st[0]}">${st[1]}</span></td>
         <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${admin() ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button></div></td>
       </tr>`;
-    }).join('') || `<tr><td colspan="7" class="epi-tab-nada">${carregado ? (q ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
+    }).join('') || `<tr><td colspan="7" class="epi-tab-nada">${carregado ? ((q || fSit) ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
 
     let ini = Math.max(1, pag - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
     let nums = '';
