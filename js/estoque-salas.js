@@ -116,8 +116,8 @@
       w.className = 'epi-tab-wrap estq-tab-wrap estq-uni-wrap';
       w.id = 'estqUniWrap';
       w.innerHTML = `<table class="epi-tab estq-tab estq-uni-tab">
-        <colgroup><col class="c-foto"><col class="c-epi"><col class="c-tams"><col class="c-num"><col class="c-sit"><col class="c-acao"></colgroup>
-        <thead><tr><th>Foto</th><th>Peça</th><th>Tamanhos</th><th class="num">Saldo</th><th>Situação</th><th class="acao">Ação</th></tr></thead>
+        <colgroup><col class="c-foto"><col class="c-epi"><col class="c-num"><col class="c-sit"><col class="c-acao"></colgroup>
+        <thead><tr><th>Foto</th><th>Peça</th><th class="num">Saldo</th><th>Situação</th><th class="acao">Ação</th></tr></thead>
         <tbody id="estqUniBody"></tbody></table>`;
       const f = document.createElement('footer');
       f.className = 'g-employee-footer mov-rodape epi-rodape';
@@ -180,12 +180,11 @@
       return `<tr>
         <td class="foto"><span class="epi-tab-foto"><i data-lucide="${iconePeca(p.peca)}" aria-hidden="true"></i></span></td>
         <td><strong class="epi-tab-nome" title="${esc(p.peca)}">${esc(p.peca)}</strong>${p.ca ? `<small class="estq-uni-ca">C.A. ${esc(p.ca)}</small>` : ''}</td>
-        <td><div class="estq-tams">${p.tams.map((t) => `<span class="estq-tam${t.quantidade <= 0 ? ' is-zero' : t.quantidade <= ACABANDO ? ' is-pouco' : ''}" title="Tamanho ${esc(t.tamanho || '—')}: ${num(t.quantidade)} ${t.quantidade === 1 ? 'peça' : 'peças'}"><b>${esc(t.tamanho || '—')}</b>${num(t.quantidade)}</span>`).join('')}</div></td>
         <td class="num"><b class="epi-tab-saldo${p.total <= 0 ? ' is-zero' : ''}">${num(p.total)}</b></td>
         <td><span class="epi-sit epi-sit--${st[0]}">${st[1]}</span></td>
         <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${admin() ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button></div></td>
       </tr>`;
-    }).join('') || `<tr><td colspan="6" class="epi-tab-nada">${carregado ? (q ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
+    }).join('') || `<tr><td colspan="5" class="epi-tab-nada">${carregado ? (q ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
 
     let ini = Math.max(1, pag - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
     let nums = '';

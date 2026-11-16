@@ -139,7 +139,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-estoque-salas]')) {
     const estoqueSalasScript = document.createElement('script');
-    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261116-3';
+    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261116-4';
     estoqueSalasScript.dataset.estoqueSalas = 'true';
     document.body.appendChild(estoqueSalasScript);
   }
