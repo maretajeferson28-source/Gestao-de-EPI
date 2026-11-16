@@ -154,8 +154,86 @@
       </article>`;
     }).join('');
     box.innerHTML = `<h3 class="stock-itens-titulo">Saldo por item</h3>${cards ? `<div class="stock-itens-grade">${cards}</div>` : `<p class="stock-itens-vazio">${busca ? 'Nenhum EPI com estoque para essa busca.' : 'Nenhum EPI com entrada de estoque ainda. Lance uma nota fiscal ou use o Cadastro.'}</p>`}`;
+    renderEstqTabela(page, [...stockItens, ...semEntrada]);
     refreshIcons();
   }
+
+  // PC: tabela no estilo de EPIs / Itens (mesmas classes .epi-tab), com
+  // páginas. Situação: OK, Baixo (no mínimo ou abaixo), Crítico (zero ou
+  // negativo) e Sem entrada. O botão da linha abre a mesma janela do cartão.
+  let estqPagina = 1;
+  const SIT = { ok: ['ok', 'OK'], baixo: ['atencao', 'Baixo'], critico: ['critico', 'Crítico'], sem: ['sem', 'Sem entrada'] };
+  function situacaoDe(i) {
+    if (i.semEntrada) return 'sem';
+    if (Number(i.saldo) <= 0) return 'critico';
+    if (i.minimo != null && Number(i.saldo) <= Number(i.minimo)) return 'baixo';
+    return 'ok';
+  }
+  function estqPorPagina() {
+    const wrap = document.querySelector('.estq-tab-wrap');
+    const topo = wrap && wrap.offsetParent ? wrap.getBoundingClientRect().top : 380;
+    return Math.max(5, Math.floor((window.innerHeight - topo - 38 - 50 - 16) / 46));
+  }
+  function renderEstqTabela(page, lista) {
+    const corpo = page?.querySelector('#estqTabBody');
+    if (!corpo) return;
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const filtro = page.querySelector('#estqSit')?.value || '';
+    page.querySelector('#estqSit')?.classList.toggle('tem-valor', !!filtro);
+    const linhas = lista.filter((i) => !filtro || situacaoDe(i) === filtro);
+    const porPag = estqPorPagina();
+    const paginas = Math.max(1, Math.ceil(linhas.length / porPag));
+    if (estqPagina > paginas) estqPagina = paginas;
+    const daPagina = linhas.slice((estqPagina - 1) * porPag, estqPagina * porPag);
+    const fotoDe = (id) => { try { return epiCaPrincipal(id)?.foto || null; } catch (_) { return null; } };
+    const icone = (nome) => (typeof epiCardIcon === 'function' ? epiCardIcon({ nome }) : 'package');
+    corpo.innerHTML = daPagina.map((i) => {
+      const s = SIT[situacaoDe(i)], foto = fotoDe(i.epi_id), saldo = Number(i.saldo) || 0;
+      return `<tr data-estq-epi="${esc(i.epi_id)}">
+        <td class="foto"><span class="epi-tab-foto"${foto ? ` data-foto="${esc(foto)}"` : ''}><i data-lucide="${esc(icone(i.nome))}" aria-hidden="true"></i></span></td>
+        <td><strong class="epi-tab-nome" title="${esc(i.nome)}">${esc(i.nome)}</strong></td>
+        <td class="num">${i.semEntrada ? '<span class="epi-tab-vazio">—</span>' : formatNumber(i.entradas)}</td>
+        <td class="num">${i.semEntrada ? '<span class="epi-tab-vazio">—</span>' : formatNumber(i.saidas)}</td>
+        <td class="num">${i.semEntrada ? '<span class="epi-tab-vazio">—</span>' : `<b class="epi-tab-saldo${saldo <= 0 ? ' is-zero' : ''}">${formatNumber(saldo)}</b>`}</td>
+        <td class="num">${i.minimo == null ? '<span class="epi-tab-vazio" title="Sem estoque mínimo cadastrado">—</span>' : formatNumber(i.minimo)}</td>
+        <td><span class="epi-sit epi-sit--${s[0]}">${s[1]}</span></td>
+        <td class="acao"><div class="table-action-group">
+          <button class="btn movement-action-btn estq-abrir" type="button" data-estq-abrir="${esc(i.epi_id)}" data-estq-nome="${esc(i.nome)}" title="Abrir estoque do item (C.A.s e lançamentos)" aria-label="Abrir estoque do item"><i data-lucide="package-open" aria-hidden="true"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" class="epi-tab-nada">Nenhum item encontrado.</td></tr>';
+    const rod = page.querySelector('#estqRodape');
+    if (rod) {
+      let ini = Math.max(1, estqPagina - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
+      let nums = '';
+      for (let p = ini; p <= fim; p++) nums += `<button type="button" class="g-employee-page${p === estqPagina ? ' is-current' : ''}" data-estq-pagina="${p}"${p === estqPagina ? ' aria-current="page"' : ''} aria-label="Página ${p}">${p}</button>`;
+      rod.hidden = false;
+      rod.innerHTML = `<span class="g-employee-count">Exibindo ${formatNumber(daPagina.length)} de ${formatNumber(linhas.length)} ${linhas.length === 1 ? 'item' : 'itens'}</span>` + (paginas > 1 ? `<nav class="g-employee-pagination" aria-label="Páginas">
+        <button type="button" class="g-employee-page" data-estq-pagina="${estqPagina - 1}"${estqPagina <= 1 ? ' disabled' : ''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>${nums}
+        <button type="button" class="g-employee-page" data-estq-pagina="${estqPagina + 1}"${estqPagina >= paginas ? ' disabled' : ''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>` : '');
+    }
+    // Fotos dos C.A.s, sem o fundo branco (mesmo cache da tela de EPIs).
+    corpo.querySelectorAll('.epi-tab-foto[data-foto]').forEach(async (el) => {
+      try {
+        const path = el.dataset.foto;
+        const src = epiFotoRecorte.get(path) || await variantImageUrl(path).then((u) => u && recortarFundoBranco(u)).then((r) => { if (r) epiFotoRecorte.set(path, r); return r; });
+        if (src && el.isConnected) { el.innerHTML = `<img src="${esc(src)}" alt="">`; el.classList.add('tem-foto'); }
+      } catch (_) {}
+    });
+  }
+  document.addEventListener('click', (e) => {
+    const abrir = e.target.closest('#estqTabBody [data-estq-abrir]');
+    if (abrir) {
+      window.dispatchEvent(new CustomEvent('epi:stock-register-request', { detail: { epiId: abrir.dataset.estqAbrir, nome: abrir.dataset.estqNome } }));
+      return;
+    }
+    const pag = e.target.closest('#estqRodape [data-estq-pagina]');
+    if (pag && !pag.disabled) {
+      estqPagina = Number(pag.dataset.estqPagina);
+      const page = document.querySelector('[data-page-content="estoque"]');
+      renderStockItens(page);
+    }
+  });
 
   function abrirItem(card) {
     window.dispatchEvent(new CustomEvent('epi:stock-register-request', { detail: { epiId: card.dataset.stockEpi, nome: card.dataset.stockNome } }));
@@ -225,6 +303,19 @@
         <article class="kpi-card kpi-card--yellow"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="gauge"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Mínimo</p><div class="kpi-card__value-row"><strong class="kpi-card__value" id="estqKpiMin">–</strong></div><p class="kpi-card__sub" id="estqKpiMinSub">no mínimo ou abaixo</p></div></article>
         <article class="kpi-card kpi-card--red"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="triangle-alert"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Crítico</p><div class="kpi-card__value-row"><strong class="kpi-card__value" id="estqKpiCritical">–</strong></div><p class="kpi-card__sub">itens com saldo zero ou negativo</p></div></article>
       </section>
+      <div class="epi-barra estq-barra">
+        <label class="colab-busca epi-busca"><i data-lucide="search" aria-hidden="true"></i><input id="estqBusca" type="search" placeholder="Buscar EPI / Item" autocomplete="off" aria-label="Buscar EPI no estoque"></label>
+        <div class="colab-filtros">
+          <label class="colab-filtro"><select id="estqSit" aria-label="Filtrar por situação"><option value="">Situação</option><option value="ok">OK</option><option value="baixo">Baixo</option><option value="critico">Crítico</option><option value="sem">Sem entrada</option></select><i data-lucide="chevron-down" aria-hidden="true"></i></label>
+        </div>
+        <button class="colab-novo epi-novo" id="estqCadastro" type="button" title="Cadastrar estoque antigo"><i data-lucide="package-plus" aria-hidden="true"></i>Cadastro</button>
+      </div>
+      <div class="epi-tab-wrap estq-tab-wrap"><table class="epi-tab estq-tab">
+        <colgroup><col class="c-foto"><col class="c-epi"><col class="c-num"><col class="c-num"><col class="c-num"><col class="c-num"><col class="c-sit"><col class="c-acao"></colgroup>
+        <thead><tr><th>Foto</th><th>EPI</th><th class="num">Entrou</th><th class="num">Saiu</th><th class="num">Saldo</th><th class="num">Mínimo</th><th>Situação</th><th class="acao">Ação</th></tr></thead>
+        <tbody id="estqTabBody"></tbody>
+      </table></div>
+      <footer class="g-employee-footer mov-rodape epi-rodape" id="estqRodape" hidden></footer>
       <div class="kpis stock-kpis">
         <div class="kpi stock-kpi stock-kpi-stock">
           <div class="label">Estoque</div>
@@ -275,6 +366,21 @@
     page.querySelector('#stockRegisterBtn')?.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('epi:stock-register-request'));
     });
+    // Barra do PC: a busca usa a mesma consulta da busca antiga (KPIs e
+    // tabela filtram juntos); a situação filtra só a tabela.
+    page.querySelector('#estqBusca')?.addEventListener('input', (e) => {
+      const antiga = page.querySelector('#stockSearchInput');
+      if (antiga) antiga.value = e.target.value;
+      estqPagina = 1;
+      clearTimeout(filtroTimer);
+      filtroTimer = setTimeout(() => refreshStockFromSupabase(page), 450);
+    });
+    page.querySelector('#estqSit')?.addEventListener('change', () => { estqPagina = 1; renderStockItens(page); });
+    page.querySelector('#estqCadastro')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('epi:stock-register-request'));
+    });
+    let resizeT = 0;
+    window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (page.classList.contains('active')) renderStockItens(page); }, 200); });
 
     page.dataset.stockKpisReady = 'true';
     renderStockKpis(page);

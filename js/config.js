@@ -132,7 +132,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-stock-nav]')) {
     const stockNavScript = document.createElement('script');
-    stockNavScript.src = 'js/stock-nav.js?v=20261116-1';
+    stockNavScript.src = 'js/stock-nav.js?v=20261116-2';
     stockNavScript.dataset.stockNav = 'true';
     document.body.appendChild(stockNavScript);
   }
