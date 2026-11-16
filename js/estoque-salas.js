@@ -24,18 +24,30 @@
   const iconePeca = (p) => (/bota|cal[cç]ado|sapato|t[eê]nis/i.test(p) ? 'footprints' : /jaqueta|blus/i.test(p) ? 'shirt' : /cal[cç]a/i.test(p) ? 'ruler' : 'shirt');
 
   let salas = [], itens = [], sala = '', pag = 1, carregado = false, menos = 0;
+  let mov = new Map(), temMov = false;
+  function movAdd(id, delta) {
+    if (!delta) return;
+    const o = mov.get(id) || { ent: 0, sai: 0 };
+    if (delta > 0) o.ent += delta; else o.sai += -delta;
+    mov.set(id, o);
+  }
   let textoOriginal = '';
 
   async function carregar() {
     const cli = db();
     if (!cli) return;
-    const [d, i] = await Promise.all([
+    const [d, i, mv] = await Promise.all([
       cli.from('depositos').select('id,nome,ativo').order('nome'),
-      cli.from('deposito_itens').select('id,deposito_id,peca,tamanho,quantidade,ca')
+      cli.from('deposito_itens').select('id,deposito_id,peca,tamanho,quantidade,ca'),
+      cli.from('deposito_movimentos').select('item_id,delta').limit(20000)
     ]);
     if (d.error) console.error('[Estoque salas]', d.error);
     salas = (d.data || []).filter((x) => x.ativo !== false && !/^sala de epi$/i.test(x.nome.trim()));
     itens = i.data || [];
+    // Entrou / Saiu de cada tamanho, somando o registro de − e + (deposito_movimentos).
+    temMov = !mv.error;
+    mov = new Map();
+    (mv.data || []).forEach((x) => movAdd(x.item_id, x.delta));
     carregado = true;
     if (sala && !salas.some((s) => s.id === sala)) sala = '';
     montarSeletor();
@@ -116,8 +128,8 @@
       w.className = 'epi-tab-wrap estq-tab-wrap estq-uni-wrap';
       w.id = 'estqUniWrap';
       w.innerHTML = `<table class="epi-tab estq-tab estq-uni-tab">
-        <colgroup><col class="c-foto"><col class="c-epi"><col class="c-num"><col class="c-sit"><col class="c-acao"></colgroup>
-        <thead><tr><th>Foto</th><th>Peça</th><th class="num">Saldo</th><th>Situação</th><th class="acao">Ação</th></tr></thead>
+        <colgroup><col class="c-foto"><col class="c-epi"><col class="c-num"><col class="c-num"><col class="c-num"><col class="c-sit"><col class="c-acao"></colgroup>
+        <thead><tr><th>Foto</th><th>Peça</th><th class="num">Entrou</th><th class="num">Saiu</th><th class="num">Saldo</th><th>Situação</th><th class="acao">Ação</th></tr></thead>
         <tbody id="estqUniBody"></tbody></table>`;
       const f = document.createElement('footer');
       f.className = 'g-employee-footer mov-rodape epi-rodape';
@@ -156,6 +168,8 @@
     const linhas = [...pecas.values()].map((p) => {
       p.tams.sort((a, b) => pesoTam(a.tamanho) - pesoTam(b.tamanho) || a.tamanho.localeCompare(b.tamanho, 'pt-BR', { numeric: true }));
       p.total = p.tams.reduce((t, x) => t + x.quantidade, 0);
+      p.ent = p.tams.reduce((t, x) => t + (mov.get(x.id)?.ent || 0), 0);
+      p.sai = p.tams.reduce((t, x) => t + (mov.get(x.id)?.sai || 0), 0);
       p.sit = p.total <= 0 ? 'zerado' : p.tams.some((x) => x.quantidade <= ACABANDO) ? 'acabando' : 'ok';
       return p;
     }).sort((a, b) => a.peca.localeCompare(b.peca, 'pt-BR'));
@@ -180,11 +194,13 @@
       return `<tr>
         <td class="foto"><span class="epi-tab-foto"><i data-lucide="${iconePeca(p.peca)}" aria-hidden="true"></i></span></td>
         <td><strong class="epi-tab-nome" title="${esc(p.peca)}">${esc(p.peca)}</strong>${p.ca ? `<small class="estq-uni-ca">C.A. ${esc(p.ca)}</small>` : ''}</td>
+        <td class="num">${temMov ? num(p.ent) : '<span class="epi-tab-vazio">—</span>'}</td>
+        <td class="num">${temMov ? num(p.sai) : '<span class="epi-tab-vazio">—</span>'}</td>
         <td class="num"><b class="epi-tab-saldo${p.total <= 0 ? ' is-zero' : ''}">${num(p.total)}</b></td>
         <td><span class="epi-sit epi-sit--${st[0]}">${st[1]}</span></td>
         <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${admin() ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button></div></td>
       </tr>`;
-    }).join('') || `<tr><td colspan="5" class="epi-tab-nada">${carregado ? (q ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
+    }).join('') || `<tr><td colspan="7" class="epi-tab-nada">${carregado ? (q ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
 
     let ini = Math.max(1, pag - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
     let nums = '';
@@ -257,10 +273,11 @@
       if (!item || (d < 0 && item.quantidade <= 0)) return;
       const antes = item.quantidade;
       item.quantidade = Math.max(0, antes + d);
+      movAdd(item.id, item.quantidade - antes);
       pinta(); desenhar(); montarSeletor();
       const { data, error } = await db().rpc('deposito_item_somar', { p_id: item.id, p_delta: d });
-      if (error) { item.quantidade = antes; pinta(); desenhar(); $('[data-uni-msg]', m).textContent = 'Não foi possível salvar: ' + error.message; return; }
-      if (typeof data === 'number' && data !== item.quantidade) { item.quantidade = data; pinta(); desenhar(); }
+      if (error) { movAdd(item.id, antes - item.quantidade); item.quantidade = antes; pinta(); desenhar(); $('[data-uni-msg]', m).textContent = 'Não foi possível salvar: ' + error.message; return; }
+      if (typeof data === 'number' && data !== item.quantidade) { movAdd(item.id, data - item.quantidade); item.quantidade = data; pinta(); desenhar(); }
     }
     async function addTam() {
       const msg = $('[data-uni-msg]', m);
@@ -274,6 +291,7 @@
       const { data, error } = await db().from('deposito_itens').insert({ deposito_id: sala, peca: nome, tamanho, quantidade: qtd, ca }).select('id,deposito_id,peca,tamanho,quantidade,ca').single();
       if (error) { msg.textContent = error.code === '23505' ? 'Esse tamanho já existe.' : 'Não foi possível salvar: ' + error.message; return; }
       itens.push(data);
+      movAdd(data.id, data.quantidade);
       msg.textContent = `Tamanho ${tamanho} adicionado.`;
       document.getElementById('uniTamNovo').value = '';
       document.getElementById('uniTamQtd').value = '';
@@ -318,6 +336,7 @@
       const { data, error } = await db().from('deposito_itens').insert({ deposito_id: sala, peca, tamanho, quantidade: qtd, ca }).select('id,deposito_id,peca,tamanho,quantidade,ca').single();
       if (error) { msg.textContent = error.code === '23505' ? 'Essa peça e tamanho já estão nesta sala.' : 'Não foi possível salvar: ' + error.message; return; }
       itens.push(data);
+      movAdd(data.id, data.quantidade);
       m.remove();
       desenhar(); montarSeletor();
     };
