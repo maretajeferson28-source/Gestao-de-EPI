@@ -22,7 +22,8 @@
 
   let raiz = null, voltarDash = null;
   let depositos = [], itens = [], erroTabela = false;
-  let aberto = null, busca = '';
+  let aberto = null, busca = '', pagina = 1;
+  const POR_PAGINA = 10;
 
   function montar(el, voltar) {
     raiz = el; voltarDash = voltar; aberto = null; busca = '';
@@ -72,7 +73,7 @@
       <div data-dep-lista>${conteudoLista()}</div>`;
     $('[data-stage-voltar]', caixa).addEventListener('click', () => voltarDash?.());
     $('[data-dep-novo]', caixa).addEventListener('click', () => abrirJanela());
-    caixa.querySelectorAll('[data-dep-abrir]').forEach((b) => b.addEventListener('click', () => { aberto = b.dataset.depAbrir; busca = ''; desenhar(); }));
+    caixa.querySelectorAll('[data-dep-abrir]').forEach((b) => b.addEventListener('click', () => { aberto = b.dataset.depAbrir; busca = ''; pagina = 1; desenhar(); }));
   }
   function conteudoLista() {
     if (erroTabela) return vazio('Não foi possível carregar os depósitos', 'Tente de novo em instantes.');
@@ -106,16 +107,21 @@
         <button type="button" class="colab-novo dep-peca-novo" data-dep-peca${admin() ? '' : ' hidden'}><i data-lucide="plus" aria-hidden="true"></i>Adicionar peça</button>
         <button type="button" class="btn ecn-btn ecn-btn--csv" data-dep-voltar><i data-lucide="arrow-left"></i>Voltar aos depósitos</button>
       </div>
-      <div class="ecn-tabela-wrap ecn-tabela-wrap--solta">
+      <div class="ecn-tabela-wrap">
         <table class="ecn-tabela dep-tabela">
           <colgroup><col><col class="c-tam"><col class="c-qtd"></colgroup>
           <thead><tr><th>Peça</th><th>Tamanho</th><th class="num">Quantidade</th></tr></thead>
           <tbody data-dep-itens></tbody>
         </table>
-      </div>`;
+      </div>
+      <footer class="g-employee-footer mov-rodape ecn-rodape dep-rodape" data-dep-rodape></footer>`;
     $('[data-dep-voltar]', caixa).addEventListener('click', () => { aberto = null; desenhar(); });
     $('[data-dep-peca]', caixa).addEventListener('click', () => abrirPeca());
-    $('[data-dep-busca]', caixa).addEventListener('input', (e) => { busca = e.target.value; linhas(); });
+    $('[data-dep-busca]', caixa).addEventListener('input', (e) => { busca = e.target.value; pagina = 1; linhas(); });
+    $('[data-dep-rodape]', caixa).addEventListener('click', (e) => {
+      const b = e.target.closest('[data-dep-pagina]');
+      if (b && !b.disabled) { pagina = Number(b.dataset.depPagina); linhas(); }
+    });
     $('[data-dep-itens]', caixa).addEventListener('click', (e) => {
       const b = e.target.closest('[data-dep-somar]');
       if (b && !b.disabled) somar(b.dataset.depId, Number(b.dataset.depSomar), b);
@@ -133,8 +139,12 @@
     const tot = doDeposito(aberto), pecas = new Set(tot.map((x) => x.peca));
     $('[data-dep-resumo]', raiz).textContent = `${num(total(aberto))} peças · ${num(pecas.size)} ${pecas.size === 1 ? 'tipo de peça' : 'tipos de peça'}`;
     const pode = admin();
+    // Páginas de ${POR_PAGINA} linhas; peça que continua na página seguinte repete o nome.
+    const paginas = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
+    if (pagina > paginas) pagina = paginas;
+    const daPagina = lista.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
     let anterior = '';
-    corpo.innerHTML = lista.length ? lista.map((x) => {
+    corpo.innerHTML = daPagina.length ? daPagina.map((x) => {
       const nova = x.peca !== anterior; anterior = x.peca;
       const subtotal = nova ? lista.filter((y) => y.peca === x.peca).reduce((s, y) => s + y.quantidade, 0) : 0;
       return `<tr class="${nova ? 'dep-nova-peca' : ''}${x.quantidade === 0 ? ' dep-zerado' : ''}">
@@ -143,6 +153,12 @@
         <td class="num"><span class="dep-qtd">${pode ? `<button type="button" class="dep-qtd__btn" data-dep-somar="-1" data-dep-id="${esc(x.id)}" aria-label="Tirar uma peça"${x.quantidade <= 0 ? ' disabled' : ''}><i data-lucide="minus"></i></button>` : ''}<strong data-dep-valor="${esc(x.id)}">${num(x.quantidade)}</strong>${pode ? `<button type="button" class="dep-qtd__btn" data-dep-somar="1" data-dep-id="${esc(x.id)}" aria-label="Pôr uma peça"><i data-lucide="plus"></i></button>` : ''}</span></td>
       </tr>`;
     }).join('') : `<tr><td colspan="3" class="ecn-vazio">${busca ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.'}</td></tr>`;
+    let ini = Math.max(1, pagina - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
+    let nums = '';
+    for (let p = ini; p <= fim; p++) nums += `<button type="button" class="g-employee-page${p === pagina ? ' is-current' : ''}" data-dep-pagina="${p}"${p === pagina ? ' aria-current="page"' : ''} aria-label="Página ${p}">${p}</button>`;
+    $('[data-dep-rodape]', raiz).innerHTML = `<span class="g-employee-count">Exibindo ${num(daPagina.length)} de ${num(lista.length)} ${lista.length === 1 ? 'linha' : 'linhas'}</span>` + (paginas > 1 ? `<nav class="g-employee-pagination" aria-label="Páginas">
+      <button type="button" class="g-employee-page" data-dep-pagina="${pagina - 1}"${pagina <= 1 ? ' disabled' : ''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>${nums}
+      <button type="button" class="g-employee-page" data-dep-pagina="${pagina + 1}"${pagina >= paginas ? ' disabled' : ''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>` : '');
     icons();
   }
 

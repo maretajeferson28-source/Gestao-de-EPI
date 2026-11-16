@@ -4166,3 +4166,12 @@
   .dep-qtd__btn svg{width:14px;height:14px}
 }
 @media (min-width:721px){ .dep-card .dep-card__total small{display:inline;margin:0 0 0 4px} }
+/* Depósitos: tabela da sala com páginas (rodapé laranja, como Movimentações). */
+@media (min-width:721px){
+  .ecn.dep .ecn-rodape .g-employee-page.is-current{
+    background:linear-gradient(180deg,#FF7900,#FF6600)!important;color:#fff!important;
+    box-shadow:0 0 0 1px rgba(255,121,0,.25),0 0 13px rgba(255,102,0,.35),inset 0 1px 0 rgba(255,220,150,.25)!important
+  }
+  .ecn.dep .ecn-rodape .g-employee-page:focus-visible{outline-color:#FF6600}
+}
+@media (min-width:721px){ .ecn.dep{padding-bottom:0} .content:has(> .page.stage-ativo #dashStage[data-tela="unidade"]){padding-bottom:6px!important} }
