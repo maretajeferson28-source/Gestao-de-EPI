@@ -3932,3 +3932,50 @@
   .estq-kpis .kpi-card{row-gap:4px!important;padding:10px 12px 10px 14px!important}
   .content:has(> .page[data-page-content="estoque"].active){padding-bottom:12px!important}
 }
+/* =====================================================================
+   Entrada no estoque / janela do item (#stockEntryModal): identidade aço
+   (mesma dos modais Histórico e Termo). Só cores, fundos e bordas.
+   ===================================================================== */
+#stockEntryModal{background:rgba(4,7,10,.82)!important}
+#stockEntryModal .stock-entry-card{
+  background:
+    radial-gradient(ellipse 55% 70% at 100% 0%,rgba(255,102,0,.10) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.20) 0%,transparent 70%),
+    radial-gradient(ellipse 70% 60% at 85% 100%,rgba(70,87,105,.14) 0%,transparent 72%),
+    linear-gradient(180deg,#0D131A 0%,#090D12 45%,#060A0E 100%)!important;
+  border:1px solid rgba(178,191,205,.14)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 30px 90px rgba(0,0,0,.64)!important;
+  scrollbar-width:thin;scrollbar-color:#36404B transparent
+}
+#stockEntryModal .data-edit-head{
+  background:radial-gradient(ellipse 45% 120% at 92% 0%,rgba(255,102,0,.10) 0%,transparent 70%)!important;
+  border-bottom-color:rgba(178,191,205,.10)!important
+}
+#stockEntryModal .data-edit-head p{color:#B9C4CF!important}
+#stockEntryModal .data-edit-close{background:rgba(20,27,35,.7)!important;border-color:rgba(178,191,205,.16)!important;color:#C9D2DB!important}
+#stockEntryModal .data-edit-icon{
+  color:#FF6600!important;border:1px solid rgba(255,111,25,.35)!important;
+  background:linear-gradient(135deg,#583018,#24160F 65%,#111214)!important;box-shadow:0 0 22px rgba(255,102,0,.12)!important
+}
+#stockEntryModal .data-edit-icon svg{color:#FF6600!important;stroke:#FF6600!important}
+#stockEntryModal .field label{color:#A9B6C3!important}
+#stockEntryModal input,
+#stockEntryModal select,
+#stockEntryModal textarea{
+  background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;color-scheme:dark
+}
+#stockEntryModal input::placeholder{color:#7F8C99!important}
+#stockEntryModal input:focus,#stockEntryModal select:focus,#stockEntryModal textarea:focus{border-color:rgba(255,121,0,.6)!important;outline:0}
+#stockEntryModal select option{background:#11171E;color:#E9EDF1}
+#stockEntryModal .stock-qtd-btn,
+#stockEntryModal .btn:not(.primary){
+  background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;color:#E5E8EA!important
+}
+#stockEntryModal .stock-qtd-btn:hover,
+#stockEntryModal .btn:not(.primary):hover{border-color:rgba(255,121,0,.5)!important}
+#stockEntryModal .stock-entry-total{color:#B9C4CF}
+#stockEntryModal .stock-item-dica{border-color:rgba(178,191,205,.22);color:#C4CDD6}
+#stockEntryModal .stock-entry-recent{border-top-color:rgba(178,191,205,.12)}
+#stockEntryModal .stock-ca-card{
+  background:linear-gradient(145deg,rgba(24,31,38,.75),rgba(12,17,22,.75))!important;border-color:rgba(178,191,205,.14)!important
+}
