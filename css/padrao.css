@@ -3878,3 +3878,10 @@
   .estq-tab .c-acao{width:84px}
   .estq-tab .estq-abrir:hover{border-color:rgba(255,121,0,.55)!important;color:#FF7A10!important}
 }
+/* Prontuário do EPI: imagem do C.A. com o nome do arquivo em cima e os
+   botões Selecionar / Trocar / Remover lado a lado, na mesma linha. */
+#epiDetailModal .epi-variant-image-controls{flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+#epiDetailModal .epi-variant-image-file strong{max-width:100%!important}
+#epiDetailModal .epi-variant-image-buttons{flex-wrap:nowrap!important;justify-content:stretch!important;gap:8px!important}
+#epiDetailModal .epi-variant-image-buttons .btn{flex:1 1 0;justify-content:center;white-space:nowrap;min-width:0}
+#epiDetailModal .epi-variant-image-buttons .btn[hidden]{display:none!important}
