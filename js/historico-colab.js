@@ -37,7 +37,7 @@
     modal.innerHTML = `
       <div class="data-edit-card historico-card">
         <button class="data-edit-close" id="historicoClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
-        <button class="btn historico-pdf" id="historicoPdf" type="button" hidden><i data-lucide="file-down" aria-hidden="true"></i>Baixar PDF</button>
+        <button class="btn historico-pdf" id="historicoPdf" type="button" hidden><i data-lucide="file-down" aria-hidden="true"></i>Baixar Histórico</button>
         <div class="data-edit-head">
           <div class="data-edit-icon"><i data-lucide="history" aria-hidden="true"></i></div>
           <div><span id="historicoRotulo">HISTÓRICO DO COLABORADOR</span><h3 id="historicoTitle"></h3><p id="historicoSub"></p></div>
