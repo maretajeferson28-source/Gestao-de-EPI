@@ -208,9 +208,18 @@
         </div>
       </div>`;
     el.querySelector('[data-stage-voltar]').addEventListener('click', voltar);
-    const mesInteiro = (ym) => { const [y, m] = ym.split('-').map(Number); return { de: `${ym}-01`, ate: dataIso(new Date(y, m, 0)) }; };
-    seletorMes($('[data-econ-mes="ref"]', el), (estado.refDe || '').slice(0, 7), 'De', (ym) => { const p = mesInteiro(ym); estado.refDe = p.de; estado.refAte = p.ate; estado.pagina = 1; atualizar(); });
-    seletorMes($('[data-econ-mes="atual"]', el), (estado.de || '').slice(0, 7), 'Até', (ym) => { const p = mesInteiro(ym); estado.de = p.de; estado.ate = p.ate; estado.pagina = 1; atualizar(); });
+    // "De" e "Até" são dias: a conta vai de estado.refDe até estado.ate.
+    // Se um passar do outro, o outro acompanha.
+    const selDe = seletorData($('[data-econ-mes="ref"]', el), estado.refDe, 'De', (d) => {
+      estado.refDe = d;
+      if (estado.ate && d > estado.ate) { estado.ate = d; selAte.definir(d); }
+      estado.pagina = 1; atualizar();
+    });
+    const selAte = seletorData($('[data-econ-mes="atual"]', el), estado.ate, 'Até', (d) => {
+      estado.ate = d;
+      if (estado.refDe && d < estado.refDe) { estado.refDe = d; selDe.definir(d); }
+      estado.pagina = 1; atualizar();
+    });
     $('[data-econ-epi]', el).addEventListener('change', (e) => { estado.epi = e.target.value; estado.pagina = 1; atualizar(); });
     $('[data-econ-busca]', el).addEventListener('input', (e) => { estado.busca = e.target.value; estado.pagina = 1; atualizar(); });
     $('[data-econ-rodape]', el).addEventListener('click', (e) => {
@@ -221,46 +230,55 @@
     atualizar();
   }
 
-  // Seletor de mês em pílula (no lugar do calendário do navegador): botão
-  // "De: ago/2026" e painel com o ano (‹ ›) e os 12 meses. Meses com entregas
-  // ganham um pontinho.
-  function seletorMes(caixa, valor, prefixo, aoMudar) {
-    let ym = valor || dataIso(new Date()).slice(0, 7);
-    let ano = Number(ym.slice(0, 4));
+  // Calendário em pílula (no lugar do calendário do navegador): botão
+  // "De: 01/10/2026" e painel com ‹ mês ano ›, dias da semana e a grade de
+  // dias. Dia escolhido em verde; hoje com contorno.
+  const MES_LONGO = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  const dataBr = (d) => (d ? d.split('-').reverse().join('/') : '—');
+  function seletorData(caixa, valor, prefixo, aoMudar) {
+    let dia = valor || dataIso(new Date());
+    let ano = Number(dia.slice(0, 4)), mes = Number(dia.slice(5, 7)) - 1;
     caixa.innerHTML = `
       <button type="button" class="stg-mes__botao" aria-haspopup="dialog" aria-expanded="false"><span></span><i data-lucide="chevron-down"></i></button>
-      <div class="stg-mes__painel" hidden>
-        <div class="stg-mes__ano"><button type="button" data-ano="-1" aria-label="Ano anterior"><i data-lucide="chevron-left"></i></button><strong></strong><button type="button" data-ano="1" aria-label="Próximo ano"><i data-lucide="chevron-right"></i></button></div>
-        <div class="stg-mes__grade"></div>
+      <div class="stg-mes__painel stg-cal" hidden>
+        <div class="stg-mes__ano"><button type="button" data-passo="-1" aria-label="Mês anterior"><i data-lucide="chevron-left"></i></button><strong></strong><button type="button" data-passo="1" aria-label="Próximo mês"><i data-lucide="chevron-right"></i></button></div>
+        <div class="stg-cal__semana"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+        <div class="stg-cal__dias"></div>
       </div>`;
     const botao = caixa.querySelector('.stg-mes__botao'), painel = caixa.querySelector('.stg-mes__painel');
-    const texto = () => { botao.querySelector('span').innerHTML = `<em>${prefixo}:</em> ${mesTxt(ym)}`; };
+    const texto = () => { botao.querySelector('span').innerHTML = `<em>${prefixo}:</em> ${dataBr(dia)}`; };
     const grade = () => {
-      painel.querySelector('strong').textContent = ano;
-      painel.querySelector('.stg-mes__grade').innerHTML = MES.map((n, i) => {
-        const v = `${ano}-${pad(i + 1)}`;
-        return `<button type="button" data-mes="${v}" class="${v === ym ? 'is-sel' : ''}">${n}</button>`;
-      }).join('');
+      painel.querySelector('strong').textContent = `${MES_LONGO[mes]} ${ano}`;
+      const primeiro = new Date(ano, mes, 1).getDay();
+      const total = new Date(ano, mes + 1, 0).getDate();
+      const hoje = dataIso(new Date());
+      let html = '<span></span>'.repeat(primeiro);
+      for (let d = 1; d <= total; d++) {
+        const v = `${ano}-${pad(mes + 1)}-${pad(d)}`;
+        html += `<button type="button" data-dia="${v}" class="${v === dia ? 'is-sel' : ''}${v === hoje ? ' is-hoje' : ''}" aria-label="${d} de ${MES_LONGO[mes]} de ${ano}">${d}</button>`;
+      }
+      painel.querySelector('.stg-cal__dias').innerHTML = html;
     };
     const abrir = (sim) => {
       painel.hidden = !sim;
       botao.setAttribute('aria-expanded', sim ? 'true' : 'false');
-      if (sim) { ano = Number(ym.slice(0, 4)); grade(); window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } }); }
+      if (sim) { ano = Number(dia.slice(0, 4)); mes = Number(dia.slice(5, 7)) - 1; grade(); window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } }); }
     };
     botao.addEventListener('click', () => {
       document.querySelectorAll('.stg-mes__painel:not([hidden])').forEach((p) => { if (p !== painel) p.hidden = true; });
       abrir(painel.hidden);
     });
     painel.addEventListener('click', (e) => {
-      const passo = e.target.closest('[data-ano]');
-      if (passo) { ano += Number(passo.dataset.ano); grade(); return; }
-      const mes = e.target.closest('[data-mes]');
-      if (mes) { ym = mes.dataset.mes; texto(); abrir(false); botao.focus(); aoMudar(ym); }
+      const passo = e.target.closest('[data-passo]');
+      if (passo) { mes += Number(passo.dataset.passo); if (mes < 0) { mes = 11; ano--; } if (mes > 11) { mes = 0; ano++; } grade(); return; }
+      const b = e.target.closest('[data-dia]');
+      if (b) { dia = b.dataset.dia; texto(); abrir(false); botao.focus(); aoMudar(dia); }
     });
     const fora = (e) => { if (!caixa.isConnected) { document.removeEventListener('click', fora); return; } if (!caixa.contains(e.target)) abrir(false); };
     document.addEventListener('click', fora);
     caixa.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !painel.hidden) { e.stopPropagation(); abrir(false); botao.focus(); } });
     texto();
+    return { definir(d) { dia = d; texto(); } };
   }
 
   // Lista das entregas com a busca da barra.
@@ -284,7 +302,7 @@
     $('[data-econ-epi]', raiz).innerHTML = opcoesEpi();
     $('[data-econ-epi]', raiz).classList.toggle('tem-valor', !!estado.epi);
     const { lista, econ, total } = calcular(estado);
-    const periodo = `${rotulo(estado.refDe, estado.refAte)} até ${rotulo(estado.de, estado.ate)}`;
+    const periodo = `${dataBr(estado.refDe)} até ${dataBr(estado.ate)}`;
 
     // Subtítulo: o total do período.
     $('[data-econ-resumo]', raiz).innerHTML = `<strong class="${total < 0 ? 'is-neg' : ''}">${dinheiro(Math.abs(total))}</strong> ${total < 0 ? 'gastos a mais' : 'economizados'} de ${periodo}`;
@@ -333,7 +351,7 @@
     const csv = '﻿' + linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';')).join('\r\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    a.download = `economia_${(estado.refDe || '').slice(0, 7)}_a_${(estado.de || '').slice(0, 7)}.csv`;
+    a.download = `economia_${estado.refDe || ""}_a_${estado.ate || ""}.csv`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }

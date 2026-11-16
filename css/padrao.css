@@ -3820,3 +3820,18 @@
 .historico-card .historico-pdf:hover{border-color:rgba(255,121,0,.5)!important}
 .historico-card .historico-pdf:disabled{opacity:.6;cursor:wait}
 .historico-card .historico-pdf[hidden]{display:none}
+/* Tela Economia: calendário de dia, mês e ano (no lugar do seletor de mês). */
+@media (min-width:721px){
+  .stg-cal{width:276px}
+  .stg-cal .stg-mes__ano strong{text-transform:capitalize}
+  .stg-cal__semana,.stg-cal__dias{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .stg-cal__semana{margin-bottom:4px}
+  .stg-cal__semana span{text-align:center;font:700 10.5px/24px Inter,Roboto,Arial,sans-serif;color:#8C9AA8}
+  .stg-cal__dias button{
+    height:32px;border-radius:8px;cursor:pointer;font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;font-variant-numeric:tabular-nums;
+    color:#D5DCE3;background:transparent;border:1px solid transparent
+  }
+  .stg-cal__dias button:hover{background:rgba(178,191,205,.08);color:#fff}
+  .stg-cal__dias button.is-hoje{border-color:rgba(27,214,106,.55)}
+  .stg-cal__dias button.is-sel{color:#06120C;background:var(--t,#1BD66A);border-color:var(--t,#1BD66A);font-weight:800}
+}
