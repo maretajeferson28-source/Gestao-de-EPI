@@ -10,6 +10,7 @@
 
   const $ = (id) => document.getElementById(id);
   const db = () => { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } };
+  const P = (...k) => { try { return typeof window.epiPode === 'function' ? window.epiPode(...k) : currentIsAdmin === true; } catch (_) { return false; } };
   const isAdmin = () => { try { return currentIsAdmin === true; } catch (_) { return false; } };
   // Listas do app.js (variáveis globais do script principal).
   const LISTAS = {
@@ -677,7 +678,7 @@
   }
 
   async function concluir() {
-    if (!isAdmin()) return;
+    if (!P('programar.programar')) return;
     const colab = acharColab($('progColab').value);
     if (!colab) return setMsg('Escolha um colaborador cadastrado da lista.', true);
     const itens = [];
@@ -723,7 +724,7 @@
   }
 
   function abrir() {
-    if (!isAdmin()) return;
+    if (!P('programar.programar')) return;
     $('dlProgColab').innerHTML = colaboradores().map((c) => `<option value="${esc(c.nome)}">`).join('');
     $('dlProgEpi').innerHTML = epis().map((e) => `<option value="${esc(e.nome)}">`).join('');
     saldos.clear();

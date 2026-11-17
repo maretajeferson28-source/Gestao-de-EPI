@@ -123,7 +123,7 @@
     if (!ligado) return;
     e.preventDefault();
     e.stopImmediatePropagation();
-    let admin = false; try { admin = currentIsAdmin === true; } catch (_) {}
+    let admin = false; try { admin = typeof window.epiPode === 'function' ? window.epiPode('entregar.entregar') : currentIsAdmin === true; } catch (_) {}
     if (!admin) return;
     const msg = $('saidaMsg');
     const erro = (t) => { msg.textContent = t; msg.classList.add('is-error'); };

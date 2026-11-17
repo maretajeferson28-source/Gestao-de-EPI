@@ -16,7 +16,7 @@
   const $ = (id) => document.getElementById(id);
 
   function db() { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } }
-  function isAdmin() { try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
+  function isAdmin() { try { if (typeof window.epiPode === 'function') return window.epiPode('entregar.entregar'); return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
   function colaboradores() { try { return Array.isArray(collaborators) ? collaborators : []; } catch (_) { return []; } }
   function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function norm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }

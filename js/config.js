@@ -94,7 +94,7 @@ document.title = "Gestão de EPI";
 
   if (!document.querySelector('script[data-nfe-module]')) {
     const script = document.createElement('script');
-    script.src = 'js/nfe.js?v=20261117-3';
+    script.src = 'js/nfe.js?v=20261117-50';
     script.dataset.nfeModule = 'true';
     document.body.appendChild(script);
   }
@@ -118,7 +118,7 @@ document.title = "Gestão de EPI";
 window.addEventListener('load', () => {
   if (!document.querySelector('script[data-ca-user-tools]')) {
     const script = document.createElement('script');
-    script.src = 'js/ca-user-tools.js?v=20261017-ci';
+    script.src = 'js/ca-user-tools.js?v=20261117-50ci';
     script.dataset.caUserTools = 'true';
     document.body.appendChild(script);
   }
@@ -132,21 +132,21 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-stock-nav]')) {
     const stockNavScript = document.createElement('script');
-    stockNavScript.src = 'js/stock-nav.js?v=20261116-2';
+    stockNavScript.src = 'js/stock-nav.js?v=20261117-50';
     stockNavScript.dataset.stockNav = 'true';
     document.body.appendChild(stockNavScript);
   }
 
   if (!document.querySelector('script[data-estoque-salas]')) {
     const estoqueSalasScript = document.createElement('script');
-    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261117-3';
+    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261117-50';
     estoqueSalasScript.dataset.estoqueSalas = 'true';
     document.body.appendChild(estoqueSalasScript);
   }
 
   if (!document.querySelector('script[data-avulsa-uniforme]')) {
     const avulsaUniScript = document.createElement('script');
-    avulsaUniScript.src = 'js/avulsa-uniforme.js?v=20261117-2';
+    avulsaUniScript.src = 'js/avulsa-uniforme.js?v=20261117-50';
     avulsaUniScript.dataset.avulsaUniforme = 'true';
     document.body.appendChild(avulsaUniScript);
   }
@@ -174,7 +174,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-stock-entry]')) {
     const stockEntryScript = document.createElement('script');
-    stockEntryScript.src = 'js/stock-entry.js?v=20261023-4';
+    stockEntryScript.src = 'js/stock-entry.js?v=20261117-50';
     stockEntryScript.dataset.stockEntry = 'true';
     document.body.appendChild(stockEntryScript);
   }
@@ -188,14 +188,14 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-fila]')) {
     const filaScript = document.createElement('script');
-    filaScript.src = 'js/fila.js?v=20261117-1';
+    filaScript.src = 'js/fila.js?v=20261117-50';
     filaScript.dataset.fila = 'true';
     document.body.appendChild(filaScript);
   }
 
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
-    programarScript.src = 'js/programar.js?v=20261117-4';
+    programarScript.src = 'js/programar.js?v=20261117-50';
     programarScript.dataset.programar = 'true';
     document.body.appendChild(programarScript);
   }
@@ -209,7 +209,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-pendencias]')) {
     const pendenciasScript = document.createElement('script');
-    pendenciasScript.src = 'js/pendencias.js?v=20261106-1';
+    pendenciasScript.src = 'js/pendencias.js?v=20261117-50';
     pendenciasScript.dataset.pendencias = 'true';
     document.body.appendChild(pendenciasScript);
   }
@@ -246,7 +246,7 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-depositos]')) {
     const depositosScript = document.createElement('script');
-    depositosScript.src = 'js/depositos.js?v=20261116-4';
+    depositosScript.src = 'js/depositos.js?v=20261117-50';
     depositosScript.dataset.depositos = 'true';
     document.body.appendChild(depositosScript);
   }
@@ -271,35 +271,35 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-ciepi]')) {
     const ciepiScript = document.createElement('script');
-    ciepiScript.src = 'js/ciepi.js?v=20261017-1';
+    ciepiScript.src = 'js/ciepi.js?v=20261117-50';
     ciepiScript.dataset.ciepi = 'true';
     document.body.appendChild(ciepiScript);
   }
 
   if (!document.querySelector('script[data-mobile-preview]')) {
     const mobilePreviewScript = document.createElement('script');
-    mobilePreviewScript.src = 'js/mobile-preview.js?v=20261019-4';
+    mobilePreviewScript.src = 'js/mobile-preview.js?v=20261117-50';
     mobilePreviewScript.dataset.mobilePreview = 'true';
     document.body.appendChild(mobilePreviewScript);
   }
 
   if (!document.querySelector('script[data-termo]')) {
     const termoScript = document.createElement('script');
-    termoScript.src = 'js/termo.js?v=20261113-1';
+    termoScript.src = 'js/termo.js?v=20261117-50';
     termoScript.dataset.termo = 'true';
     document.body.appendChild(termoScript);
   }
 
   if (!document.querySelector('script[data-termo-captura]')) {
     const termoCapturaScript = document.createElement('script');
-    termoCapturaScript.src = 'js/termo-captura.js?v=20261112-1';
+    termoCapturaScript.src = 'js/termo-captura.js?v=20261117-50';
     termoCapturaScript.dataset.termoCaptura = 'true';
     document.body.appendChild(termoCapturaScript);
   }
 
   if (!document.querySelector('script[data-colab-painel]')) {
     const colabPainelScript = document.createElement('script');
-    colabPainelScript.src = 'js/colab-painel.js?v=20261113-1';
+    colabPainelScript.src = 'js/colab-painel.js?v=20261117-50';
     colabPainelScript.dataset.colabPainel = 'true';
     document.body.appendChild(colabPainelScript);
   }

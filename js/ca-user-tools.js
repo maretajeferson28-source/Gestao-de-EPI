@@ -13,6 +13,7 @@
 
   function isAdminUser() {
     try {
+      if (typeof window.epiPode === 'function') return window.epiPode('epis.cadastrar', 'epis.editar');
       return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true;
     } catch (_) {
       return false;

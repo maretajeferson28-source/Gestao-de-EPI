@@ -14,6 +14,7 @@
   const num = (n) => new Intl.NumberFormat('pt-BR').format(n || 0);
   const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const db = () => (typeof sb !== 'undefined' ? sb : null);
+  const P = (...k) => { try { return typeof window.epiPode === 'function' ? window.epiPode(...k) : currentIsAdmin === true; } catch (_) { return false; } };
   const admin = () => { try { return currentIsAdmin === true; } catch (_) { return false; } };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   const pagina = () => document.querySelector('.page[data-page-content="estoque"]');
@@ -127,7 +128,7 @@
       icons();
     }
     const nova = $('#estqPecaNova', pg);
-    if (nova) nova.hidden = !admin();
+    if (nova) nova.hidden = !P('uniformes.cadastrar');
     if (!$('#estqUniKpis', pg)) {
       const k = document.createElement('section');
       k.className = 'kpi-grid estq-kpis estq-uni-kpis';
@@ -218,7 +219,7 @@
         <td class="num">${temMov ? num(p.sai) : '<span class="epi-tab-vazio">—</span>'}</td>
         <td class="num"><b class="epi-tab-saldo${p.total <= 0 ? ' is-zero' : ''}">${num(p.total)}</b></td>
         <td><span class="epi-sit epi-sit--${st[0]}">${st[1]}</span></td>
-        <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${admin() ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button>${admin() ? `<button class="btn movement-action-btn estq-editar" type="button" data-uni-editar="${esc(p.peca)}" title="Editar peça (nome, C.A. e tamanhos)" aria-label="Editar peça"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}</div></td>
+        <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${P('uniformes.ajustar') ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button>${P('uniformes.editar') ? `<button class="btn movement-action-btn estq-editar" type="button" data-uni-editar="${esc(p.peca)}" title="Editar peça (nome, C.A. e tamanhos)" aria-label="Editar peça"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}</div></td>
       </tr>`;
     }).join('') || `<tr><td colspan="7" class="epi-tab-nada">${carregado ? ((q || fSit) ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
 
@@ -267,7 +268,7 @@
 
   function abrirPeca(nome) {
     const s = salas.find((x) => x.id === sala);
-    const pode = admin();
+    const pode = P('uniformes.ajustar');
     const m = janela('uniPecaModal', nome, iconePeca(nome), `
       <div class="uni-tams" data-uni-tams></div>
       ${pode ? `<div class="uni-novo-tam">
@@ -334,7 +335,7 @@
   });
 
   function editarPeca(nome) {
-    if (!admin() || !sala) return;
+    if (!P('uniformes.editar') || !sala) return;
     const s = salas.find((x) => x.id === sala);
     const tams = itens.filter((x) => x.deposito_id === sala && x.peca === nome)
       .sort((a, b) => pesoTam(a.tamanho) - pesoTam(b.tamanho) || a.tamanho.localeCompare(b.tamanho, 'pt-BR', { numeric: true }));
@@ -435,7 +436,7 @@
 
   // ---- Adicionar peça (peça nova na sala, já com o primeiro tamanho) ----
   function novaPeca() {
-    if (!admin() || !sala) return;
+    if (!P('uniformes.cadastrar') || !sala) return;
     const s = salas.find((x) => x.id === sala);
     const nomes = [...new Set(itens.map((x) => x.peca))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
     const m = janela('uniNovaModal', 'Adicionar peça', 'shirt', `

@@ -6,7 +6,7 @@
 
   const $ = (id) => document.getElementById(id);
   const db = () => { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } };
-  const isAdmin = () => { try { return currentIsAdmin === true; } catch (_) { return false; } };
+  const isAdmin = () => { try { return typeof window.epiPode === 'function' ? window.epiPode('pendencias.consultar') : currentIsAdmin === true; } catch (_) { return false; } };
   const LISTAS = { collaborators: () => collaborators, epiCatalog: () => epiCatalog, epiVariants: () => epiVariants, movements: () => movements };
   const lista = (nome) => { try { const v = LISTAS[nome](); return Array.isArray(v) ? v : []; } catch (_) { return []; } };
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

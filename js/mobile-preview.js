@@ -9,7 +9,7 @@
   if (window.top !== window) return; // dentro da própria moldura não aparece
 
   const $ = (id) => document.getElementById(id);
-  function isAdmin() { try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
+  function isAdmin() { try { if (typeof window.epiPode === 'function') return window.epiPode('entregar.consultar'); return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
   function icons() { if (window.lucide?.createIcons) window.lucide.createIcons({ attrs: { 'aria-hidden': 'true' } }); }
 
   let toggle = null;

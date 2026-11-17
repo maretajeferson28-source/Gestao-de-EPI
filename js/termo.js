@@ -24,7 +24,7 @@
   let termos = new Map(); // colaborador_id -> termo mais recente
 
   function db() { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } }
-  function isAdmin() { try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
+  function isAdmin() { try { if (typeof window.epiPode === 'function') return window.epiPode('entregar.consultar', 'movimentacoes.consultar', 'colaboradores.consultar'); return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
   function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function norm(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase(); }
   function ehExemplo(colaboradorId) {

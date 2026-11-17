@@ -10,7 +10,7 @@
 
   const $ = (id) => document.getElementById(id);
   const db = () => { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } };
-  const isAdmin = () => { try { return currentIsAdmin === true; } catch (_) { return false; } };
+  const isAdmin = () => { try { return typeof window.epiPode === 'function' ? window.epiPode('entregar.consultar') : currentIsAdmin === true; } catch (_) { return false; } };
   const colabs = () => { try { return Array.isArray(collaborators) ? collaborators : []; } catch (_) { return []; } };
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = (n) => new Intl.NumberFormat('pt-BR').format(Number(n) || 0);

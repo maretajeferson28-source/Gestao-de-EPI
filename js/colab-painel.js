@@ -8,6 +8,7 @@
 
   const $ = (id) => document.getElementById(id);
   const db = () => { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } };
+  const P = (...k) => { try { return typeof window.epiPode === 'function' ? window.epiPode(...k) : currentIsAdmin === true; } catch (_) { return false; } };
   const isAdmin = () => { try { return currentIsAdmin === true; } catch (_) { return false; } };
   const LISTAS = { collaborators: () => collaborators, movements: () => movements, epiCatalog: () => epiCatalog };
   const lista = (nome) => { try { const v = LISTAS[nome](); return Array.isArray(v) ? v : []; } catch (_) { return []; } };
@@ -99,7 +100,7 @@
     const os = osDe(c);
     const ent = entregas(c);
     const funcao = c.funcao || c.cargo || '';
-    const admin = isAdmin();
+    const admin = P('colaboradores.consultar');
 
     const selos = [
       `<span class="colab-selo ${s.cls}"><span class="colab-selo-ponto"></span>${s.txt}</span>`,
@@ -199,7 +200,7 @@
     const funcoes = [...new Set(lista('collaborators').map((c) => String(c.funcao || c.cargo || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
     preencherSelect('colabFFuncao', 'Função', funcoes);
     const novo = $('colabNovo');
-    if (novo) novo.hidden = !isAdmin();
+    if (novo) novo.hidden = !P('colaboradores.cadastrar');
     document.querySelectorAll('.colab-filtro select').forEach((s) => s.classList.toggle('tem-valor', !!s.value));
     ajustarTodos();
   }
@@ -284,7 +285,7 @@
       <td><span class="g-employee-cell-clip" title="${esc(funcao)}">${funcao ? esc(funcao) : falta}</span></td>
       <td>${termo}</td>
       <td>${data ? esc(dataBR(data)) : falta}</td>
-      <td class="g-employee-acoes">${isAdmin() ? `<button type="button" class="g-employee-more" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções de ${esc(c.nome)}"><i data-lucide="ellipsis"></i></button>` : ''}</td>
+      <td class="g-employee-acoes">${P('colaboradores.editar', 'colaboradores.desativar', 'colaboradores.excluir') ? `<button type="button" class="g-employee-more" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções de ${esc(c.nome)}"><i data-lucide="ellipsis"></i></button>` : ''}</td>
     </tr>`;
   }
 

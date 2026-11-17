@@ -20,6 +20,7 @@
   let removeFile = false;
 
   function db() { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } }
+  const P = (...k) => { try { return typeof window.epiPode === 'function' ? window.epiPode(...k) : currentIsAdmin === true; } catch (_) { return false; } };
   function isAdmin() { try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
   function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function norm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
@@ -57,7 +58,7 @@
 
   async function load() {
     const client = db();
-    if (!client || !isAdmin()) return;
+    if (!client || !P('ciepi.consultar')) return;
     const { data, error } = await client.from('ciepi_registros').select('*').order('ci');
     if (error) {
       $('ciepiBody').innerHTML = `<tr><td colspan="7">Não foi possível carregar: ${escHtml(error.message)}</td></tr>`;
@@ -74,7 +75,7 @@
   }
 
   function open(row = null) {
-    if (!isAdmin()) return;
+    if (!P('ciepi.cadastrar')) return;
     editing = row;
     pendingFile = null;
     removeFile = false;
@@ -92,7 +93,7 @@
   function close() { $('ciepiModal').classList.add('hidden'); editing = null; pendingFile = null; }
 
   async function save() {
-    if (!isAdmin()) return;
+    if (!P('ciepi.cadastrar')) return;
     const client = db();
     const payload = {};
     for (const [col, id] of Object.entries(FIELDS)) payload[col] = $(id).value.trim() || null;

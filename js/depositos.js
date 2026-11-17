@@ -14,6 +14,7 @@
   const num = (n) => new Intl.NumberFormat('pt-BR').format(n || 0);
   const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const db = () => (typeof sb !== 'undefined' ? sb : null);
+  const P = (...k) => { try { return typeof window.epiPode === 'function' ? window.epiPode(...k) : currentIsAdmin === true; } catch (_) { return false; } };
   const admin = () => { try { return currentIsAdmin === true; } catch (_) { return false; } };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
   // Tamanhos em ordem de vestir (P, M, G…) e numéricos em ordem de número.
@@ -67,7 +68,7 @@
         <p>${depositos.length ? `${num(depositos.length)} ${depositos.length === 1 ? 'depósito' : 'depósitos'} · ${num(itens.reduce((s, x) => s + (Number(x.quantidade) || 0), 0))} peças guardadas` : 'Uniformes e calçados de cada sala'}</p>
       </div>
       <div class="ecn-barra">
-        <button type="button" class="colab-novo dep-novo" data-dep-novo${admin() ? '' : ' hidden'}><i data-lucide="plus" aria-hidden="true"></i>Adicionar depósito</button>
+        <button type="button" class="colab-novo dep-novo" data-dep-novo${P('uniformes.cadastrar') ? '' : ' hidden'}><i data-lucide="plus" aria-hidden="true"></i>Adicionar depósito</button>
         <button type="button" class="btn ecn-btn ecn-btn--csv" data-stage-voltar><i data-lucide="arrow-left"></i>Voltar ao Dashboard</button>
       </div>
       <div data-dep-lista>${conteudoLista()}</div>`;
@@ -77,7 +78,7 @@
   }
   function conteudoLista() {
     if (erroTabela) return vazio('Não foi possível carregar os depósitos', 'Tente de novo em instantes.');
-    if (!depositos.length) return vazio('Nenhum depósito cadastrado ainda', admin() ? 'Use "Adicionar depósito" para cadastrar o primeiro.' : 'Quando os depósitos forem criados, cada um aparece aqui.');
+    if (!depositos.length) return vazio('Nenhum depósito cadastrado ainda', P('uniformes.cadastrar') ? 'Use "Adicionar depósito" para cadastrar o primeiro.' : 'Quando os depósitos forem criados, cada um aparece aqui.');
     return `<div class="dep-grade">${depositos.map((d) => {
       const lista = doDeposito(d.id), pecas = new Set(lista.map((x) => x.peca));
       return `<button type="button" class="dep-card" data-dep-abrir="${esc(d.id)}">
@@ -104,7 +105,7 @@
       </div>
       <div class="ecn-barra">
         <label class="colab-busca ecn-busca"><i data-lucide="search" aria-hidden="true"></i><input type="search" data-dep-busca placeholder="Buscar peça ou tamanho" autocomplete="off" aria-label="Buscar peça ou tamanho" value="${esc(busca)}"></label>
-        <button type="button" class="colab-novo dep-peca-novo" data-dep-peca${admin() ? '' : ' hidden'}><i data-lucide="plus" aria-hidden="true"></i>Adicionar peça</button>
+        <button type="button" class="colab-novo dep-peca-novo" data-dep-peca${P('uniformes.cadastrar') ? '' : ' hidden'}><i data-lucide="plus" aria-hidden="true"></i>Adicionar peça</button>
         <button type="button" class="btn ecn-btn ecn-btn--csv" data-dep-voltar><i data-lucide="arrow-left"></i>Voltar aos depósitos</button>
       </div>
       <div class="ecn-tabela-wrap">
@@ -138,7 +139,7 @@
       .sort((a, b) => a.peca.localeCompare(b.peca, 'pt-BR') || pesoTam(a.tamanho) - pesoTam(b.tamanho) || a.tamanho.localeCompare(b.tamanho, 'pt-BR', { numeric: true }));
     const tot = doDeposito(aberto), pecas = new Set(tot.map((x) => x.peca));
     $('[data-dep-resumo]', raiz).textContent = `${num(total(aberto))} peças · ${num(pecas.size)} ${pecas.size === 1 ? 'tipo de peça' : 'tipos de peça'}`;
-    const pode = admin();
+    const pode = P('uniformes.ajustar');
     // Páginas de ${POR_PAGINA} linhas; peça que continua na página seguinte repete o nome.
     const paginas = Math.max(1, Math.ceil(lista.length / POR_PAGINA));
     if (pagina > paginas) pagina = paginas;
@@ -223,7 +224,7 @@
   }
 
   function abrirJanela() {
-    if (!admin()) return;
+    if (!P('uniformes.cadastrar')) return;
     criarJanela('depositoModal', 'Adicionar depósito', 'warehouse', `
       <div class="field dep-col-cheia"><label for="depNome">Nome do depósito*</label><input id="depNome" maxlength="80" placeholder="Ex.: Matriz" autocomplete="off"></div>
       <div class="field"><label for="depCidade">Cidade</label><input id="depCidade" maxlength="80" placeholder="Opcional" autocomplete="off"></div>
@@ -244,7 +245,7 @@
   }
 
   function abrirPeca() {
-    if (!admin() || !aberto) return;
+    if (!P('uniformes.cadastrar') || !aberto) return;
     const pecas = [...new Set(itens.map((x) => x.peca))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
     criarJanela('depPecaModal', 'Adicionar peça', 'shirt', `
       <div class="field dep-col-cheia"><label for="depPecaNome">Peça*</label><input id="depPecaNome" list="depPecaLista" maxlength="120" placeholder="Ex.: Calça Jeans Indigo Leslie" autocomplete="off"><datalist id="depPecaLista">${pecas.map((p) => `<option value="${esc(p)}">`).join('')}</datalist></div>

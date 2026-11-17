@@ -16,6 +16,7 @@
   };
 
   function db() { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } }
+  const P = (...k) => { try { return typeof window.epiPode === 'function' ? window.epiPode(...k) : currentIsAdmin === true; } catch (_) { return false; } };
   function isAdmin() { try { return typeof currentIsAdmin !== 'undefined' && currentIsAdmin === true; } catch (_) { return false; } }
   function catalog() { try { return Array.isArray(epiCatalog) ? epiCatalog : []; } catch (_) { return []; } }
   function variants() { try { return Array.isArray(epiVariants) ? epiVariants : []; } catch (_) { return []; } }
@@ -233,7 +234,7 @@
   // apagado: foto, prontuário e histórico continuam. Sem confirmação, porque
   // o mesmo botão desfaz.
   async function alternarAtivo(id, btn) {
-    if (!isAdmin()) return;
+    if (!P('epis.editar', 'epis.desativar')) return;
     const v = variants().find((x) => x.id === id);
     if (!v) return;
     const desativar = v.ativo !== false;
@@ -286,7 +287,7 @@
   // Sem detalhe: Cadastro geral. Com { epiId, nome }: janela daquele EPI
   // (vinda do clique no cartão do Estoque), com o EPI fixo e só as entradas dele.
   function open(e) {
-    if (!isAdmin()) return;
+    if (!P('estoque.entrada', 'estoque.ajustar')) return;
     const det = e?.detail;
     itemFixo = det?.epiId ? { id: det.epiId, nome: det.nome || '' } : null;
     caDoItem = null;
@@ -320,7 +321,7 @@
   function close() { $('stockEntryModal')?.classList.add('hidden'); }
 
   async function save() {
-    if (!isAdmin()) return;
+    if (!P('estoque.entrada', 'estoque.ajustar')) return;
     const client = db();
     const epi = selectedEpi();
     const qtdTxt = String($('stockEntryQtd').value).trim();
@@ -413,7 +414,7 @@
   }
 
   async function remove(id) {
-    if (!isAdmin() || !confirm('Excluir esta entrada? O saldo do estoque será recalculado.')) return;
+    if (!P('estoque.ajustar') || !confirm('Excluir esta entrada? O saldo do estoque será recalculado.')) return;
     const { error } = await db().from('estoque_entradas_manuais').delete().eq('id', id);
     if (error) return setMsg('Não foi possível excluir: ' + error.message, true);
     if (editandoId === id) { sairEdicao(); resetItemFields(); }

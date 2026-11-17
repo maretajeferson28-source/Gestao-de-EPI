@@ -126,7 +126,7 @@
       tab.classList.toggle('active', tab.dataset.tab === active);
     });
     const termo = tabbar.querySelector('[data-action="termo"]');
-    if (termo) { let admin = false; try { admin = currentIsAdmin === true; } catch (_) {} termo.hidden = !admin; }
+    if (termo) { let admin = false; try { admin = typeof window.epiPode === 'function' ? window.epiPode('entregar.entregar') : currentIsAdmin === true; } catch (_) {} termo.hidden = !admin; }
   }
 
   // Início: resumo rápido das saídas (os atalhos agora estão na barra).

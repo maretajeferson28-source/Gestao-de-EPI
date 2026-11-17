@@ -22,6 +22,29 @@ let charts = {};
 let realtimeChannel = null;
 let reloadTimer = null;
 let currentIsAdmin = false;
+// Permissões do perfil (Administração → Perfis). Administrador pode tudo.
+// Sem perfil, a pessoa fica como sempre foi: Dashboard, Movimentações e Consulta C.A.
+let currentPerms = new Set();
+const PERMS_SEM_PERFIL = ['dashboard.consultar','movimentacoes.consultar','caepi.consultar'];
+function pode(...ks){ return currentIsAdmin===true || ks.some(k=>currentPerms.has(k)); }
+window.epiPode = pode;
+// Tela do menu → permissão para ver. null = só administrador.
+const PAGINA_PERM = {dashboard:'dashboard.consultar',movimentacoes:'movimentacoes.consultar',caepi:'caepi.consultar',
+  nova:'entregar.consultar',fila:'entregar.consultar',programar:'programar.consultar',pendencias:'pendencias.consultar',
+  colaboradores:'colaboradores.consultar',epis:'epis.consultar',ciepi:'ciepi.consultar',autorizacoes:null,dados:null};
+function podePagina(p){ if(currentIsAdmin===true || !(p in PAGINA_PERM)) return true; return !!PAGINA_PERM[p] && pode(PAGINA_PERM[p]); }
+function aplicarPermissoes(){
+  document.querySelectorAll('.nav button[data-page]').forEach(b=>{ if(b.dataset.page in PAGINA_PERM) b.hidden=!podePagina(b.dataset.page); });
+  const novo=document.getElementById('movNovo'); if(novo) novo.hidden=!pode('movimentacoes.lancar');
+  const xls=document.getElementById('exportCsv'); if(xls) xls.hidden=!pode('movimentacoes.exportar');
+  document.body.classList.toggle('sem-notas-importar',!pode('notas.importar'));
+  const atual=document.querySelector('.page.active')?.dataset?.pageContent;
+  if(atual && !podePagina(atual)){
+    const primeira=[...document.querySelectorAll('.nav button[data-page]')].find(b=>!b.hidden && b.dataset.page in PAGINA_PERM);
+    if(primeira) nav(primeira.dataset.page);
+  }
+  window.dispatchEvent(new CustomEvent('epi:permissoes'));
+}
 let authorizedUsers = [];
 let authorizationWatchTimer = null;
 let authorizationCheckBusy = false;
@@ -85,7 +108,7 @@ function erroDeRede(err){return !navigator.onLine||/failed to fetch|networkerror
 function salvarCopia(email){
   try{
     const copia={
-      salvoEm:new Date().toISOString(),email:email||$('userEmail')?.textContent||'',isAdmin:currentIsAdmin===true,
+      salvoEm:new Date().toISOString(),email:email||$('userEmail')?.textContent||'',isAdmin:currentIsAdmin===true,perms:[...currentPerms],
       colaboradores:collaborators.map(({cpf,matricula,...c})=>c),
       epis:epiCatalog,variantes:epiVariants,movimentos:movements
     };
@@ -116,7 +139,9 @@ function showAppOffline(session){
   const email=session?.user?.email||copia.email;
   if(session?.user?.email&&copia.email&&session.user.email!==copia.email) return false;
   currentIsAdmin=copia.isAdmin===true;
+  currentPerms=new Set(Array.isArray(copia.perms)&&copia.perms.length?copia.perms:PERMS_SEM_PERFIL);
   document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=!currentIsAdmin});
+  aplicarPermissoes();
   if($('authzNavBtn')) $('authzNavBtn').hidden=true; // autorizações precisam de internet
   $('accessWaitScreen').classList.add('hidden');
   $('authScreen').classList.add('hidden');
@@ -529,7 +554,7 @@ function renderDashboard(){
 }
 
 function nav(page){
-  if(!currentIsAdmin && ['nova','programar','fila','pendencias','colaboradores','epis','ciepi','autorizacoes','dados'].includes(page)) return;
+  if(!podePagina(page)) return;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.dataset.pageContent===page));
   if(page==='dashboard') renderDashboard();
@@ -847,7 +872,7 @@ async function enviarValidacao(payload,{assinatura}){
 
 $('saidaForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  if(!currentIsAdmin) return;
+  if(!pode('entregar.entregar')) return;
   $('saidaMsg').textContent='';
   const epiNome=$('nEpi').value.trim(), resp=$('nResp').value.trim(), qtd=Number($('nQtd').value), colNome=$('nColab').value.trim();
   $('saidaMsg').classList.remove('is-error');
@@ -991,10 +1016,10 @@ function renderMovs(){
   $('movBody').innerHTML=daPagina.map(x=>{
     const actions=x.pendente
       ? '<span class="mov-pendente" title="Guardada no aparelho; vai para o banco ao sincronizar">Pendente</span>'
-      : currentIsAdmin
+      : pode('movimentacoes.editar','movimentacoes.excluir')
       ? `<div class="table-action-group">
-          <button class="btn movement-action-btn movement-edit-btn" data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
-          <button class="btn movement-action-btn movement-delete-btn" data-del="${esc(x.id)}" title="Excluir movimentação" aria-label="Excluir movimentação"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+          <button class="btn movement-action-btn movement-edit-btn"${pode('movimentacoes.editar')?'':' hidden'} data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
+          <button class="btn movement-action-btn movement-delete-btn"${pode('movimentacoes.excluir')?'':' hidden'} data-del="${esc(x.id)}" title="Excluir movimentação" aria-label="Excluir movimentação"><i data-lucide="trash-2" aria-hidden="true"></i></button>
         </div>`
       : '<span class="action-placeholder">—</span>';
 
@@ -1053,7 +1078,7 @@ function movJanelaModo(modo){
   refreshIcons();
 }
 function openMovementAdd(){
-  if(!currentIsAdmin) return;
+  if(!pode('movimentacoes.lancar')) return;
   movJanelaModo('novo');
   editingMovementId=null;
   $('movEditData').value=todayLocal();
@@ -1106,7 +1131,7 @@ async function saveMovementAdd(){
 }
 
 function openMovementEdit(id){
-  if(!currentIsAdmin) return;
+  if(!pode('movimentacoes.editar')) return;
   const row=movements.find(x=>x.id===id);
   if(!row) return;
 
@@ -1133,8 +1158,8 @@ function closeMovementEdit(){
 }
 
 async function saveMovementEdit(){
-  if(currentIsAdmin&&movModo==='novo') return saveMovementAdd();
-  if(!currentIsAdmin||!editingMovementId) return;
+  if(pode('movimentacoes.lancar')&&movModo==='novo') return saveMovementAdd();
+  if(!pode('movimentacoes.editar')||!editingMovementId) return;
 
   const row=movements.find(x=>x.id===editingMovementId);
   if(!row) return;
@@ -1213,13 +1238,13 @@ function renderColabs(){
     const inativoTag=ativo?'':`<span class="collab-leave-tag is-off" title="Funcionário desativado"><i data-lucide="user-x" aria-hidden="true"></i>Desativado${c.desativado_desde?` ${esc(isoToBR(c.desativado_desde))}`:''}</span>`;
     const afastadoTag=afastado?`<span class="collab-leave-tag" title="Funcionário afastado"><i data-lucide="heart-pulse" aria-hidden="true"></i>Afastado${c.afastado_desde?` ${esc(isoToBR(c.afastado_desde))}`:''}</span>`:'';
 
-    return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}${currentIsAdmin?' is-clicavel':''}"${currentIsAdmin?` data-colab-historico="${esc(c.id)}" tabindex="0" title="Ver histórico"`:''}>
+    return `<article class="collab-card${ativo?'':' is-inactive'}${afastado?' is-afastado':''}${pode('colaboradores.consultar')?' is-clicavel':''}"${pode('colaboradores.consultar')?` data-colab-historico="${esc(c.id)}" tabindex="0" title="Ver histórico"`:''}>
       <div class="collab-avatar" aria-hidden="true">${esc(initials)}</div>
       <div class="collab-info">
         <strong title="${esc(nome)}">${esc(nome)}</strong>
         <div class="collab-name-row"><span title="${esc(detalhe)}">${esc(detalhe)}</span>${inativoTag||afastadoTag?`<div class="collab-tags">${inativoTag}${afastadoTag}</div>`:''}</div>
       </div>
-      ${currentIsAdmin?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
+      ${pode('colaboradores.editar','colaboradores.desativar','colaboradores.excluir')?`<span class="epi-card-action-btn collab-menu-btn" role="button" tabindex="0" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções do funcionário"><i data-lucide="ellipsis" aria-hidden="true"></i></span>`:''}
     </article>`;
   }).join('')||`<div class="empty">${filtro?'Nenhum colaborador encontrado com esse nome.':'Nenhum colaborador.'}</div>`;
   refreshIcons();
@@ -1269,7 +1294,7 @@ function fillColabForm(c){
   $('colabDesativadoDesde').value=inativo?(c.desativado_desde||''):'';
 }
 function openColabEdit(id=null){
-  if(!currentIsAdmin) return;
+  if(!pode(id?'colaboradores.editar':'colaboradores.cadastrar')) return;
   const c=id?collaborators.find(x=>x.id===id):null;
   if(id&&!c) return;
   editingColabId=c?.id||null;
@@ -1314,7 +1339,7 @@ function valorParecido(texto,key){
 }
 
 async function saveColab(keepOpen=false){
-  if(!currentIsAdmin) return;
+  if(!pode('colaboradores.cadastrar','colaboradores.editar')) return;
   const simplificado=$('colabSimplificado').checked;
   const cpf=onlyDigits($('colabCpf').value);
   const nome=$('colabNome').value.trim();
@@ -1399,6 +1424,10 @@ function openColabMenu(trigger){
   const leave=$('colabMenu').querySelector('[data-colab-action="afastar"]');
   leave.querySelector('span').textContent=c.afastado===true?'Encerrar afastamento':'Afastar funcionário';
   const menu=$('colabMenu');
+  menu.querySelector('[data-colab-action="editar"]').hidden=!pode('colaboradores.editar');
+  menu.querySelector('[data-colab-action="afastar"]').hidden=!pode('colaboradores.editar');
+  menu.querySelector('[data-colab-action="ativo"]').hidden=!pode('colaboradores.desativar');
+  menu.querySelector('[data-colab-action="excluir"]').hidden=!pode('colaboradores.excluir');
   menu.classList.remove('hidden');
   refreshIcons();
   const r=trigger.getBoundingClientRect();
@@ -1566,9 +1595,9 @@ function renderEpis(){
             ${(hasValid||hasInvalid)?'<span class="epi-card-status-dot" aria-hidden="true"></span>':''}
             ${esc(caLabel)}
           </span>
-          ${currentIsAdmin?`
-            <span class="epi-card-action-btn epi-card-edit-btn" role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></span>
-            <span class="epi-card-action-btn epi-card-delete-btn" role="button" tabindex="0" data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></span>
+          ${pode('epis.editar','epis.excluir')?`
+            <span class="epi-card-action-btn epi-card-edit-btn"${pode('epis.editar')?'':' hidden'} role="button" tabindex="0" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></span>
+            <span class="epi-card-action-btn epi-card-delete-btn"${pode('epis.excluir')?'':' hidden'} role="button" tabindex="0" data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></span>
           `:''}
         </div>
       </div>
@@ -1611,7 +1640,7 @@ async function carregarSaldoPorCa(id){
   renderEpiTabela();
 }
 async function carregarEpiEstoque(){
-  if(epiEstoqueCarregando||!currentIsAdmin) return;
+  if(epiEstoqueCarregando||!pode('epis.consultar','estoque.consultar')) return;
   epiEstoqueCarregando=true;
   try{
     const [itens,mins,manuais,notas]=await Promise.all([
@@ -1815,7 +1844,7 @@ function recortarFundoBranco(url){
 })();
 
 async function deleteEpiCatalogItem(id){
-  if(!currentIsAdmin) return;
+  if(!pode('epis.excluir')) return;
 
   const epi=epiCatalog.find(x=>x.id===id);
   if(!epi) return;
@@ -1846,7 +1875,7 @@ async function deleteEpiCatalogItem(id){
 
 // id null = novo item (botão "Adicionar EPI" da tabela).
 function openEpiCatalogEdit(id){
-  if(!currentIsAdmin) return;
+  if(!pode(id?'epis.editar':'epis.cadastrar')) return;
   const novo=id==null;
   const epi=novo?{nome:'',categoria:''}:epiCatalog.find(x=>x.id===id);
   if(!epi) return;
@@ -1872,7 +1901,7 @@ function closeEpiCatalogEdit(){
 }
 
 async function saveEpiCatalogEdit(){
-  if(!currentIsAdmin||!editingCatalogEpiId) return;
+  if(!pode('epis.editar','epis.cadastrar')||!editingCatalogEpiId) return;
 
   const novo=editingCatalogEpiId==='__novo__';
   const epi=novo?{}:epiCatalog.find(x=>x.id===editingCatalogEpiId);
@@ -2130,8 +2159,8 @@ function openEpiDetail(epiId){
 }
 function setEpiVariantEditor(aberto){
   const ed=$('epiVariantEditor'); if(!ed) return;
-  ed.hidden=!(currentIsAdmin&&aberto);
-  if($('epiAddCaBtn')) $('epiAddCaBtn').hidden=!currentIsAdmin||!ed.hidden;
+  ed.hidden=!(pode('epis.editar')&&aberto);
+  if($('epiAddCaBtn')) $('epiAddCaBtn').hidden=!pode('epis.editar')||!ed.hidden;
 }
 function closeEpiDetail(){
   if($('epiDetailModal')) $('epiDetailModal').classList.add('hidden');
@@ -2181,7 +2210,7 @@ async function renderVariantImageEditor(v=null){
 }
 
 function chooseVariantImage(){
-  if(currentIsAdmin && $('epiVariantImageInput')) $('epiVariantImageInput').click();
+  if(pode('epis.editar') && $('epiVariantImageInput')) $('epiVariantImageInput').click();
 }
 
 function previewVariantImageFile(file){
@@ -2392,7 +2421,7 @@ async function lookupEpiVariantCa(){
   }
 }
 async function saveEpiVariant(){
-  if(!currentIsAdmin||!selectedEpi) return;
+  if(!pode('epis.editar','epis.cadastrar')||!selectedEpi) return;
 
   const previous=editingVariantId ? epiVariants.find(v=>v.id===editingVariantId)||null : null;
   const typedCa=ciCode($('epiVarCa').value) || String($('epiVarCa').value||'').replace(/\D+/g,'').slice(0,8);
@@ -2466,7 +2495,7 @@ async function saveEpiVariant(){
 }
 
 async function deleteEpiVariant(id){
-  if(!currentIsAdmin) return;
+  if(!pode('epis.editar')) return;
   const row=epiVariants.find(v=>v.id===id);
   if(!row) return;
   if(!confirm(`Excluir o ${codeTerm(row.ca)} ${row.ca} deste item?`)) return;
@@ -2645,7 +2674,7 @@ document.addEventListener('keydown',e=>{
 });
 
 $('addEpi').addEventListener('click',async()=>{
-  if(!currentIsAdmin) return;
+  if(!pode('epis.cadastrar')) return;
   const nome=$('newEpiNome').value.trim(),categoria=$('newEpiCat').value.trim();
   if(!nome) return;
   if(epiCatalog.some(x=>normalize(x.nome)===normalize(nome))){alert('Esse EPI/item já está cadastrado.');return}
@@ -2658,15 +2687,17 @@ $('addEpi').addEventListener('click',async()=>{
 async function loadAdminAccess(){
   const {data,error}=await sb.rpc('epi_admin_is_admin');
   currentIsAdmin=!error && data===true;
+  currentPerms=new Set();
+  if(!currentIsAdmin){
+    const r=await sb.rpc('epi_minhas_permissoes');
+    const lista=!r.error&&Array.isArray(r.data)?r.data:[];
+    currentPerms=new Set(lista.length?lista:PERMS_SEM_PERFIL);
+  }
 
   document.querySelectorAll('[data-admin-only]').forEach(el=>{
     el.hidden=!currentIsAdmin;
   });
-
-  const currentPage=document.querySelector('.page.active')?.dataset?.pageContent;
-  if(!currentIsAdmin && ['nova','programar','fila','colaboradores','epis','autorizacoes','dados'].includes(currentPage)){
-    nav('dashboard');
-  }
+  aplicarPermissoes();
 
   refreshIcons();
   return currentIsAdmin;
@@ -2996,7 +3027,7 @@ async function userIsAuthorized(){
 
 function showWaitingAccess(session){
   waitingSession=session||null;
-  currentIsAdmin=false;
+  currentIsAdmin=false; currentPerms=new Set();
   authorizedUsers=[];
   if($('authzNavBtn')) $('authzNavBtn').hidden=true;
 
@@ -3255,7 +3286,7 @@ async function showApp(session){
 function showAuth(message=''){
   clearAuthorizationWatch();
   waitingSession=null;
-  currentIsAdmin=false;
+  currentIsAdmin=false; currentPerms=new Set();
   authorizedUsers=[];
   document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=true});
   $('epiApp').classList.add('app-hidden');
