@@ -7,7 +7,7 @@
 
   const NOMES = { dashboard: 'Dashboard', nova: 'Entregar', programar: 'Programar entrega', fila: 'Fila de entregas',
     movimentacoes: 'Movimentações', colaboradores: 'Colaboradores', epis: 'EPIs / Itens', caepi: 'Consulta C.A.',
-    ciepi: 'Base CIEPI', autorizacoes: 'Autorizações', dados: 'Dados', pendencias: 'Pendências', estoque: 'Estoque' };
+    ciepi: 'Base CIEPI', autorizacoes: 'Administração', dados: 'Dados', pendencias: 'Pendências', estoque: 'Estoque' };
 
   const pc = window.matchMedia('(min-width:721px)');
   let original = null;

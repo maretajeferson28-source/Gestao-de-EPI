@@ -4542,3 +4542,56 @@
 }
 /* Notas: ao abrir uma nota já importada, só a DANFE (sem as abas Conferência / Nota). */
 .page.nfl-vendo .nfl-abas{display:none!important}
+/* =====================================================================
+   Administração (antiga Autorizações, js/administracao.js): painel de
+   cards; cada card abre a sua tela. Fundo com as ondas laranja.
+   ===================================================================== */
+.adm[hidden],.adm-tela[hidden]{display:none!important}
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="autorizacoes"].active){
+    background:
+      url("/assets/app-brand/colaboradores-ondas.svg?v=8") right -70px top -18px/100% auto no-repeat,
+      radial-gradient(ellipse 38% 30% at 34% 6%,rgba(70,87,105,.20) 0%,rgba(70,87,105,.06) 55%,transparent 80%),
+      radial-gradient(ellipse 34% 40% at 6% 62%,rgba(70,87,105,.13) 0%,transparent 75%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.40) 100%),
+      linear-gradient(180deg,#090D12 0%,#080C10 45%,#060A0E 100%)!important
+  }
+  .main:has(> .content > .page[data-page-content="autorizacoes"].active) > .topbar{display:none!important}
+  .adm-grade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:4px}
+  .adm-card{
+    --tom:#FF7A10;--tint:rgba(255,102,0,.10);
+    position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-height:168px;padding:18px;border-radius:14px;cursor:pointer;text-align:left;font:inherit;color:inherit;
+    border:1px solid rgba(178,191,205,.14);
+    background:radial-gradient(ellipse 70% 70% at 100% 0%,var(--tint) 0%,transparent 60%),linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28);transition:transform .16s ease,border-color .16s ease
+  }
+  .adm-card--blue{--tom:#38BDF8;--tint:rgba(3,174,255,.10)}
+  .adm-card--green{--tom:#1BD66A;--tint:rgba(27,214,106,.09)}
+  .adm-card--purple{--tom:#AF82F5;--tint:rgba(139,89,225,.11)}
+  .adm-card--yellow{--tom:#FFB800;--tint:rgba(255,184,0,.09)}
+  .adm-card:not(.is-breve):hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--tom) 55%,transparent)}
+  .adm-card:focus-visible{outline:2px solid var(--tom);outline-offset:2px}
+  .adm-card.is-breve{cursor:default;opacity:.62}
+  .adm-card__ic{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;color:var(--tom);border:1px solid color-mix(in srgb,var(--tom) 35%,transparent);background:color-mix(in srgb,var(--tom) 12%,#0E1217)}
+  .adm-card__ic svg{width:21px;height:21px}
+  .adm-card__corpo{display:flex;flex-direction:column;gap:5px}
+  .adm-card__corpo strong{font:700 16px/1.25 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .adm-card__corpo span{font:400 13px/1.4 Inter,Roboto,Arial,sans-serif;color:#AEB8C2}
+  .adm-card__pe{display:flex;align-items:center;gap:6px;margin-top:auto;font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;color:var(--tom)}
+  .adm-card__pe svg{width:14px;height:14px}
+  .adm-breve{padding:4px 9px;border-radius:999px;font:600 11px/1 Inter,Roboto,Arial,sans-serif;color:#C4CDD6;background:rgba(178,191,205,.08);border:1px solid rgba(178,191,205,.18)}
+
+  /* Tela aberta: barra com Voltar e o título; o título antigo some */
+  .adm-tela-barra{display:flex;align-items:center;gap:12px;margin:22px 0 18px}
+  .adm-tela-ic{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;color:#FF6600;border:1px solid rgba(255,111,25,.35);background:linear-gradient(135deg,#583018,#24160F 65%,#111214);margin-left:6px}
+  .adm-tela-ic svg{width:18px;height:18px}
+  .adm-tela-tit{font:700 22px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .adm-tela > .section-title{display:none!important}
+  .adm-tela .authz-form-card,.adm-tela .authz-list-panel{
+    background:radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.06) 0%,transparent 60%),linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%)!important;
+    border:1px solid rgba(178,191,205,.14)!important;border-radius:14px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)!important
+  }
+  .adm-tela .authz-form-card input{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important}
+  .adm-tela .authz-form-card input:focus{border-color:rgba(255,121,0,.6)!important}
+  .adm-tela .authz-table thead th{background:rgb(26,34,43)!important;color:#DFE3E7!important}
+}

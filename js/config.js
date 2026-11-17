@@ -158,6 +158,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(notasListaScript);
   }
 
+  if (!document.querySelector('script[data-administracao]')) {
+    const admScript = document.createElement('script');
+    admScript.src = 'js/administracao.js?v=20261117-1';
+    admScript.dataset.administracao = 'true';
+    document.body.appendChild(admScript);
+  }
+
   if (!document.querySelector('script[data-stock-entry]')) {
     const stockEntryScript = document.createElement('script');
     stockEntryScript.src = 'js/stock-entry.js?v=20261023-4';
@@ -244,7 +251,7 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-moldura]')) {
     const molduraScript = document.createElement('script');
-    molduraScript.src = 'js/moldura.js?v=20261110-1';
+    molduraScript.src = 'js/moldura.js?v=20261117-1';
     molduraScript.dataset.moldura = 'true';
     document.body.appendChild(molduraScript);
   }
