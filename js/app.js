@@ -1277,7 +1277,7 @@ function openColabEdit(id=null){
   $('colabEditTitle').textContent=c?c.nome:'Cadastro de funcionário';
   $('colabEditSaveNew').hidden=Boolean(c);
   for(const [list,key] of [['dlColabCargo','cargo'],['dlColabSetor','setor'],['dlColabFuncao','funcao']]){
-    $(list).innerHTML=unique(collaborators.map(x=>x[key])).map(v=>`<option value="${esc(v)}">`).join('');
+    $(list).innerHTML=valoresSemRepetir(key).map(v=>`<option value="${esc(v)}">`).join('');
   }
   fillColabForm(c);
   setColabMode(c?.cadastro_simplificado===true);
@@ -1290,6 +1290,29 @@ function closeColabEdit(){
   editingColabId=null;
   $('colabEditModal')?.classList.add('hidden');
 }
+// Sugestões de cargo / setor / função sem repetidos: junta o que só muda em
+// maiúscula, acento ou espaço e mostra a forma mais usada.
+const chaveTexto=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+function valoresSemRepetir(key){
+  const grupos=new Map();
+  collaborators.forEach(c=>{const v=String(c[key]||'').trim();if(!v)return;const k=chaveTexto(v);const g=grupos.get(k)||new Map();g.set(v,(g.get(v)||0)+1);grupos.set(k,g)});
+  return [...grupos.values()].map(g=>[...g.entries()].sort((a,b)=>b[1]-a[1])[0][0]).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+}
+// Distância de edição pequena (até 2 letras, ou 1 em textos curtos) = provável erro de digitação.
+function distancia(a,b){
+  const m=a.length,n=b.length; if(Math.abs(m-n)>2) return 9;
+  let ant=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){const atual=[i];for(let j=1;j<=n;j++) atual[j]=Math.min(ant[j]+1,atual[j-1]+1,ant[j-1]+(a[i-1]===b[j-1]?0:1));ant=atual}
+  return ant[n];
+}
+function valorParecido(texto,key){
+  const k=chaveTexto(texto); if(!k) return null;
+  const outros=valoresSemRepetir(key);
+  if(outros.some(v=>chaveTexto(v)===k)) return outros.find(v=>chaveTexto(v)===k)!==texto.trim()?outros.find(v=>chaveTexto(v)===k):null;
+  const limite=k.length<=6?1:2;
+  return outros.map(v=>[v,distancia(k,chaveTexto(v))]).filter(([,d])=>d<=limite).sort((a,b)=>a[1]-b[1])[0]?.[0]||null;
+}
+
 async function saveColab(keepOpen=false){
   if(!currentIsAdmin) return;
   const simplificado=$('colabSimplificado').checked;
@@ -1303,6 +1326,12 @@ async function saveColab(keepOpen=false){
   if(!simplificado&&!admissao) return setColabMsg('Informe a data de admissão.',true);
   if(collaborators.some(x=>x.id!==editingColabId&&normalize(x.nome)===normalize(nome))) return setColabMsg('Já existe um funcionário com esse nome.',true);
   if(collaborators.some(x=>x.id!==editingColabId&&x.cpf===cpf)) return setColabMsg('Esse CPF já está cadastrado em outro funcionário.',true);
+  // Cargo, setor e função quase iguais a um que já existe ("Motorist
+  // Carreteiro"): oferece trocar pelo que já está cadastrado.
+  for(const [id,key,rot] of [['colabCargo','cargo','Cargo'],['colabSetor','setor','Setor'],['colabFuncao','funcao','Função']]){
+    const certo=valorParecido($(id).value,key);
+    if(certo&&confirm(`${rot} "${$(id).value.trim()}" é parecido com "${certo}", que já está cadastrado.\n\nUsar "${certo}"?`)) $(id).value=certo;
+  }
 
   const payload={
     cpf,nome,
