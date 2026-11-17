@@ -95,6 +95,11 @@
   }
   function escolher(id) {
     sala = id; pag = 1; menos = 0;
+    // A busca é a mesma caixa nas três salas: ao trocar, começa limpa (senão
+    // "Camiseta" digitado na sala de uniforme zerava a Sala de EPI). O evento
+    // faz a Sala de EPI recarregar sem filtro (js/stock-nav.js).
+    const busca = document.getElementById('estqBusca');
+    if (busca && busca.value) { busca.value = ''; busca.dispatchEvent(new Event('input', { bubbles: true })); }
     montarSeletor();
     desenhar();
   }
