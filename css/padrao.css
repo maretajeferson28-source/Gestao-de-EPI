@@ -4598,6 +4598,7 @@
 /* Modal do perfil (js/perfis.js): partes à esquerda, telas em dropdown à direita. */
 .dep-modal .prf-janela{width:min(880px,calc(100vw - 28px));max-height:calc(100vh - 40px);display:flex;flex-direction:column}
 .prf-janela .data-edit-body{display:flex;flex-direction:column;min-height:0;overflow:auto}
+.prf-janela .data-edit-body > *{flex-shrink:0}
 .prf-janela .prf-nome{max-width:380px;margin:0 0 14px}
 .prf-corpo{display:grid;grid-template-columns:230px minmax(0,1fr);gap:14px;min-height:340px}
 .prf-nav{display:flex;flex-direction:column;gap:4px;padding-right:14px;border-right:1px solid rgba(178,191,205,.12)}
