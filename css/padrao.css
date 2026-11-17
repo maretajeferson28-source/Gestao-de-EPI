@@ -4486,3 +4486,14 @@
 @media (min-width:721px){ .nfl-tab .c-serie{width:64px} .nfl-tab tbody td{height:40px} }
 /* Notas Fiscais: busca e filtros acima dos cards. */
 @media (min-width:721px){ .page[data-page-content="notas"] .nfl{grid-template-areas:"head" "barra" "kpis" "tabela" "rodape"!important} .nfl > .nfl-barra{margin:0 0 14px!important} }
+/* Notas Fiscais: 5 cards; "Sem vínculo" clicável (filtra a tabela). */
+@media (min-width:721px){
+  .nfl > .nfl-kpis{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  .nfl-kpi-sem{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+  .nfl-kpi-sem:hover{transform:translateY(-1px)}
+  .nfl-kpi-sem:focus-visible{outline:2px solid #FFB800;outline-offset:2px}
+  .nfl-kpi-sem.is-ativo{box-shadow:0 0 0 2px rgba(255,184,0,.55),0 0 18px rgba(255,184,0,.18)!important}
+  .nfl-kpi-sem.kpi-card--green{cursor:default}
+  .nfl-kpi-sem.kpi-card--green:hover{transform:none}
+}
+@media (min-width:721px){ .nfl-kpi-sem.is-vazio{cursor:default} .nfl-kpi-sem.is-vazio:hover{transform:none} }

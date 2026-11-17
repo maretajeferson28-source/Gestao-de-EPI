@@ -25,7 +25,7 @@
   const mesChave = (iso) => { const d = diaBR(iso); return d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : ''; };
 
   let notas = [], carregado = false, pag = 1, vista = 'lista';
-  const filtro = { busca: '', mes: '', forn: '' };
+  const filtro = { busca: '', mes: '', forn: '', sem: false };
 
   async function carregar() {
     const cli = db();
@@ -84,6 +84,7 @@
         <article class="kpi-card kpi-card--green"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="banknote"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Valor</p><div class="kpi-card__value-row"><strong class="kpi-card__value nfl-kpi-moeda" data-nfl-kpi="valor">–</strong></div><p class="kpi-card__sub">soma das notas</p></div></article>
         <article class="kpi-card kpi-card--blue"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="package-plus"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Itens</p><div class="kpi-card__value-row"><strong class="kpi-card__value" data-nfl-kpi="itens">–</strong></div><p class="kpi-card__sub">entraram no estoque</p></div></article>
         <article class="kpi-card kpi-card--purple"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="calendar-days"></i></div><div class="kpi-card__body"><p class="kpi-card__label">No mês</p><div class="kpi-card__value-row"><strong class="kpi-card__value nfl-kpi-moeda" data-nfl-kpi="mes">–</strong></div><p class="kpi-card__sub" data-nfl-kpi="mesSub">—</p></div></article>
+        <article class="kpi-card kpi-card--yellow nfl-kpi-sem" data-nfl-sem role="button" tabindex="0" title="Mostrar só as notas com linhas fora do estoque"><div class="kpi-card__icon" aria-hidden="true"><i data-lucide="link-2-off"></i></div><div class="kpi-card__body"><p class="kpi-card__label">Sem vínculo</p><div class="kpi-card__value-row"><strong class="kpi-card__value" data-nfl-kpi="sem">–</strong></div><p class="kpi-card__sub" data-nfl-kpi="semSub">linhas fora do estoque</p></div></article>
       </section>
       <div class="epi-barra nfl-barra">
         <label class="colab-busca epi-busca nfl-busca"><i data-lucide="search" aria-hidden="true"></i><input type="search" data-nfl-busca placeholder="Buscar NF, fornecedor ou chave" autocomplete="off" aria-label="Buscar nota"></label>
@@ -107,6 +108,11 @@
     $('[data-nfl-mes]', lista).addEventListener('change', (e) => { filtro.mes = e.target.value; pag = 1; desenhar(); });
     $('[data-nfl-forn]', lista).addEventListener('change', (e) => { filtro.forn = e.target.value; pag = 1; desenhar(); });
     $('[data-nfl-importar]', lista).addEventListener('click', () => irPara('importar'));
+    // Card "Sem vínculo": liga / desliga o filtro das notas com linhas soltas.
+    const semCard = $('[data-nfl-sem]', lista);
+    const alternaSem = () => { if (semCard.classList.contains('is-vazio')) return; filtro.sem = !filtro.sem; pag = 1; menos = 0; desenhar(); };
+    semCard.addEventListener('click', alternaSem);
+    semCard.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alternaSem(); } });
     $('[data-nfl-voltar]', imp).addEventListener('click', () => { irPara('lista'); carregar(); });
     $('[data-nfl-rodape]', lista).addEventListener('click', (e) => { const b = e.target.closest('[data-nfl-pagina]'); if (b && !b.disabled) { pag = Number(b.dataset.nflPagina); desenhar(); } });
     $('[data-nfl-body]', lista).addEventListener('click', (e) => {
@@ -224,6 +230,17 @@
     k('mes', moeda(doMes.reduce((t, n) => t + (Number(n.valor_total) || 0), 0)));
     k('mesSub', `${num(doMes.length)} ${doMes.length === 1 ? 'nota' : 'notas'} em ${MES[hoje.getMonth()]}/${hoje.getFullYear()}`);
 
+    // Sem vínculo: linhas de nota sem EPI ligado (ficaram fora do estoque).
+    const semLinhas = ativas.reduce((t, n) => t + n.pendentes, 0), semNotas = ativas.filter((n) => n.pendentes).length;
+    k('sem', num(semLinhas));
+    k('semSub', semLinhas ? `em ${num(semNotas)} ${semNotas === 1 ? 'nota' : 'notas'}${filtro.sem ? ' · filtrando' : ' · clique para ver'}` : 'tudo ligado ao estoque');
+    if (!semLinhas && filtro.sem) filtro.sem = false;
+    const semCard = $('[data-nfl-sem]', raiz);
+    semCard.title = semLinhas ? (filtro.sem ? 'Mostrar todas as notas' : 'Mostrar só as notas com linhas fora do estoque') : 'Todas as linhas das notas estão ligadas a um EPI';
+    // Sempre amarelo; sem pendência ele só não reage ao clique.
+    semCard.classList.toggle('is-vazio', !semLinhas);
+    semCard.classList.toggle('is-ativo', filtro.sem);
+
     // Filtros
     const meses = [...new Set(notas.map((n) => mesChave(n.data_emissao)).filter(Boolean))].sort().reverse();
     opcoes($('[data-nfl-mes]', raiz), meses.map((m) => [m, `${MES[Number(m.slice(5)) - 1]}/${m.slice(0, 4)}`]), 'Período', filtro.mes);
@@ -232,7 +249,7 @@
 
     const q = semAcento(filtro.busca.trim());
     const lista = notas.filter((n) => (!q || semAcento(`${n.numero} ${n.serie} ${n.emitente_nome} ${n.emitente_documento} ${n.chave_acesso}`).includes(q))
-      && (!filtro.mes || mesChave(n.data_emissao) === filtro.mes) && (!filtro.forn || n.emitente_nome === filtro.forn));
+      && (!filtro.mes || mesChave(n.data_emissao) === filtro.mes) && (!filtro.forn || n.emitente_nome === filtro.forn) && (!filtro.sem || n.pendentes > 0));
 
     const por = porPagina();
     const paginas = Math.max(1, Math.ceil(lista.length / por));
