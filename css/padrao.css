@@ -4498,3 +4498,24 @@
 }
 @media (min-width:721px){ .nfl-kpi-sem.is-vazio{cursor:default} .nfl-kpi-sem.is-vazio:hover{transform:none} }
 @keyframes nflGira{to{transform:rotate(360deg)}} .nfl-girando{animation:nflGira .9s linear infinite}
+/* DANFE (tela e PDF): letras maiores. Os rótulos de 5–6 px ficavam
+   ilegíveis; sobem ~30% sem mudar as colunas (as células crescem na altura). */
+.danfe-sheet .danfe-cell span{font-size:7.4px;line-height:1.15}
+.danfe-sheet .danfe-cell strong{font-size:10px;line-height:1.2}
+.danfe-sheet .danfe-cell.grow strong{font-size:11.5px}
+.danfe-sheet .danfe-tax-grid .danfe-total strong{font-size:11.5px}
+.danfe-sheet .danfe-section-title{font-size:8.2px}
+.danfe-sheet .danfe-receipt-copy{font-size:8px}
+.danfe-sheet .danfe-receipt-sign{font-size:7.2px}
+.danfe-sheet .danfe-issuer em{font-size:8px}
+.danfe-sheet .danfe-issuer span{font-size:9px}
+.danfe-sheet .danfe-title-box>span{font-size:8px}
+.danfe-sheet .danfe-entry span{font-size:8px}
+.danfe-sheet .danfe-key-box span,.danfe-sheet .danfe-key-box small{font-size:7.4px}
+.danfe-sheet .danfe-key-box strong{font-size:10px}
+.danfe-sheet .danfe-products{font-size:7.2px}
+.danfe-sheet .danfe-products thead th{font-size:6.6px;line-height:1.1}
+.danfe-sheet .danfe-products .desc{font-size:7.8px;line-height:1.2}
+.danfe-sheet .danfe-products .desc small{font-size:6.6px}
+.danfe-sheet .danfe-additional-box span{font-size:7.4px}
+.danfe-sheet .danfe-additional-box p{font-size:7.8px;line-height:1.25}
