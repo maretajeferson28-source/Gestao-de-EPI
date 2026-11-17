@@ -1021,11 +1021,92 @@ function renderMovs(){
   refreshIcons();
 }
 
+// A mesma janela serve para editar e para lançar uma movimentação nova à mão
+// (controle de consumo): movModo 'editar' | 'novo'.
+let movModo='editar';
+function movJanelaModo(modo){
+  movModo=modo;
+  const novo=modo==='novo';
+  const head=$('movementEditModal').querySelector('.data-edit-head');
+  head.querySelector('span').textContent=novo?'LANÇAMENTO MANUAL':'EDIÇÃO DE REGISTRO';
+  $('movementEditTitle').textContent=novo?'Nova movimentação':'Editar movimentação';
+  head.querySelector('.data-edit-icon').innerHTML=`<i data-lucide="${novo?'file-plus-2':'pencil-line'}" aria-hidden="true"></i>`;
+  const nota=$('movementEditModal').querySelector('.data-edit-note span');
+  if(nota) nota.textContent=novo
+    ?'A entrega fica ligada ao colaborador e aparece no histórico e no prontuário dele.'
+    :'A edição corrige o registro salvo e mantém a origem original da movimentação.';
+  $('movementEditSave').innerHTML=`<i data-lucide="save" aria-hidden="true"></i>${novo?'Salvar movimentação':'Salvar alterações'}`;
+  // "Tirar do estoque": só no lançamento novo.
+  let baixa=$('movNovoBaixa');
+  if(!baixa){
+    const f=document.createElement('label');
+    f.className='field wide mov-novo-baixa';
+    f.innerHTML='<input id="movNovoBaixa" type="checkbox" checked><span>Tirar do estoque <small>(desmarque para entregas antigas, que já saíram antes do app)</small></span>';
+    $('movementEditModal').querySelector('.data-edit-grid').appendChild(f);
+    baixa=$('movNovoBaixa');
+  }
+  baixa.closest('.field').hidden=!novo;
+  refreshIcons();
+}
+function openMovementAdd(){
+  if(!currentIsAdmin) return;
+  movJanelaModo('novo');
+  editingMovementId=null;
+  $('movEditData').value=todayLocal();
+  ['movEditColab','movEditEpi','movEditCa','movEditTam','movEditObs'].forEach(id=>{$(id).value=''});
+  $('movEditQtd').value=1;
+  $('movEditResp').value='Jeferson';
+  $('movNovoBaixa').checked=true;
+  $('movementEditOrigin').textContent='Para registrar entregas feitas fora do app (controle de consumo).';
+  $('movementEditMsg').textContent='';
+  $('movementEditModal').classList.remove('hidden');
+  setTimeout(()=>$('movEditColab').focus(),30);
+}
+$('movNovo')?.addEventListener('click',openMovementAdd);
+
+async function saveMovementAdd(){
+  const epiNome=$('movEditEpi').value.trim();
+  const epi=epiCatalog.find(x=>normalize(x.nome)===normalize(epiNome));
+  const qtd=Number($('movEditQtd').value);
+  const resp=$('movEditResp').value.trim();
+  const colNome=$('movEditColab').value.trim();
+  const msg=$('movementEditMsg');
+  // Colaborador cadastrado (ou Bolsa Reserva): é o que liga a entrega ao histórico dele.
+  const col=(colNome&&colNome!=='Bolsa Reserva')?findCollaborator(colNome):null;
+  if(!colNome){msg.textContent='Escolha o colaborador.';return}
+  if(colNome!=='Bolsa Reserva'&&!col){msg.textContent=`"${colNome}" não é um colaborador cadastrado. Escolha um da lista para ligar a entrega ao histórico dele.`;return}
+  if(!epi){msg.textContent='Selecione um EPI / item já cadastrado.';return}
+  if(!$('movEditData').value||!Number.isInteger(qtd)||qtd<1||!resp){msg.textContent='Confira data, quantidade e responsável.';return}
+  const payload={
+    id:crypto.randomUUID(),
+    data:$('movEditData').value,
+    colaborador_id:col?.id||null,
+    colaborador_nome_informado:col?.nome||colNome,
+    epi_id:epi.id,
+    epi_nome_original:epi.nome,
+    quantidade:qtd,
+    ca:$('movEditCa').value.trim()||'N/A',
+    tamanho:$('movEditTam').value.trim()||'N/A',
+    responsavel:resp,
+    observacao:$('movEditObs').value.trim()||null,
+    origem:'Lançamento manual',
+    contabiliza_estoque:$('movNovoBaixa').checked
+  };
+  msg.textContent='Salvando...';
+  $('movementEditSave').disabled=true;
+  const {error}=await sb.from('movimentacoes_epi').insert(payload);
+  $('movementEditSave').disabled=false;
+  if(error){msg.textContent=error.message;return}
+  closeMovementEdit();
+  await loadAll(false);
+}
+
 function openMovementEdit(id){
   if(!currentIsAdmin) return;
   const row=movements.find(x=>x.id===id);
   if(!row) return;
 
+  movJanelaModo('editar');
   editingMovementId=id;
   $('movEditData').value=brToISO(row.data)||'';
   $('movEditColab').value=row.colaborador||'';
@@ -1048,6 +1129,7 @@ function closeMovementEdit(){
 }
 
 async function saveMovementEdit(){
+  if(currentIsAdmin&&movModo==='novo') return saveMovementAdd();
   if(!currentIsAdmin||!editingMovementId) return;
 
   const row=movements.find(x=>x.id===editingMovementId);

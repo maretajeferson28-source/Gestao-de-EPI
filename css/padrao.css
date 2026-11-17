@@ -4342,3 +4342,14 @@
   .page[data-page-content="programar"] .prog-item--uni .prog-epi-icone{display:none!important}
   .page[data-page-content="programar"] .prog-item--uni .prog-epi-cel input{width:100%!important}
 }
+/* Movimentações: botão "Adicionar" (lançamento manual) no fim da barra e a
+   opção "Tirar do estoque" na janela. */
+@media (min-width:721px){
+  .page[data-page-content="movimentacoes"] .mov-barra .mov-novo{height:32px!important;padding:0 14px!important;margin:0!important;flex-shrink:0}
+}
+.mov-novo-baixa{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;cursor:pointer;margin-top:2px}
+.mov-novo-baixa[hidden]{display:none!important}
+.mov-novo-baixa input{width:18px!important;height:18px!important;min-height:0!important;flex:0 0 18px;accent-color:#FF6600;margin:0}
+.mov-novo-baixa span{font:500 13px/1.35 Inter,Roboto,Arial,sans-serif;color:#E5E8EA;text-transform:none;letter-spacing:0}
+.mov-novo-baixa small{color:#9FB0C2;font-size:12px}
+@media (min-width:721px){ .page[data-page-content="movimentacoes"] .mov-barra > .btn{white-space:nowrap!important;flex-shrink:0!important} .page[data-page-content="movimentacoes"] .mov-barra .mov-busca{flex:1 1 220px!important;min-width:180px!important} }
