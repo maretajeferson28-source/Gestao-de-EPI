@@ -221,7 +221,6 @@
             <nav class="prf-nav" aria-label="Partes do sistema"></nav>
             <div class="prf-telas"></div>
           </div>
-          <p class="prf-nota"><i data-lucide="info"></i>A Administração é só do administrador. Por enquanto o perfil fica guardado e ligado ao usuário; na próxima etapa o app e o banco passam a obedecer a ele.</p>
           <div class="data-edit-actions">
             <span class="prf-msg" data-prf-msg></span>
             <button class="btn" type="button" data-prf-fechar>Cancelar</button>
