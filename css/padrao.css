@@ -4749,3 +4749,8 @@
 #authzJanela .authz-senha{position:relative}
 #authzJanela .authz-senha input{padding-right:38px!important}
 #authzJanela .msg.is-error{color:#F87171}
+/* Menu ⋯ (usuários e perfis) mais fino. */
+.authz-menu{min-width:0!important;width:max-content;padding:4px!important;border-radius:10px!important}
+.authz-menu button{gap:8px!important;padding:6px 10px!important;border-radius:6px!important;font-size:12.5px!important}
+.authz-menu button svg{width:14px!important;height:14px!important}
+.authz-menu-sep{margin:4px 6px!important}
