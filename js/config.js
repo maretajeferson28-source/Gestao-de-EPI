@@ -144,6 +144,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(estoqueSalasScript);
   }
 
+  if (!document.querySelector('script[data-avulsa-uniforme]')) {
+    const avulsaUniScript = document.createElement('script');
+    avulsaUniScript.src = 'js/avulsa-uniforme.js?v=20261117-1';
+    avulsaUniScript.dataset.avulsaUniforme = 'true';
+    document.body.appendChild(avulsaUniScript);
+  }
+
   if (!document.querySelector('script[data-stock-entry]')) {
     const stockEntryScript = document.createElement('script');
     stockEntryScript.src = 'js/stock-entry.js?v=20261023-4';

@@ -4306,3 +4306,10 @@
 .prog-uni-btn.is-on svg{color:#fff}
 .prog-uni-btn:focus-visible{outline:2px solid #FF6600;outline-offset:2px}
 .prog-item--uni select[data-campo="tamuni"]{text-align:center}
+/* Entrega avulsa: botão "Uniforme" e o saldo da sala ao lado do Tamanho. */
+.av-uni-barra{display:flex;justify-content:flex-end;margin:0 0 12px}
+.av-uni-barra .prog-uni-btn{margin-left:0}
+.av-uni-campo[hidden]{display:none!important}
+.av-uni-saldo{font-weight:600;color:#4ADE80;text-transform:none;letter-spacing:0}
+.av-uni-saldo.is-ruim{color:#F87171}
+#saidaForm .av-uni-campo select{width:100%;color-scheme:dark}
