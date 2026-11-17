@@ -144,7 +144,7 @@
     const sel = linha.querySelector('[data-campo="sala"]');
     const salas = peca ? uni.salas.filter((s) => uni.itens.some((x) => x.deposito_id === s.id && x.peca === peca)) : [];
     sel.innerHTML = salas.length
-      ? '<option value="">Escolher</option>' + salas.map((s) => { const t = uni.itens.filter((x) => x.deposito_id === s.id && x.peca === peca).reduce((a, x) => a + x.quantidade, 0); return `<option value="${esc(s.id)}" title="${esc(s.nome)}: ${fmt(t)} peças">${esc(salaCurta(s.nome))}</option>`; }).join('')
+      ? '<option value="">—</option>' + salas.map((s) => { const t = uni.itens.filter((x) => x.deposito_id === s.id && x.peca === peca).reduce((a, x) => a + x.quantidade, 0); return `<option value="${esc(s.id)}" title="${esc(s.nome)}: ${fmt(t)} peças">${esc(salaCurta(s.nome))}</option>`; }).join('')
       : '<option value="">—</option>';
     sel.disabled = !salas.length;
     if (salas.length === 1) sel.value = salas[0].id;

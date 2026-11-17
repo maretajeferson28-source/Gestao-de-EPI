@@ -4336,3 +4336,9 @@
 }
 /* Programar: com o botão Uniforme ligado, a faixa "Falta entregar pela O.S." some. */
 .page[data-page-content="programar"]:has(.prog-uni-on) #progFaltaOs{display:none!important}
+/* Programar, uniforme: sem a caixinha da foto (as peças não têm foto); o
+   nome do item fica com a largura toda da coluna. */
+@media (min-width:721px){
+  .page[data-page-content="programar"] .prog-item--uni .prog-epi-icone{display:none!important}
+  .page[data-page-content="programar"] .prog-item--uni .prog-epi-cel input{width:100%!important}
+}
