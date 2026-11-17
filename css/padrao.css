@@ -4353,3 +4353,5 @@
 .mov-novo-baixa span{font:500 13px/1.35 Inter,Roboto,Arial,sans-serif;color:#E5E8EA;text-transform:none;letter-spacing:0}
 .mov-novo-baixa small{color:#9FB0C2;font-size:12px}
 @media (min-width:721px){ .page[data-page-content="movimentacoes"] .mov-barra > .btn{white-space:nowrap!important;flex-shrink:0!important} .page[data-page-content="movimentacoes"] .mov-barra .mov-busca{flex:1 1 220px!important;min-width:180px!important} }
+/* Movimentações: sem o botão Atualizar (os dados recarregam sozinhos e o sincronizar fica no topo). */
+.page[data-page-content="movimentacoes"] .mov-barra #refreshData{display:none!important}
