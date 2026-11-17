@@ -160,7 +160,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-administracao]')) {
     const admScript = document.createElement('script');
-    admScript.src = 'js/administracao.js?v=20261117-1';
+    admScript.src = 'js/administracao.js?v=20261117-2';
     admScript.dataset.administracao = 'true';
     document.body.appendChild(admScript);
   }
@@ -257,7 +257,7 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-menu-grupos]')) {
     const menuGruposScript = document.createElement('script');
-    menuGruposScript.src = 'js/menu-grupos.js?v=20261110-1';
+    menuGruposScript.src = 'js/menu-grupos.js?v=20261117-1';
     menuGruposScript.dataset.menuGrupos = 'true';
     document.body.appendChild(menuGruposScript);
   }

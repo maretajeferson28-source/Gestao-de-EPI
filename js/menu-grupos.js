@@ -53,7 +53,8 @@
       }
       const itens = box.querySelector('.nav-grupo-itens');
       // Ordem certa dos botões que já existem (Estoque e Notas chegam depois).
-      const certos = g.paginas.map((p) => nav.querySelector(`[data-page="${p}"]`)).filter(Boolean);
+      // Uma página pode ter vários botões (Administração: um por assunto).
+      const certos = g.paginas.flatMap((p) => [...nav.querySelectorAll(`[data-page="${p}"]`)]);
       const atuais = [...itens.children];
       const emOrdem = certos.length === atuais.length && certos.every((b, i) => atuais[i] === b);
       if (!emOrdem) certos.forEach((b) => itens.appendChild(b));
