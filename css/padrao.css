@@ -4357,3 +4357,40 @@
 .page[data-page-content="movimentacoes"] .mov-barra #refreshData{display:none!important}
 /* Notas: a conta do total (produtos + IPI…) embaixo do valor do cartão. */
 .nfe-file-row-conta{display:block;margin-top:3px;font:500 11px/1.3 Inter,Roboto,Arial,sans-serif;color:#9FB0C2;white-space:normal}
+/* =====================================================================
+   Notas Fiscais (PC): lista das notas importadas no padrão do Estoque
+   (js/notas-lista.js). A importação de sempre fica atrás de "Importar XML".
+   ===================================================================== */
+.nfl[hidden],.nfl-import[hidden]{display:none!important}
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="notas"].active){
+    background:
+      url("/assets/app-brand/colaboradores-ondas.svg?v=8") right -70px top -18px/100% auto no-repeat,
+      radial-gradient(ellipse 38% 30% at 34% 6%,rgba(70,87,105,.20) 0%,rgba(70,87,105,.06) 55%,transparent 80%),
+      radial-gradient(ellipse 34% 40% at 6% 62%,rgba(70,87,105,.13) 0%,transparent 75%),
+      radial-gradient(ellipse 40% 34% at 60% 100%,rgba(70,87,105,.12) 0%,transparent 75%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.40) 100%),
+      linear-gradient(180deg,#090D12 0%,#080C10 45%,#060A0E 100%)!important
+  }
+  .main:has(> .content > .page[data-page-content="notas"].active) > .topbar{display:none!important}
+  .content:has(> .page[data-page-content="notas"].active:not(.nfl-importando)){padding-bottom:12px!important}
+  .page[data-page-content="notas"] .nfl{
+    display:grid;grid-template-columns:158px minmax(0,1fr);column-gap:14px;align-items:start;align-content:start;
+    grid-template-areas:"head head" "barra barra" "kpis tabela" "kpis rodape"
+  }
+  .nfl > .nfl-head{grid-area:head}
+  .nfl > .nfl-kpis{grid-area:kpis;display:grid;grid-template-columns:1fr!important;grid-template-rows:repeat(4,minmax(0,1fr));gap:10px;margin:0!important;align-self:stretch!important}
+  .nfl > .nfl-barra{grid-area:barra}
+  .nfl > .nfl-tab-wrap{grid-area:tabela}
+  .nfl > .nfl-rodape{grid-area:rodape}
+  .nfl-kpis .kpi-card__value.nfl-kpi-moeda{font-size:19px!important;white-space:nowrap}
+  .nfl-kpis .kpi-card__moeda{font-size:.6em;margin-right:3px;color:#C9D0D7}
+  .nfl-tab .c-data{width:104px}.nfl-tab .c-nf{width:104px}.nfl-tab .c-num{width:76px}.nfl-tab .c-valor{width:128px}.nfl-tab .c-sit{width:190px}.nfl-tab .c-acao{width:100px}
+  .nfl-tab .epi-sit{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* Importação: barra com "Voltar às notas" no lugar do título antigo */
+  .nfl-import .nfe-page-title{display:none!important}
+  .nfl-import-barra{display:flex;align-items:center;gap:14px;margin:20px 0 14px}
+  .nfl-import-tit{font:700 20px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+}
+@media (min-width:721px){ .nfl-tab .c-data{width:96px}.nfl-tab .c-nf{width:90px}.nfl-tab .c-num{width:64px}.nfl-tab .c-valor{width:116px}.nfl-tab .c-sit{width:132px}.nfl-tab .c-acao{width:96px} }
+@media (min-width:721px){ .nfl-tab .c-data{width:104px}.nfl-tab .c-sit{width:124px} }
