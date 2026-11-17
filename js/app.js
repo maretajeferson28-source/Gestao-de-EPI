@@ -966,15 +966,19 @@ function renderRodapeMov(mostrando,total,paginas,noPc){
     <button type="button" class="g-employee-page" data-mov-pagina="${movPagina-1}"${movPagina<=1?' disabled':''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>${nums}
     <button type="button" class="g-employee-page" data-mov-pagina="${movPagina+1}"${movPagina>=paginas?' disabled':''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>`:'');
 }
-function renderMovs(){
-  montarFiltrosMov();
+// Movimentações na ordem e com os filtros da tela (tabela e exportação usam a mesma lista).
+function movsFiltrados(){
   const q=$('movSearch').value.trim().toLowerCase();
   const fv=id=>$(id)?.value||'';
   const mes=fv('movFMes'), setor=fv('movFSetor'), epi=fv('movFEpi'), resp=fv('movFResp');
-  const arr=[...movements]
+  return [...movements]
     .sort((a,b)=>parseBR(b.data)-parseBR(a.data)||String(b.id).localeCompare(String(a.id)))
     .filter(x=>!q||[x.data,x.colaborador,x.epi,x.ca,x.responsavel].some(v=>String(v||'').toLowerCase().includes(q)))
     .filter(x=>(!mes||String(x.data||'').slice(3)===mes)&&(!setor||setorDaMov(x)===setor)&&(!epi||String(x.epi||'').trim()===epi)&&(!resp||String(x.responsavel||'').trim()===resp));
+}
+function renderMovs(){
+  montarFiltrosMov();
+  const arr=movsFiltrados();
 
   // No PC: páginas (sem rolagem), com quantas linhas cabem na tela.
   const noPc=window.matchMedia('(min-width:721px)').matches;
@@ -2751,10 +2755,46 @@ function dl(name,content,type='application/octet-stream'){
   setTimeout(()=>URL.revokeObjectURL(a.href),500);
 }
 $('exportJson').addEventListener('click',()=>dl('backup_epi_supabase.json',JSON.stringify({exportado_em:new Date().toISOString(),movements,collaborators,epiCatalog},null,2),'application/json'));
-$('exportCsv').addEventListener('click',()=>{
-  const head=['Data','Colaborador','EPI','Quantidade','CA','Tamanho','Responsavel'];
-  const rows=movements.map(x=>[x.data,x.colaborador||'',x.epi,x.quantidade??'',x.ca||'',x.tamanho||'',x.responsavel].map(v=>`"${String(v).replaceAll('"','""')}"`).join(';'));
-  dl('movimentacoes_epi.csv','\ufeff'+head.join(';')+'\n'+rows.join('\n'),'text/csv;charset=utf-8');
+// Exportar: planilha Excel (.xlsx) igual \u00e0 tabela da tela \u2014 mesmas colunas,
+// mesma ordem (mais nova primeiro) e s\u00f3 o que est\u00e1 filtrado. Data como data
+// do Excel (dd/mm/aaaa), quantidade como n\u00famero, colunas na largura certa,
+// filtro no cabe\u00e7alho. A biblioteca (SheetJS) s\u00f3 \u00e9 baixada ao clicar.
+let xlsxLib=null;
+function carregarXlsx(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(xlsxLib) return xlsxLib;
+  xlsxLib=new Promise((ok,falha)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=()=>ok(window.XLSX); s.onerror=()=>{xlsxLib=null;falha(new Error('N\u00e3o foi poss\u00edvel carregar o gerador de planilha.'))};
+    document.head.appendChild(s);
+  });
+  return xlsxLib;
+}
+$('exportCsv').addEventListener('click',async()=>{
+  const botao=$('exportCsv');
+  const lista=movsFiltrados();
+  if(!lista.length){alert('Nenhuma movimenta\u00e7\u00e3o para exportar com esses filtros.');return}
+  botao.disabled=true;
+  try{
+    const XLSX=await carregarXlsx();
+    // Data no fuso local (meia-noite daqui), para o Excel não voltar um dia.
+    const dataExcel=br=>{const [d,m,y]=String(br||'').split('/').map(Number);return y?new Date(y,m-1,d):(br||'')};
+    const vazio=v=>(v==null||v==='N/A'||v==='\u2014')?'':v;
+    const linhas=lista.map(x=>[dataExcel(x.data),x.colaborador||'',x.epi||'',Number(x.quantidade)||0,vazio(x.ca),vazio(x.tamanho),vazio(x.responsavel),setorDaMov(x)||'',x.origem||'']);
+    const ws=XLSX.utils.aoa_to_sheet([['Data','Colaborador','EPI','Qtd','C.A','Tam.','Respons\u00e1vel','Setor','Origem'],...linhas],{cellDates:true,dateNF:'dd/mm/yyyy'});
+    // Datas: formato brasileiro em todas as c\u00e9lulas da coluna A.
+    for(let r=1;r<=linhas.length;r++){const c=ws[XLSX.utils.encode_cell({r,c:0})]; if(c&&c.t==='d'){c.z='dd/mm/yyyy'}}
+    ws['!cols']=[{wch:12},{wch:34},{wch:34},{wch:6},{wch:10},{wch:8},{wch:16},{wch:22},{wch:22}];
+    ws['!autofilter']={ref:`A1:I${linhas.length+1}`};
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Movimenta\u00e7\u00f5es');
+    const h=todayLocal().split('-').reverse().join('-');
+    XLSX.writeFile(wb,`movimentacoes_epi_${h}.xlsx`,{compression:true});
+  }catch(err){
+    console.error(err);
+    alert(err.message||'N\u00e3o foi poss\u00edvel exportar.');
+  }finally{botao.disabled=false}
 });
 $('refreshData').addEventListener('click',()=>loadAll());
 $('refreshData2').addEventListener('click',()=>loadAll());
