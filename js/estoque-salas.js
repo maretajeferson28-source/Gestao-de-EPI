@@ -21,7 +21,10 @@
   const pesoTam = (t) => { const s = String(t || '').trim().toUpperCase(); const n = parseFloat(s); if (!Number.isNaN(n)) return n; const i = ORDEM.indexOf(s.split(' ')[0]); return i < 0 ? 999 : 1000 + i; };
   const ACABANDO = 2; // tamanho com até 2 peças está acabando
   const SIT = { ok: ['ok', 'OK'], acabando: ['atencao', 'Acabando'], zerado: ['critico', 'Zerado'] };
-  const iconePeca = (p) => (/bota|cal[cç]ado|sapato|t[eê]nis/i.test(p) ? 'footprints' : /jaqueta|blus/i.test(p) ? 'shirt' : /cal[cç]a/i.test(p) ? 'ruler' : 'shirt');
+  const iconePeca = (p) => (/bota|cal[cç]ado|sapato|t[eê]nis/i.test(p) ? 'footprints' : /jaqueta|blus/i.test(p) ? 'shirt' : /cal[cç]a/i.test(p) ? 'calca' : 'shirt');
+  // Calça: o Lucide não tem; desenho no mesmo traço (24×24, linha 2) dos outros ícones.
+  const CALCA = '<svg class="ic-calca" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l1.5 18h-5.5L12 10.5 10 21H4.5z"/><path d="M6.2 7h11.6"/><path d="M12 3v4"/></svg>';
+  const iconeHtml = (nome) => (iconePeca(nome) === 'calca' ? CALCA : `<i data-lucide="${iconePeca(nome)}" aria-hidden="true"></i>`);
 
   let salas = [], itens = [], sala = '', pag = 1, carregado = false, menos = 0;
   let mov = new Map(), temMov = false;
@@ -204,7 +207,7 @@
     $('#estqUniBody', pg).innerHTML = daPagina.map((p) => {
       const st = SIT[p.sit];
       return `<tr>
-        <td class="foto"><span class="epi-tab-foto"><i data-lucide="${iconePeca(p.peca)}" aria-hidden="true"></i></span></td>
+        <td class="foto"><span class="epi-tab-foto">${iconeHtml(p.peca)}</span></td>
         <td><strong class="epi-tab-nome" title="${esc(p.peca)}">${esc(p.peca)}</strong>${p.ca ? `<small class="estq-uni-ca">C.A. ${esc(p.ca)}</small>` : ''}</td>
         <td class="num">${temMov ? num(p.ent) : '<span class="epi-tab-vazio">—</span>'}</td>
         <td class="num">${temMov ? num(p.sai) : '<span class="epi-tab-vazio">—</span>'}</td>
@@ -239,7 +242,7 @@
       <div class="data-edit-card dep-janela">
         <button class="data-edit-close" type="button" aria-label="Fechar" data-uni-fechar><i data-lucide="x" aria-hidden="true"></i></button>
         <div class="data-edit-head">
-          <div class="data-edit-icon"><i data-lucide="${icone}" aria-hidden="true"></i></div>
+          <div class="data-edit-icon">${icone === 'calca' ? CALCA : `<i data-lucide="${icone}" aria-hidden="true"></i>`}</div>
           <div><h3 id="${id}Titulo">${esc(titulo)}</h3><p data-uni-sub></p></div>
         </div>
         <div class="data-edit-body">${corpo}<div class="msg" data-uni-msg></div></div>
