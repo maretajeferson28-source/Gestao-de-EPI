@@ -4730,3 +4730,16 @@
 }
 @media (min-width:721px){ .authz-table .c-nome{width:17%}.authz-table .c-perfil{width:13%}.authz-table .c-data{width:106px}.authz-table .c-ativo{width:64px}.authz-table .c-acao{width:64px} }
 @media (min-width:721px){ .adm-tela .authz-table th:nth-child(n){width:auto} .adm-tela .authz-table td:nth-child(4){text-align:left} }
+/* Usuários e acesso: colunas equilibradas (o E-mail não engole o espaço e o
+   cabeçalho Perfil alinha com o conteúdo). */
+@media (min-width:721px){
+  .adm-tela .authz-table col.c-acao{width:64px}
+  .adm-tela .authz-table col.c-nome{width:auto}
+  .adm-tela .authz-table col.c-email{width:27%}
+  .adm-tela .authz-table col.c-perfil{width:18%}
+  .adm-tela .authz-table col.c-data{width:124px}
+  .adm-tela .authz-table col.c-ativo{width:72px}
+  .adm-tela .authz-table th:nth-child(4){text-align:left}
+  .adm-tela .authz-table th,.adm-tela .authz-table td{padding-left:14px;padding-right:14px}
+  .adm-tela .authz-table th.acao,.adm-tela .authz-table td.authz-action-cell{padding-left:6px;padding-right:6px}
+}
