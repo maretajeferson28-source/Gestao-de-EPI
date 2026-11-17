@@ -4533,3 +4533,10 @@
   .nfl-import #nfeZoomOut,.nfl-import #nfeZoomIn{width:32px;padding:0!important;font-size:16px!important}
   .nfl-import #nfeZoomLevel{min-width:46px;text-align:center;font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;color:#C9D0D7}
 }
+/* Notas: ao ver uma nota, sem o título "NF … · nota já importada"; e sem o
+   botão Baixar PDF da DANFE (o download fica na lista). O botão continua na
+   página, escondido, porque é ele que gera o PDF pedido pela lista. */
+@media (min-width:721px){
+  .page.nfl-vendo .nfl-import-tit{display:none!important}
+  .nfl-import #nfeDownloadPdf{display:none!important}
+}
