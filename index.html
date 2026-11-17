@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261117-32">
+<link rel="stylesheet" href="css/padrao.css?v=20261117-33">
 </head>
 <body>
 
@@ -804,22 +804,22 @@
             <div class="authz-card-head">
               <div class="authz-card-icon"><i data-lucide="user-plus" aria-hidden="true"></i></div>
               <div>
-                <h3>Autorizar usuário</h3>
-                <p>Cadastre diretamente o e-mail que poderá acessar o sistema.</p>
+                <h3>Criar usuário</h3>
+                <p>A pessoa entra direto com o e-mail e a senha. O que ela pode fazer vem do perfil.</p>
               </div>
             </div>
 
-            <form id="authzForm">
-              <div class="field">
-                <label>Nome</label>
-                <input id="authzName" autocomplete="off" placeholder="Nome do usuário">
-              </div>
-              <div class="field">
-                <label>E-mail</label>
-                <input id="authzEmail" type="email" autocomplete="off" placeholder="usuario@empresa.com" required>
+            <form id="authzForm" autocomplete="off">
+              <div class="authz-campos">
+                <div class="field"><label for="authzName">Nome*</label><input id="authzName" autocomplete="off" placeholder="Nome do usuário" required></div>
+                <div class="field"><label for="authzEmail">E-mail*</label><input id="authzEmail" type="email" autocomplete="off" placeholder="usuario@empresa.com" required></div>
+                <div class="field"><label for="authzFone">Telefone</label><input id="authzFone" type="tel" autocomplete="off" placeholder="Opcional"></div>
+                <div class="field"><label for="authzPerfil">Perfil</label><select id="authzPerfil"><option value="">Sem perfil</option></select></div>
+                <div class="field authz-senha"><label for="authzSenha">Senha*</label><input id="authzSenha" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"><button type="button" class="authz-olho" data-authz-olho="authzSenha" aria-label="Mostrar a senha"><i data-lucide="eye"></i></button></div>
+                <div class="field authz-senha"><label for="authzSenha2">Confirmar senha*</label><input id="authzSenha2" type="password" autocomplete="new-password" placeholder="Repita a senha"><button type="button" class="authz-olho" data-authz-olho="authzSenha2" aria-label="Mostrar a senha"><i data-lucide="eye"></i></button></div>
               </div>
               <div class="form-actions">
-                <button class="btn primary" type="submit"><i data-lucide="shield-plus" aria-hidden="true"></i>Autorizar acesso</button>
+                <button class="btn primary" type="submit"><i data-lucide="user-plus" aria-hidden="true"></i>Criar usuário</button>
               </div>
               <div class="msg" id="authzMsg" aria-live="polite"></div>
             </form>
@@ -870,9 +870,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="js/config.js?v=20261117-25"></script>
+<script src="js/config.js?v=20261117-26"></script>
 <script src="js/pdf-export.js?v=20261116-1"></script>
-<script src="js/app.js?v=20261117-5"></script>
+<script src="js/app.js?v=20261117-7"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=epiTurnstilePronto" async defer></script>
 <script src="js/mobile.js"></script>
 <script src="js/pwa.js"></script>

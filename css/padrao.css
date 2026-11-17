@@ -4656,3 +4656,16 @@
   .nfl-abas.prf-abas button[aria-selected="true"]{color:#FF7A10;border-bottom-color:#FF7A10}
   .nfl-abas.prf-abas button svg{width:15px;height:15px}
 }
+/* Criar usuário: campos em duas colunas, senha com olhinho. */
+@media (min-width:721px){
+  .authz-campos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+  .authz-campos .field{margin:0}
+  .adm-tela .authz-form-card select{width:100%;height:38px;padding:0 10px;border-radius:8px;background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;color-scheme:dark}
+  .authz-senha{position:relative}
+  .authz-senha input{padding-right:38px!important}
+  .authz-olho{position:absolute;right:6px;bottom:6px;display:grid;place-items:center;width:28px;height:26px;border:0;border-radius:6px;background:none;color:#8E98A3;cursor:pointer}
+  .authz-olho:hover{color:#FF7A10}
+  .authz-olho svg{width:16px;height:16px}
+  .adm-tela .authz-form-card .form-actions{margin-top:14px}
+  #authzMsg.is-error{color:#F87171}
+}

@@ -48,6 +48,9 @@
     erro = !!error;
     if (error) console.error('[Perfis]', error);
     perfis = data || [];
+    // Perfil do formulário "Criar usuário".
+    const sel = document.getElementById('authzPerfil');
+    if (sel) { const v = sel.value; sel.innerHTML = '<option value="">Sem perfil</option>' + perfis.map((p) => `<option value="${esc(p.id)}">${esc(p.nome)}</option>`).join(''); sel.value = v; }
     desenhar();
     // A coluna Perfil da lista de usuários usa esta lista.
     try { if (typeof renderAuthorizedUsers === 'function') renderAuthorizedUsers(); } catch (_) {}

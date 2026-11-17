@@ -2758,36 +2758,44 @@ async function loadAuthorizedUsers(){
   renderAuthorizedUsers();
 }
 
+// Criar usuário (Administração): o servidor do app cria o login com a senha,
+// autoriza o e-mail e liga o perfil (infra/railway/app/usuarios.mjs).
 if($('authzForm')) $('authzForm').addEventListener('submit',async e=>{
   e.preventDefault();
   if(!currentIsAdmin) return;
-
-  const email=$('authzEmail').value.trim().toLowerCase();
-  const nome=$('authzName').value.trim();
   const msg=$('authzMsg');
-
-  if(!email){
-    msg.textContent='Informe o e-mail do usuário.';
-    return;
-  }
-
-  msg.textContent='Salvando autorização...';
-  const {error}=await sb.rpc('epi_admin_save_user',{
-    p_email:email,
-    p_nome:nome||null,
-    p_ativo:true
-  });
-
-  if(error){
-    console.error('[AUTORIZAÇÕES]',error);
-    msg.textContent=`Erro: ${error.message||error}`;
-    return;
-  }
-
-  e.target.reset();
-  msg.textContent='Usuário autorizado com sucesso.';
-  avisarAcesso('liberado',email).then(ok=>{if(ok) msg.textContent='Usuário autorizado e avisado por e-mail.'});
-  await loadAuthorizedUsers();
+  const nome=$('authzName').value.trim(), email=$('authzEmail').value.trim().toLowerCase();
+  const telefone=$('authzFone').value.trim(), senha=$('authzSenha').value, senha2=$('authzSenha2').value, perfil=$('authzPerfil').value||null;
+  const erro=t=>{msg.textContent=t;msg.classList.add('is-error')};
+  msg.classList.remove('is-error');
+  if(!nome) return erro('Informe o nome.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return erro('Informe um e-mail válido.');
+  if(senha.length<8) return erro('A senha precisa ter pelo menos 8 caracteres.');
+  if(senha!==senha2) return erro('As duas senhas não são iguais.');
+  const botao=e.target.querySelector('button[type="submit"]');
+  botao.disabled=true;
+  msg.textContent='Criando usuário...';
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const r=await fetch('/api/usuarios',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(session?.access_token||'')},body:JSON.stringify({nome,email,telefone,senha,perfil_id:perfil})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok) return erro(j.erro||'Não foi possível criar o usuário.');
+    e.target.reset();
+    msg.textContent=j.resultado==='ja_tinha_login'
+      ? `${email} já tinha login (ex.: Google): a senha dele não foi trocada. Acesso liberado com o perfil escolhido.`
+      : `Usuário criado. ${nome} já pode entrar com o e-mail e a senha.`;
+    avisarAcesso('liberado',email);
+    await loadAuthorizedUsers();
+  }catch(err){
+    erro('Não foi possível criar o usuário: '+(err.message||err));
+  }finally{botao.disabled=false}
+});
+// Olhinho para mostrar / esconder a senha.
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-authz-olho]'); if(!b) return;
+  const i=$(b.dataset.authzOlho); if(!i) return;
+  i.type=i.type==='password'?'text':'password';
+  b.innerHTML=`<i data-lucide="${i.type==='password'?'eye':'eye-off'}"></i>`; refreshIcons();
 });
 
 if($('authzRefresh')) $('authzRefresh').addEventListener('click',loadAuthorizedUsers);
