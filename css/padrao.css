@@ -4334,3 +4334,5 @@
   .page[data-page-content="programar"] .prog-item select[data-campo="tamuni"]:disabled{cursor:default;color:#7C7F86!important}
   .page[data-page-content="programar"] .prog-item select[data-campo="tamuni"] option{background:#141518;color:#F0F1F2}
 }
+/* Programar: com o botão Uniforme ligado, a faixa "Falta entregar pela O.S." some. */
+.page[data-page-content="programar"]:has(.prog-uni-on) #progFaltaOs{display:none!important}
