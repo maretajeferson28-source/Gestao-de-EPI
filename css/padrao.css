@@ -4647,3 +4647,12 @@
   .prf-msg{font:500 12.5px/1.3 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
   .prf-msg.is-erro{color:#F87171}.prf-msg.is-ok{color:#4ADE80}
 }
+/* Usuários e acesso: abas Usuários / Perfis discretas, separadas, com
+   sublinhado laranja na ativa (sem a caixa em volta). */
+@media (min-width:721px){
+  .nfl-abas.prf-abas{display:flex;gap:26px;padding:0;margin:0 0 16px!important;border:0;border-radius:0;background:none;border-bottom:1px solid rgba(178,191,205,.12)}
+  .nfl-abas.prf-abas button{height:36px;padding:0 2px;border-radius:0;background:none!important;box-shadow:none!important;color:#8E98A3;font:600 13.5px/1 Inter,Roboto,Arial,sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .nfl-abas.prf-abas button:hover{color:#E5E8EA}
+  .nfl-abas.prf-abas button[aria-selected="true"]{color:#FF7A10;border-bottom-color:#FF7A10}
+  .nfl-abas.prf-abas button svg{width:15px;height:15px}
+}
