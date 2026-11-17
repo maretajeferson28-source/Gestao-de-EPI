@@ -210,7 +210,7 @@
         <td class="num">${temMov ? num(p.sai) : '<span class="epi-tab-vazio">—</span>'}</td>
         <td class="num"><b class="epi-tab-saldo${p.total <= 0 ? ' is-zero' : ''}">${num(p.total)}</b></td>
         <td><span class="epi-sit epi-sit--${st[0]}">${st[1]}</span></td>
-        <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${admin() ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button></div></td>
+        <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${admin() ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button>${admin() ? `<button class="btn movement-action-btn estq-editar" type="button" data-uni-editar="${esc(p.peca)}" title="Editar peça (nome, C.A. e tamanhos)" aria-label="Editar peça"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}</div></td>
       </tr>`;
     }).join('') || `<tr><td colspan="7" class="epi-tab-nada">${carregado ? ((q || fSit) ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
 
@@ -317,6 +317,112 @@
     });
     m.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.closest('.uni-novo-tam')) { e.preventDefault(); addTam(); } });
     setTimeout(() => (m.querySelector('.dep-qtd__btn:not(:disabled)') || m.querySelector('.data-edit-close'))?.focus(), 30);
+  }
+
+  // ---- Editar peça: nome, C.A., nome de cada tamanho e exclusão ----
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('#estqUniBody [data-uni-editar]');
+    if (b) editarPeca(b.dataset.uniEditar);
+  });
+
+  function editarPeca(nome) {
+    if (!admin() || !sala) return;
+    const s = salas.find((x) => x.id === sala);
+    const tams = itens.filter((x) => x.deposito_id === sala && x.peca === nome)
+      .sort((a, b) => pesoTam(a.tamanho) - pesoTam(b.tamanho) || a.tamanho.localeCompare(b.tamanho, 'pt-BR', { numeric: true }));
+    const caAtual = tams.find((x) => x.ca)?.ca || '';
+    const apagar = new Set();
+    const m = janela('uniEditarModal', 'Editar peça', 'pencil', `
+      <div class="data-edit-grid">
+        <div class="field dep-col-cheia"><label for="uniEdNome">Nome da peça*</label><input id="uniEdNome" maxlength="120" autocomplete="off" value="${esc(nome)}"></div>
+        <div class="field dep-col-cheia"><label for="uniEdCa">C.A. (só para calçado)</label><input id="uniEdCa" maxlength="12" placeholder="Sem C.A." autocomplete="off" value="${esc(caAtual)}"></div>
+      </div>
+      <h4 class="uni-ed-titulo">Tamanhos</h4>
+      <div class="uni-ed-tams">${tams.map((x) => `
+        <div class="uni-ed-tam" data-uni-ed-id="${esc(x.id)}">
+          <input type="text" maxlength="30" value="${esc(x.tamanho)}" aria-label="Nome do tamanho" placeholder="Sem tamanho">
+          <span class="uni-ed-qtd">${num(x.quantidade)} ${x.quantidade === 1 ? 'peça' : 'peças'}</span>
+          <button type="button" class="dep-qtd__btn uni-ed-lixo" data-uni-ed-lixo="${esc(x.id)}" title="Excluir este tamanho" aria-label="Excluir o tamanho ${esc(x.tamanho)}"><i data-lucide="trash-2"></i></button>
+        </div>`).join('')}</div>
+      <div class="data-edit-actions uni-ed-acoes">
+        <button class="btn uni-ed-excluir" type="button" data-uni-ed-excluir><i data-lucide="trash-2" aria-hidden="true"></i>Excluir peça</button>
+        <span class="uni-ed-espaco"></span>
+        <button class="btn" type="button" data-uni-fechar>Cancelar</button>
+        <button class="btn primary" type="button" data-uni-ed-salvar><i data-lucide="save" aria-hidden="true"></i>Salvar</button>
+      </div>`);
+    $('[data-uni-sub]', m).textContent = `${s ? s.nome + ' · ' : ''}${num(tams.length)} ${tams.length === 1 ? 'tamanho' : 'tamanhos'}`;
+    const msg = $('[data-uni-msg]', m);
+
+    // Lixeira de um tamanho: marca para excluir ao salvar (clicar de novo desmarca).
+    m.addEventListener('click', (e) => {
+      const lixo = e.target.closest('[data-uni-ed-lixo]');
+      if (lixo) {
+        const id = lixo.dataset.uniEdLixo, linha = lixo.closest('.uni-ed-tam');
+        if (apagar.has(id)) { apagar.delete(id); linha.classList.remove('is-apagar'); lixo.title = 'Excluir este tamanho'; }
+        else { apagar.add(id); linha.classList.add('is-apagar'); lixo.title = 'Desfazer: manter este tamanho'; }
+        msg.textContent = apagar.size ? `${num(apagar.size)} ${apagar.size === 1 ? 'tamanho marcado' : 'tamanhos marcados'} para excluir ao salvar.` : '';
+        return;
+      }
+      if (e.target.closest('[data-uni-ed-excluir]')) excluirPeca();
+      if (e.target.closest('[data-uni-ed-salvar]')) salvar();
+    });
+    m.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); salvar(); } });
+
+    async function excluirPeca() {
+      const tot = tams.reduce((t, x) => t + x.quantidade, 0);
+      if (!confirm(`Excluir "${nome}" desta sala?\n\nSão ${num(tams.length)} ${tams.length === 1 ? 'tamanho' : 'tamanhos'} e ${num(tot)} ${tot === 1 ? 'peça' : 'peças'}. O registro de entradas e saídas dela também sai. Não dá para desfazer.`)) return;
+      msg.textContent = 'Excluindo…';
+      const { error } = await db().from('deposito_itens').delete().in('id', tams.map((x) => x.id));
+      if (error) { msg.textContent = 'Não foi possível excluir: ' + error.message; return; }
+      const ids = new Set(tams.map((x) => x.id));
+      itens = itens.filter((x) => !ids.has(x.id));
+      ids.forEach((id) => mov.delete(id));
+      m.remove();
+      desenhar(); montarSeletor();
+    }
+
+    async function salvar() {
+      const novoNome = document.getElementById('uniEdNome').value.trim();
+      const novoCa = document.getElementById('uniEdCa').value.replace(/\D+/g, '') || null;
+      if (!novoNome) { msg.textContent = 'Informe o nome da peça.'; return; }
+      // Tamanhos que ficam, com o nome digitado.
+      const ficam = [...m.querySelectorAll('.uni-ed-tam')].filter((l) => !apagar.has(l.dataset.uniEdId))
+        .map((l) => ({ id: l.dataset.uniEdId, tamanho: l.querySelector('input').value.trim() }));
+      const vistos = new Set();
+      for (const t of ficam) { const k = t.tamanho.toLowerCase(); if (vistos.has(k)) { msg.textContent = `O tamanho "${t.tamanho || 'sem tamanho'}" aparece duas vezes.`; return; } vistos.add(k); }
+      // Nome novo não pode bater com outra peça da sala no mesmo tamanho.
+      if (novoNome.toLowerCase() !== nome.toLowerCase()) {
+        const outra = itens.filter((x) => x.deposito_id === sala && x.peca.trim().toLowerCase() === novoNome.toLowerCase());
+        const choque = outra.find((x) => vistos.has(x.tamanho.trim().toLowerCase()));
+        if (choque) { msg.textContent = `Já existe "${choque.peca}" tamanho ${choque.tamanho || 'sem tamanho'} nesta sala. Escolha outro nome.`; return; }
+      }
+      const apagarQtd = tams.filter((x) => apagar.has(x.id)).reduce((t, x) => t + x.quantidade, 0);
+      if (apagar.size && !confirm(`Excluir ${num(apagar.size)} ${apagar.size === 1 ? 'tamanho' : 'tamanhos'}${apagarQtd ? ` com ${num(apagarQtd)} ${apagarQtd === 1 ? 'peça' : 'peças'}` : ''}? Não dá para desfazer.`)) return;
+      const botao = $('[data-uni-ed-salvar]', m);
+      botao.disabled = true;
+      msg.textContent = 'Salvando…';
+      try {
+        if (apagar.size) {
+          const { error } = await db().from('deposito_itens').delete().in('id', [...apagar]);
+          if (error) throw error;
+        }
+        for (const t of ficam) {
+          const atual = tams.find((x) => x.id === t.id);
+          const mudou = atual.tamanho !== t.tamanho || atual.peca !== novoNome || (atual.ca || null) !== novoCa;
+          if (!mudou) continue;
+          const { error } = await db().from('deposito_itens').update({ peca: novoNome, tamanho: t.tamanho, ca: novoCa, updated_at: new Date().toISOString() }).eq('id', t.id);
+          if (error) throw error;
+        }
+      } catch (err) {
+        botao.disabled = false;
+        msg.textContent = err.code === '23505' ? 'Já existe essa peça com esse tamanho nesta sala.' : 'Não foi possível salvar: ' + err.message;
+        await carregar();
+        return;
+      }
+      m.remove();
+      await carregar();
+    }
+    setTimeout(() => document.getElementById('uniEdNome')?.focus(), 30);
   }
 
   // ---- Adicionar peça (peça nova na sala, já com o primeiro tamanho) ----

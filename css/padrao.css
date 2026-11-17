@@ -4268,3 +4268,27 @@
 .page[data-page-content="estoque"]:not(.estq-uni) > .estq-uni-kpis,
 .page[data-page-content="estoque"]:not(.estq-uni) > .estq-uni-wrap,
 .page[data-page-content="estoque"]:not(.estq-uni) > #estqUniRodape{display:none!important}
+/* Estoque, salas de uniforme: colunas mais estreitas, dois botões na Ação
+   (abrir e editar) e a janela "Editar peça". */
+@media (min-width:721px){
+  .estq-uni-tab .c-num{width:8%}
+  .estq-uni-tab .c-sit{width:12%}
+  .estq-uni-tab .c-acao{width:104px}
+  .estq-uni-tab .table-action-group{justify-content:center;gap:6px}
+  .estq-uni-tab .estq-editar:hover{border-color:rgba(255,121,0,.55)!important;color:#FF7A10!important}
+  .uni-ed-titulo{margin:16px 0 8px;font:700 11px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A9B6C3}
+  .uni-ed-tams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:40vh;overflow:auto;scrollbar-width:thin;scrollbar-color:#36404B transparent}
+  .uni-ed-tam{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 8px;border-radius:10px;border:1px solid rgba(178,191,205,.14);background:rgba(6,10,14,.55)}
+  .uni-ed-tam input{flex:1;min-width:0;height:30px;padding:0 9px;border-radius:7px}
+  .uni-ed-qtd{flex:0 0 auto;font-size:12px;color:#9FB0C2;white-space:nowrap}
+  .uni-ed-tam.is-apagar{border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.08)}
+  .uni-ed-tam.is-apagar input{text-decoration:line-through;opacity:.6}
+  .uni-ed-tam.is-apagar .uni-ed-lixo{border-color:rgba(239,68,68,.6);color:#F87171}
+  .uni-ed-lixo:hover{border-color:rgba(239,68,68,.6)!important;color:#F87171!important}
+  .uni-ed-acoes{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .uni-ed-espaco{flex:1}
+  .dep-modal .uni-ed-excluir{color:#F87171!important;border-color:rgba(239,68,68,.35)!important}
+  .dep-modal .uni-ed-excluir:hover{border-color:rgba(239,68,68,.7)!important}
+}
+@media (min-width:721px){ .uni-ed-tams{max-height:30vh} }
+@media (min-width:721px){ .estq-uni-tab .c-sit{width:122px} .estq-uni-tab .c-num{width:7%} }
