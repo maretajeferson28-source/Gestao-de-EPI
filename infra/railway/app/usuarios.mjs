@@ -25,6 +25,61 @@ async function ehAdmin(quem) {
   return r.ok && (await r.json()) === true;
 }
 
+// Usuário autorizado (não administrador) pelo e-mail; null se não existe.
+async function autorizado(email) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios_autorizados?email=eq.${encodeURIComponent(email)}&select=email,admin`, { headers: svc });
+  if (!r.ok) throw new Error('banco ' + r.status);
+  return (await r.json())[0] || null;
+}
+
+// Editar usuário: nome, telefone e perfil (o e-mail não muda).
+async function editar(d, quem, json) {
+  const email = String(d.email || '').trim().toLowerCase();
+  const nome = String(d.nome || '').trim().slice(0, 120);
+  const telefone = String(d.telefone || '').replace(/[^\d+()\s-]/g, '').trim().slice(0, 30) || null;
+  const perfil = d.perfil_id && UUID_OK.test(String(d.perfil_id)) ? String(d.perfil_id) : null;
+  if (!nome) return json(400, { erro: 'Informe o nome.' });
+  const u = await autorizado(email);
+  if (!u) return json(404, { erro: 'Usuário não encontrado.' });
+  if (u.admin) return json(409, { erro: 'Conta de administrador é protegida.' });
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios_autorizados?email=eq.${encodeURIComponent(email)}`, {
+    method: 'PATCH', headers: { ...svc, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify({ nome, telefone, perfil_id: perfil, updated_at: new Date().toISOString() })
+  });
+  if (!r.ok) { console.error('[USUARIOS] editar', r.status); return json(502, { erro: 'Não foi possível salvar.' }); }
+  console.log(`[USUARIOS] editado por ${quem.email}`);
+  return json(200, { resultado: 'editado' });
+}
+
+// Alterar senha: acha o login no GoTrue pelo e-mail e troca a senha.
+async function trocarSenha(d, quem, json) {
+  const email = String(d.email || '').trim().toLowerCase();
+  const senha = String(d.senha || '');
+  if (senha.length < 8) return json(400, { erro: 'A senha precisa ter pelo menos 8 caracteres.' });
+  const u = await autorizado(email);
+  if (!u) return json(404, { erro: 'Usuário não encontrado.' });
+  if (u.admin) return json(409, { erro: 'Conta de administrador é protegida.' });
+  let id = null;
+  for (let pagina = 1; pagina <= 20 && !id; pagina++) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=${pagina}&per_page=200`, { headers: svc });
+    if (!r.ok) { console.error('[USUARIOS] listar logins', r.status); return json(502, { erro: 'Não foi possível achar o login.' }); }
+    const lista = (await r.json())?.users || [];
+    id = lista.find((x) => String(x.email || '').toLowerCase() === email)?.id || null;
+    if (lista.length < 200) break;
+  }
+  if (!id) return json(404, { erro: 'Esse usuário ainda não tem login com senha.' });
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${id}`, {
+    method: 'PUT', headers: { ...svc, 'Content-Type': 'application/json' }, body: JSON.stringify({ password: senha })
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    if (/password/i.test(t)) return json(400, { erro: 'Senha recusada pelo login: use pelo menos 8 caracteres, com letras e números.' });
+    console.error('[USUARIOS] senha', r.status); return json(502, { erro: 'Não foi possível trocar a senha.' });
+  }
+  console.log(`[USUARIOS] senha trocada por ${quem.email}`);
+  return json(200, { resultado: 'senha' });
+}
+
 export async function handleUsuarios(req, res, send) {
   const json = (status, obj) => send(res, status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, JSON.stringify(obj));
   if (!SERVICE_ROLE_KEY) return json(503, { erro: 'Criação de usuário desligada neste servidor.' });
@@ -36,6 +91,8 @@ export async function handleUsuarios(req, res, send) {
     const quem = await quemChamou(req);
     if (!quem) return json(401, { erro: 'Faça login de novo.' });
     if (!(await ehAdmin(quem))) return json(403, { erro: 'Somente administradores criam usuários.' });
+    if (d.acao === 'editar') return await editar(d, quem, json);
+    if (d.acao === 'senha') return await trocarSenha(d, quem, json);
 
     const nome = String(d.nome || '').trim().slice(0, 120);
     const email = String(d.email || '').trim().toLowerCase();

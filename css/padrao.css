@@ -4743,3 +4743,9 @@
   .adm-tela .authz-table th,.adm-tela .authz-table td{padding-left:14px;padding-right:14px}
   .adm-tela .authz-table th.acao,.adm-tela .authz-table td.authz-action-cell{padding-left:6px;padding-right:6px}
 }
+/* Janelas do ⋯ dos usuários (Editar usuário / Alterar senha). */
+#authzJanela select{width:100%;height:40px;padding:0 10px;border-radius:8px;background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;color-scheme:dark}
+#authzJanela input:disabled{opacity:.6;cursor:not-allowed}
+#authzJanela .authz-senha{position:relative}
+#authzJanela .authz-senha input{padding-right:38px!important}
+#authzJanela .msg.is-error{color:#F87171}

@@ -2710,13 +2710,15 @@ document.addEventListener('click',async e=>{
     const email=item.dataset.authzEmail, acao=item.dataset.authzAcao;
     fecharMenuAuthz();
     const u=authorizedUsers.find(x=>x.email===email); if(!u) return;
+    if(acao==='editar') return janelaAuthz('editar',u);
+    if(acao==='senha') return janelaAuthz('senha',u);
     let error=null;
     if(acao==='perfil'){({error}=await sb.rpc('epi_admin_set_user_perfil',{p_email:email,p_perfil:item.dataset.authzPerfil||null}))}
     else if(acao==='ativo'){({error}=await sb.rpc('epi_admin_set_active',{p_email:email,p_ativo:!u.ativo})); if(!error&&!u.ativo) avisarAcesso('liberado',email)}
     else if(acao==='remover'){
-      if(!confirm(`Remover o acesso de ${u.nome||email}?
+      if(!confirm(`Excluir o usuário ${u.nome||email}?
 
-A pessoa não entra mais no app. O login dela continua existindo; para voltar, é só criar de novo com o mesmo e-mail.`)) return;
+A pessoa não entra mais no app. Para voltar, é só criar de novo com o mesmo e-mail.`)) return;
       ({error}=await sb.rpc('epi_admin_delete_user',{p_email:email}));
     }
     if(error){alert(error.message);return}
@@ -2732,11 +2734,11 @@ A pessoa não entra mais no app. O login dela continua existindo; para voltar, �
     const perfis=window.EPI_PERFIS?.lista?.()||[];
     const m=document.createElement('div');
     m.id='authzMenu';m.className='authz-menu';m.dataset.email=email;m.setAttribute('role','menu');
-    m.innerHTML=`<div class="authz-menu-tit">Perfil</div>
-      ${[{id:'',nome:'Sem perfil'},...perfis].map(p=>`<button type="button" role="menuitemradio" aria-checked="${(u.perfil_id||'')===p.id}" data-authz-acao="perfil" data-authz-email="${esc(email)}" data-authz-perfil="${esc(p.id)}"><i data-lucide="${(u.perfil_id||'')===p.id?'circle-check':'circle'}"></i>${esc(p.nome)}</button>`).join('')}
+    m.innerHTML=`<button type="button" role="menuitem" data-authz-acao="senha" data-authz-email="${esc(email)}"><i data-lucide="key-round"></i>Alterar senha</button>
+      <button type="button" role="menuitem" data-authz-acao="editar" data-authz-email="${esc(email)}"><i data-lucide="pencil"></i>Editar usuário</button>
+      <button type="button" role="menuitem" data-authz-acao="ativo" data-authz-email="${esc(email)}"><i data-lucide="${u.ativo?'user-x':'user-check'}"></i>${u.ativo?'Desativar usuário':'Ativar usuário'}</button>
       <div class="authz-menu-sep"></div>
-      <button type="button" role="menuitem" data-authz-acao="ativo" data-authz-email="${esc(email)}"><i data-lucide="${u.ativo?'user-x':'user-check'}"></i>${u.ativo?'Desativar':'Ativar'}</button>
-      <button type="button" role="menuitem" class="is-perigo" data-authz-acao="remover" data-authz-email="${esc(email)}"><i data-lucide="trash-2"></i>Remover acesso</button>`;
+      <button type="button" role="menuitem" class="is-perigo" data-authz-acao="remover" data-authz-email="${esc(email)}"><i data-lucide="trash-2"></i>Excluir usuário</button>`;
     document.body.appendChild(m);
     const r=abrir.getBoundingClientRect();
     m.style.left=`${Math.round(r.left)}px`;
@@ -2747,6 +2749,71 @@ A pessoa não entra mais no app. O login dela continua existindo; para voltar, �
   if(!e.target.closest('#authzMenu')) fecharMenuAuthz();
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape') fecharMenuAuthz()});
+
+// Janelas do ⋯: "Editar usuário" (nome, telefone, perfil) e "Alterar senha".
+// As duas salvam pelo servidor do app (infra/railway/app/usuarios.mjs).
+function janelaAuthz(tipo,u){
+  document.getElementById('authzJanela')?.remove();
+  const perfis=window.EPI_PERFIS?.lista?.()||[];
+  const olho=id=>`<button type="button" class="authz-olho" data-authz-olho="${id}" aria-label="Mostrar senha"><i data-lucide="eye"></i></button>`;
+  const campos=tipo==='editar'
+    ? `<div class="field"><label for="authzEdNome">Nome*</label><input id="authzEdNome" maxlength="120" value="${esc(u.nome||'')}" autocomplete="off"></div>
+       <div class="field"><label for="authzEdEmail">E-mail</label><input id="authzEdEmail" value="${esc(u.email)}" disabled></div>
+       <div class="field"><label for="authzEdFone">Telefone</label><input id="authzEdFone" maxlength="30" value="${esc(u.telefone||'')}" autocomplete="off"></div>
+       <div class="field"><label for="authzEdPerfil">Perfil</label><select id="authzEdPerfil"><option value="">Sem perfil</option>${perfis.map(p=>`<option value="${esc(p.id)}"${p.id===u.perfil_id?' selected':''}>${esc(p.nome)}</option>`).join('')}</select></div>`
+    : `<div class="field authz-senha"><label for="authzNovaSenha">Nova senha*</label><input id="authzNovaSenha" type="password" minlength="8" autocomplete="new-password">${olho('authzNovaSenha')}</div>
+       <div class="field authz-senha"><label for="authzNovaSenha2">Repetir a senha*</label><input id="authzNovaSenha2" type="password" minlength="8" autocomplete="new-password">${olho('authzNovaSenha2')}</div>`;
+  const m=document.createElement('div');
+  m.id='authzJanela';m.className='data-edit-modal dep-modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');
+  m.innerHTML=`<div class="data-edit-card dep-janela">
+      <button class="data-edit-close" type="button" aria-label="Fechar" data-authz-x><i data-lucide="x"></i></button>
+      <div class="data-edit-head">
+        <div class="data-edit-icon"><i data-lucide="${tipo==='editar'?'pencil':'key-round'}"></i></div>
+        <div><h3>${tipo==='editar'?'Editar usuário':'Alterar senha'}</h3><p>${esc(u.nome||u.email)}</p></div>
+      </div>
+      <div class="data-edit-body">
+        <div class="data-edit-grid">${campos}</div>
+        <div class="data-edit-actions">
+          <button class="btn" type="button" data-authz-x>Cancelar</button>
+          <button class="btn primary" type="button" data-authz-salvar><i data-lucide="save"></i>Salvar</button>
+        </div>
+        <div class="msg" data-authz-msg></div>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+  const fechar=()=>m.remove();
+  const msg=m.querySelector('[data-authz-msg]');
+  const erro=t=>{msg.textContent=t;msg.classList.add('is-error')};
+  m.addEventListener('click',e=>{if(e.target===m||e.target.closest('[data-authz-x]')) fechar()});
+  m.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();fechar()}});
+  m.querySelector('[data-authz-salvar]').addEventListener('click',async e=>{
+    msg.classList.remove('is-error');
+    let corpo;
+    if(tipo==='editar'){
+      const nome=$('authzEdNome').value.trim();
+      if(!nome) return erro('Informe o nome.');
+      corpo={acao:'editar',email:u.email,nome,telefone:$('authzEdFone').value.trim(),perfil_id:$('authzEdPerfil').value||null};
+    }else{
+      const s1=$('authzNovaSenha').value, s2=$('authzNovaSenha2').value;
+      if(s1.length<8) return erro('A senha precisa ter pelo menos 8 caracteres.');
+      if(s1!==s2) return erro('As duas senhas não são iguais.');
+      corpo={acao:'senha',email:u.email,senha:s1};
+    }
+    const b=e.currentTarget;b.disabled=true;msg.textContent='Salvando...';
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const r=await fetch('/api/usuarios',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(session?.access_token||'')},body:JSON.stringify(corpo)});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok) return erro(j.erro||'Não foi possível salvar.');
+      fechar();
+      if(tipo==='senha') alert(`Senha de ${u.nome||u.email} alterada.`);
+      else await loadAuthorizedUsers();
+    }catch(err){erro('Não foi possível salvar: '+(err.message||err))}
+    finally{b.disabled=false}
+  });
+  refreshIcons();
+  setTimeout(()=>m.querySelector('input:not([disabled])')?.focus(),30);
+}
 
 async function loadAuthorizedUsers(){
   if(!currentIsAdmin) return;
