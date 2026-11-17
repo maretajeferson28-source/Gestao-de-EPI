@@ -71,9 +71,38 @@
     box.hidden = true;
     tela.appendChild(box);
     abas.addEventListener('click', (e) => { const b = e.target.closest('[data-prf-aba]'); if (b) aba(b.dataset.prfAba); });
+    montarJanelaNovo();
     icons();
     carregar();
     return true;
+  }
+
+  // "Criar usuário" vira uma janela aberta pelo + da lista.
+  function montarJanelaNovo() {
+    const card = document.querySelector('.authz-form-card');
+    if (!card || document.getElementById('authzNovoModal')) return;
+    const m = document.createElement('div');
+    m.className = 'data-edit-modal dep-modal hidden';
+    m.id = 'authzNovoModal';
+    m.setAttribute('role', 'dialog');
+    m.setAttribute('aria-modal', 'true');
+    m.innerHTML = '<div class="data-edit-card dep-janela authz-modal-card"><button class="data-edit-close" type="button" aria-label="Fechar" data-authz-fechar><i data-lucide="x" aria-hidden="true"></i></button></div>';
+    m.firstElementChild.appendChild(card);
+    document.body.appendChild(m);
+    const fechar = () => { m.classList.add('hidden'); };
+    m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('[data-authz-fechar]')) fechar(); });
+    m.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); fechar(); } });
+    document.getElementById('authzNovo')?.addEventListener('click', () => {
+      const msg = document.getElementById('authzMsg'); if (msg) { msg.textContent = ''; msg.classList.remove('is-error'); }
+      m.classList.remove('hidden');
+      icons();
+      setTimeout(() => document.getElementById('authzName')?.focus(), 30);
+    });
+  }
+  // Usuário criado: fecha a janela (a lista já foi recarregada).
+  function criado() {
+    document.getElementById('authzNovoModal')?.classList.add('hidden');
+    aba('usuarios');
   }
 
   function aba(qual) {
@@ -180,5 +209,5 @@
 
   const espera = setInterval(() => { if (montar()) clearInterval(espera); }, 600);
   document.addEventListener('click', (e) => { if (e.target.closest('.nav [data-page="autorizacoes"]')) setTimeout(carregar, 300); });
-  window.EPI_PERFIS = { lista: () => perfis, recarregar: carregar, arvore: ARVORE };
+  window.EPI_PERFIS = { lista: () => perfis, recarregar: carregar, arvore: ARVORE, aba, criado };
 })();

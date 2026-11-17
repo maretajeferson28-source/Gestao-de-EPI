@@ -4669,3 +4669,55 @@
   .adm-tela .authz-form-card .form-actions{margin-top:14px}
   #authzMsg.is-error{color:#F87171}
 }
+/* Usuários e acesso: abas Novo usuário (só o formulário, centralizado e mais
+   largo) e Autorizados (só a lista, na largura toda). */
+@media (min-width:721px){
+  .adm-tela.aba-novo .authz-list-panel{display:none!important}
+  .adm-tela.aba-novo .authz-grid{display:block!important}
+  .adm-tela.aba-novo .authz-form-card{max-width:760px}
+  .adm-tela.aba-novo .authz-campos{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .adm-tela.aba-autorizados .authz-form-card{display:none!important}
+  .adm-tela.aba-autorizados .authz-grid{display:block!important}
+  .adm-tela.aba-autorizados .authz-list-panel{width:100%}
+}
+@media (min-width:721px){ .authz-campos{align-items:end} .authz-campos .field label{display:block;margin:0 0 6px} .authz-campos .field input,.authz-campos .field select{margin:0!important} }
+/* =====================================================================
+   Usuários (Administração): tabela no estilo do EntregaEPI — Ações (⋯) ·
+   Nome · E-mail · Perfil · Cadastro · Último acesso · Ativo — com + e
+   atualizar redondos em cima, e "Criar usuário" numa janela.
+   ===================================================================== */
+@media (min-width:721px){
+  .adm-tela .authz-grid{display:block!important}
+  .adm-tela .authz-list-panel{width:100%}
+  .authz-topo-acoes{display:flex;align-items:center;gap:8px}
+  .authz-redondo{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;cursor:pointer;color:#C9D0D7;background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95));border:1px solid rgba(178,191,205,.18)}
+  .authz-redondo svg{width:16px;height:16px}
+  .authz-redondo:hover{border-color:rgba(255,121,0,.55);color:#fff}
+  .authz-redondo.is-novo{color:#fff;background:linear-gradient(180deg,#FF7900,#FF6600);border-color:rgba(255,160,65,.35);box-shadow:0 4px 14px rgba(255,102,0,.25)}
+  .authz-table{table-layout:fixed;width:100%}
+  .authz-table .c-acao{width:70px}.authz-table .c-nome{width:22%}.authz-table .c-email{width:auto}.authz-table .c-perfil{width:16%}.authz-table .c-data{width:118px}.authz-table .c-ativo{width:80px}
+  .authz-table th.acao,.authz-table td.authz-action-cell{text-align:center}
+  .authz-table td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .authz-nome{font-weight:600;color:#F2F4F6}
+  .authz-sem{color:#7F8C99}
+  .authz-ativo{font:600 12.5px/1 Inter,Roboto,Arial,sans-serif}
+  .authz-ativo.is-sim{color:#4ADE80}.authz-ativo.is-nao{color:#F87171}
+  .authz-mais{display:inline-grid;place-items:center;width:30px;height:28px;border-radius:8px;cursor:pointer;color:#FF7A10;background:transparent;border:1px solid transparent}
+  .authz-mais:hover{border-color:rgba(255,121,0,.45);background:rgba(255,102,0,.08)}
+  .authz-mais svg{width:18px;height:18px}
+  .authz-menu{position:fixed;z-index:3000;min-width:220px;padding:6px;border-radius:12px;background:linear-gradient(180deg,#121A22,#0B1117);border:1px solid rgba(178,191,205,.18);box-shadow:0 18px 40px rgba(0,0,0,.55)}
+  .authz-menu-tit{padding:6px 10px 4px;font:700 10.5px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8E98A3}
+  .authz-menu button{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border:0;border-radius:8px;cursor:pointer;text-align:left;background:transparent;color:#E5E8EA;font:500 13px/1.2 Inter,Roboto,Arial,sans-serif}
+  .authz-menu button svg{width:15px;height:15px;color:#8E98A3}
+  .authz-menu button:hover{background:rgba(178,191,205,.08)}
+  .authz-menu button[aria-checked="true"]{color:#fff}
+  .authz-menu button[aria-checked="true"] svg{color:#FF7A10}
+  .authz-menu button.is-perigo{color:#F87171}.authz-menu button.is-perigo svg{color:#F87171}
+  .authz-menu-sep{height:1px;margin:6px 4px;background:rgba(178,191,205,.12)}
+  #authzNovoModal .authz-modal-card{width:min(720px,calc(100vw - 28px));padding:18px!important}
+  #authzNovoModal .authz-form-card{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;max-width:none}
+  #authzNovoModal .authz-form-card input,#authzNovoModal .authz-form-card select{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important}
+  #authzNovoModal .authz-form-card label{color:#A9B6C3}
+}
+@media (min-width:721px){ .authz-table .c-nome{width:17%}.authz-table .c-perfil{width:13%}.authz-table .c-data{width:106px}.authz-table .c-ativo{width:64px}.authz-table .c-acao{width:64px} }
+@media (min-width:721px){ .adm-tela .authz-table th:nth-child(n){width:auto} .adm-tela .authz-table td:nth-child(4){text-align:left} }

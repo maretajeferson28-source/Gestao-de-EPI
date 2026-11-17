@@ -167,7 +167,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-perfis]')) {
     const perfisScript = document.createElement('script');
-    perfisScript.src = 'js/perfis.js?v=20261117-2';
+    perfisScript.src = 'js/perfis.js?v=20261117-4';
     perfisScript.dataset.perfis = 'true';
     document.body.appendChild(perfisScript);
   }

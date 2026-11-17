@@ -2672,84 +2672,94 @@ async function loadAdminAccess(){
   return currentIsAdmin;
 }
 
+// Lista de usuários (Administração → Usuários): Ações (⋯) · Nome · E-mail ·
+// Perfil · Cadastro · Último acesso · Ativo. O ⋯ abre o menu com perfil,
+// ativar / desativar e remover. Administrador fica protegido.
+const dataHora=v=>{if(!v) return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'})};
 function renderAuthorizedUsers(){
   const body=$('authzBody');
   const count=$('authzCount');
   if(!body||!count) return;
-
-  count.textContent=`${authorizedUsers.length} usuário(s) cadastrado(s)`;
-
+  count.textContent=`${authorizedUsers.length} ${authorizedUsers.length===1?'usuário cadastrado':'usuários cadastrados'}`;
+  const perfis=window.EPI_PERFIS?.lista?.()||[];
+  const nomePerfil=id=>perfis.find(p=>p.id===id)?.nome||'';
   body.innerHTML=authorizedUsers.map(u=>{
-    const statusClass=u.ativo?'authz-status active':'authz-status inactive';
-    const statusLabel=u.ativo?'Ativo':'Inativo';
-    const role=u.admin?'<span class="authz-role"><i data-lucide="shield-check" aria-hidden="true"></i>Administrador</span>':'';
-    const actions=u.admin
+    const perfil=u.admin?'<span class="authz-perfil-tudo">Administrador</span>':(nomePerfil(u.perfil_id)?esc(nomePerfil(u.perfil_id)):'<span class="authz-sem">Sem perfil</span>');
+    const acao=u.admin
       ? '<span class="authz-protected" title="Conta administrativa protegida"><i data-lucide="lock-keyhole" aria-hidden="true"></i></span>'
-      : `<div class="authz-actions">
-          <button class="btn compact authz-toggle" type="button" data-authz-toggle="${esc(u.email)}" data-active="${u.ativo?'1':'0'}" title="${u.ativo?'Desativar':'Ativar'}" aria-label="${u.ativo?'Desativar':'Ativar'}">
-            <i data-lucide="${u.ativo?'user-x':'user-check'}" aria-hidden="true"></i>
-          </button>
-          <button class="btn compact danger authz-delete" type="button" data-authz-delete="${esc(u.email)}" title="Remover" aria-label="Remover">
-            <i data-lucide="trash-2" aria-hidden="true"></i>
-          </button>
-        </div>`;
-
-    // Perfil (js/administracao.js): administrador tem tudo; os outros escolhem um perfil.
-    const perfis=window.EPI_PERFIS?.lista?.()||[];
-    const perfilCel=u.admin
-      ? '<span class="authz-perfil-tudo">Tudo (administrador)</span>'
-      : `<select class="authz-perfil" data-authz-perfil="${esc(u.email)}" aria-label="Perfil de ${esc(u.nome||u.email)}"><option value="">Sem perfil</option>${perfis.map(p=>`<option value="${esc(p.id)}"${p.id===u.perfil_id?' selected':''}>${esc(p.nome)}</option>`).join('')}</select>`;
+      : `<button type="button" class="authz-mais" data-authz-menu="${esc(u.email)}" aria-haspopup="menu" aria-label="Ações de ${esc(u.nome||u.email)}"><i data-lucide="ellipsis" aria-hidden="true"></i></button>`;
     return `<tr>
-      <td><div class="authz-user"><strong>${esc(u.nome||'Sem nome')}</strong>${role}</div></td>
+      <td class="authz-action-cell">${acao}</td>
+      <td title="${esc(u.nome||'')}"><strong class="authz-nome">${esc(u.nome||'Sem nome')}</strong></td>
       <td title="${esc(u.email)}">${esc(u.email)}</td>
-      <td>${perfilCel}</td>
-      <td><span class="${statusClass}"><span></span>${statusLabel}</span></td>
-      <td class="authz-action-cell">${actions}</td>
+      <td>${perfil}</td>
+      <td>${dataHora(u.cadastro||u.created_at)}</td>
+      <td>${dataHora(u.ultimo_acesso)}</td>
+      <td><span class="authz-ativo ${u.ativo?'is-sim':'is-nao'}">${u.ativo?'Sim':'Não'}</span></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="5" class="empty">Nenhum usuário autorizado.</td></tr>';
-
-  document.querySelectorAll('[data-authz-perfil]').forEach(sel=>sel.addEventListener('change',async()=>{
-    const email=sel.dataset.authzPerfil;
-    sel.disabled=true;
-    const {error}=await sb.rpc('epi_admin_set_user_perfil',{p_email:email,p_perfil:sel.value||null});
-    sel.disabled=false;
-    if(error){alert(error.message);await loadAuthorizedUsers();return}
-    const u=authorizedUsers.find(x=>x.email===email); if(u) u.perfil_id=sel.value||null;
-  }));
-
-  document.querySelectorAll('[data-authz-toggle]').forEach(btn=>btn.addEventListener('click',async()=>{
-    const email=btn.dataset.authzToggle;
-    const nextActive=btn.dataset.active!=='1';
-    btn.disabled=true;
-    const {error}=await sb.rpc('epi_admin_set_active',{p_email:email,p_ativo:nextActive});
-    if(error){alert(error.message);btn.disabled=false;return}
-    if(nextActive) avisarAcesso('liberado',email);
-    await loadAuthorizedUsers();
-  }));
-
-  document.querySelectorAll('[data-authz-delete]').forEach(btn=>btn.addEventListener('click',async()=>{
-    const email=btn.dataset.authzDelete;
-    if(!confirm(`Remover a autorização de ${email}?`)) return;
-    btn.disabled=true;
-    const {error}=await sb.rpc('epi_admin_delete_user',{p_email:email});
-    if(error){alert(error.message);btn.disabled=false;return}
-    await loadAuthorizedUsers();
-  }));
-
+  }).join('') || '<tr><td colspan="7" class="empty">Nenhum usuário cadastrado.</td></tr>';
   refreshIcons();
 }
+
+// Menu ⋯ de cada usuário.
+function fecharMenuAuthz(){document.getElementById('authzMenu')?.remove()}
+document.addEventListener('click',async e=>{
+  const abrir=e.target.closest('[data-authz-menu]');
+  const item=e.target.closest('[data-authz-acao]');
+  if(item){
+    const email=item.dataset.authzEmail, acao=item.dataset.authzAcao;
+    fecharMenuAuthz();
+    const u=authorizedUsers.find(x=>x.email===email); if(!u) return;
+    let error=null;
+    if(acao==='perfil'){({error}=await sb.rpc('epi_admin_set_user_perfil',{p_email:email,p_perfil:item.dataset.authzPerfil||null}))}
+    else if(acao==='ativo'){({error}=await sb.rpc('epi_admin_set_active',{p_email:email,p_ativo:!u.ativo})); if(!error&&!u.ativo) avisarAcesso('liberado',email)}
+    else if(acao==='remover'){
+      if(!confirm(`Remover o acesso de ${u.nome||email}?
+
+A pessoa não entra mais no app. O login dela continua existindo; para voltar, é só criar de novo com o mesmo e-mail.`)) return;
+      ({error}=await sb.rpc('epi_admin_delete_user',{p_email:email}));
+    }
+    if(error){alert(error.message);return}
+    await loadAuthorizedUsers();
+    return;
+  }
+  if(abrir){
+    const email=abrir.dataset.authzMenu;
+    const ja=document.getElementById('authzMenu');
+    if(ja&&ja.dataset.email===email){fecharMenuAuthz();return}
+    fecharMenuAuthz();
+    const u=authorizedUsers.find(x=>x.email===email); if(!u) return;
+    const perfis=window.EPI_PERFIS?.lista?.()||[];
+    const m=document.createElement('div');
+    m.id='authzMenu';m.className='authz-menu';m.dataset.email=email;m.setAttribute('role','menu');
+    m.innerHTML=`<div class="authz-menu-tit">Perfil</div>
+      ${[{id:'',nome:'Sem perfil'},...perfis].map(p=>`<button type="button" role="menuitemradio" aria-checked="${(u.perfil_id||'')===p.id}" data-authz-acao="perfil" data-authz-email="${esc(email)}" data-authz-perfil="${esc(p.id)}"><i data-lucide="${(u.perfil_id||'')===p.id?'circle-check':'circle'}"></i>${esc(p.nome)}</button>`).join('')}
+      <div class="authz-menu-sep"></div>
+      <button type="button" role="menuitem" data-authz-acao="ativo" data-authz-email="${esc(email)}"><i data-lucide="${u.ativo?'user-x':'user-check'}"></i>${u.ativo?'Desativar':'Ativar'}</button>
+      <button type="button" role="menuitem" class="is-perigo" data-authz-acao="remover" data-authz-email="${esc(email)}"><i data-lucide="trash-2"></i>Remover acesso</button>`;
+    document.body.appendChild(m);
+    const r=abrir.getBoundingClientRect();
+    m.style.left=`${Math.round(r.left)}px`;
+    m.style.top=`${Math.round(Math.min(r.bottom+6,innerHeight-m.offsetHeight-10))}px`;
+    refreshIcons();
+    return;
+  }
+  if(!e.target.closest('#authzMenu')) fecharMenuAuthz();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape') fecharMenuAuthz()});
 
 async function loadAuthorizedUsers(){
   if(!currentIsAdmin) return;
   const body=$('authzBody');
   const count=$('authzCount');
-  if(body) body.innerHTML='<tr><td colspan="5" class="empty">Carregando autorizações...</td></tr>';
+  if(body) body.innerHTML='<tr><td colspan="7" class="empty">Carregando usuários...</td></tr>';
   if(count) count.textContent='Carregando...';
 
-  const {data,error}=await sb.rpc('epi_admin_list_users');
+  let {data,error}=await sb.rpc('epi_admin_list_usuarios');
+  if(error) ({data,error}=await sb.rpc('epi_admin_list_users'));
   if(error){
     console.error('[AUTORIZAÇÕES]',error);
-    if(body) body.innerHTML='<tr><td colspan="5" class="empty">Não foi possível carregar as autorizações.</td></tr>';
+    if(body) body.innerHTML='<tr><td colspan="7" class="empty">Não foi possível carregar os usuários.</td></tr>';
     if(count) count.textContent='Erro ao carregar';
     return;
   }
@@ -2786,6 +2796,8 @@ if($('authzForm')) $('authzForm').addEventListener('submit',async e=>{
       : `Usuário criado. ${nome} já pode entrar com o e-mail e a senha.`;
     avisarAcesso('liberado',email);
     await loadAuthorizedUsers();
+    // Mostra o usuário criado na aba Autorizados (a mensagem fica na de Novo usuário).
+    setTimeout(()=>window.EPI_PERFIS?.criado?.(),1200);
   }catch(err){
     erro('Não foi possível criar o usuário: '+(err.message||err));
   }finally{botao.disabled=false}
