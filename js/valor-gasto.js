@@ -17,7 +17,8 @@
   const val = (id) => document.getElementById(id)?.value || '';
   const dataBr = (d) => (d ? d.split('-').reverse().join('/') : '—');
   const semAcento = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  const entregas = () => (typeof movements !== 'undefined' && Array.isArray(movements) ? movements : []);
+  // Só EPI: uniforme das salas (deposito_item_id) fica fora da conta.
+  const entregas = () => (typeof movements !== 'undefined' && Array.isArray(movements) ? movements.filter((m) => !m.deposito_item_id) : []);
   const catalogo = () => (typeof epiCatalog !== 'undefined' && Array.isArray(epiCatalog) ? epiCatalog : []);
   const nomeEpi = (m) => catalogo().find((e) => e.id === m.epi_id)?.nome || m.epi || 'EPI / Item';
   const custo = (m) => { try { const i = movementCostInfo(m); return i.priced ? i.total : null; } catch (_) { return null; } };

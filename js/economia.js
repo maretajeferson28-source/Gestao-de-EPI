@@ -23,7 +23,8 @@
   // Globais do app.js (declaradas com let, visíveis entre scripts).
   const variantes = () => (typeof epiVariants !== 'undefined' && Array.isArray(epiVariants) ? epiVariants : []);
   const catalogo = () => (typeof epiCatalog !== 'undefined' && Array.isArray(epiCatalog) ? epiCatalog : []);
-  const entregas = () => (typeof movements !== 'undefined' && Array.isArray(movements) ? movements : []);
+  // Só EPI: uniforme das salas (deposito_item_id) fica fora da conta.
+  const entregas = () => (typeof movements !== 'undefined' && Array.isArray(movements) ? movements.filter((m) => !m.deposito_item_id) : []);
   const chave = (ca) => { try { return caKey(ca); } catch (_) { return String(ca || '').replace(/\D+/g, ''); } };
   const temPreco = (v) => v.preco !== null && v.preco !== undefined && v.preco !== '' && Number.isFinite(Number(v.preco)) && Number(v.preco) > 0;
   const nomeEpi = (id, m) => catalogo().find((e) => e.id === id)?.nome || m?.epi || 'EPI / Item';

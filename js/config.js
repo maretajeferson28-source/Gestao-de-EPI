@@ -160,14 +160,14 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-fila]')) {
     const filaScript = document.createElement('script');
-    filaScript.src = 'js/fila.js?v=20261030-2';
+    filaScript.src = 'js/fila.js?v=20261117-1';
     filaScript.dataset.fila = 'true';
     document.body.appendChild(filaScript);
   }
 
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
-    programarScript.src = 'js/programar.js?v=20261111-20';
+    programarScript.src = 'js/programar.js?v=20261117-2';
     programarScript.dataset.programar = 'true';
     document.body.appendChild(programarScript);
   }
@@ -206,13 +206,13 @@ window.addEventListener('load', () => {
   }
   if (!document.querySelector('script[data-economia]')) {
     const economiaScript = document.createElement('script');
-    economiaScript.src = 'js/economia.js?v=20261116-3';
+    economiaScript.src = 'js/economia.js?v=20261117-1';
     economiaScript.dataset.economia = 'true';
     document.body.appendChild(economiaScript);
   }
   if (!document.querySelector('script[data-valor-gasto]')) {
     const valorGastoScript = document.createElement('script');
-    valorGastoScript.src = 'js/valor-gasto.js?v=20261116-1';
+    valorGastoScript.src = 'js/valor-gasto.js?v=20261117-1';
     valorGastoScript.dataset.valorGasto = 'true';
     document.body.appendChild(valorGastoScript);
   }

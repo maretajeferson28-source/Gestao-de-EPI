@@ -17,6 +17,11 @@
   const hoje = () => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
   const dataBR = (iso) => { const [y, m, d] = String(iso || '').slice(0, 10).split('-'); return d ? `${d}/${m}/${y}` : ''; };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
+  // Item da fila: EPI (catálogo) ou uniforme (peça de uma sala).
+  const nomeItem = (i) => i.epis?.nome || i.deposito_itens?.peca || 'EPI';
+  const detalheItem = (i) => (i.deposito_item_id
+    ? [i.deposito_itens?.depositos?.nome, i.tamanho ? 'Tam. ' + i.tamanho : '', i.ca ? 'C.A. ' + i.ca : ''].filter(Boolean).join(' · ')
+    : [i.epi_variantes?.apelido, codigo(i.ca), i.tamanho ? 'Tam. ' + i.tamanho : ''].filter(Boolean).join(' · '));
   const codigo = (ca) => (ca ? (/^CI-/i.test(ca) ? ca : 'C.A. ' + ca) : 'Sem C.A.');
 
   let fila = [];
@@ -131,7 +136,7 @@
     if (!navigator.onLine) { box.innerHTML = '<p class="fila-vazio">Sem internet. A fila aparece quando voltar o sinal.</p>'; return; }
     box.innerHTML = '<p class="fila-vazio">Carregando…</p>';
     const { data, error } = await db().from('entregas_programadas')
-      .select('id,colaborador_id,data_prevista,observacao,created_at,colaboradores(nome),entregas_programadas_itens(id,ordem,quantidade,tamanho,ca,epi_id,epis(nome),epi_variantes(apelido))')
+      .select('id,colaborador_id,data_prevista,observacao,created_at,colaboradores(nome),entregas_programadas_itens(id,ordem,quantidade,tamanho,ca,epi_id,epis(nome),epi_variantes(apelido),deposito_item_id,deposito_itens(peca,depositos(nome)))')
       .eq('status', 'programada')
       .order('data_prevista', { ascending: true })
       .order('created_at', { ascending: true });
@@ -149,7 +154,7 @@
           <strong>${esc(p.colaboradores?.nome || 'Colaborador')}</strong>
           <span class="fila-data${atrasada ? ' is-atrasada' : ehHoje ? ' is-hoje' : ''}">${atrasada ? 'Atrasada · ' : ehHoje ? 'Hoje · ' : ''}${dataBR(p.data_prevista)}</span>
         </header>
-        <ul>${itens.map((i) => `<li><b>${fmt(i.quantidade)}×</b><span>${esc(i.epis?.nome || 'EPI')}<small>${esc([i.epi_variantes?.apelido, codigo(i.ca), i.tamanho ? 'Tam. ' + i.tamanho : ''].filter(Boolean).join(' · '))}</small></span></li>`).join('')}</ul>
+        <ul>${itens.map((i) => `<li><b>${fmt(i.quantidade)}×</b><span>${esc(nomeItem(i))}<small>${esc(detalheItem(i))}</small></span></li>`).join('')}</ul>
         ${p.observacao ? `<p class="fila-obs"><i data-lucide="message-square"></i>${esc(p.observacao)}</p>` : ''}
         <footer>
           <button class="btn compact fila-cancelar" type="button" data-cancelar="${esc(p.id)}">Cancelar</button>
@@ -197,7 +202,7 @@
     $('filaTelaTermo').className = 'fila-termo ' + (temTermo ? 'is-ok' : 'is-ruim');
     $('filaTelaItens').innerHTML = itens.map((i) => `
       <li data-item="${esc(i.id)}">
-        <span class="fila-item-nome">${esc(i.epis?.nome || 'EPI')}<small>${esc([i.epi_variantes?.apelido, codigo(i.ca), i.tamanho ? 'Tam. ' + i.tamanho : ''].filter(Boolean).join(' · '))}</small></span>
+        <span class="fila-item-nome">${esc(nomeItem(i))}<small>${esc(detalheItem(i))}</small></span>
         <span class="fila-qtd"><button type="button" data-passo="-1" aria-label="Diminuir"><i data-lucide="minus"></i></button><input type="number" min="0" step="1" inputmode="numeric" value="${esc(i.quantidade)}" aria-label="Quantidade"><button type="button" data-passo="1" aria-label="Aumentar"><i data-lucide="plus"></i></button></span>
       </li>`).join('');
     $('filaTelaObs').textContent = aberta.observacao || '';

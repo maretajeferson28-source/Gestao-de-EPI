@@ -50,9 +50,152 @@
   }
   const saldoCa = (epiId, v) => saldos.get(epiId)?.get(normCa(v?.ca)) || 0;
 
+  // ---- Uniformes (botão "Uniforme" na Composição da entrega) ----
+  // Com o botão ligado, a entrega inteira é de uniforme: cada linha escolhe
+  // Item (peça), Sala, Tamanho e Quantidade das salas de uniforme
+  // (deposito_itens). O Estoque mostra o saldo daquela peça, sala e tamanho.
+  // Só programa com os três escolhidos; a peça sai da sala na confirmação (Fila).
+  let modoUni = false;
+  let uni = { salas: [], itens: [] };
+  async function carregarUni() {
+    const cli = db();
+    if (!cli) return;
+    const [d, i] = await Promise.all([
+      cli.from('depositos').select('id,nome,ativo').order('nome'),
+      cli.from('deposito_itens').select('id,deposito_id,peca,tamanho,quantidade,ca')
+    ]);
+    uni = { salas: (d.data || []).filter((s) => s.ativo !== false), itens: i.data || [] };
+    const dl = $('dlProgPeca');
+    if (dl) dl.innerHTML = [...new Set(uni.itens.map((x) => x.peca))].sort((a, b) => a.localeCompare(b, 'pt-BR')).map((p) => `<option value="${esc(p)}">`).join('');
+  }
+  const ORDEM_TAM = ['PP', 'P', 'M', 'G', 'GG', 'EXG', 'EXGG', 'EXGGG'];
+  const pesoTam = (t) => { const s = String(t || '').trim().toUpperCase(); const n = parseFloat(s); if (!Number.isNaN(n)) return n; const i = ORDEM_TAM.indexOf(s.split(' ')[0]); return i < 0 ? 999 : 1000 + i; };
+  const acharPeca = (nome) => { const n = norm(nome); return n ? (uni.itens.find((x) => norm(x.peca) === n)?.peca || null) : null; };
+  const salaCurta = (nome) => String(nome || '').replace(/^sala de uniformes?\s*[–-]?\s*/i, '') || nome;
+  const iconePeca = (p) => (/bota|cal[cç]ado|sapato/i.test(p) ? 'footprints' : 'shirt');
+
+  function botaoUni() {
+    const tit = document.querySelector('.prog-comp-titulo');
+    if (!tit || $('progUni')) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'progUni';
+    b.className = 'prog-uni-btn';
+    b.setAttribute('aria-pressed', 'false');
+    b.title = 'Entregar uniforme das salas (Novos / Usados) em vez de EPI';
+    b.innerHTML = '<i data-lucide="shirt" aria-hidden="true"></i>Uniforme';
+    b.addEventListener('click', () => setModo(!modoUni));
+    tit.appendChild(b);
+    if (!$('dlProgPeca')) { const dl = document.createElement('datalist'); dl.id = 'dlProgPeca'; document.body.appendChild(dl); }
+    icons();
+  }
+
+  function setModo(on, perguntar = true) {
+    if (on === modoUni) return true;
+    const preenchidas = [...$('progItens').querySelectorAll('.prog-item')].some((l) => (l.querySelector('[data-campo="epi"],[data-campo="peca"]')?.value || '').trim());
+    if (perguntar && preenchidas && !confirm(on ? 'Trocar para uniforme tira os EPIs já escolhidos desta entrega. Continuar?' : 'Voltar para EPI tira os uniformes já escolhidos desta entrega. Continuar?')) return false;
+    modoUni = on;
+    const b = $('progUni');
+    if (b) { b.setAttribute('aria-pressed', String(on)); b.classList.toggle('is-on', on); }
+    document.querySelector('.prog-comp-titulo')?.closest('.prog-bloco')?.classList.toggle('prog-uni-on', on);
+    const cab = document.querySelector('.prog-cab');
+    if (cab) { const s = cab.querySelectorAll('span'); if (s[1]) s[1].textContent = on ? 'Item' : 'EPI'; if (s[2]) s[2].textContent = on ? 'Sala' : 'C.A.'; }
+    $('progAdd').innerHTML = `<i data-lucide="plus" aria-hidden="true"></i>${on ? 'Adicionar outro item' : 'Adicionar outro EPI'}`;
+    $('progItens').innerHTML = '';
+    novaLinha();
+    if (on) carregarUni();
+    icons();
+    resumo();
+    return true;
+  }
+
+  function novaLinhaUni() {
+    const div = document.createElement('div');
+    div.className = 'prog-item prog-item--uni';
+    div.dataset.linha = ++seq;
+    div.innerHTML = `
+      <div class="prog-epi-cel"><span class="prog-epi-icone" data-icone><i data-lucide="shirt"></i></span><input data-campo="peca" list="dlProgPeca" placeholder="Digite o item" autocomplete="off" aria-label="Item"></div>
+      <select data-campo="sala" aria-label="Sala" disabled><option value="">—</option></select>
+      <span class="prog-saldo" data-saldo>—</span>
+      <div class="prog-qtd">
+        <button type="button" data-passo="-1" aria-label="Diminuir"><i data-lucide="minus"></i></button>
+        <input data-campo="qtd" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="Quantidade">
+        <button type="button" data-passo="1" aria-label="Aumentar"><i data-lucide="plus"></i></button>
+      </div>
+      <select data-campo="tamuni" aria-label="Tamanho" disabled><option value="">—</option></select>
+      <button class="prog-remover" type="button" data-remover title="Tirar este item" aria-label="Tirar este item"><i data-lucide="trash-2"></i></button>
+      <p class="prog-aviso" data-aviso hidden></p>`;
+    $('progItens').appendChild(div);
+    icons();
+    return div;
+  }
+
+  // Item escolhido: monta as salas que têm essa peça.
+  function escolherPeca(linha) {
+    const peca = acharPeca(linha.querySelector('[data-campo="peca"]').value);
+    if ((linha.dataset.peca || '') === (peca || '')) return avisarUni(linha);
+    linha.dataset.peca = peca || '';
+    linha.dataset.item = '';
+    linha.classList.toggle('tem-epi', !!peca);
+    if (peca) $('progItens').querySelectorAll('.prog-item').forEach((l) => {
+      if (l !== linha && !l.querySelector('[data-campo="peca"]')?.value.trim()) l.remove();
+    });
+    linha.querySelector('[data-icone]').innerHTML = `<i data-lucide="${iconePeca(peca || '')}"></i>`;
+    const sel = linha.querySelector('[data-campo="sala"]');
+    const salas = peca ? uni.salas.filter((s) => uni.itens.some((x) => x.deposito_id === s.id && x.peca === peca)) : [];
+    sel.innerHTML = salas.length
+      ? '<option value="">Escolher</option>' + salas.map((s) => { const t = uni.itens.filter((x) => x.deposito_id === s.id && x.peca === peca).reduce((a, x) => a + x.quantidade, 0); return `<option value="${esc(s.id)}" title="${esc(s.nome)}: ${fmt(t)} peças">${esc(salaCurta(s.nome))}</option>`; }).join('')
+      : '<option value="">—</option>';
+    sel.disabled = !salas.length;
+    if (salas.length === 1) sel.value = salas[0].id;
+    escolherSala(linha);
+  }
+
+  // Sala escolhida: monta os tamanhos daquela peça na sala, com o saldo.
+  function escolherSala(linha) {
+    const peca = linha.dataset.peca, sala = linha.querySelector('[data-campo="sala"]').value;
+    const sel = linha.querySelector('[data-campo="tamuni"]');
+    const tams = peca && sala ? uni.itens.filter((x) => x.deposito_id === sala && x.peca === peca)
+      .sort((a, b) => pesoTam(a.tamanho) - pesoTam(b.tamanho) || a.tamanho.localeCompare(b.tamanho, 'pt-BR', { numeric: true })) : [];
+    const antes = linha.dataset.item;
+    sel.innerHTML = tams.length
+      ? '<option value="">Escolher</option>' + tams.map((x) => `<option value="${esc(x.id)}"${x.quantidade <= 0 ? ' disabled' : ''}>${esc(x.tamanho || 'Único')} · ${fmt(x.quantidade)}</option>`).join('')
+      : '<option value="">—</option>';
+    sel.disabled = !tams.length;
+    const comSaldo = tams.filter((x) => x.quantidade > 0);
+    sel.value = tams.some((x) => x.id === antes) ? antes : (comSaldo.length === 1 && tams.length === 1 ? comSaldo[0].id : '');
+    linha.dataset.item = sel.value;
+    avisarUni(linha);
+  }
+
+  function avisarUni(linha) {
+    const el = linha.querySelector('[data-aviso]');
+    const nome = linha.querySelector('[data-campo="peca"]').value.trim();
+    const sala = linha.querySelector('[data-campo="sala"]').value;
+    const item = uni.itens.find((x) => x.id === linha.dataset.item);
+    const qtd = Number(linha.querySelector('[data-campo="qtd"]').value) || 0;
+    const avisos = [];
+    if (nome && !linha.dataset.peca) avisos.push('Item não está em nenhuma sala. Escolha um da lista.');
+    else if (linha.dataset.peca && !sala) avisos.push('Escolha a sala.');
+    else if (sala && !item) avisos.push('Escolha o tamanho.');
+    else if (item && qtd > item.quantidade) avisos.push(item.quantidade > 0 ? `Só tem ${fmt(item.quantidade)} desse tamanho na sala.` : 'Esse tamanho acabou na sala.');
+    el.textContent = avisos.join(' ');
+    el.hidden = !avisos.length;
+    // Estoque: só aparece depois de escolher o tamanho.
+    const cel = linha.querySelector('[data-saldo]');
+    const s = item ? item.quantidade : null;
+    cel.className = 'prog-saldo' + (s == null ? '' : s <= 0 || qtd > s ? ' is-ruim' : ' is-ok') + (avisos.length && s != null ? ' tem-aviso' : '');
+    cel.title = avisos.join(' ');
+    cel.innerHTML = (avisos.length && s != null ? '<i data-lucide="triangle-alert"></i>' : '') + (s == null ? '—' : fmt(s));
+    linha.classList.toggle('tem-aviso', !!avisos.length && !!nome);
+    icons();
+    resumo();
+  }
+
   // ---- Cartão de cada EPI ----
   let seq = 0;
   function novaLinha() {
+    if (modoUni) return novaLinhaUni();
     const id = ++seq;
     const div = document.createElement('div');
     div.className = 'prog-item';
@@ -266,6 +409,12 @@
     if (!box) return;
     const c = acharColab($('progColab').value);
     const itens = [...$('progItens').querySelectorAll('.prog-item')].map((l) => {
+      if (l.classList.contains('prog-item--uni')) {
+        if (!l.dataset.peca) return null;
+        const it = uni.itens.find((x) => x.id === l.dataset.item);
+        const sala = uni.salas.find((s) => s.id === l.querySelector('[data-campo="sala"]').value);
+        return { nome: l.dataset.peca, qtd: Number(l.querySelector('[data-campo="qtd"]').value) || 0, ca: sala ? salaCurta(sala.nome) : '', tam: it ? (it.tamanho || 'Único') : '', aviso: !l.querySelector('[data-aviso]').hidden, uni: true };
+      }
       const epi = epis().find((e) => e.id === l.dataset.epi);
       if (!epi) return null;
       const v = lista('epiVariants').find((x) => x.id === l.dataset.var);
@@ -286,9 +435,9 @@
       <div class="prog-res-sec">
         <h4 class="prog-res-tit">Itens selecionados</h4>
         ${itens.length
-          ? `<ul class="prog-res-itens"><li class="prog-res-cab" aria-hidden="true"><span class="prog-res-nome">Nome</span><span class="prog-res-c">C.A.</span><span class="prog-res-c">Qtd</span><span class="prog-res-c">Tam</span></li>${itens.map((i) => { const completo = [i.nome, i.ca || 'Sem C.A.', `Qtd. ${fmt(i.qtd)}`, i.tam ? `Tam. ${i.tam}` : ''].filter(Boolean).join(' · '); return `<li title="${esc(completo)}"><span class="prog-res-nome">${esc(i.nome)}</span><span class="prog-res-c">${esc(i.ca ? i.ca.replace(/^CA /, '') : 's/ C.A.')}</span><span class="prog-res-c">${fmt(i.qtd)}</span><span class="prog-res-c${i.tam ? '' : ' is-vazio'}">${esc(i.tam || '—')}</span></li>`; }).join('')}</ul>
-            ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso'} (estoque ou C.A.). Dá para programar mesmo assim.</p>` : ''}`
-          : '<p class="prog-res-vazio">Nenhum EPI adicionado</p>'}
+          ? `<ul class="prog-res-itens"><li class="prog-res-cab" aria-hidden="true"><span class="prog-res-nome">Nome</span><span class="prog-res-c">${modoUni ? 'Sala' : 'C.A.'}</span><span class="prog-res-c">Qtd</span><span class="prog-res-c">Tam</span></li>${itens.map((i) => { const completo = [i.nome, i.ca || (i.uni ? '' : 'Sem C.A.'), `Qtd. ${fmt(i.qtd)}`, i.tam ? `Tam. ${i.tam}` : ''].filter(Boolean).join(' · '); return `<li title="${esc(completo)}"><span class="prog-res-nome">${esc(i.nome)}</span><span class="prog-res-c">${esc(i.ca ? i.ca.replace(/^CA /, '') : (i.uni ? '—' : 's/ C.A.'))}</span><span class="prog-res-c">${fmt(i.qtd)}</span><span class="prog-res-c${i.tam ? '' : ' is-vazio'}">${esc(i.tam || '—')}</span></li>`; }).join('')}</ul>
+            ${comAviso ? `<p class="prog-res-avisos">${comAviso} ${modoUni ? (comAviso === 1 ? 'item falta escolher ou passa do estoque' : 'itens faltam escolher ou passam do estoque') + '. Acerte antes de programar.' : (comAviso === 1 ? 'EPI tem aviso' : 'EPIs têm aviso') + ' (estoque ou C.A.). Dá para programar mesmo assim.'}</p>` : ''}`
+          : `<p class="prog-res-vazio">${modoUni ? 'Nenhum item adicionado' : 'Nenhum EPI adicionado'}</p>`}
       </div>
       <div class="prog-res-div" aria-hidden="true"></div>`;
     icons();
@@ -459,6 +608,7 @@
   async function adicionarEpi(id) {
     const epi = epis().find((e) => e.id === id);
     if (!epi) return;
+    if (modoUni && !setModo(false)) return;
     const vazia = [...$('progItens').querySelectorAll('.prog-item')].find((l) => !l.querySelector('[data-campo="epi"]').value.trim());
     const linha = vazia || novaLinha();
     linha.querySelector('[data-campo="epi"]').value = epi.nome;
@@ -497,6 +647,7 @@
   }
 
   async function usarOs(os) {
+    if (modoUni && !setModo(false)) return;
     // Tira as linhas vazias e acrescenta os EPIs da OS que ainda não estão na tabela.
     $('progItens').querySelectorAll('.prog-item').forEach((l) => { if (!l.querySelector('[data-campo="epi"]').value.trim()) l.remove(); });
     const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
@@ -531,6 +682,19 @@
     if (!colab) return setMsg('Escolha um colaborador cadastrado da lista.', true);
     const itens = [];
     for (const linha of $('progItens').querySelectorAll('.prog-item')) {
+      if (linha.classList.contains('prog-item--uni')) {
+        const nomeU = linha.querySelector('[data-campo="peca"]').value.trim();
+        if (!nomeU) continue;
+        if (!linha.dataset.peca) return setMsg(`"${nomeU}" não está em nenhuma sala de uniforme.`, true);
+        if (!linha.querySelector('[data-campo="sala"]').value) return setMsg(`Escolha a sala de ${linha.dataset.peca}.`, true);
+        const it = uni.itens.find((x) => x.id === linha.dataset.item);
+        if (!it) return setMsg(`Escolha o tamanho de ${linha.dataset.peca}.`, true);
+        const q = Number(linha.querySelector('[data-campo="qtd"]').value);
+        if (!Number.isInteger(q) || q < 1) return setMsg(`Confira a quantidade de ${it.peca}.`, true);
+        if (q > it.quantidade) return setMsg(`Só tem ${fmt(it.quantidade)} de ${it.peca} tam. ${it.tamanho || 'único'} nessa sala.`, true);
+        itens.push({ deposito_item_id: it.id, quantidade: q });
+        continue;
+      }
       const nome = linha.querySelector('[data-campo="epi"]').value.trim();
       if (!nome) continue;
       const epi = acharEpi(nome);
@@ -544,7 +708,7 @@
         tamanho: linha.querySelector('[data-campo="tam"]').value.trim() || null
       });
     }
-    if (!itens.length) return setMsg('Adicione pelo menos um EPI.', true);
+    if (!itens.length) return setMsg(modoUni ? 'Adicione pelo menos um item de uniforme.' : 'Adicione pelo menos um EPI.', true);
     const botao = $('progConcluir');
     botao.disabled = true;
     setMsg('Salvando…');
@@ -554,6 +718,7 @@
     botao.disabled = false;
     if (error) return setMsg('Não foi possível programar: ' + error.message, true);
     limpar();
+    if (modoUni) carregarUni();
     setMsg(`Entrega de ${colab.nome} programada e enviada para a fila do celular.`);
   }
 
@@ -562,13 +727,16 @@
     $('dlProgColab').innerHTML = colaboradores().map((c) => `<option value="${esc(c.nome)}">`).join('');
     $('dlProgEpi').innerHTML = epis().map((e) => `<option value="${esc(e.nome)}">`).join('');
     saldos.clear();
+    botaoUni();
+    carregarUni().then(() => { if (modoUni) $('progItens').querySelectorAll('.prog-item--uni').forEach((l) => { l.dataset.peca = '__'; escolherPeca(l); }); });
     if (!$('progItens').children.length) limpar();
-    else $('progItens').querySelectorAll('.prog-item').forEach((l) => { l.dataset.epi = '__'; escolherEpi(l); });
+    else $('progItens').querySelectorAll('.prog-item:not(.prog-item--uni)').forEach((l) => { l.dataset.epi = '__'; escolherEpi(l); });
   }
 
   function start() {
     if (!$('progItens')) return;
     $('progData').value = hoje();
+    botaoUni();
     document.querySelector('.nav [data-page="programar"]')?.addEventListener('click', abrir);
     $('progColab').addEventListener('input', mostrarColab);
     $('progData').addEventListener('change', resumo);
@@ -588,7 +756,11 @@
     $('progItens').addEventListener('input', (e) => {
       const linha = e.target.closest('.prog-item');
       if (!linha) return;
-      if (e.target.dataset.campo === 'epi') escolherEpi(linha);
+      if (e.target.dataset.campo === 'peca') escolherPeca(linha);
+      else if (e.target.dataset.campo === 'sala') escolherSala(linha);
+      else if (e.target.dataset.campo === 'tamuni') { linha.dataset.item = e.target.value; avisarUni(linha); }
+      else if (linha.classList.contains('prog-item--uni')) avisarUni(linha);
+      else if (e.target.dataset.campo === 'epi') escolherEpi(linha);
       else if (e.target.dataset.campo === 'ca') marcarCa(linha, e.target.value);
       else avisar(linha);
     });
@@ -601,7 +773,7 @@
       if (passo) {
         const q = linha.querySelector('[data-campo="qtd"]');
         q.value = String(Math.max(1, (Number(q.value) || 1) + Number(passo.dataset.passo)));
-        return avisar(linha);
+        return linha.classList.contains('prog-item--uni') ? avisarUni(linha) : avisar(linha);
       }
       if (e.target.closest('[data-remover]')) {
         linha.remove();

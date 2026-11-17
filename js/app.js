@@ -241,7 +241,7 @@ async function loadAll(showBusy=true){
         .select('id,epi_id,ca,apelido,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
         .order('created_at',{ascending:true}),
       sb.from('movimentacoes_epi')
-        .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,colaboradores(nome),epis(nome)')
+        .select('id,data,colaborador_id,colaborador_nome_informado,epi_id,epi_nome_original,quantidade,ca,tamanho,responsavel,observacao,origem,created_at,deposito_item_id,colaboradores(nome),epis(nome)')
         .order('data',{ascending:true})
         .order('created_at',{ascending:true})
     ]);
@@ -261,6 +261,7 @@ async function loadAll(showBusy=true){
       epi: relationName(r.epis) || r.epi_nome_original || '—',
       epi_id:r.epi_id,
       epi_raw:r.epi_nome_original,
+      deposito_item_id:r.deposito_item_id||null,
       quantidade:Number(r.quantidade)||0,
       ca:r.ca || 'N/A',
       tamanho:r.tamanho || 'N/A',
