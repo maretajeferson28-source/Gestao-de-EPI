@@ -118,8 +118,8 @@
     $('[data-nfl-body]', lista).addEventListener('click', (e) => {
       const ver = e.target.closest('[data-nfl-ver]');
       if (ver) return verNota(ver.dataset.nflVer);
-      const xml = e.target.closest('[data-nfl-xml]');
-      if (xml) return baixarXml(xml.dataset.nflXml);
+      const pdf = e.target.closest('[data-nfl-pdf]');
+      if (pdf && !pdf.disabled) return baixarPdf(pdf.dataset.nflPdf, pdf);
     });
     window.addEventListener('resize', () => { if (vista === 'lista') { menos = 0; desenhar(); } });
     icons();
@@ -189,6 +189,45 @@
       inp.dispatchEvent(new Event('change', { bubbles: true }));
     } catch (err) { console.error(err); alert('Não foi possível abrir a nota: ' + (err.message || err)); }
   }
+  // PDF da DANFE direto da lista: carrega o XML guardado na tela de ver (que
+  // fica escondida) e usa o mesmo "Baixar PDF" de lá (js/nfe.js).
+  async function baixarPdf(id, botao) {
+    const icone = botao.innerHTML;
+    botao.disabled = true;
+    botao.innerHTML = '<i data-lucide="loader-circle" class="nfl-girando"></i>';
+    icons();
+    try {
+      const n = await xmlDa(id);
+      const inp = document.getElementById('nfeFileInput');
+      if (!inp || !n?.xml_original) throw new Error('XML da nota não encontrado.');
+      const dt = new DataTransfer();
+      dt.items.add(new File([n.xml_original], n.arquivo_nome || `${n.chave_acesso}.xml`, { type: 'text/xml' }));
+      inp.files = dt.files;
+      inp.dispatchEvent(new Event('change', { bubbles: true }));
+      // Espera a leitura terminar e a nota certa estar montada na tela de ver.
+      const v = window.EPI_NFE_VIEWER;
+      let gerar = null;
+      for (let i = 0; i < 80; i++) {
+        await new Promise((r) => setTimeout(r, 150));
+        const atual = v?.getCurrent?.();
+        if (!v?.isImporting?.() && atual?.xmlOriginal === n.xml_original) { gerar = document.getElementById('nfeDownloadPdf'); if (gerar) break; }
+      }
+      if (!gerar) throw new Error('Não foi possível montar a nota.');
+      await new Promise((r) => setTimeout(r, 300));
+      gerar = document.getElementById('nfeDownloadPdf');
+      gerar.click();
+      // Espera o PDF terminar (o botão de lá volta a ficar livre).
+      for (let i = 0; i < 60 && gerar.isConnected && gerar.disabled; i++) await new Promise((r) => setTimeout(r, 250));
+    } catch (err) {
+      console.error(err);
+      alert('Não foi possível baixar o PDF: ' + (err.message || err));
+    } finally {
+      botao.disabled = false;
+      botao.innerHTML = icone;
+      icons();
+    }
+  }
+
   async function baixarXml(id) {
     try {
       const n = await xmlDa(id);
@@ -267,7 +306,7 @@
         <td><span class="epi-sit epi-sit--${st[0]}" title="${esc(st[1])}">${esc(st[1])}</span></td>
         <td class="acao"><div class="table-action-group">
           <button class="btn movement-action-btn" type="button" data-nfl-ver="${esc(n.id)}" title="Ver a nota (DANFE)" aria-label="Ver a nota"><i data-lucide="eye"></i></button>
-          <button class="btn movement-action-btn" type="button" data-nfl-xml="${esc(n.id)}" title="Baixar o XML" aria-label="Baixar o XML"><i data-lucide="file-code-2"></i></button>
+          <button class="btn movement-action-btn" type="button" data-nfl-pdf="${esc(n.id)}" title="Baixar o PDF da nota (DANFE)" aria-label="Baixar o PDF da nota"><i data-lucide="download"></i></button>
         </div></td>
       </tr>`;
     }).join('') || `<tr><td colspan="8" class="epi-tab-nada">${carregado ? (notas.length ? 'Nenhuma nota com esses filtros.' : 'Nenhuma nota importada ainda. Use "Importar XML".') : 'Carregando…'}</td></tr>`;
