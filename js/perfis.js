@@ -1,8 +1,10 @@
 (() => {
   'use strict';
   // Perfis de acesso (Administração → Usuários e acesso → aba Perfis).
-  // Cada perfil tem um nome e as permissões marcadas numa árvore igual ao
-  // menu. O perfil é ligado ao usuário na aba Usuários (coluna Perfil).
+  // A aba é uma tabela de perfis (⋯ Editar / Excluir e + para criar). O perfil
+  // abre num modal: à esquerda as partes do menu, à direita as telas daquela
+  // parte em dropdown, com as ações de cada tela (Consultar, Cadastrar…).
+  // O perfil é ligado ao usuário na aba Usuários (coluna Perfil).
   // Etapa 1: só cadastro e vínculo; as regras ainda não consultam o perfil.
   if (window.__EPI_PERFIS__) return;
   window.__EPI_PERFIS__ = true;
@@ -12,42 +14,45 @@
   const db = () => { try { return typeof sb !== 'undefined' ? sb : null; } catch (_) { return null; } };
   const admin = () => { try { return currentIsAdmin === true; } catch (_) { return false; } };
   const icons = () => window.lucide?.createIcons?.({ attrs: { 'aria-hidden': 'true' } });
+  const data = (v) => { if (!v) return '—'; const d = new Date(v); return isNaN(d) ? '—' : d.toLocaleDateString('pt-BR'); };
 
-  // Catálogo de permissões, na ordem do menu. A Administração não entra:
-  // é só do administrador.
+  // Catálogo, na ordem do menu. Cada tela tem ações; a chave fica
+  // "tela.acao" (ex.: colaboradores.cadastrar). "consultar" é sempre a
+  // primeira: marcar qualquer ação marca o consultar da tela, e desmarcar o
+  // consultar desmarca a tela inteira. A Administração não entra: é só do
+  // administrador.
+  const C = ['consultar', 'Consultar'];
   const ARVORE = [
-    { grupo: 'Dashboard', icone: 'layout-dashboard', itens: [['dashboard.ver', 'Ver o Dashboard (indicadores, Economia, Valor gasto)']] },
-    { grupo: 'Entregas', icone: 'package', itens: [
-      ['entregas.programar', 'Programar entregas'],
-      ['entregas.entregar', 'Entregar (Fila do celular e entrega avulsa)'],
-      ['movimentacoes.ver', 'Ver movimentações'],
-      ['movimentacoes.editar', 'Lançar, editar e excluir movimentações']] },
-    { grupo: 'Cadastros', icone: 'users', itens: [
-      ['colaboradores.ver', 'Ver colaboradores e histórico'],
-      ['colaboradores.editar', 'Cadastrar, editar e desativar colaboradores'],
-      ['epis.ver', 'Ver EPIs / Itens'],
-      ['epis.editar', 'Cadastrar e editar EPIs / Itens e C.A.s'],
-      ['ciepi.ver', 'Base CIEPI']] },
-    { grupo: 'Estoque', icone: 'layers', itens: [
-      ['estoque.ver', 'Ver estoque e depósitos'],
-      ['estoque.ajustar', 'Entradas e ajustes (inclui − e + dos uniformes)'],
-      ['notas.ver', 'Ver notas fiscais'],
-      ['notas.importar', 'Importar notas (XML)']] },
-    { grupo: 'Outros', icone: 'circle-ellipsis', itens: [
-      ['pendencias.ver', 'Pendências'],
-      ['caepi.ver', 'Consulta C.A.']] }
+    { sec: 'dashboard', nome: 'Dashboard', icone: 'layout-dashboard', telas: [
+      { k: 'dashboard', nome: 'Dashboard', icone: 'layout-dashboard', acoes: [['consultar', 'Consultar (indicadores, Economia, Valor gasto, Depósitos)']] }] },
+    { sec: 'entregas', nome: 'Entregas', icone: 'package', telas: [
+      { k: 'programar', nome: 'Programar entrega', icone: 'calendar-plus', acoes: [C, ['programar', 'Programar'], ['cancelar', 'Cancelar programação']] },
+      { k: 'entregar', nome: 'Entregar', icone: 'hand-helping', acoes: [C, ['entregar', 'Entregar (Fila do celular e entrega avulsa)']] },
+      { k: 'movimentacoes', nome: 'Movimentações', icone: 'arrow-left-right', acoes: [C, ['lancar', 'Lançar'], ['editar', 'Editar'], ['excluir', 'Excluir'], ['exportar', 'Exportar Excel']] }] },
+    { sec: 'cadastros', nome: 'Cadastros', icone: 'users', telas: [
+      { k: 'colaboradores', nome: 'Colaboradores', icone: 'users', acoes: [C, ['cadastrar', 'Cadastrar'], ['editar', 'Editar'], ['desativar', 'Desativar / Ativar'], ['excluir', 'Excluir']] },
+      { k: 'epis', nome: 'EPIs / Itens', icone: 'hard-hat', acoes: [C, ['cadastrar', 'Cadastrar'], ['editar', 'Editar'], ['desativar', 'Desativar / Ativar'], ['excluir', 'Excluir']] },
+      { k: 'ciepi', nome: 'Base CIEPI', icone: 'book-open', acoes: [C, ['cadastrar', 'Cadastrar']] }] },
+    { sec: 'estoque', nome: 'Estoque', icone: 'layers', telas: [
+      { k: 'estoque', nome: 'Estoque de EPI', icone: 'boxes', acoes: [C, ['entrada', 'Dar entrada'], ['ajustar', 'Ajustar saldo']] },
+      { k: 'uniformes', nome: 'Uniformes (depósitos)', icone: 'shirt', acoes: [C, ['ajustar', 'Tirar e repor (− e +)'], ['cadastrar', 'Cadastrar peça e depósito'], ['editar', 'Editar e excluir peça']] },
+      { k: 'notas', nome: 'Notas Fiscais', icone: 'receipt-text', acoes: [C, ['importar', 'Importar XML']] }] },
+    { sec: 'outros', nome: 'Pendências e C.A.', icone: 'circle-ellipsis', telas: [
+      { k: 'pendencias', nome: 'Pendências', icone: 'circle-alert', acoes: [C] },
+      { k: 'caepi', nome: 'Consulta C.A.', icone: 'search', acoes: [C] }] }
   ];
-  const TODAS = ARVORE.flatMap((g) => g.itens.map((i) => i[0]));
+  const chaves = (t) => t.acoes.map(([a]) => `${t.k}.${a}`);
+  const TODAS = ARVORE.flatMap((s) => s.telas.flatMap(chaves));
 
-  let perfis = [], erro = false, editando = null; // editando: id ou 'novo'
+  let perfis = [], erro = false;
 
   async function carregar() {
     const cli = db();
     if (!cli || !admin()) return;
-    const { data, error } = await cli.from('perfis').select('id,nome,descricao,permissoes').order('nome');
+    const { data: lista, error } = await cli.from('perfis').select('id,nome,descricao,permissoes,created_at').order('nome');
     erro = !!error;
     if (error) console.error('[Perfis]', error);
-    perfis = data || [];
+    perfis = lista || [];
     // Perfil do formulário "Criar usuário".
     const sel = document.getElementById('authzPerfil');
     if (sel) { const v = sel.value; sel.innerHTML = '<option value="">Sem perfil</option>' + perfis.map((p) => `<option value="${esc(p.id)}">${esc(p.nome)}</option>`).join(''); sel.value = v; }
@@ -111,100 +116,192 @@
     tela.classList.toggle('prf-ativa', qual === 'perfis');
     tela.querySelectorAll('[data-prf-aba]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.prfAba === qual)));
     $('.prf', tela).hidden = qual !== 'perfis';
-    if (qual === 'perfis') { if (!editando && perfis[0]) editando = perfis[0].id; desenhar(); }
+    if (qual === 'perfis') desenhar();
   }
 
-  // ---- Lista de perfis + editor com a árvore ----
+  const usados = (id) => { try { return (authorizedUsers || []).filter((u) => u.perfil_id === id).length; } catch (_) { return 0; } };
+  const validas = (p) => (p.permissoes || []).filter((k) => TODAS.includes(k));
+
+  // ---- Tabela de perfis ----
   function desenhar() {
     const box = document.querySelector('.adm-tela[data-adm-tela="usuarios"] .prf');
     if (!box) return;
-    const p = editando === 'novo' ? { id: null, nome: '', descricao: '', permissoes: [] } : perfis.find((x) => x.id === editando);
-    const usados = (id) => { try { return (authorizedUsers || []).filter((u) => u.perfil_id === id).length; } catch (_) { return 0; } };
+    const n = perfis.length;
     box.innerHTML = `
-      <aside class="prf-lista">
-        <div class="prf-lista-cab"><h3>Perfis</h3><button type="button" class="colab-novo" data-prf-novo><i data-lucide="plus"></i>Novo perfil</button></div>
-        ${erro ? '<p class="prf-vazio">Não foi possível carregar os perfis.</p>' : perfis.length ? perfis.map((x) => `
-          <button type="button" class="prf-item${x.id === editando ? ' is-ativo' : ''}" data-prf-abrir="${esc(x.id)}">
-            <span class="prf-item-ic" aria-hidden="true"><i data-lucide="shield-check"></i></span>
-            <span class="prf-item-txt"><b>${esc(x.nome)}</b><small>${x.permissoes.length} ${x.permissoes.length === 1 ? 'permissão' : 'permissões'} · ${usados(x.id)} ${usados(x.id) === 1 ? 'usuário' : 'usuários'}</small></span>
-          </button>`).join('') : '<p class="prf-vazio">Nenhum perfil ainda. Crie o primeiro em "Novo perfil".</p>'}
-      </aside>
-      <section class="prf-editor">${p ? editor(p) : '<div class="prf-vazio prf-vazio--grande">Escolha um perfil à esquerda ou crie um novo.</div>'}</section>`;
-    ligar(box, p);
+      <div class="panel authz-list-panel prf-painel">
+        <div class="panel-head">
+          <div><h3>Perfis</h3><small>${erro ? 'Não foi possível carregar.' : n === 1 ? '1 perfil' : `${n} perfis`}</small></div>
+          <div class="authz-topo-acoes"><button class="authz-redondo is-novo" type="button" data-prf-novo title="Novo perfil" aria-label="Novo perfil"><i data-lucide="plus"></i></button></div>
+        </div>
+        <div class="table-wrap authz-table-wrap">
+          <table class="authz-table prf-tabela">
+            <colgroup><col class="c-acao"><col class="c-nome"><col class="c-num"><col class="c-num"><col class="c-data"></colgroup>
+            <thead><tr><th class="acao">Ações</th><th>Nome</th><th>Permissões</th><th>Usuários</th><th>Cadastro</th></tr></thead>
+            <tbody>${n ? perfis.map((p) => {
+              const k = validas(p).length, u = usados(p.id);
+              return `<tr>
+                <td class="authz-action-cell"><button type="button" class="authz-mais" data-prf-mais="${esc(p.id)}" aria-label="Ações do perfil ${esc(p.nome)}"><i data-lucide="ellipsis"></i></button></td>
+                <td class="authz-nome" title="${esc(p.nome)}">${esc(p.nome)}</td>
+                <td>${k} de ${TODAS.length}</td>
+                <td>${u ? `${u} ${u === 1 ? 'usuário' : 'usuários'}` : '<span class="authz-sem">Nenhum</span>'}</td>
+                <td>${data(p.created_at)}</td>
+              </tr>`;
+            }).join('') : `<tr><td colspan="5" class="prf-vazio-linha">Nenhum perfil ainda. Clique no + para criar o primeiro.</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>`;
+    box.querySelector('[data-prf-novo]').addEventListener('click', () => abrirModal(null));
+    box.querySelectorAll('[data-prf-mais]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); menu(b, perfis.find((x) => x.id === b.dataset.prfMais)); }));
     icons();
   }
 
-  function editor(p) {
-    const tem = new Set(p.permissoes || []);
-    return `
-      <div class="prf-editor-cab">
-        <div class="field prf-nome"><label for="prfNome">Nome do perfil*</label><input id="prfNome" maxlength="60" placeholder="Ex.: Almoxarife" value="${esc(p.nome)}" autocomplete="off"></div>
-        <div class="field prf-desc"><label for="prfDesc">Descrição</label><input id="prfDesc" maxlength="160" placeholder="Opcional" value="${esc(p.descricao || '')}" autocomplete="off"></div>
-      </div>
-      <div class="prf-arvore">
-        <div class="prf-arvore-topo"><span>O que este perfil pode fazer</span><button type="button" class="prf-link" data-prf-tudo>Marcar tudo</button><button type="button" class="prf-link" data-prf-nada>Desmarcar tudo</button></div>
-        ${ARVORE.map((g, gi) => {
-          const n = g.itens.filter((i) => tem.has(i[0])).length;
-          return `<div class="prf-grupo">
-            <label class="prf-grupo-cab"><input type="checkbox" data-prf-grupo="${gi}"${n === g.itens.length ? ' checked' : ''}><i data-lucide="${g.icone}"></i><b>${esc(g.grupo)}</b><small data-prf-conta="${gi}">${n}/${g.itens.length}</small></label>
-            <div class="prf-itens">${g.itens.map(([k, t]) => `<label class="prf-perm"><input type="checkbox" data-prf-perm="${k}" data-prf-g="${gi}"${tem.has(k) ? ' checked' : ''}><span>${esc(t)}</span></label>`).join('')}</div>
-          </div>`;
-        }).join('')}
-        <p class="prf-nota"><i data-lucide="info"></i>A Administração é só do administrador. Por enquanto o perfil fica guardado e ligado ao usuário; na próxima etapa o app e o banco passam a obedecer a ele.</p>
-      </div>
-      <div class="prf-acoes">
-        ${p.id ? '<button type="button" class="btn uni-ed-excluir prf-excluir" data-prf-excluir><i data-lucide="trash-2"></i>Excluir perfil</button>' : ''}
-        <span class="uni-ed-espaco"></span>
-        <span class="prf-msg" data-prf-msg></span>
-        <button type="button" class="colab-novo" data-prf-salvar><i data-lucide="save"></i>Salvar perfil</button>
-      </div>`;
+  // ---- Menu ⋯ (Editar / Excluir) ----
+  let menuEl = null;
+  function fecharMenu() { menuEl?.remove(); menuEl = null; }
+  function menu(botao, p) {
+    if (!p) return;
+    const ja = menuEl && menuEl.dataset.id === p.id;
+    fecharMenu();
+    if (ja) return;
+    menuEl = document.createElement('div');
+    menuEl.className = 'authz-menu';
+    menuEl.dataset.id = p.id;
+    menuEl.setAttribute('role', 'menu');
+    menuEl.innerHTML = `<button type="button" role="menuitem" data-m="editar"><i data-lucide="pencil"></i>Editar</button>
+      <div class="authz-menu-sep"></div>
+      <button type="button" role="menuitem" class="is-perigo" data-m="excluir"><i data-lucide="trash-2"></i>Excluir</button>`;
+    document.body.appendChild(menuEl);
+    const r = botao.getBoundingClientRect();
+    menuEl.style.left = Math.min(r.left, innerWidth - menuEl.offsetWidth - 8) + 'px';
+    const cima = r.bottom + menuEl.offsetHeight + 8 > innerHeight;
+    menuEl.style.top = (cima ? r.top - menuEl.offsetHeight - 4 : r.bottom + 4) + 'px';
+    menuEl.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-m]'); if (!b) return;
+      fecharMenu();
+      if (b.dataset.m === 'editar') abrirModal(p); else excluir(p);
+    });
+    icons();
+  }
+  document.addEventListener('click', (e) => { if (menuEl && !menuEl.contains(e.target)) fecharMenu(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenu(); });
+  window.addEventListener('scroll', fecharMenu, true);
+  window.addEventListener('resize', fecharMenu);
+
+  async function excluir(p) {
+    const n = usados(p.id);
+    if (!confirm(`Excluir o perfil "${p.nome}"?${n ? `\n\n${n} ${n === 1 ? 'usuário fica' : 'usuários ficam'} sem perfil.` : ''}`)) return;
+    const { error } = await db().from('perfis').delete().eq('id', p.id);
+    if (error) { alert('Não foi possível excluir: ' + error.message); return; }
+    await carregar();
+    try { if (typeof loadAuthorizedUsers === 'function') loadAuthorizedUsers(); } catch (_) {}
   }
 
-  function ligar(box, p) {
-    box.querySelector('[data-prf-novo]')?.addEventListener('click', () => { editando = 'novo'; desenhar(); setTimeout(() => document.getElementById('prfNome')?.focus(), 30); });
-    box.querySelectorAll('[data-prf-abrir]').forEach((b) => b.addEventListener('click', () => { editando = b.dataset.prfAbrir; desenhar(); }));
-    if (!p) return;
-    const ed = $('.prf-editor', box);
-    const contar = () => ARVORE.forEach((g, gi) => {
-      const caixas = [...ed.querySelectorAll(`[data-prf-g="${gi}"]`)];
-      const n = caixas.filter((c) => c.checked).length;
-      const cab = ed.querySelector(`[data-prf-grupo="${gi}"]`);
-      cab.checked = n === caixas.length; cab.indeterminate = n > 0 && n < caixas.length;
-      ed.querySelector(`[data-prf-conta="${gi}"]`).textContent = `${n}/${caixas.length}`;
+  // ---- Modal do perfil: partes do menu à esquerda, telas em dropdown à direita ----
+  function abrirModal(p) {
+    document.getElementById('prfModal')?.remove();
+    const marc = new Set(p ? validas(p) : []);
+    const abertos = new Set();
+    let sec = ARVORE[0].sec;
+    const m = document.createElement('div');
+    m.className = 'data-edit-modal dep-modal';
+    m.id = 'prfModal';
+    m.setAttribute('role', 'dialog');
+    m.setAttribute('aria-modal', 'true');
+    m.setAttribute('aria-labelledby', 'prfModalTitulo');
+    m.innerHTML = `
+      <div class="data-edit-card dep-janela prf-janela">
+        <button class="data-edit-close" type="button" aria-label="Fechar" data-prf-fechar><i data-lucide="x"></i></button>
+        <div class="data-edit-head">
+          <div class="data-edit-icon"><i data-lucide="shield-check"></i></div>
+          <div><h3 id="prfModalTitulo">${p ? 'Editar perfil' : 'Novo perfil'}</h3><p>Escolha o que quem tiver este perfil pode fazer.</p></div>
+        </div>
+        <div class="data-edit-body">
+          <div class="field prf-nome"><label for="prfNome">Nome*</label><input id="prfNome" maxlength="60" placeholder="Ex.: Almoxarife" value="${esc(p?.nome || '')}" autocomplete="off"></div>
+          <div class="prf-corpo">
+            <nav class="prf-nav" aria-label="Partes do sistema"></nav>
+            <div class="prf-telas"></div>
+          </div>
+          <p class="prf-nota"><i data-lucide="info"></i>A Administração é só do administrador. Por enquanto o perfil fica guardado e ligado ao usuário; na próxima etapa o app e o banco passam a obedecer a ele.</p>
+          <div class="data-edit-actions">
+            <span class="prf-msg" data-prf-msg></span>
+            <button class="btn" type="button" data-prf-fechar>Cancelar</button>
+            <button class="btn primary" type="button" data-prf-salvar><i data-lucide="save"></i>Salvar</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+    const nav = $('.prf-nav', m), lado = $('.prf-telas', m), msg = $('[data-prf-msg]', m);
+
+    // Estado de uma lista de chaves: 'tudo' | 'parte' | 'nada'.
+    const estado = (ks) => { const n = ks.filter((k) => marc.has(k)).length; return n === 0 ? 'nada' : n === ks.length ? 'tudo' : 'parte'; };
+    const caixa = (st, attrs) => `<input type="checkbox" ${attrs}${st === 'tudo' ? ' checked' : ''}${st === 'parte' ? ' data-meio' : ''}>`;
+    const marcarTela = (t, sim) => chaves(t).forEach((k) => sim ? marc.add(k) : marc.delete(k));
+
+    function render() {
+      nav.innerHTML = ARVORE.map((s) => {
+        const ks = s.telas.flatMap(chaves), n = ks.filter((k) => marc.has(k)).length;
+        return `<button type="button" class="prf-sec${s.sec === sec ? ' is-ativo' : ''}" data-sec="${s.sec}"${s.sec === sec ? ' aria-current="true"' : ''}>
+          <i data-lucide="${s.icone}"></i><span>${esc(s.nome)}</span><small class="${n ? 'tem' : ''}">${n}/${ks.length}</small><i data-lucide="chevron-right" class="prf-sec-seta"></i></button>`;
+      }).join('');
+      const s = ARVORE.find((x) => x.sec === sec);
+      const ksSec = s.telas.flatMap(chaves);
+      lado.innerHTML = `
+        <label class="prf-tudo">${caixa(estado(ksSec), 'data-tudo')}<b>${esc(s.nome)}</b><span>Marcar tudo desta parte</span></label>
+        ${s.telas.map((t) => {
+          const ks = chaves(t), n = ks.filter((k) => marc.has(k)).length, aberto = abertos.has(t.k);
+          return `<div class="prf-tela${aberto ? ' is-aberto' : ''}">
+            <div class="prf-tela-cab">
+              ${caixa(estado(ks), `data-tela="${t.k}" aria-label="${esc(t.nome)}: tudo"`)}
+              <button type="button" class="prf-tela-abre" data-abre="${t.k}" aria-expanded="${aberto}">
+                <i data-lucide="${t.icone}"></i><b>${esc(t.nome)}</b><small class="${n ? 'tem' : ''}">${n}/${ks.length}</small><i data-lucide="chevron-down" class="prf-tela-seta"></i>
+              </button>
+            </div>
+            ${aberto ? `<div class="prf-acoes-lista">${t.acoes.map(([a, rot]) => `<label class="prf-acao">${caixa(marc.has(`${t.k}.${a}`) ? 'tudo' : 'nada', `data-acao="${t.k}.${a}"`)}<span>${esc(rot)}</span></label>`).join('')}</div>` : ''}
+          </div>`;
+        }).join('')}`;
+      m.querySelectorAll('input[data-meio]').forEach((c) => { c.indeterminate = true; });
+      icons();
+    }
+
+    nav.addEventListener('click', (e) => { const b = e.target.closest('[data-sec]'); if (b) { sec = b.dataset.sec; render(); } });
+    lado.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-abre]'); if (!b) return;
+      const k = b.dataset.abre; abertos.has(k) ? abertos.delete(k) : abertos.add(k); render();
     });
-    contar();
-    ed.addEventListener('change', (e) => {
-      const g = e.target.closest('[data-prf-grupo]');
-      if (g) ed.querySelectorAll(`[data-prf-g="${g.dataset.prfGrupo}"]`).forEach((c) => { c.checked = g.checked; });
-      contar();
+    lado.addEventListener('change', (e) => {
+      const c = e.target, s = ARVORE.find((x) => x.sec === sec);
+      if (c.matches('[data-tudo]')) s.telas.forEach((t) => marcarTela(t, c.checked));
+      else if (c.matches('[data-tela]')) { const t = s.telas.find((x) => x.k === c.dataset.tela); marcarTela(t, c.checked); if (c.checked) abertos.add(t.k); }
+      else if (c.matches('[data-acao]')) {
+        const k = c.dataset.acao, [tk, a] = k.split('.');
+        const t = s.telas.find((x) => x.k === tk);
+        if (c.checked) { marc.add(k); marc.add(`${tk}.consultar`); }
+        else if (a === 'consultar') marcarTela(t, false);
+        else marc.delete(k);
+      }
+      msg.textContent = '';
+      render();
     });
-    ed.querySelector('[data-prf-tudo]').addEventListener('click', () => { ed.querySelectorAll('[data-prf-perm]').forEach((c) => { c.checked = true; }); contar(); });
-    ed.querySelector('[data-prf-nada]').addEventListener('click', () => { ed.querySelectorAll('[data-prf-perm]').forEach((c) => { c.checked = false; }); contar(); });
-    const msg = $('[data-prf-msg]', ed);
-    ed.querySelector('[data-prf-salvar]').addEventListener('click', async () => {
-      const nome = document.getElementById('prfNome').value.trim();
-      const descricao = document.getElementById('prfDesc').value.trim() || null;
-      const permissoes = [...ed.querySelectorAll('[data-prf-perm]:checked')].map((c) => c.dataset.prfPerm).filter((k) => TODAS.includes(k));
-      if (!nome) { msg.textContent = 'Informe o nome do perfil.'; msg.className = 'prf-msg is-erro'; return; }
-      if (perfis.some((x) => x.id !== p.id && x.nome.trim().toLowerCase() === nome.toLowerCase())) { msg.textContent = 'Já existe um perfil com esse nome.'; msg.className = 'prf-msg is-erro'; return; }
+
+    const fechar = () => m.remove();
+    m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('[data-prf-fechar]')) fechar(); });
+    m.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); fechar(); } });
+
+    m.querySelector('[data-prf-salvar]').addEventListener('click', async () => {
+      const nome = $('#prfNome', m).value.trim();
+      if (!nome) { msg.textContent = 'Informe o nome do perfil.'; msg.className = 'prf-msg is-erro'; $('#prfNome', m).focus(); return; }
+      if (perfis.some((x) => x.id !== p?.id && x.nome.trim().toLowerCase() === nome.toLowerCase())) { msg.textContent = 'Já existe um perfil com esse nome.'; msg.className = 'prf-msg is-erro'; return; }
+      const permissoes = TODAS.filter((k) => marc.has(k));
       msg.textContent = 'Salvando…'; msg.className = 'prf-msg';
-      const dados = { nome, descricao, permissoes, updated_at: new Date().toISOString() };
-      const r = p.id ? await db().from('perfis').update(dados).eq('id', p.id).select('id').single() : await db().from('perfis').insert(dados).select('id').single();
+      const dados = { nome, permissoes, updated_at: new Date().toISOString() };
+      const r = p ? await db().from('perfis').update(dados).eq('id', p.id).select('id').single() : await db().from('perfis').insert(dados).select('id').single();
       if (r.error) { msg.textContent = r.error.code === '23505' ? 'Já existe um perfil com esse nome.' : 'Não foi possível salvar: ' + r.error.message; msg.className = 'prf-msg is-erro'; return; }
-      editando = r.data.id;
+      fechar();
       await carregar();
-      const m2 = document.querySelector('[data-prf-msg]');
-      if (m2) { m2.textContent = 'Perfil salvo.'; m2.className = 'prf-msg is-ok'; }
     });
-    ed.querySelector('[data-prf-excluir]')?.addEventListener('click', async () => {
-      let n = 0; try { n = (authorizedUsers || []).filter((u) => u.perfil_id === p.id).length; } catch (_) {}
-      if (!confirm(`Excluir o perfil "${p.nome}"?${n ? `\n\n${n} ${n === 1 ? 'usuário fica' : 'usuários ficam'} sem perfil.` : ''}`)) return;
-      const { error } = await db().from('perfis').delete().eq('id', p.id);
-      if (error) { msg.textContent = 'Não foi possível excluir: ' + error.message; msg.className = 'prf-msg is-erro'; return; }
-      editando = null;
-      await carregar();
-      try { if (typeof loadAuthorizedUsers === 'function') loadAuthorizedUsers(); } catch (_) {}
-    });
+
+    render();
+    setTimeout(() => $('#prfNome', m)?.focus(), 30);
   }
 
   const espera = setInterval(() => { if (montar()) clearInterval(espera); }, 600);

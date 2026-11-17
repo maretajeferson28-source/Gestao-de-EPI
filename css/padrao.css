@@ -4595,6 +4595,51 @@
   .adm-tela .authz-form-card input:focus{border-color:rgba(255,121,0,.6)!important}
   .adm-tela .authz-table thead th{background:rgb(26,34,43)!important;color:#DFE3E7!important}
 }
+/* Modal do perfil (js/perfis.js): partes à esquerda, telas em dropdown à direita. */
+.dep-modal .prf-janela{width:min(880px,calc(100vw - 28px));max-height:calc(100vh - 40px);display:flex;flex-direction:column}
+.prf-janela .data-edit-body{display:flex;flex-direction:column;min-height:0;overflow:auto}
+.prf-janela .prf-nome{max-width:380px;margin:0 0 14px}
+.prf-corpo{display:grid;grid-template-columns:230px minmax(0,1fr);gap:14px;min-height:340px}
+.prf-nav{display:flex;flex-direction:column;gap:4px;padding-right:14px;border-right:1px solid rgba(178,191,205,.12)}
+.prf-sec{display:flex;align-items:center;gap:9px;width:100%;padding:10px 10px;border:1px solid transparent;border-radius:10px;cursor:pointer;text-align:left;background:transparent;color:#C9D0D7;font:600 13.5px/1.2 Inter,Roboto,Arial,sans-serif}
+.prf-sec svg{width:16px;height:16px;flex:0 0 16px;color:#8E98A3}
+.prf-sec span{flex:1;min-width:0}
+.prf-sec small{font:600 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#7F8C99}
+.prf-sec small.tem{color:#FF9A4A}
+.prf-sec .prf-sec-seta{width:14px;height:14px;opacity:0}
+.prf-sec:hover{background:rgba(178,191,205,.06)}
+.prf-sec.is-ativo{background:rgba(255,102,0,.09);border-color:rgba(255,121,0,.45);color:#fff}
+.prf-sec.is-ativo svg{color:#FF7A10}
+.prf-sec.is-ativo .prf-sec-seta{opacity:1}
+.prf-telas{display:flex;flex-direction:column;gap:8px;min-width:0}
+.prf-tudo{display:flex;align-items:center;gap:10px;padding:4px 2px 8px;cursor:pointer;border-bottom:1px solid rgba(178,191,205,.10)}
+.prf-tudo b{font:700 15px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+.prf-tudo span{margin-left:auto;font:500 12px/1 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+.prf-tela{border:1px solid rgba(178,191,205,.12);border-radius:11px;overflow:hidden;background:rgba(6,10,14,.45)}
+.prf-tela.is-aberto{border-color:rgba(255,121,0,.32)}
+.prf-tela-cab{display:flex;align-items:center;gap:10px;padding:0 0 0 12px;background:rgba(26,34,43,.75)}
+.prf-tela-abre{flex:1;display:flex;align-items:center;gap:9px;min-width:0;padding:11px 12px 11px 0;border:0;background:none;cursor:pointer;text-align:left;color:inherit;font:inherit}
+.prf-tela-abre svg{width:16px;height:16px;flex:0 0 16px;color:#FF7A10}
+.prf-tela-abre b{flex:1;font:600 13.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+.prf-tela-abre small{font:600 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#7F8C99}
+.prf-tela-abre small.tem{color:#FF9A4A}
+.prf-tela-abre .prf-tela-seta{color:#8E98A3;transition:transform .15s}
+.prf-tela.is-aberto .prf-tela-seta{transform:rotate(180deg)}
+.prf-acoes-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 16px;padding:8px 14px 10px 38px}
+.prf-acao{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font:500 13px/1.3 Inter,Roboto,Arial,sans-serif;color:#D5DCE3}
+.prf-janela input[type="checkbox"]{width:16px;height:16px;flex:0 0 16px;margin:0;accent-color:#FF6600;cursor:pointer}
+.prf-janela .prf-nota{display:flex;gap:8px;align-items:flex-start;margin:14px 0 0;font:400 12px/1.45 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+.prf-janela .prf-nota svg{width:14px;height:14px;flex:0 0 14px;margin-top:2px}
+.prf-janela .data-edit-actions{align-items:center}
+.prf-janela .prf-msg{margin-right:auto;font:500 12.5px/1.3 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+.prf-janela .prf-msg.is-erro{color:#F87171}
+@media (max-width:720px){
+  .prf-corpo{grid-template-columns:1fr;min-height:0}
+  .prf-nav{flex-direction:row;overflow-x:auto;padding:0 0 8px;border-right:0;border-bottom:1px solid rgba(178,191,205,.12)}
+  .prf-sec{width:auto;flex:0 0 auto}
+  .prf-sec .prf-sec-seta{display:none}
+  .prf-acoes-lista{grid-template-columns:1fr;padding-left:14px}
+}
 /* =====================================================================
    Administração → Usuários e acesso: abas Usuários | Perfis, coluna
    Perfil na lista e o editor de perfis com a árvore (js/perfis.js).
@@ -4607,45 +4652,8 @@
   .authz-table select.authz-perfil:focus{outline:0;border-color:rgba(255,121,0,.6)}
   .authz-perfil-tudo{font:500 12px/1 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
 
-  .prf{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;align-items:start}
-  .prf-lista,.prf-editor{border:1px solid rgba(178,191,205,.14);border-radius:14px;padding:16px;
-    background:radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.06) 0%,transparent 60%),linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)}
-  .prf-lista-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-  .prf-lista-cab h3{margin:0;font:700 15px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
-  .prf-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px;margin:0 0 6px;border-radius:10px;cursor:pointer;text-align:left;font:inherit;color:inherit;background:rgba(6,10,14,.55);border:1px solid rgba(178,191,205,.12)}
-  .prf-item:hover{border-color:rgba(255,121,0,.4)}
-  .prf-item.is-ativo{border-color:rgba(255,121,0,.65);background:rgba(255,102,0,.08)}
-  .prf-item-ic{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:9px;color:#FF7A10;border:1px solid rgba(255,111,25,.3);background:linear-gradient(135deg,#2A1A10,#151A20 70%)}
-  .prf-item-ic svg{width:16px;height:16px}
-  .prf-item-txt b{display:block;font:600 13.5px/1.25 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
-  .prf-item-txt small{display:block;margin-top:2px;font-size:11.5px;color:#9FB0C2}
-  .prf-vazio{margin:6px 0;color:#9FB0C2;font-size:13px}
-  .prf-vazio--grande{padding:40px 10px;text-align:center}
-  .prf-editor-cab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:12px}
-  .prf-editor .field{margin:0}
-  .prf-editor .field label{color:#A9B6C3}
-  .prf-editor .field input{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important}
-  .prf-editor .field input:focus{border-color:rgba(255,121,0,.6)!important}
-  .prf-arvore{margin-top:14px}
-  .prf-arvore-topo{display:flex;align-items:center;gap:14px;margin-bottom:8px;font:700 11px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A9B6C3}
-  .prf-arvore-topo span{flex:1}
-  .prf-link{border:0;background:none;padding:0;cursor:pointer;font:600 12px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:0;text-transform:none;color:#FF7A10}
-  .prf-grupo{border:1px solid rgba(178,191,205,.12);border-radius:11px;margin-bottom:8px;overflow:hidden}
-  .prf-grupo-cab{display:flex;align-items:center;gap:9px;padding:9px 12px;cursor:pointer;background:rgba(26,34,43,.8)}
-  .prf-grupo-cab svg{width:16px;height:16px;color:#FF7A10}
-  .prf-grupo-cab b{flex:1;font:700 13.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
-  .prf-grupo-cab small{font:600 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
-  .prf-itens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 14px;padding:8px 12px 10px 36px}
-  .prf-perm{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font:500 13px/1.3 Inter,Roboto,Arial,sans-serif;color:#D5DCE3}
-  .prf input[type="checkbox"]{width:16px;height:16px;flex:0 0 16px;margin:0;accent-color:#FF6600;cursor:pointer}
-  .prf-nota{display:flex;gap:8px;align-items:flex-start;margin:10px 0 0;font:400 12px/1.45 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
-  .prf-nota svg{width:14px;height:14px;flex:0 0 14px;margin-top:2px}
-  .prf-acoes{display:flex;align-items:center;gap:12px;margin-top:14px}
-  .prf-acoes .colab-novo{height:34px}
-  .prf-excluir{height:34px!important;padding:0 12px!important;border-radius:8px!important;background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(239,68,68,.35)!important;color:#F87171!important}
-  .prf-msg{font:500 12.5px/1.3 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
-  .prf-msg.is-erro{color:#F87171}.prf-msg.is-ok{color:#4ADE80}
+  .prf-tabela .c-num{width:130px}
+  .prf-vazio-linha{text-align:center!important;padding:28px 10px!important;color:#9FB0C2;white-space:normal!important}
 }
 /* Usuários e acesso: abas Usuários / Perfis discretas, separadas, com
    sublinhado laranja na ativa (sem a caixa em volta). */
