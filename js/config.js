@@ -153,7 +153,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-notas-lista]')) {
     const notasListaScript = document.createElement('script');
-    notasListaScript.src = 'js/notas-lista.js?v=20261117-5';
+    notasListaScript.src = 'js/notas-lista.js?v=20261117-6';
     notasListaScript.dataset.notasLista = 'true';
     document.body.appendChild(notasListaScript);
   }

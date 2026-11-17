@@ -4483,3 +4483,4 @@
   .nfl-kpis .kpi-card__value.nfl-kpi-moeda{font-size:24px!important}
 }
 @media (min-width:721px){ .nfl > .nfl-kpis{width:100%!important;justify-self:stretch!important;max-width:none!important} }
+@media (min-width:721px){ .nfl-tab .c-serie{width:64px} .nfl-tab tbody td{height:40px} }

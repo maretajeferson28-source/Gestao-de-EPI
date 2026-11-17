@@ -94,8 +94,8 @@
         <button class="colab-novo epi-novo" type="button" data-nfl-importar><i data-lucide="file-up" aria-hidden="true"></i>Importar XML</button>
       </div>
       <div class="epi-tab-wrap nfl-tab-wrap"><table class="epi-tab nfl-tab">
-        <colgroup><col class="c-data"><col class="c-nf"><col><col class="c-num"><col class="c-valor"><col class="c-sit"><col class="c-acao"></colgroup>
-        <thead><tr><th>Emissão</th><th>NF / Série</th><th>Fornecedor</th><th class="num">Itens</th><th class="num">Valor</th><th>Status</th><th class="acao">Ação</th></tr></thead>
+        <colgroup><col class="c-data"><col class="c-nf"><col class="c-serie"><col><col class="c-num"><col class="c-valor"><col class="c-sit"><col class="c-acao"></colgroup>
+        <thead><tr><th>Emissão</th><th>NF</th><th>Série</th><th>Fornecedor</th><th class="num">Itens</th><th class="num">Valor</th><th>Status</th><th class="acao">Ação</th></tr></thead>
         <tbody data-nfl-body></tbody>
       </table></div>
       <footer class="g-employee-footer mov-rodape epi-rodape nfl-rodape" data-nfl-rodape></footer>`;
@@ -242,8 +242,9 @@
       const st = n.status === 'cancelada' ? ['critico', 'Cancelada'] : n.pendentes ? ['atencao', `Entrada · ${n.pendentes} sem vínculo`] : ['ok', 'Entrada'];
       return `<tr>
         <td>${dataTxt(n.data_emissao)}</td>
-        <td><strong class="epi-tab-nome">${esc(n.numero || '—')}</strong><span class="epi-tab-cat">Série ${esc(n.serie || '—')}</span></td>
-        <td><strong class="epi-tab-nome" title="${esc(n.emitente_nome || '')}">${esc(n.emitente_nome || '—')}</strong><span class="epi-tab-cat">${esc(cnpj(n.emitente_documento))}</span></td>
+        <td><strong class="epi-tab-nome">${esc(n.numero || '—')}</strong></td>
+        <td>${esc(n.serie || '—')}</td>
+        <td><strong class="epi-tab-nome" title="${esc([n.emitente_nome, cnpj(n.emitente_documento)].filter(Boolean).join(' · '))}">${esc(n.emitente_nome || '—')}</strong></td>
         <td class="num" title="${num(n.linhas)} ${n.linhas === 1 ? 'linha' : 'linhas'} na nota">${num(n.noEstoque)}</td>
         <td class="num"><b class="epi-tab-saldo">${dinheiro(n.valor_total)}</b></td>
         <td><span class="epi-sit epi-sit--${st[0]}" title="${esc(st[1])}">${esc(st[1])}</span></td>
@@ -252,7 +253,7 @@
           <button class="btn movement-action-btn" type="button" data-nfl-xml="${esc(n.id)}" title="Baixar o XML" aria-label="Baixar o XML"><i data-lucide="file-code-2"></i></button>
         </div></td>
       </tr>`;
-    }).join('') || `<tr><td colspan="7" class="epi-tab-nada">${carregado ? (notas.length ? 'Nenhuma nota com esses filtros.' : 'Nenhuma nota importada ainda. Use "Importar XML".') : 'Carregando…'}</td></tr>`;
+    }).join('') || `<tr><td colspan="8" class="epi-tab-nada">${carregado ? (notas.length ? 'Nenhuma nota com esses filtros.' : 'Nenhuma nota importada ainda. Use "Importar XML".') : 'Carregando…'}</td></tr>`;
 
     let ini = Math.max(1, pag - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
     let nums = '';
