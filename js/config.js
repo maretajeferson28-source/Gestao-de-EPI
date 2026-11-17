@@ -165,6 +165,13 @@ window.addEventListener('load', () => {
     document.body.appendChild(admScript);
   }
 
+  if (!document.querySelector('script[data-perfis]')) {
+    const perfisScript = document.createElement('script');
+    perfisScript.src = 'js/perfis.js?v=20261117-1';
+    perfisScript.dataset.perfis = 'true';
+    document.body.appendChild(perfisScript);
+  }
+
   if (!document.querySelector('script[data-stock-entry]')) {
     const stockEntryScript = document.createElement('script');
     stockEntryScript.src = 'js/stock-entry.js?v=20261023-4';

@@ -4595,3 +4595,55 @@
   .adm-tela .authz-form-card input:focus{border-color:rgba(255,121,0,.6)!important}
   .adm-tela .authz-table thead th{background:rgb(26,34,43)!important;color:#DFE3E7!important}
 }
+/* =====================================================================
+   Administração → Usuários e acesso: abas Usuários | Perfis, coluna
+   Perfil na lista e o editor de perfis com a árvore (js/perfis.js).
+   ===================================================================== */
+.prf[hidden]{display:none!important}
+@media (min-width:721px){
+  .prf-abas{margin:-6px 0 14px!important}
+  .adm-tela.prf-ativa .authz-grid{display:none!important}
+  .authz-table select.authz-perfil{height:30px;min-width:150px;max-width:100%;padding:0 8px;border-radius:8px;background:rgba(6,10,14,.72);border:1px solid rgba(178,191,205,.18);color:#E9EDF1;font:500 12.5px/1 Inter,Roboto,Arial,sans-serif;color-scheme:dark}
+  .authz-table select.authz-perfil:focus{outline:0;border-color:rgba(255,121,0,.6)}
+  .authz-perfil-tudo{font:500 12px/1 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+
+  .prf{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;align-items:start}
+  .prf-lista,.prf-editor{border:1px solid rgba(178,191,205,.14);border-radius:14px;padding:16px;
+    background:radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.06) 0%,transparent 60%),linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)}
+  .prf-lista-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .prf-lista-cab h3{margin:0;font:700 15px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .prf-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px;margin:0 0 6px;border-radius:10px;cursor:pointer;text-align:left;font:inherit;color:inherit;background:rgba(6,10,14,.55);border:1px solid rgba(178,191,205,.12)}
+  .prf-item:hover{border-color:rgba(255,121,0,.4)}
+  .prf-item.is-ativo{border-color:rgba(255,121,0,.65);background:rgba(255,102,0,.08)}
+  .prf-item-ic{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:9px;color:#FF7A10;border:1px solid rgba(255,111,25,.3);background:linear-gradient(135deg,#2A1A10,#151A20 70%)}
+  .prf-item-ic svg{width:16px;height:16px}
+  .prf-item-txt b{display:block;font:600 13.5px/1.25 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .prf-item-txt small{display:block;margin-top:2px;font-size:11.5px;color:#9FB0C2}
+  .prf-vazio{margin:6px 0;color:#9FB0C2;font-size:13px}
+  .prf-vazio--grande{padding:40px 10px;text-align:center}
+  .prf-editor-cab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:12px}
+  .prf-editor .field{margin:0}
+  .prf-editor .field label{color:#A9B6C3}
+  .prf-editor .field input{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important}
+  .prf-editor .field input:focus{border-color:rgba(255,121,0,.6)!important}
+  .prf-arvore{margin-top:14px}
+  .prf-arvore-topo{display:flex;align-items:center;gap:14px;margin-bottom:8px;font:700 11px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A9B6C3}
+  .prf-arvore-topo span{flex:1}
+  .prf-link{border:0;background:none;padding:0;cursor:pointer;font:600 12px/1 Inter,Roboto,Arial,sans-serif;letter-spacing:0;text-transform:none;color:#FF7A10}
+  .prf-grupo{border:1px solid rgba(178,191,205,.12);border-radius:11px;margin-bottom:8px;overflow:hidden}
+  .prf-grupo-cab{display:flex;align-items:center;gap:9px;padding:9px 12px;cursor:pointer;background:rgba(26,34,43,.8)}
+  .prf-grupo-cab svg{width:16px;height:16px;color:#FF7A10}
+  .prf-grupo-cab b{flex:1;font:700 13.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .prf-grupo-cab small{font:600 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+  .prf-itens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 14px;padding:8px 12px 10px 36px}
+  .prf-perm{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font:500 13px/1.3 Inter,Roboto,Arial,sans-serif;color:#D5DCE3}
+  .prf input[type="checkbox"]{width:16px;height:16px;flex:0 0 16px;margin:0;accent-color:#FF6600;cursor:pointer}
+  .prf-nota{display:flex;gap:8px;align-items:flex-start;margin:10px 0 0;font:400 12px/1.45 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+  .prf-nota svg{width:14px;height:14px;flex:0 0 14px;margin-top:2px}
+  .prf-acoes{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .prf-acoes .colab-novo{height:34px}
+  .prf-excluir{height:34px!important;padding:0 12px!important;border-radius:8px!important;background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(239,68,68,.35)!important;color:#F87171!important}
+  .prf-msg{font:500 12.5px/1.3 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+  .prf-msg.is-erro{color:#F87171}.prf-msg.is-ok{color:#4ADE80}
+}

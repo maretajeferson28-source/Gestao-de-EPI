@@ -2694,13 +2694,28 @@ function renderAuthorizedUsers(){
           </button>
         </div>`;
 
+    // Perfil (js/administracao.js): administrador tem tudo; os outros escolhem um perfil.
+    const perfis=window.EPI_PERFIS?.lista?.()||[];
+    const perfilCel=u.admin
+      ? '<span class="authz-perfil-tudo">Tudo (administrador)</span>'
+      : `<select class="authz-perfil" data-authz-perfil="${esc(u.email)}" aria-label="Perfil de ${esc(u.nome||u.email)}"><option value="">Sem perfil</option>${perfis.map(p=>`<option value="${esc(p.id)}"${p.id===u.perfil_id?' selected':''}>${esc(p.nome)}</option>`).join('')}</select>`;
     return `<tr>
       <td><div class="authz-user"><strong>${esc(u.nome||'Sem nome')}</strong>${role}</div></td>
       <td title="${esc(u.email)}">${esc(u.email)}</td>
+      <td>${perfilCel}</td>
       <td><span class="${statusClass}"><span></span>${statusLabel}</span></td>
       <td class="authz-action-cell">${actions}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="4" class="empty">Nenhum usuário autorizado.</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="empty">Nenhum usuário autorizado.</td></tr>';
+
+  document.querySelectorAll('[data-authz-perfil]').forEach(sel=>sel.addEventListener('change',async()=>{
+    const email=sel.dataset.authzPerfil;
+    sel.disabled=true;
+    const {error}=await sb.rpc('epi_admin_set_user_perfil',{p_email:email,p_perfil:sel.value||null});
+    sel.disabled=false;
+    if(error){alert(error.message);await loadAuthorizedUsers();return}
+    const u=authorizedUsers.find(x=>x.email===email); if(u) u.perfil_id=sel.value||null;
+  }));
 
   document.querySelectorAll('[data-authz-toggle]').forEach(btn=>btn.addEventListener('click',async()=>{
     const email=btn.dataset.authzToggle;
@@ -2728,13 +2743,13 @@ async function loadAuthorizedUsers(){
   if(!currentIsAdmin) return;
   const body=$('authzBody');
   const count=$('authzCount');
-  if(body) body.innerHTML='<tr><td colspan="4" class="empty">Carregando autorizações...</td></tr>';
+  if(body) body.innerHTML='<tr><td colspan="5" class="empty">Carregando autorizações...</td></tr>';
   if(count) count.textContent='Carregando...';
 
   const {data,error}=await sb.rpc('epi_admin_list_users');
   if(error){
     console.error('[AUTORIZAÇÕES]',error);
-    if(body) body.innerHTML='<tr><td colspan="4" class="empty">Não foi possível carregar as autorizações.</td></tr>';
+    if(body) body.innerHTML='<tr><td colspan="5" class="empty">Não foi possível carregar as autorizações.</td></tr>';
     if(count) count.textContent='Erro ao carregar';
     return;
   }
