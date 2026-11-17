@@ -94,7 +94,7 @@ document.title = "Gestão de EPI";
 
   if (!document.querySelector('script[data-nfe-module]')) {
     const script = document.createElement('script');
-    script.src = 'js/nfe.js?v=20261019-1';
+    script.src = 'js/nfe.js?v=20261117-3';
     script.dataset.nfeModule = 'true';
     document.body.appendChild(script);
   }

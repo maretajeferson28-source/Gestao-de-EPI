@@ -316,7 +316,7 @@
         icmsRate: decimal(icmsNode, 'pICMS'),
         ipiRate: decimal(ipiTrib, 'pIPI'),
         detectedCa: caMatch ? caMatch[1] : '',
-        match: findCatalogMatch(description)
+        match: findCaMatch(caMatch ? caMatch[1] : '') || findCatalogMatch(description)
       };
     });
 
@@ -395,6 +395,19 @@
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   }
 
+  // C.A. da descrição cadastrado em um único EPI: é esse o vínculo (mesma regra
+  // da conferência para estoque, js/nfe-stock-reader.js).
+  function findCaMatch(ca) {
+    const alvo = String(ca || '').replace(/D/g, '').replace(/^0+/, '');
+    if (!alvo) return null;
+    let vars = [], catalog = [];
+    try { vars = Array.isArray(epiVariants) ? epiVariants : []; catalog = Array.isArray(epiCatalog) ? epiCatalog : []; } catch (_) { return null; }
+    const ids = [...new Set(vars.filter((v) => String(v.ca || '').replace(/D/g, '').replace(/^0+/, '') === alvo).map((v) => v.epi_id))];
+    if (ids.length !== 1) return null;
+    const item = catalog.find((i) => i.id === ids[0] && i.ativo !== false);
+    return item ? { id: item.id, name: item.nome, score: 1 } : null;
+  }
+
   function findCatalogMatch(description) {
     let catalog = [];
     try { if (typeof epiCatalog !== 'undefined' && Array.isArray(epiCatalog)) catalog = epiCatalog.filter((item) => item.ativo !== false); }
@@ -420,6 +433,17 @@
     return best && best.score >= 0.42 ? best : null;
   }
 
+  // "Produtos R$ 4.906,70 + IPI R$ 1,76": mostra de onde vem o total da nota
+  // quando ele não é só a soma dos produtos (IPI, frete, ST, desconto…).
+  const n2 = (v) => Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function contaTotal(note) {
+    const partes = [['IPI', note.ipi], ['ST', note.icmsSt], ['Frete', note.freight], ['Seguro', note.insurance], ['Outras', note.otherExpenses], ['Imp. import.', note.importTax]]
+      .filter(([, v]) => Number(v) > 0).map(([n, v]) => `+ ${n} ${n2(v)}`);
+    if (Number(note.totalDiscount) > 0) partes.push(`− Desconto ${n2(note.totalDiscount)}`);
+    if (!partes.length) return '';
+    return `<small class="nfe-file-row-conta">Produtos ${n2(note.totalProducts)} ${partes.join(' ')}</small>`;
+  }
+
   function renderFileList() {
     const list = $('nfeFileList');
     if (!list) return;
@@ -428,7 +452,7 @@
         <i data-lucide="receipt-text"></i>
         <span class="nfe-file-row-copy">
           <strong>NF ${esc(note.number || '—')} ${note.series ? `• Série ${esc(note.series)}` : ''}</strong>
-          <span>${esc(note.supplierName || note.fileName)}</span>
+          <span>${esc(note.supplierName || note.fileName)}</span>${contaTotal(note)}
         </span>
         <span class="nfe-file-row-total">${money(note.totalNote)}</span>
       </button>`).join('');
