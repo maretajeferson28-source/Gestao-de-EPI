@@ -4519,3 +4519,17 @@
 .danfe-sheet .danfe-products .desc small{font-size:6.6px}
 .danfe-sheet .danfe-additional-box span{font-size:7.4px}
 .danfe-sheet .danfe-additional-box p{font-size:7.8px;line-height:1.25}
+/* DANFE (tela de Notas): sem o nome do arquivo e sem a dica de zoom; os
+   botões de zoom sobem para a mesma linha, à direita, junto do Baixar PDF. */
+@media (min-width:721px){
+  .nfl-import #nfeResult:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px}
+  .nfl-import #nfeResult > .nfe-doc-toolbar{grid-column:1;margin:0 0 10px!important;max-width:none!important;min-width:0!important}
+  .nfl-import #nfeResult > .nfe-view-controls{grid-column:2;margin:0 0 10px!important;justify-content:flex-end;flex-wrap:nowrap}
+  .nfl-import #nfeResult > .nfe-doc-viewport{grid-column:1 / -1}
+  .nfl-import .nfe-doc-filename,.nfl-import .nfe-view-hint{display:none!important}
+  .nfl-import .nfe-zoom-controls{display:inline-flex;align-items:center;gap:6px}
+  .nfl-import .nfe-view-controls .btn{height:32px;min-height:0;padding:0 11px;border-radius:8px;background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;color:#E5E8EA!important;font:600 12.5px/1 Inter,Roboto,Arial,sans-serif!important}
+  .nfl-import .nfe-view-controls .btn:hover{border-color:rgba(255,121,0,.5)!important}
+  .nfl-import #nfeZoomOut,.nfl-import #nfeZoomIn{width:32px;padding:0!important;font-size:16px!important}
+  .nfl-import #nfeZoomLevel{min-width:46px;text-align:center;font:600 12.5px/1 Inter,Roboto,Arial,sans-serif;color:#C9D0D7}
+}
