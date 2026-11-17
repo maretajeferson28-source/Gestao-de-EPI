@@ -50,8 +50,27 @@
     const imp = document.createElement('div');
     imp.className = 'nfl-import';
     imp.hidden = true;
-    imp.innerHTML = '<div class="nfl-import-barra"><button type="button" class="btn ecn-btn nfl-voltar" data-nfl-voltar><i data-lucide="arrow-left"></i>Voltar às notas</button><span class="nfl-import-tit" data-nfl-import-tit>Importar XML</span></div>';
+    imp.innerHTML = `<div class="nfl-import-barra">
+        <button type="button" class="btn ecn-btn nfl-voltar" data-nfl-voltar><i data-lucide="arrow-left"></i>Voltar às notas</button>
+        <span class="nfl-import-tit" data-nfl-import-tit>Importar XML</span>
+        <div class="nfl-abas" role="tablist" aria-label="Ver conferência ou nota" hidden>
+          <button type="button" role="tab" data-nfl-aba="conf" aria-selected="true"><i data-lucide="list-checks"></i>Conferência</button>
+          <button type="button" role="tab" data-nfl-aba="nota" aria-selected="false"><i data-lucide="file-text"></i>Nota (DANFE)</button>
+        </div>
+        <span class="nfl-import-espaco"></span>
+        <div class="nfl-salvar" id="nfeSaveSlot"></div>
+      </div>`;
     antigos.forEach((el) => imp.appendChild(el));
+    // Coluna da direita: aviso de nota repetida + conferência (aba 1) e a DANFE (aba 2).
+    const layout = $('.nfe-layout', imp), stage = $('.nfe-stage', imp);
+    if (layout && stage) {
+      const dir = document.createElement('div');
+      dir.className = 'nfl-imp-dir';
+      dir.innerHTML = '<div class="nfl-aviso" id="nfeAvisoSlot" hidden></div><div class="nfl-review" id="nfeReviewSlot"></div>';
+      stage.before(dir);
+      dir.appendChild(stage);
+    }
+    imp.querySelectorAll('[data-nfl-aba]').forEach((b) => b.addEventListener('click', () => aba(b.dataset.nflAba)));
     const lista = document.createElement('div');
     lista.className = 'nfl';
     lista.innerHTML = `
@@ -101,10 +120,41 @@
     return true;
   }
 
+  // Abas da importação: Conferência (tabela para o estoque) ou Nota (DANFE).
+  function aba(qual) {
+    const imp = $('.nfl-import', pagina());
+    if (!imp) return;
+    imp.classList.toggle('aba-nota', qual === 'nota');
+    imp.querySelectorAll('[data-nfl-aba]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.nflAba === qual)));
+  }
+  // XML carregado: mostra as abas e avisa se a nota já está na lista.
+  function notaCarregada() {
+    const imp = $('.nfl-import', pagina());
+    if (!imp) return;
+    const atual = window.EPI_NFE_VIEWER?.getCurrent?.();
+    const tem = !!atual?.xmlOriginal;
+    imp.classList.toggle('sem-nota', !tem);
+    $('.nfl-abas', imp).hidden = !tem;
+    const aviso = $('#nfeAvisoSlot', imp);
+    const chave = tem ? (String(atual.xmlOriginal).match(/Id="NFe(\d{44})"/) || [])[1] : '';
+    const ja = chave ? notas.find((n) => n.chave_acesso === chave) : null;
+    if (aviso) {
+      aviso.hidden = !ja || vista === 'ver';
+      aviso.innerHTML = ja ? `<i data-lucide="info"></i><span><b>Esta nota já foi importada</b> em ${dataTxt(ja.created_at)} (NF ${esc(ja.numero || '')}, ${dinheiro(ja.valor_total)}). Salvar de novo só atualiza a entrada, não soma o estoque duas vezes.</span>` : '';
+    }
+    if (tem) aba(vista === 'ver' ? 'nota' : 'conf');
+    icons();
+  }
+  window.addEventListener('epi:nfe-selected', () => setTimeout(notaCarregada, 0));
+
   function irPara(v, titulo) {
     const pg = pagina();
     if (!pg) return;
+    // Importar do zero: limpa a nota que estava aberta (ex.: uma vista antes).
+    if (v === 'importar' && vista !== 'importar') window.EPI_NFE_VIEWER?.clear?.();
     vista = v;
+    pg.classList.toggle('nfl-vendo', v === 'ver');
+    setTimeout(notaCarregada, 0);
     $('.nfl', pg).hidden = v !== 'lista';
     $('.nfl-import', pg).hidden = v === 'lista';
     pg.classList.toggle('nfl-importando', v !== 'lista');

@@ -137,38 +137,68 @@
       buttonState(selected); renderReview(selected);
     }
   }
+  // Conferência para estoque: tabela no estilo aço (Produto da nota · NF ·
+  // C.A. · EPI / Item · Qtd. para estoque · Situação). Vai para #nfeReviewSlot
+  // (tela nova de Notas, js/notas-lista.js) ou, sem ele, logo abaixo da lista.
   function renderReview(note) {
     if (!$('nfeFileList')) return;
     let panel=$('nfeStockReview');
-    if (!panel) { panel=document.createElement('section');panel.id='nfeStockReview';panel.className='nfe-stock-review';$('nfeFileList')?.after(panel); }
+    if (!panel) { panel=document.createElement('section');panel.id='nfeStockReview';panel.className='nfe-stock-review'; }
+    const slot=$('nfeReviewSlot');
+    if (slot && panel.parentElement!==slot) slot.appendChild(panel);
+    else if (!slot && !panel.parentElement) $('nfeFileList')?.after(panel);
     panel.hidden=!note; panel.replaceChildren(); if (!note) return;
-    const heading=document.createElement('h3');heading.textContent='Conferência para estoque';panel.append(heading);
-    const summary=document.createElement('p');summary.className='nfe-stock-summary';panel.append(summary);
-    const update=()=>{totals(note);summary.textContent=format(note.stockQuantity)+' item(ns) para estoque · '+note.pendingCount+' linha(s) pendente(s)';};
-    const hint=document.createElement('p');hint.className='nfe-stock-hint';hint.textContent='Confira o vínculo. Caixas e pacotes exigem informar a quantidade de itens. Pares contam como pares, não como duas peças.';panel.append(hint);
+    const head=document.createElement('div');head.className='nfe-conf-head';
+    const heading=document.createElement('h3');heading.textContent='Conferência para estoque';
+    const summary=document.createElement('p');summary.className='nfe-stock-summary';
+    head.append(heading,summary);panel.append(head);
+    const hint=document.createElement('p');hint.className='nfe-stock-hint';hint.textContent='Confira o EPI de cada linha. Caixas e pacotes pedem a quantidade de itens; pares contam como pares, não como duas peças.';panel.append(hint);
+    const wrap=document.createElement('div');wrap.className='nfe-conf-wrap';
+    const table=document.createElement('table');table.className='nfe-conf';
+    table.innerHTML='<colgroup><col><col class="c-nf"><col class="c-ca"><col class="c-epi"><col class="c-qtd"><col class="c-sit"></colgroup><thead><tr><th>Produto da nota</th><th class="num">NF</th><th>C.A.</th><th>EPI / Item</th><th class="num">Qtd. estoque</th><th>Situação</th></tr></thead>';
+    const body=document.createElement('tbody');table.append(body);wrap.append(table);panel.append(wrap);
+    const pills=[];
+    const update=()=>{
+      totals(note);
+      summary.textContent=format(note.stockQuantity)+' item(ns) para estoque · '+note.pendingCount+' linha(s) pendente(s)';
+      pills.forEach((fn)=>fn());
+    };
     note.items.forEach((item)=>{
-      const row=document.createElement('div');row.className='nfe-stock-item';
-      const title=document.createElement('strong');title.textContent=item.sourceDescription;
-      const meta=document.createElement('small');meta.textContent='NF: '+format(item.quantity)+' '+item.unit+' · C.A.: '+(item.detectedCa || (item.detectedCas.length ? 'mais de um C.A.' : 'não informado'));
-      const label=document.createElement('label');label.textContent='EPI / Item';
+      const tr=document.createElement('tr');
+      const tdProd=document.createElement('td');
+      const title=document.createElement('strong');title.className='nfe-conf-prod';title.textContent=item.sourceDescription;title.title=item.sourceDescription;
+      const code=document.createElement('small');code.textContent=item.supplierCode ? 'Cód. '+item.supplierCode : '';
+      tdProd.append(title,code);
+      const tdNf=document.createElement('td');tdNf.className='num';tdNf.textContent=format(item.quantity)+' '+item.unit;
+      const tdCa=document.createElement('td');tdCa.textContent=item.detectedCa || (item.detectedCas.length ? 'vários' : '—');if(!item.detectedCa) tdCa.className='nfe-conf-vazio';
+      const tdEpi=document.createElement('td');
       const select=document.createElement('select');select.setAttribute('aria-label','EPI da linha '+item.line);
       const empty=document.createElement('option');empty.value='';empty.textContent='Sem vínculo / fora do estoque';select.append(empty);
       catalog().forEach((epi)=>{const option=document.createElement('option');option.value=epi.id;option.textContent=epi.nome;select.append(option);});
-      select.value=item.epiId || '';select.disabled=state.saving;label.append(select);
-      const qtyLabel=document.createElement('label');qtyLabel.textContent='Quantidade de itens para estoque';
-      const qty=document.createElement('input');qty.type='number';qty.min='0.0001';qty.step='any';qty.value=item.stockQuantity ?? '';qty.placeholder='Informar conversão';
-      qty.setAttribute('aria-label','Quantidade de estoque da linha '+item.line);qty.disabled=!item.epiId || state.saving;qtyLabel.append(qty);
+      select.value=item.epiId || '';select.disabled=state.saving;tdEpi.append(select);
+      const tdQtd=document.createElement('td');tdQtd.className='num';
+      const qty=document.createElement('input');qty.type='number';qty.min='0.0001';qty.step='any';qty.value=item.stockQuantity ?? '';qty.placeholder='Informar';
+      qty.setAttribute('aria-label','Quantidade de estoque da linha '+item.line);qty.disabled=!item.epiId || state.saving;tdQtd.append(qty);
+      const tdSit=document.createElement('td');const pill=document.createElement('span');tdSit.append(pill);
+      pills.push(()=>{
+        const ok=item.epiId && Number(item.stockQuantity)>0, falta=item.epiId && !(Number(item.stockQuantity)>0);
+        pill.className='epi-sit epi-sit--'+(ok?'ok':falta?'atencao':'sem');
+        pill.textContent=ok?(item.matchMethod==='ca'?'Ligado pelo C.A.':'Ligado'):falta?'Falta quantidade':'Fora do estoque';
+        tr.classList.toggle('is-pendente',!!falta);
+      });
       select.addEventListener('change',()=>{
         item.epiId=select.value || null;item.itemName=catalog().find((e)=>e.id===item.epiId)?.nome || item.sourceDescription;
         item.matchMethod='manual';item.stockQuantity=item.epiId ? unitQuantity(item.unit,item.quantity) : null;
         qty.value=item.stockQuantity ?? '';qty.disabled=!item.epiId;update();
       });
       qty.addEventListener('input',()=>{item.stockQuantity=qty.value==='' ? null : Number(qty.value);update();});
-      row.append(title,meta,label,qtyLabel);panel.append(row);
+      tr.append(tdProd,tdNf,tdCa,tdEpi,tdQtd,tdSit);body.append(tr);
     }); update();
   }
   function sync() {
-    const title=document.querySelector('.nfe-page-title');if (!title) return;
+    // Botão Salvar: na barra da tela nova (#nfeSaveSlot) ou no título antigo.
+    const title=$('nfeSaveSlot') || document.querySelector('.nfe-page-title');if (!title) return;
+    if ($('nfeSaveEntryBtn') && $('nfeSaveEntryBtn').parentElement!==title) title.append($('nfeSaveEntryBtn'));
     if (!$('nfeSaveEntryBtn')) {
       const button=document.createElement('button');button.id='nfeSaveEntryBtn';button.type='button';button.className='btn primary compact';
       button.addEventListener('click',async()=>{

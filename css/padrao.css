@@ -4394,3 +4394,84 @@
 }
 @media (min-width:721px){ .nfl-tab .c-data{width:96px}.nfl-tab .c-nf{width:90px}.nfl-tab .c-num{width:64px}.nfl-tab .c-valor{width:116px}.nfl-tab .c-sit{width:132px}.nfl-tab .c-acao{width:96px} }
 @media (min-width:721px){ .nfl-tab .c-data{width:104px}.nfl-tab .c-sit{width:124px} }
+/* =====================================================================
+   Notas Fiscais, importação (etapa 2): barra com Voltar, abas
+   Conferência / Nota e Salvar; painel do XML à esquerda em aço;
+   conferência em tabela; DANFE só na aba Nota.
+   ===================================================================== */
+@media (min-width:721px){
+  .nfl-import-barra{display:flex;align-items:center;gap:12px;margin:22px 0 14px;flex-wrap:nowrap}
+  .nfl-import-tit{font:700 20px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6;white-space:nowrap}
+  .nfl-import-espaco{flex:1}
+  .nfl-abas{display:inline-flex;gap:4px;padding:3px;margin-left:8px;border-radius:10px;background:rgba(6,10,14,.6);border:1px solid rgba(178,191,205,.14)}
+  .nfl-abas[hidden]{display:none}
+  .nfl-abas button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:0;border-radius:8px;cursor:pointer;background:transparent;color:#AEB8C2;font:600 12.5px/1 Inter,Roboto,Arial,sans-serif}
+  .nfl-abas button svg{width:14px;height:14px}
+  .nfl-abas button[aria-selected="true"]{background:linear-gradient(180deg,rgba(255,121,0,.22),rgba(255,102,0,.12));color:#fff;box-shadow:inset 0 0 0 1px rgba(255,121,0,.45)}
+  .nfl-salvar #nfeSaveEntryBtn{height:34px;padding:0 16px;border-radius:9px;font:600 13px/1 Inter,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#FF7900,#FF6600)!important;border:1px solid rgba(255,160,65,.30)!important;color:#fff!important;box-shadow:0 4px 14px rgba(255,102,0,.22)}
+  .nfl-salvar #nfeSaveEntryBtn[hidden]{display:none}
+  .nfl-salvar #nfeSaveEntryBtn:disabled{opacity:.6}
+  .page.nfl-vendo .nfl-salvar{display:none}
+
+  /* Colunas: XML à esquerda, conferência / DANFE à direita */
+  .nfl-import .nfe-layout{grid-template-columns:290px minmax(0,1fr)!important;gap:14px!important}
+  .page.nfl-vendo .nfl-import .nfe-layout{grid-template-columns:minmax(0,1fr)!important}
+  .page.nfl-vendo .nfl-import .nfe-import-panel{display:none!important}
+  .nfl-import .nfe-panel{
+    background:radial-gradient(ellipse 55% 60% at 100% 0%,rgba(255,102,0,.08) 0%,transparent 60%),linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%)!important;
+    border:1px solid rgba(178,191,205,.14)!important;border-radius:14px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)
+  }
+  .nfl-import .nfe-dropzone{background:rgba(6,10,14,.55)!important;border-color:rgba(178,191,205,.24)!important;min-height:150px}
+  .nfl-import .nfe-dropzone:hover{border-color:rgba(255,121,0,.55)!important}
+  .nfl-import .nfe-help{background:rgba(6,10,14,.55)!important;border-color:rgba(178,191,205,.14)!important}
+  .nfl-import .nfe-file-row{background:rgba(6,10,14,.55)!important;border-color:rgba(178,191,205,.14)!important}
+  .nfl-import .nfe-file-row.active{border-color:rgba(255,121,0,.55)!important}
+  .nfl-imp-dir{min-width:0;display:flex;flex-direction:column;gap:12px}
+  .nfl-import .nfe-stage{background:rgba(9,13,18,.9)!important;border:1px solid rgba(178,191,205,.14)!important;border-radius:14px!important}
+  /* Abas: sem nota → só a DANFE vazia ("Aguardando XML"); Conferência → só a tabela; Nota → só a DANFE */
+  .nfl-import:not(.sem-nota):not(.aba-nota) .nfe-stage{display:none}
+  .nfl-import.sem-nota .nfl-review,.nfl-import.aba-nota .nfl-review{display:none}
+  .nfl-import.sem-nota .nfl-aviso{display:none}
+
+  /* Aviso de nota já importada */
+  .nfl-aviso{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:12px;font:500 13px/1.45 Inter,Roboto,Arial,sans-serif;color:#E5E8EA;background:rgba(3,174,255,.08);border:1px solid rgba(3,174,255,.30)}
+  .nfl-aviso[hidden]{display:none}
+  .nfl-aviso svg{width:17px;height:17px;flex:0 0 17px;margin-top:1px;color:#38BDF8}
+
+  /* Conferência em tabela */
+  .nfl-review .nfe-stock-review{margin:0;padding:16px;border:1px solid rgba(178,191,205,.14);border-radius:14px;
+    background:radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.06) 0%,transparent 60%),linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28)}
+  .nfe-conf-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .nfl-review .nfe-stock-review h3{margin:0;font:700 16px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .nfl-review .nfe-stock-summary{margin:0;font:600 12.5px/1.3 Inter,Roboto,Arial,sans-serif;color:#4ADE80}
+  .nfl-review .nfe-stock-hint{margin:6px 0 12px;font:400 12px/1.4 Inter,Roboto,Arial,sans-serif;color:#9FB0C2}
+  .nfe-conf-wrap{border:1px solid rgba(178,191,205,.12);border-radius:11px;overflow:hidden}
+  .nfe-conf{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
+  .nfe-conf .c-nf{width:86px}.nfe-conf .c-ca{width:78px}.nfe-conf .c-epi{width:28%}.nfe-conf .c-qtd{width:104px}.nfe-conf .c-sit{width:138px}
+  .nfe-conf th{height:36px;padding:0 10px;text-align:left;background:rgb(26,34,43);color:#DFE3E7;font:600 12px/1.2 Inter,Roboto,Arial,sans-serif;border-bottom:1px solid rgba(178,191,205,.12);white-space:nowrap}
+  .nfe-conf td{padding:7px 10px;color:#E5E8EA;font:500 12.5px/1.3 Inter,Roboto,Arial,sans-serif;border-bottom:1px solid rgba(178,191,205,.08);vertical-align:middle}
+  .nfe-conf tbody tr:last-child td{border-bottom:0}
+  .nfe-conf tbody tr.is-pendente td{background:rgba(234,179,8,.04)}
+  .nfe-conf .num{text-align:right;white-space:nowrap}
+  .nfe-conf-prod{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:#F2F4F6}
+  .nfe-conf td small{display:block;margin-top:2px;font-size:11px;color:#8E98A3}
+  .nfe-conf-vazio{color:#6F7883!important}
+  .nfe-conf select,.nfe-conf input{width:100%;height:32px;padding:0 8px;border-radius:8px;background:rgba(6,10,14,.72);border:1px solid rgba(178,191,205,.18);color:#E9EDF1;font:500 12.5px/1 Inter,Roboto,Arial,sans-serif;color-scheme:dark}
+  .nfe-conf input{text-align:right}
+  .nfe-conf select:focus,.nfe-conf input:focus{outline:0;border-color:rgba(255,121,0,.6)}
+  .nfe-conf select option{background:#11171E}
+  .nfe-conf input:disabled,.nfe-conf select:disabled{opacity:.5}
+}
+@media (min-width:721px){
+  /* Com a nota carregada, a coluna do XML encolhe (só o cartão da nota e a troca de arquivo) */
+  .nfl-import:not(.sem-nota) .nfe-layout{grid-template-columns:230px minmax(0,1fr)!important}
+  .nfl-import:not(.sem-nota) .nfe-import-head p,
+  .nfl-import:not(.sem-nota) .nfe-help{display:none!important}
+  .nfl-import:not(.sem-nota) .nfe-dropzone{min-height:0!important;padding:12px!important}
+  .nfl-import:not(.sem-nota) .nfe-dropzone .nfe-drop-icon,
+  .nfl-import:not(.sem-nota) .nfe-dropzone span{display:none!important}
+  .nfe-conf .c-nf{width:74px}.nfe-conf .c-ca{width:66px}.nfe-conf .c-epi{width:27%}.nfe-conf .c-qtd{width:86px}.nfe-conf .c-sit{width:124px}
+  .nfe-conf-prod{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+}
+@media (min-width:721px){ .nfl-import:not(.sem-nota) .nfe-layout{grid-template-columns:250px minmax(0,1fr)!important} .nfe-conf .c-epi{width:25%}.nfe-conf .c-sit{width:142px}.nfe-conf .c-qtd{width:92px} .nfe-conf .epi-sit{white-space:nowrap} }
