@@ -4540,3 +4540,5 @@
   .page.nfl-vendo .nfl-import-tit{display:none!important}
   .nfl-import #nfeDownloadPdf{display:none!important}
 }
+/* Notas: ao abrir uma nota já importada, só a DANFE (sem as abas Conferência / Nota). */
+.page.nfl-vendo .nfl-abas{display:none!important}
