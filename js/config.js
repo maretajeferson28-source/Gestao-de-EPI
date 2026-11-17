@@ -146,7 +146,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-avulsa-uniforme]')) {
     const avulsaUniScript = document.createElement('script');
-    avulsaUniScript.src = 'js/avulsa-uniforme.js?v=20261117-1';
+    avulsaUniScript.src = 'js/avulsa-uniforme.js?v=20261117-2';
     avulsaUniScript.dataset.avulsaUniforme = 'true';
     document.body.appendChild(avulsaUniScript);
   }
@@ -174,7 +174,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
-    programarScript.src = 'js/programar.js?v=20261117-2';
+    programarScript.src = 'js/programar.js?v=20261117-3';
     programarScript.dataset.programar = 'true';
     document.body.appendChild(programarScript);
   }

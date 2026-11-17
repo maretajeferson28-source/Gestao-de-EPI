@@ -159,7 +159,7 @@
       .sort((a, b) => pesoTam(a.tamanho) - pesoTam(b.tamanho) || a.tamanho.localeCompare(b.tamanho, 'pt-BR', { numeric: true })) : [];
     const antes = linha.dataset.item;
     sel.innerHTML = tams.length
-      ? '<option value="">Escolher</option>' + tams.map((x) => `<option value="${esc(x.id)}"${x.quantidade <= 0 ? ' disabled' : ''}>${esc(x.tamanho || 'Único')} · ${fmt(x.quantidade)}</option>`).join('')
+      ? '<option value="">Escolher</option>' + tams.map((x) => `<option value="${esc(x.id)}"${x.quantidade <= 0 ? ' disabled' : ''}>${esc(x.tamanho || 'Único')}${x.quantidade <= 0 ? ' (acabou)' : ''}</option>`).join('')
       : '<option value="">—</option>';
     sel.disabled = !tams.length;
     const comSaldo = tams.filter((x) => x.quantidade > 0);

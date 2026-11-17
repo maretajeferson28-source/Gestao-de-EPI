@@ -103,7 +103,7 @@
     const tams = peca && sala ? uni.itens.filter((x) => x.deposito_id === sala && x.peca === peca)
       .sort((a, b) => pesoTam(a.tamanho) - pesoTam(b.tamanho) || a.tamanho.localeCompare(b.tamanho, 'pt-BR', { numeric: true })) : [];
     sel.innerHTML = tams.length
-      ? '<option value="">Escolher</option>' + tams.map((x) => `<option value="${esc(x.id)}"${x.quantidade <= 0 ? ' disabled' : ''}>${esc(x.tamanho || 'Único')} · ${fmt(x.quantidade)}</option>`).join('')
+      ? '<option value="">Escolher</option>' + tams.map((x) => `<option value="${esc(x.id)}"${x.quantidade <= 0 ? ' disabled' : ''}>${esc(x.tamanho || 'Único')}${x.quantidade <= 0 ? ' (acabou)' : ''}</option>`).join('')
       : '<option value="">—</option>';
     sel.disabled = !tams.length;
     if (tams.some((x) => x.id === antes && x.quantidade > 0)) sel.value = antes;
