@@ -29,7 +29,9 @@
   const codigo = (ca) => (/^CI-/i.test(String(ca)) ? String(ca) : 'C.A. ' + ca);
 
   const colaboradores = () => lista('collaborators').filter((c) => c.ativo !== false);
-  const epis = () => lista('epiCatalog').filter((e) => e.ativo !== false);
+  // Calçado (estoque_na_sala) não entra no modo EPI: sai das salas pelo botão Uniforme.
+  const epis = () => lista('epiCatalog').filter((e) => e.ativo !== false && !e.estoque_na_sala);
+  const naSala = (nome) => { const n = norm(nome); return !!n && lista('epiCatalog').some((e) => e.estoque_na_sala && norm(e.nome) === n); };
   const variantes = (epiId) => lista('epiVariants').filter((v) => v.epi_id === epiId && v.ativo !== false);
   const acharColab = (nome) => { const n = norm(nome); return n ? colaboradores().find((c) => norm(c.nome) === n) || null : null; };
   const acharEpi = (nome) => { const n = norm(nome); return n ? epis().find((e) => norm(e.nome) === n) || null : null; };
@@ -652,7 +654,8 @@
     // Tira as linhas vazias e acrescenta os EPIs da OS que ainda não estão na tabela.
     $('progItens').querySelectorAll('.prog-item').forEach((l) => { if (!l.querySelector('[data-campo="epi"]').value.trim()) l.remove(); });
     const naTabela = new Set([...$('progItens').querySelectorAll('.prog-item')].map((l) => l.dataset.epi).filter(Boolean));
-    const novos = [...new Set((os.epis || []).map((i) => i.epi_id).filter((id) => id && !naTabela.has(id)))];
+    const novos = [...new Set((os.epis || []).map((i) => i.epi_id).filter((id) => id && !naTabela.has(id)))].filter((id) => epis().some((e) => e.id === id));
+    const daSala = (os.epis || []).filter((i) => lista('epiCatalog').some((e) => e.id === i.epi_id && e.estoque_na_sala)).length;
     for (const id of novos) {
       const epi = epis().find((e) => e.id === id);
       if (!epi) continue;
@@ -666,6 +669,7 @@
     setMsg(novos.length
       ? `${novos.length} ${novos.length === 1 ? 'EPI da OS entrou' : 'EPIs da OS entraram'} na entrega. Escolha o C.A. e a quantidade de cada um.${fora ? ` ${fora} ${fora === 1 ? 'item da OS não está cadastrado' : 'itens da OS não estão cadastrados'} no app.` : ''}`
       : 'Os EPIs da OS já estão na entrega.');
+    if (daSala) $('progMsg') && setMsg(`${$('progMsg').textContent} Calçado da OS: programe à parte com o botão Uniforme.`.trim());
   }
 
   function limpar() {
@@ -699,7 +703,7 @@
       const nome = linha.querySelector('[data-campo="epi"]').value.trim();
       if (!nome) continue;
       const epi = acharEpi(nome);
-      if (!epi) return setMsg(`"${nome}" não é um EPI cadastrado.`, true);
+      if (!epi) return setMsg(naSala(nome) ? `${nome} sai das salas de uniforme: programe à parte com o botão Uniforme.` : `"${nome}" não é um EPI cadastrado.`, true);
       const qtd = Number(linha.querySelector('[data-campo="qtd"]').value);
       if (!Number.isInteger(qtd) || qtd < 1) return setMsg(`Confira a quantidade de ${epi.nome}.`, true);
       itens.push({

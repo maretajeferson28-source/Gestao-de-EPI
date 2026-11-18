@@ -94,7 +94,8 @@ function rebuildLists(){
   const resps=unique(movements.map(x=>x.responsavel));
   fillSelect('fColab',filterColabs); fillSelect('fEpi',epis); fillSelect('fResp',resps);
   $('dlColab').innerHTML=entryColabs.map(x=>`<option value="${esc(x)}">`).join('');
-  $('dlEpi').innerHTML=epis.map(x=>`<option value="${esc(x)}">`).join('');
+  const naSala=new Set(epiCatalog.filter(x=>x.estoque_na_sala).map(x=>normalize(x.nome)));
+  $('dlEpi').innerHTML=epis.filter(x=>!naSala.has(normalize(x))).map(x=>`<option value="${esc(x)}">`).join('');
   $('dlResp').innerHTML=resps.map(x=>`<option value="${esc(x)}">`).join('');
 }
 
@@ -265,7 +266,7 @@ async function loadAll(showBusy=true){
   try{
     const [cRes,eRes,vRes,mRes] = await Promise.all([
       sb.from('colaboradores').select('id,nome,cargo,setor,ativo,cpf,matricula,data_admissao,funcao,cadastro_simplificado,afastado,afastado_desde,desativado_desde,os_id').order('nome'),
-      sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at').order('nome'),
+      sb.from('epis').select('id,nome,categoria,ativo,imagem_path,imagem_nome,imagem_updated_at,estoque_na_sala').order('nome'),
       sb.from('epi_variantes')
         .select('id,epi_id,ca,apelido,fabricante,cnpj,marca,referencia,descricao,data_validade,situacao,norma,caracteristicas,preco,preco_referencia,preco_promocional,comparativo_status,fornecedor,unidade,observacao,imagem_path,imagem_nome,imagem_updated_at,ativo,origem,created_at,updated_at')
         .order('created_at',{ascending:true}),
@@ -1107,6 +1108,7 @@ async function saveMovementAdd(){
   if(!colNome){msg.textContent='Escolha o colaborador.';return}
   if(colNome!=='Bolsa Reserva'&&!col){msg.textContent=`"${colNome}" não é um colaborador cadastrado. Escolha um da lista para ligar a entrega ao histórico dele.`;return}
   if(!epi){msg.textContent='Selecione um EPI / item já cadastrado.';return}
+  if(epi.estoque_na_sala){msg.textContent=`${epi.nome} sai das salas de uniforme: ligue o botão Uniforme e escolha a peça.`;return}
   if(!$('movEditData').value||!Number.isInteger(qtd)||qtd<1||!resp){msg.textContent='Confira data, quantidade e responsável.';return}
   const payload={
     id:crypto.randomUUID(),
@@ -1701,7 +1703,7 @@ function renderEpiTabela(){
   const fmt=n=>new Intl.NumberFormat('pt-BR').format(n);
   // Itens com mais de um C.A. ativo vêm primeiro (depois por nome); os filtros continuam valendo.
   const variosCa=id=>epiModelos(id).length>1?0:1;
-  const linhas=epiCatalog.slice().sort((a,b)=>variosCa(a.id)-variosCa(b.id)||a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({c,ca:epiCaPrincipal(c.id),s:epiSituacao(c.id)}))
+  const linhas=epiCatalog.slice().sort((a,b)=>variosCa(a.id)-variosCa(b.id)||a.nome.localeCompare(b.nome,'pt-BR')).map(c=>({c,ca:epiCaPrincipal(c.id),s:c.estoque_na_sala?{k:'sala',t:'Na sala'}:epiSituacao(c.id)}))
     .filter(({c,ca,s})=>{
       if(cat&&String(c.categoria||'').trim()!==cat) return false;
       if(sit&&s?.k!==sit) return false;
@@ -1728,6 +1730,7 @@ function renderEpiTabela(){
       s=saldos===null||saldos===undefined?null:saldo==null?{k:'sem',t:'Sem estoque'}:saldo<=0?{k:'critico',t:'Crítico'}:{k:'ok',t:'Em dia'};
       varTxt=`<span class="epi-tab-var is-modelo" title="Mostrando o modelo ${sel+1} de ${modelos.length}">${sel+1}/${modelos.length}</span>`;
     }
+    if(c.estoque_na_sala){ saldo=undefined; min=undefined; ult=undefined; s={k:'sala',t:'Na sala'}; }
     // A seta aparece em todas as linhas (números alinhados); sem outro modelo ativo fica apagada.
     const seta=modelos.length>1
       ?`<button type="button" class="epi-tab-var-prox" data-epi-var-prox="${esc(c.id)}" title="${modelo?(sel+1<modelos.length?'Próximo modelo':'Voltar ao item inteiro'):'Ver cada modelo (C.A.)'}" aria-label="Trocar o modelo mostrado"><i data-lucide="chevron-right" aria-hidden="true"></i></button>`
@@ -1740,7 +1743,7 @@ function renderEpiTabela(){
       <td class="var"><span class="epi-tab-var-box">${varTxt}${seta}</span></td>
       <td class="num">${saldo===null?'<span class="epi-tab-vazio">…</span>':saldo==null?'<span class="epi-tab-vazio">—</span>':`<b class="epi-tab-saldo${saldo<=0?' is-zero':''}">${fmt(saldo)}</b>`}</td>
       <td class="num">${min==null?'<span class="epi-tab-vazio" title="Sem estoque mínimo cadastrado">—</span>':fmt(min)}</td>
-      <td>${s?`<span class="epi-sit epi-sit--${s.k}">${s.t}</span>`:'<span class="epi-tab-vazio">…</span>'}</td>
+      <td>${s?`<span class="epi-sit epi-sit--${s.k==='sala'?'sem':s.k}"${s.k==='sala'?' title="O estoque deste item fica nas salas de uniforme (Novos / Usados)"':''}>${s.t}</span>`:'<span class="epi-tab-vazio">…</span>'}</td>
       <td>${ult?ult.split('-').reverse().join('/'):'<span class="epi-tab-vazio">—</span>'}</td>
       <td class="acao"><div class="table-action-group">
         <button class="btn movement-action-btn epi-tab-prontuario" type="button" title="Abrir prontuário" aria-label="Abrir prontuário"><i data-lucide="file-text" aria-hidden="true"></i></button>

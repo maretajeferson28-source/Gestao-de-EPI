@@ -139,7 +139,7 @@
     try { catalogo = Array.isArray(epiCatalog) ? epiCatalog : []; } catch (_) {}
     const comSaldo = new Set(stockItens.map((i) => i.epi_id));
     const semEntrada = catalogo
-      .filter((e) => e.ativo !== false && !comSaldo.has(e.id) && (!busca || semAcento(e.nome).includes(semAcento(busca))))
+      .filter((e) => e.ativo !== false && !e.estoque_na_sala && !comSaldo.has(e.id) && (!busca || semAcento(e.nome).includes(semAcento(busca))))
       .sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'))
       .map((e) => ({ epi_id: e.id, nome: e.nome, entradas: 0, saidas: 0, saldo: 0, minimo: null, semEntrada: true }));
     const cards = [...stockItens, ...semEntrada].map((i) => {
