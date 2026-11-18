@@ -4821,3 +4821,12 @@
 #ciepiModal .ciepi-boletim label.btn{background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;color:#E5E8EA!important}
 #ciepiModal .ciepi-boletim label.btn:hover{border-color:rgba(255,121,0,.5)!important}
 #ciepiModal .ciepi-boletim span{color:#9FB0C2}
+/* Barra de rolagem na identidade do app em todo lugar que rola: fina, trilho
+   transparente, puxador cinza-aço. :where() não pesa — onde já há regra
+   própria (inclusive as que escondem a barra), ela continua valendo. */
+:where(html,body,*){scrollbar-width:thin;scrollbar-color:#36404B transparent}
+:where(html,body,*)::-webkit-scrollbar{width:8px;height:8px}
+:where(html,body,*)::-webkit-scrollbar-track{background:transparent}
+:where(html,body,*)::-webkit-scrollbar-thumb{background:#36404B;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
+:where(html,body,*)::-webkit-scrollbar-thumb:hover{background:#4A5663;background-clip:padding-box}
+:where(html,body,*)::-webkit-scrollbar-corner{background:transparent}
