@@ -49,13 +49,14 @@
   async function carregar() {
     const cli = db();
     if (!cli || !admin()) return;
-    const { data: lista, error } = await cli.from('perfis').select('id,nome,descricao,permissoes,created_at').order('nome');
+    let { data: lista, error } = await cli.from('perfis').select('id,nome,descricao,permissoes,created_at,ativo,desativado_em').order('nome');
+    if (error) ({ data: lista, error } = await cli.from('perfis').select('id,nome,descricao,permissoes,created_at').order('nome'));
     erro = !!error;
     if (error) console.error('[Perfis]', error);
     perfis = lista || [];
     // Perfil do formulário "Criar usuário".
     const sel = document.getElementById('authzPerfil');
-    if (sel) { const v = sel.value; sel.innerHTML = '<option value="">Sem perfil</option>' + perfis.map((p) => `<option value="${esc(p.id)}">${esc(p.nome)}</option>`).join(''); sel.value = v; }
+    if (sel) { const v = sel.value; sel.innerHTML = '<option value="">Sem perfil</option>' + perfis.map((p) => `<option value="${esc(p.id)}">${esc(p.nome)}${p.ativo === false ? ' (desativado)' : ''}</option>`).join(''); sel.value = v; }
     desenhar();
     // A coluna Perfil da lista de usuários usa esta lista.
     try { if (typeof renderAuthorizedUsers === 'function') renderAuthorizedUsers(); } catch (_) {}
@@ -135,8 +136,8 @@
         </div>
         <div class="table-wrap authz-table-wrap">
           <table class="authz-table prf-tabela">
-            <colgroup><col class="c-acao"><col class="c-nome"><col class="c-num"><col class="c-num"><col class="c-data"></colgroup>
-            <thead><tr><th class="acao">Ações</th><th>Nome</th><th>Permissões</th><th>Usuários</th><th>Cadastro</th></tr></thead>
+            <colgroup><col class="c-acao"><col class="c-nome"><col class="c-num"><col class="c-num"><col class="c-data"><col class="c-ativo"></colgroup>
+            <thead><tr><th class="acao">Ações</th><th>Nome</th><th>Permissões</th><th>Usuários</th><th>Cadastro</th><th>Ativo</th></tr></thead>
             <tbody>${n ? perfis.map((p) => {
               const k = validas(p).length, u = usados(p.id);
               return `<tr>
@@ -145,8 +146,9 @@
                 <td>${k} de ${TODAS.length}</td>
                 <td>${u ? `${u} ${u === 1 ? 'usuário' : 'usuários'}` : '<span class="authz-sem">Nenhum</span>'}</td>
                 <td>${data(p.created_at)}</td>
+                <td><span class="authz-ativo ${p.ativo === false ? 'is-nao' : 'is-sim'}"${p.desativado_em ? ` title="Desativado em ${data(p.desativado_em)}"` : ''}>${p.ativo === false ? 'Não' : 'Sim'}</span></td>
               </tr>`;
-            }).join('') : `<tr><td colspan="5" class="prf-vazio-linha">Nenhum perfil ainda. Clique no + para criar o primeiro.</td></tr>`}</tbody>
+            }).join('') : `<tr><td colspan="6" class="prf-vazio-linha">Nenhum perfil ainda. Clique no + para criar o primeiro.</td></tr>`}</tbody>
           </table>
         </div>
       </div>`;
@@ -167,9 +169,12 @@
     menuEl.className = 'authz-menu';
     menuEl.dataset.id = p.id;
     menuEl.setAttribute('role', 'menu');
-    menuEl.innerHTML = `<button type="button" role="menuitem" data-m="editar"><i data-lucide="pencil"></i>Editar</button>
+    const ativo = p.ativo !== false;
+    menuEl.innerHTML = `<button type="button" role="menuitem" data-m="editar"><i data-lucide="pencil"></i>Alterar perfil</button>
+      <button type="button" role="menuitem" data-m="duplicar"><i data-lucide="copy"></i>Duplicar perfil</button>
+      <button type="button" role="menuitem" data-m="ativo"><i data-lucide="${ativo ? 'archive' : 'archive-restore'}"></i>${ativo ? 'Desativar perfil' : 'Ativar perfil'}</button>
       <div class="authz-menu-sep"></div>
-      <button type="button" role="menuitem" class="is-perigo" data-m="excluir"><i data-lucide="trash-2"></i>Excluir</button>`;
+      <button type="button" role="menuitem" class="is-perigo" data-m="excluir"><i data-lucide="trash-2"></i>Excluir perfil</button>`;
     document.body.appendChild(menuEl);
     const r = botao.getBoundingClientRect();
     menuEl.style.left = Math.min(r.left, innerWidth - menuEl.offsetWidth - 8) + 'px';
@@ -178,7 +183,10 @@
     menuEl.addEventListener('click', (e) => {
       const b = e.target.closest('[data-m]'); if (!b) return;
       fecharMenu();
-      if (b.dataset.m === 'editar') abrirModal(p); else excluir(p);
+      if (b.dataset.m === 'editar') abrirModal(p);
+      else if (b.dataset.m === 'duplicar') abrirModal(p, true);
+      else if (b.dataset.m === 'ativo') alternarAtivo(p);
+      else excluir(p);
     });
     icons();
   }
@@ -186,6 +194,16 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharMenu(); });
   window.addEventListener('scroll', fecharMenu, true);
   window.addEventListener('resize', fecharMenu);
+
+  // Desativar: o perfil fica guardado, mas não vale (quem está nele fica
+  // como quem não tem perfil). Ativar volta a valer.
+  async function alternarAtivo(p) {
+    const ativo = p.ativo !== false, n = usados(p.id);
+    if (ativo && !confirm(`Desativar o perfil "${p.nome}"?${n ? `\n\n${n} ${n === 1 ? 'usuário fica' : 'usuários ficam'} só com o acesso básico até ativar de novo.` : ''}`)) return;
+    const { error } = await db().from('perfis').update({ ativo: !ativo, desativado_em: ativo ? new Date().toISOString() : null, updated_at: new Date().toISOString() }).eq('id', p.id);
+    if (error) { alert('Não foi possível ' + (ativo ? 'desativar' : 'ativar') + ': ' + error.message); return; }
+    await carregar();
+  }
 
   async function excluir(p) {
     const n = usados(p.id);
@@ -197,9 +215,12 @@
   }
 
   // ---- Modal do perfil: partes do menu à esquerda, telas em dropdown à direita ----
-  function abrirModal(p) {
+  // copia = true: "Duplicar perfil" (abre preenchido e salva como perfil novo).
+  function abrirModal(p, copia = false) {
+    const base = p;
+    if (copia) p = null;
     document.getElementById('prfModal')?.remove();
-    const marc = new Set(p ? validas(p) : []);
+    const marc = new Set(base ? validas(base) : []);
     const abertos = new Set();
     let sec = ARVORE[0].sec;
     const m = document.createElement('div');
@@ -213,10 +234,10 @@
         <button class="data-edit-close" type="button" aria-label="Fechar" data-prf-fechar><i data-lucide="x"></i></button>
         <div class="data-edit-head">
           <div class="data-edit-icon"><i data-lucide="shield-check"></i></div>
-          <div><h3 id="prfModalTitulo">${p ? 'Editar perfil' : 'Novo perfil'}</h3><p>Escolha o que quem tiver este perfil pode fazer.</p></div>
+          <div><h3 id="prfModalTitulo">${copia ? 'Duplicar perfil' : p ? 'Alterar perfil' : 'Novo perfil'}</h3><p>Escolha o que quem tiver este perfil pode fazer.</p></div>
         </div>
         <div class="data-edit-body">
-          <div class="field prf-nome"><label for="prfNome">Nome*</label><input id="prfNome" maxlength="60" placeholder="Ex.: Almoxarife" value="${esc(p?.nome || '')}" autocomplete="off"></div>
+          <div class="field prf-nome"><label for="prfNome">Nome*</label><input id="prfNome" maxlength="60" placeholder="Ex.: Almoxarife" value="${esc(copia ? `${base.nome} (cópia)` : p?.nome || '')}" autocomplete="off"></div>
           <div class="prf-corpo">
             <nav class="prf-nav" aria-label="Partes do sistema"></nav>
             <div class="prf-telas"></div>
