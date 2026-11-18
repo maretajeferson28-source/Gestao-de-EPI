@@ -52,7 +52,6 @@
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="true" data-modo="geral"><i data-lucide="chart-column-increasing"></i>Geral</button>
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="colaborador"><i data-lucide="users-round"></i>Por Colaborador</button>
           <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="epi"><i data-lucide="hard-hat"></i>Por EPI</button>
-          <button type="button" class="gpi-hero__mode" role="tab" aria-selected="false" data-modo="unidade" data-abre-tela="unidade" title="Depósitos"><i data-lucide="map-pin"></i>Por Unidade</button>
         </div>
       </div>`;
     pagina.prepend(el);
@@ -187,7 +186,6 @@
     limpar.addEventListener('click', (e) => { e.preventDefault(); campo.value = ''; aplicar(); campo.focus(); });
     el.addEventListener('click', (e) => {
       const aba = e.target.closest('.gpi-hero__mode');
-      // "Por Unidade" abre a tela dos depósitos (js/dash-palco.js), não filtra.
       if (!aba || aba.getAttribute('aria-disabled') === 'true' || aba.dataset.abreTela) return;
       escolherModo(el, aba.dataset.modo);
       if (aba.dataset.modo !== 'geral') campo.focus();
