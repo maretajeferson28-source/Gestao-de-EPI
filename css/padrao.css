@@ -4756,3 +4756,6 @@
 .authz-menu-sep{margin:4px 6px!important}
 /* Perfil sem "Importar XML": o botão some da lista de notas. */
 .sem-notas-importar [data-nfl-importar]{display:none!important}
+/* Cadeado do administrador: sem caixa, laranja como o ⋯ (combina com a coluna Ações). */
+.adm-tela .authz-protected{width:30px;height:28px;border:0!important;background:none!important;color:#FF7A10!important}
+.adm-tela .authz-protected svg{width:17px;height:17px}
