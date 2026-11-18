@@ -4849,12 +4849,12 @@
   .dfx-cab small{margin-left:auto;font:500 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#8E98A3;white-space:nowrap}
 
   /* 1. Barras */
-  .dfx-barras{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;align-items:stretch}
+  .dfx-barras{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch}
   .dfx-barra{display:flex;flex-direction:column;align-items:center;min-height:0;gap:4px}
   .dfx-barra-val{flex:0 0 auto;height:14px;font:600 11px/14px Inter,Roboto,Arial,sans-serif;color:#C9D0D7}
-  /* Sem trilho: só uma linha de base contínua embaixo das barras. */
-  .dfx-barra-trilho{flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid rgba(178,191,205,.22)}
-  .dfx-barra-fill{display:block;width:100%;max-width:34px;border-radius:7px 7px 2px 2px;background:linear-gradient(180deg,rgba(255,122,16,.55),rgba(255,102,0,.25))}
+  .dfx-barra-trilho{flex:1 1 auto;min-height:0;width:100%;max-width:34px;display:flex;align-items:flex-end;border-radius:7px;background:rgba(178,191,205,.06);overflow:hidden}
+  /* Mínimo de 3 px: mês zerado mostra só o tracinho laranja. */
+  .dfx-barra-fill{display:block;width:100%;min-height:3px;border-radius:7px 7px 0 0;background:linear-gradient(180deg,rgba(255,122,16,.55),rgba(255,102,0,.25))}
   .dfx-barra.is-atual .dfx-barra-fill{background:linear-gradient(180deg,#FF8A24,#FF6600);box-shadow:0 0 14px rgba(255,102,0,.25)}
   .dfx-barra.is-atual .dfx-barra-val{color:#FF9A4A}
   .dfx-barra-mes{flex:0 0 auto;font:500 11px/1 Inter,Roboto,Arial,sans-serif;color:#8E98A3}
@@ -4895,3 +4895,6 @@
   .dfx-alerta strong.is-ok svg{width:14px;height:14px;stroke-width:2.6}
   .dfx-alerta strong.is-vermelho{color:#F87171}.dfx-alerta strong.is-amarelo{color:#FBBF24}.dfx-alerta strong.is-azul{color:#60A5FA}
 }
+
+/* Meses que ainda não chegaram: rótulo mais apagado. */
+@media (min-width:721px){ .dfx-barra.is-futuro .dfx-barra-mes{color:#5E6873} }

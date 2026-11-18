@@ -82,17 +82,25 @@
     const ate = val('fAte');
     // Mês da ponta: o fim do período escolhido; sem período, o mês atual.
     const fim = ate ? new Date(+ate.slice(0, 4), +ate.slice(5, 7) - 1, 1) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const chave = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+    const fimK = chave(fim), hojeK = chave(new Date());
+    // 6 meses até o mês da ponta, mas nunca antes do 1º mês com entrega: se
+    // faltar, completa para frente com meses ainda sem entrega (só o tracinho).
+    const primeiroK = lista().map((x) => iso(x.data).slice(0, 7)).filter(Boolean).sort()[0];
+    let ini = new Date(fim.getFullYear(), fim.getMonth() - 5, 1);
+    if (primeiroK && chave(ini) < primeiroK) ini = new Date(+primeiroK.slice(0, 4), +primeiroK.slice(5, 7) - 1, 1);
     const meses = [];
-    for (let i = 5; i >= 0; i--) { const d = new Date(fim.getFullYear(), fim.getMonth() - i, 1); meses.push({ k: `${d.getFullYear()}-${pad(d.getMonth() + 1)}`, rot: MESES[d.getMonth()], ano: d.getFullYear() }); }
+    for (let i = 0; i < 6; i++) { const d = new Date(ini.getFullYear(), ini.getMonth() + i, 1); meses.push({ k: chave(d), rot: MESES[d.getMonth()], ano: d.getFullYear() }); }
     const soma = new Map(meses.map((m) => [m.k, 0]));
     filtrar('', '').forEach((x) => { const k = iso(x.data).slice(0, 7); if (soma.has(k)) soma.set(k, soma.get(k) + (Number(x.quantidade) || 0)); });
     const max = Math.max(1, ...soma.values());
     $('[data-dfx-meses]').textContent = `${meses[0].rot}/${String(meses[0].ano).slice(2)} a ${meses[5].rot}/${String(meses[5].ano).slice(2)}`;
-    $('[data-dfx-barras]').innerHTML = meses.map((m, i) => {
+    $('[data-dfx-barras]').innerHTML = meses.map((m) => {
       const v = soma.get(m.k), h = Math.round((v / max) * 100);
-      return `<div class="dfx-barra${i === 5 ? ' is-atual' : ''}" title="${m.rot}/${m.ano}: ${num(v)} ${v === 1 ? 'item' : 'itens'}">
+      // Toda barra tem ao menos o tracinho laranja (via CSS); cresce com a quantidade.
+      return `<div class="dfx-barra${m.k === fimK ? ' is-atual' : ''}${m.k > hojeK ? ' is-futuro' : ''}" title="${m.rot}/${m.ano}: ${num(v)} ${v === 1 ? 'item' : 'itens'}">
         <span class="dfx-barra-val">${v ? num(v) : ''}</span>
-        <span class="dfx-barra-trilho"><span class="dfx-barra-fill" style="height:${v ? Math.max(4, h) : 0}%"></span></span>
+        <span class="dfx-barra-trilho"><span class="dfx-barra-fill" style="height:${h}%"></span></span>
         <span class="dfx-barra-mes">${m.rot}</span>
       </div>`;
     }).join('');
