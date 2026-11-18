@@ -4789,3 +4789,21 @@
   .ciepi-tab td.ciepi-vencida{color:#FB7373;font-weight:600}
   .ciepi-tab .ciepi-pdf:hover{border-color:rgba(56,180,123,.6)!important;color:#45bd83!important}
 }
+
+/* Editar EPI / Item: modelo novo, com a foto do item e "Trocar foto". */
+#epiCatalogEditModal .epi-catalog-edit-card{width:min(620px,calc(100vw - 28px))}
+.epi-ed-corpo{display:grid;grid-template-columns:132px minmax(0,1fr);gap:18px;align-items:start}
+.epi-ed-foto-box{display:flex;flex-direction:column;align-items:center;gap:8px}
+.epi-ed-foto-box[hidden]{display:none!important}
+.epi-ed-corpo:has(.epi-ed-foto-box[hidden]){grid-template-columns:1fr}
+.epi-ed-foto{display:grid;place-items:center;width:132px;height:132px;border-radius:14px;overflow:hidden;color:#FF7A10;
+  background:linear-gradient(135deg,#2A1A10,#151A20 70%);border:1px solid rgba(255,111,25,.25)}
+.epi-ed-foto svg{width:42px;height:42px;stroke-width:1.6}
+.epi-ed-foto.tem-foto{background:#F2F3F5;border-color:rgba(178,191,205,.22)}
+.epi-ed-foto img{width:100%;height:100%;object-fit:contain}
+.epi-ed-trocar{width:100%;height:30px!important;padding:0 8px!important;font-size:12px!important;gap:6px;justify-content:center}
+.epi-ed-trocar[hidden]{display:none!important}
+.epi-ed-trocar svg{width:14px;height:14px}
+#epiEdFotoInfo{font:400 11px/1.3 Inter,Roboto,Arial,sans-serif;color:#8E98A3;text-align:center}
+#epiCatalogEditModal .epi-catalog-edit-grid{gap:12px}
+@media (max-width:520px){ .epi-ed-corpo{grid-template-columns:1fr} }

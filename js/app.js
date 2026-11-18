@@ -1884,9 +1884,9 @@ function openEpiCatalogEdit(id){
 
   editingCatalogEpiId=novo?'__novo__':id;
   const card=$('epiCatalogEditModal');
-  card.querySelector('.data-edit-head span').textContent=novo?'NOVO ITEM':'CADASTRO DO ITEM';
   $('epiCatalogEditTitle').textContent=novo?'Adicionar EPI / Item':'Editar EPI / Item';
-  card.querySelector('.data-edit-head p').textContent=novo?'Cadastre o nome e a categoria. Os C.A.s entram depois, na ficha do item.':'Altere o nome canônico e a categoria do card.';
+  $('epiCatalogEditSub').textContent=novo?'Cadastre o nome e a categoria. Os C.A.s e a foto entram depois, na ficha do item.':'Nome, categoria e foto do item.';
+  mostrarFotoEdicao(novo?null:id,epi);
   card.querySelector('.data-edit-note').hidden=novo;
   $('epiCatalogEditSave').lastChild.textContent=novo?'Adicionar item':'Salvar item';
   $('epiCatalogEditNome').value=epi.nome||'';
@@ -1896,8 +1896,61 @@ function openEpiCatalogEdit(id){
   refreshIcons();
 }
 
+// Foto no editor do item: é a mesma da tabela (a do C.A. principal). "Trocar
+// foto" grava a nova nesse C.A. ao salvar. Sem C.A. não tem onde guardar.
+let epiEdFotoAlvo=null, epiEdFotoNova=null, epiEdFotoPreview=null;
+function mostrarFotoEdicao(id,epi){
+  const box=$('epiEdFotoBox'); if(!box) return;
+  if(epiEdFotoPreview){ URL.revokeObjectURL(epiEdFotoPreview); epiEdFotoPreview=null; }
+  epiEdFotoNova=null; $('epiEdFotoInput').value='';
+  box.hidden=!id;
+  if(!id){ epiEdFotoAlvo=null; return; }
+  const ca=epiCaPrincipal(id);
+  epiEdFotoAlvo=(ca.foto&&epiVariants.find(v=>v.epi_id===id&&v.imagem_path===ca.foto))||ca.v||null;
+  const foto=$('epiEdFoto');
+  foto.className='epi-ed-foto';
+  foto.innerHTML=`<i data-lucide="${epiCardIcon(epi)}" aria-hidden="true"></i>`;
+  const podeTrocar=currentIsAdmin===true&&!!epiEdFotoAlvo;
+  $('epiEdTrocar').hidden=!podeTrocar;
+  $('epiEdFotoInfo').textContent=!epiEdFotoAlvo?'Cadastre um C.A. para pôr foto.':`Foto do C.A. ${epiEdFotoAlvo.ca||''}`;
+  const path=epiEdFotoAlvo?.imagem_path;
+  if(path){
+    const pedido=id;
+    Promise.resolve(epiFotoRecorte.get(path)||variantImageUrl(path).then(u=>u&&recortarFundoBranco(u)).then(r=>{ if(r) epiFotoRecorte.set(path,r); return r; }))
+      .then(src=>{ if(!src||editingCatalogEpiId!==pedido||epiEdFotoNova) return; foto.classList.add('tem-foto'); foto.innerHTML=`<img src="${src}" alt="">`; })
+      .catch(()=>{});
+  }
+  refreshIcons();
+}
+$('epiEdTrocar')?.addEventListener('click',()=>$('epiEdFotoInput').click());
+$('epiEdFotoInput')?.addEventListener('change',e=>{
+  const file=e.target.files?.[0]; if(!file) return;
+  if(!file.type.startsWith('image/')){ $('epiCatalogEditMsg').textContent='Escolha uma imagem.'; return; }
+  if(file.size>8*1024*1024){ $('epiCatalogEditMsg').textContent='A imagem passa de 8 MB.'; return; }
+  epiEdFotoNova=file;
+  if(epiEdFotoPreview) URL.revokeObjectURL(epiEdFotoPreview);
+  epiEdFotoPreview=URL.createObjectURL(file);
+  const foto=$('epiEdFoto'); foto.classList.add('tem-foto'); foto.innerHTML=`<img src="${epiEdFotoPreview}" alt="">`;
+  $('epiEdFotoInfo').textContent='Foto nova: grava ao salvar.';
+  $('epiCatalogEditMsg').textContent='';
+});
+async function gravarFotoEdicao(){
+  if(!epiEdFotoNova||!epiEdFotoAlvo) return;
+  const alvo=epiEdFotoAlvo, antiga=alvo.imagem_path;
+  const file=await compressVariantImage(epiEdFotoNova);
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+  const path=`variantes/${alvo.id}/modelo-${Date.now()}.${ext}`;
+  const {error:upErr}=await sb.storage.from('epi-imagens').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+  if(upErr) throw upErr;
+  const {error:updErr}=await sb.from('epi_variantes').update({imagem_path:path,imagem_nome:epiEdFotoNova.name,imagem_updated_at:new Date().toISOString()}).eq('id',alvo.id);
+  if(updErr){ await sb.storage.from('epi-imagens').remove([path]); throw updErr; }
+  if(antiga&&antiga!==path){ epiFotoRecorte.delete(antiga); const {error}=await sb.storage.from('epi-imagens').remove([antiga]); if(error) console.warn('[FOTO ANTIGA]',error); }
+}
+
 function closeEpiCatalogEdit(){
   editingCatalogEpiId=null;
+  epiEdFotoNova=null;
+  if(epiEdFotoPreview){ URL.revokeObjectURL(epiEdFotoPreview); epiEdFotoPreview=null; }
   $('epiCatalogEditModal')?.classList.add('hidden');
   if($('epiCatalogEditMsg')) $('epiCatalogEditMsg').textContent='';
 }
@@ -1942,6 +1995,8 @@ async function saveEpiCatalogEdit(){
     $('epiCatalogEditMsg').textContent=error.message;
     return;
   }
+  try{ await gravarFotoEdicao(); }
+  catch(err){ $('epiCatalogEditMsg').textContent='Nome salvo, mas a foto não: '+(err.message||err); return; }
 
   closeEpiCatalogEdit();
   await loadAll(false);

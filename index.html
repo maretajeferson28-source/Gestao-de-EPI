@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261118-3">
+<link rel="stylesheet" href="css/padrao.css?v=20261118-4">
 </head>
 <body>
 
@@ -505,23 +505,30 @@
         <div class="cards-list" id="epiCards"></div>
       </section>
 
-      <div class="data-edit-modal hidden" id="epiCatalogEditModal" role="dialog" aria-modal="true" aria-labelledby="epiCatalogEditTitle">
-        <div class="data-edit-card epi-catalog-edit-card">
+      <div class="data-edit-modal dep-modal hidden" id="epiCatalogEditModal" role="dialog" aria-modal="true" aria-labelledby="epiCatalogEditTitle">
+        <div class="data-edit-card dep-janela epi-catalog-edit-card">
           <button class="data-edit-close" id="epiCatalogEditClose" type="button" aria-label="Fechar"><i data-lucide="x" aria-hidden="true"></i></button>
 
           <div class="data-edit-head">
-            <div class="data-edit-icon"><i data-lucide="package-cog" aria-hidden="true"></i></div>
+            <div class="data-edit-icon"><i data-lucide="hard-hat" aria-hidden="true"></i></div>
             <div>
-              <span>CADASTRO DO ITEM</span>
               <h3 id="epiCatalogEditTitle">Editar EPI / Item</h3>
-              <p>Altere o nome canônico e a categoria do card.</p>
+              <p id="epiCatalogEditSub">Nome, categoria e foto do item.</p>
             </div>
           </div>
 
           <div class="data-edit-body">
-            <div class="data-edit-grid epi-catalog-edit-grid">
-              <div class="field wide"><label>Nome do EPI / Item</label><input id="epiCatalogEditNome" placeholder="Nome do item"></div>
-              <div class="field wide"><label>Categoria</label><input id="epiCatalogEditCategoria" placeholder="Categoria"></div>
+            <div class="epi-ed-corpo">
+              <div class="epi-ed-foto-box" id="epiEdFotoBox">
+                <div class="epi-ed-foto" id="epiEdFoto"><i data-lucide="hard-hat" aria-hidden="true"></i></div>
+                <button class="btn epi-ed-trocar" id="epiEdTrocar" type="button"><i data-lucide="image-up" aria-hidden="true"></i>Trocar foto</button>
+                <input id="epiEdFotoInput" type="file" accept="image/*" hidden>
+                <small id="epiEdFotoInfo"></small>
+              </div>
+              <div class="data-edit-grid epi-catalog-edit-grid">
+                <div class="field wide"><label for="epiCatalogEditNome">Nome do EPI / Item*</label><input id="epiCatalogEditNome" placeholder="Nome do item" autocomplete="off"></div>
+                <div class="field wide"><label for="epiCatalogEditCategoria">Categoria</label><input id="epiCatalogEditCategoria" placeholder="Categoria" autocomplete="off"></div>
+              </div>
             </div>
 
             <div class="data-edit-note">
@@ -878,7 +885,7 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="js/config.js?v=20261118-5"></script>
 <script src="js/pdf-export.js?v=20261116-1"></script>
-<script src="js/app.js?v=20261118-2"></script>
+<script src="js/app.js?v=20261118-3"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=epiTurnstilePronto" async defer></script>
 <script src="js/mobile.js?v=20261117-50"></script>
 <script src="js/pwa.js"></script>
