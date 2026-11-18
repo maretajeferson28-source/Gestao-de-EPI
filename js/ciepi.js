@@ -33,8 +33,8 @@
     $('ciepiMsg').classList.toggle('is-error', isError);
   }
 
-  // Tabela no padrão de EPIs / Itens: 10 por página, rodapé com páginas.
-  const POR_PAGINA = 10;
+  // Tabela no padrão de EPIs / Itens: 8 por página (sem rolagem), rodapé com páginas.
+  const POR_PAGINA = 8;
   let pagina = 1;
   function vencida(iso) { return !!iso && String(iso).slice(0, 10) < new Date().toISOString().slice(0, 10); }
   function render() {
