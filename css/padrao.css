@@ -4762,3 +4762,30 @@
 /* Botão de ação sem permissão do perfil: aparece apagado e sem clique. */
 [data-sem-perm]{opacity:.4!important;cursor:not-allowed!important;filter:grayscale(1);box-shadow:none!important}
 [data-sem-perm]:hover{border-color:inherit!important;background:inherit}
+
+/* =====================================================================
+   Base CIEPI (PC): mesma identidade de EPIs / Itens (fundo, título com
+   ícone, barra, tabela-cartão e rodapé com páginas).
+   ===================================================================== */
+@media (min-width:721px){
+  .main:has(> .content > .page[data-page-content="ciepi"].active){
+    background:
+      url("/assets/app-brand/colaboradores-ondas.svg?v=8") right -70px top -18px/100% auto no-repeat,
+      radial-gradient(ellipse 38% 30% at 34% 6%,rgba(70,87,105,.20) 0%,rgba(70,87,105,.06) 55%,transparent 80%),
+      radial-gradient(ellipse 34% 40% at 6% 62%,rgba(70,87,105,.13) 0%,transparent 75%),
+      radial-gradient(ellipse 40% 34% at 60% 100%,rgba(70,87,105,.12) 0%,transparent 75%),
+      radial-gradient(ellipse 30% 30% at 96% 70%,rgba(70,87,105,.10) 0%,transparent 75%),
+      radial-gradient(ellipse 120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.40) 100%),
+      linear-gradient(180deg,#090D12 0%,#080C10 45%,#060A0E 100%)!important
+  }
+  .main:has(> .content > .page[data-page-content="ciepi"].active) > .topbar{display:none!important}
+  .page[data-page-content="ciepi"] .section-title.ciepi-head{display:block!important;margin:0 0 18px;padding:24px 0 0;border:0;background:none}
+  .page[data-page-content="ciepi"] .ciepi-head > div{display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto;column-gap:18px;align-items:center}
+  .page[data-page-content="ciepi"] .ciepi-head h2{display:block!important;margin:0;font:700 34px/1.15 Inter,Roboto,Arial,sans-serif;letter-spacing:-1px;color:#F7F7F8}
+  .page[data-page-content="ciepi"] .ciepi-head p{display:block!important;margin:2px 0 0;font:400 14px/1.3 Inter,Roboto,Arial,sans-serif;color:#C4C8CE}
+  .ciepi-tab .c-ci{width:96px}.ciepi-tab .c-item{width:22%}.ciepi-tab .c-fab{width:17%}.ciepi-tab .c-ref{width:auto}
+  .ciepi-tab .c-val{width:108px}.ciepi-tab .c-bol{width:80px}.ciepi-tab .c-acao{width:96px}
+  .ciepi-tab .ciepi-code{color:#FF7A10;font:700 12.5px/1 Inter,Roboto,Arial,sans-serif}
+  .ciepi-tab td.ciepi-vencida{color:#FB7373;font-weight:600}
+  .ciepi-tab .ciepi-pdf:hover{border-color:rgba(56,180,123,.6)!important;color:#45bd83!important}
+}

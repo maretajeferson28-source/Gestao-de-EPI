@@ -33,26 +33,45 @@
     $('ciepiMsg').classList.toggle('is-error', isError);
   }
 
+  // Tabela no padrão de EPIs / Itens: 10 por página, rodapé com páginas.
+  const POR_PAGINA = 10;
+  let pagina = 1;
+  function vencida(iso) { return !!iso && String(iso).slice(0, 10) < new Date().toISOString().slice(0, 10); }
   function render() {
     const body = $('ciepiBody');
     if (!body) return;
+    const rod = $('ciepiRodape');
     const q = norm($('ciepiSearch').value.trim());
     const list = q ? rows.filter((r) => norm(`${r.ci} ${r.nome} ${r.fabricante || ''} ${r.referencia || ''}`).includes(q)) : rows;
-    if (!rows.length) { body.innerHTML = '<tr><td colspan="7">Nenhum C.I. cadastrado ainda. Clique em "Novo C.I.".</td></tr>'; return; }
-    if (!list.length) { body.innerHTML = '<tr><td colspan="7">Nada encontrado para essa busca.</td></tr>'; return; }
-    body.innerHTML = list.map((r) => `
+    if (!list.length) {
+      body.innerHTML = `<tr><td colspan="7" class="epi-tab-nada">${rows.length ? 'Nada encontrado para essa busca.' : 'Nenhum C.I. cadastrado ainda. Clique em "Novo C.I.".'}</td></tr>`;
+      if (rod) rod.hidden = true;
+      return;
+    }
+    const paginas = Math.max(1, Math.ceil(list.length / POR_PAGINA));
+    pagina = Math.min(Math.max(1, pagina), paginas);
+    const daPagina = list.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+    body.innerHTML = daPagina.map((r) => `
       <tr>
         <td><strong class="ciepi-code">${escHtml(r.ci)}</strong></td>
-        <td>${escHtml(r.nome)}</td>
-        <td>${escHtml(r.fabricante || '—')}</td>
-        <td>${escHtml(r.referencia || '—')}</td>
-        <td>${brDate(r.data_validade)}</td>
-        <td>${r.boletim_path ? `<button class="btn compact" type="button" data-ciepi-pdf="${escHtml(r.id)}"><i data-lucide="file-text" aria-hidden="true"></i>Abrir</button>` : '<span class="ciepi-muted">—</span>'}</td>
-        <td class="ciepi-actions">
-          <button class="btn compact" type="button"${P('ciepi.editar') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-ciepi-edit="${escHtml(r.id)}" title="Editar" aria-label="Editar ${escHtml(r.ci)}"><i data-lucide="pencil" aria-hidden="true"></i></button>
-          <button class="btn compact danger" type="button"${P('ciepi.excluir') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-ciepi-del="${escHtml(r.id)}" title="Excluir" aria-label="Excluir ${escHtml(r.ci)}"><i data-lucide="trash-2" aria-hidden="true"></i></button>
-        </td>
+        <td title="${escHtml(r.nome)}"><span class="epi-tab-nome">${escHtml(r.nome)}</span></td>
+        <td title="${escHtml(r.fabricante || '')}">${escHtml(r.fabricante || '—')}</td>
+        <td title="${escHtml(r.referencia || '')}">${escHtml(r.referencia || '—')}</td>
+        <td${vencida(r.data_validade) ? ' class="ciepi-vencida" title="Validade vencida"' : ''}>${brDate(r.data_validade)}</td>
+        <td class="acao">${r.boletim_path ? `<button class="btn movement-action-btn ciepi-pdf" type="button" data-ciepi-pdf="${escHtml(r.id)}" title="Abrir boletim" aria-label="Abrir boletim de ${escHtml(r.ci)}"><i data-lucide="file-text" aria-hidden="true"></i></button>` : '<span class="epi-tab-vazio">—</span>'}</td>
+        <td class="acao"><div class="table-action-group">
+          <button class="btn movement-action-btn movement-edit-btn" type="button"${P('ciepi.editar') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-ciepi-edit="${escHtml(r.id)}" title="Editar" aria-label="Editar ${escHtml(r.ci)}"><i data-lucide="pencil" aria-hidden="true"></i></button>
+          <button class="btn movement-action-btn movement-delete-btn" type="button"${P('ciepi.excluir') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-ciepi-del="${escHtml(r.id)}" title="Excluir" aria-label="Excluir ${escHtml(r.ci)}"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+        </div></td>
       </tr>`).join('');
+    if (rod) {
+      rod.hidden = false;
+      let ini = Math.max(1, pagina - 2); const fim = Math.min(paginas, ini + 4); ini = Math.max(1, fim - 4);
+      let nums = ''; for (let p = ini; p <= fim; p++) nums += `<button type="button" class="g-employee-page${p === pagina ? ' is-current' : ''}" data-ciepi-pagina="${p}"${p === pagina ? ' aria-current="page"' : ''} aria-label="Página ${p}">${p}</button>`;
+      rod.innerHTML = `<span class="g-employee-count">Exibindo ${daPagina.length} de ${list.length} ${list.length === 1 ? 'C.I.' : 'C.I.s'}</span>` + (paginas > 1 ? `<nav class="g-employee-pagination" aria-label="Páginas">
+        <button type="button" class="g-employee-page" data-ciepi-pagina="${pagina - 1}"${pagina <= 1 ? ' disabled' : ''} aria-label="Página anterior"><i data-lucide="chevron-left"></i></button>${nums}
+        <button type="button" class="g-employee-page" data-ciepi-pagina="${pagina + 1}"${pagina >= paginas ? ' disabled' : ''} aria-label="Próxima página"><i data-lucide="chevron-right"></i></button></nav>` : '');
+    }
     icons();
   }
 
@@ -61,7 +80,7 @@
     if (!client || !P('ciepi.consultar')) return;
     const { data, error } = await client.from('ciepi_registros').select('*').order('ci');
     if (error) {
-      $('ciepiBody').innerHTML = `<tr><td colspan="7">Não foi possível carregar: ${escHtml(error.message)}</td></tr>`;
+      $('ciepiBody').innerHTML = `<tr><td colspan="7" class="epi-tab-nada">Não foi possível carregar: ${escHtml(error.message)}</td></tr>`;
       return;
     }
     rows = data || [];
@@ -166,7 +185,11 @@
       if (document.querySelector('[data-page-content="ciepi"]')?.classList.contains('active')) load();
     });
     $('ciepiNew').addEventListener('click', () => open());
-    $('ciepiSearch').addEventListener('input', render);
+    $('ciepiSearch').addEventListener('input', () => { pagina = 1; render(); });
+    $('ciepiRodape')?.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-ciepi-pagina]'); if (!b || b.disabled) return;
+      pagina = Number(b.dataset.ciepiPagina) || 1; render();
+    });
     $('ciepiClose').addEventListener('click', close);
     $('ciepiCancel').addEventListener('click', close);
     $('ciepiSave').addEventListener('click', save);

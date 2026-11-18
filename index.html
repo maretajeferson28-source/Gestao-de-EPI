@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/mobile.css">
-<link rel="stylesheet" href="css/padrao.css?v=20261118-2">
+<link rel="stylesheet" href="css/padrao.css?v=20261118-3">
 </head>
 <body>
 
@@ -641,12 +641,15 @@
 
 
       <section class="page" data-page-content="ciepi">
-        <div class="section-title"><div><h2>Base CIEPI</h2><p>Códigos internos (C.I.) dos itens sem C.A., montados a partir do boletim técnico.</p></div></div>
-        <div class="toolbar ciepi-toolbar">
-          <input id="ciepiSearch" type="search" placeholder="Buscar por C.I., item ou fabricante" autocomplete="off">
-          <button class="btn primary" id="ciepiNew" type="button"><i data-lucide="plus" aria-hidden="true"></i>Novo C.I.</button>
+        <div class="section-title epi-head ciepi-head"><div><span class="mov-head-ic epi-head-ic" aria-hidden="true"><i data-lucide="book-open"></i></span><h2>Base CIEPI</h2><p>Códigos internos (C.I.) dos itens sem C.A., montados a partir do boletim técnico.</p></div></div>
+        <div class="epi-barra ciepi-barra">
+          <label class="colab-busca epi-busca"><i data-lucide="search" aria-hidden="true"></i><input id="ciepiSearch" type="search" placeholder="Buscar por C.I., item ou fabricante" autocomplete="off" aria-label="Buscar C.I."></label>
+          <button class="colab-novo epi-novo" id="ciepiNew" type="button"><i data-lucide="plus" aria-hidden="true"></i>Novo C.I.</button>
         </div>
-        <div class="table-wrap"><table class="ciepi-table"><thead><tr><th>C.I.</th><th>Item</th><th>Fabricante</th><th>Referência</th><th>Validade</th><th>Boletim</th><th class="action-head">Ação</th></tr></thead><tbody id="ciepiBody"><tr><td colspan="7">Carregando…</td></tr></tbody></table></div>
+        <div class="epi-tab-wrap"><table class="epi-tab ciepi-tab"><colgroup><col class="c-ci"><col class="c-item"><col class="c-fab"><col class="c-ref"><col class="c-val"><col class="c-bol"><col class="c-acao"></colgroup>
+          <thead><tr><th>C.I.</th><th>Item</th><th>Fabricante</th><th>Referência</th><th>Validade</th><th class="acao">Boletim</th><th class="acao">Ação</th></tr></thead>
+          <tbody id="ciepiBody"><tr><td colspan="7" class="epi-tab-nada">Carregando…</td></tr></tbody></table></div>
+        <footer class="g-employee-footer mov-rodape epi-rodape" id="ciepiRodape" hidden></footer>
       </section>
 
       <div class="data-edit-modal hidden" id="ciepiModal" role="dialog" aria-modal="true" aria-labelledby="ciepiTitle">
@@ -873,7 +876,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="js/config.js?v=20261118-4"></script>
+<script src="js/config.js?v=20261118-5"></script>
 <script src="js/pdf-export.js?v=20261116-1"></script>
 <script src="js/app.js?v=20261118-2"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&amp;onload=epiTurnstilePronto" async defer></script>
