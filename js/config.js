@@ -232,6 +232,12 @@ window.addEventListener('load', () => {
     dashKpisScript.dataset.dashKpis = 'true';
     document.body.appendChild(dashKpisScript);
   }
+  if (!document.querySelector('script[data-dash-faixa]')) {
+    const dashFaixaScript = document.createElement('script');
+    dashFaixaScript.src = 'js/dash-faixa.js?v=20261118-1';
+    dashFaixaScript.dataset.dashFaixa = 'true';
+    document.body.appendChild(dashFaixaScript);
+  }
   if (!document.querySelector('script[data-economia]')) {
     const economiaScript = document.createElement('script');
     economiaScript.src = 'js/economia.js?v=20261117-1';

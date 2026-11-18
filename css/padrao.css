@@ -4830,3 +4830,60 @@
 :where(html,body,*)::-webkit-scrollbar-thumb{background:#36404B;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
 :where(html,body,*)::-webkit-scrollbar-thumb:hover{background:#4A5663;background-clip:padding-box}
 :where(html,body,*)::-webkit-scrollbar-corner{background:transparent}
+/* =====================================================================
+   Dashboard (PC): faixa embaixo dos KPIs (js/dash-faixa.js). Três cartões
+   da mesma altura no vidro azul-aço, altura presa ao que sobra da tela.
+   ===================================================================== */
+.dash-faixa{display:none}
+@media (min-width:721px){
+  .dash-faixa{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr);gap:14px;margin:0;
+    height:clamp(180px,calc(100vh - 434px),320px)}
+  .page[data-page-content="dashboard"].stage-saindo > #dashFaixa{opacity:0;transform:scale(.985);transition:opacity .22s ease,transform .22s ease}
+  .page[data-page-content="dashboard"].stage-voltando > #dashFaixa{animation:stgEntra .32s ease both}
+  .dfx-card{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:14px 16px;border-radius:14px;border:1px solid rgba(178,191,205,.14);
+    background:radial-gradient(ellipse 55% 50% at 100% 0%,rgba(255,102,0,.05) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 12% 8%,rgba(70,87,105,.16) 0%,transparent 70%),linear-gradient(180deg,rgba(13,19,26,.94) 0%,rgba(9,13,18,.94) 45%,rgba(6,10,14,.94) 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 15px 35px rgba(0,0,0,.28);font-family:Inter,Roboto,Arial,sans-serif}
+  .dfx-cab{display:flex;align-items:center;gap:8px;margin:0 0 10px;flex:0 0 auto}
+  .dfx-cab svg{width:16px;height:16px;color:#FF7A10}
+  .dfx-cab h3{margin:0;font:700 13.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .dfx-cab small{margin-left:auto;font:500 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#8E98A3;white-space:nowrap}
+
+  /* 1. Barras */
+  .dfx-barras{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch}
+  .dfx-barra{display:flex;flex-direction:column;align-items:center;min-height:0;gap:4px}
+  .dfx-barra-val{flex:0 0 auto;height:14px;font:600 11px/14px Inter,Roboto,Arial,sans-serif;color:#C9D0D7}
+  .dfx-barra-trilho{flex:1 1 auto;min-height:0;width:100%;max-width:34px;display:flex;align-items:flex-end;border-radius:7px;background:rgba(178,191,205,.06)}
+  .dfx-barra-fill{display:block;width:100%;border-radius:7px;background:linear-gradient(180deg,rgba(255,122,16,.55),rgba(255,102,0,.25))}
+  .dfx-barra.is-atual .dfx-barra-fill{background:linear-gradient(180deg,#FF8A24,#FF6600);box-shadow:0 0 14px rgba(255,102,0,.25)}
+  .dfx-barra.is-atual .dfx-barra-val{color:#FF9A4A}
+  .dfx-barra-mes{flex:0 0 auto;font:500 11px/1 Inter,Roboto,Arial,sans-serif;color:#8E98A3}
+  .dfx-barra.is-atual .dfx-barra-mes{color:#F2F4F6;font-weight:700}
+
+  /* 2. Mais entregues */
+  .dfx-top{flex:1 1 auto;min-height:0;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
+  .dfx-top li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;grid-template-rows:auto 4px;column-gap:8px;row-gap:4px;align-items:center}
+  .dfx-pos{grid-row:1 / span 2;font:700 11.5px/1 Inter,Roboto,Arial,sans-serif;color:#FF7A10;text-align:center}
+  .dfx-nome{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 12.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#E5E8EA}
+  .dfx-qtd{font:700 12.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .dfx-linha{grid-column:2 / span 2;height:4px;border-radius:4px;background:rgba(178,191,205,.08);overflow:hidden}
+  .dfx-linha span{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#FF6600,#FF9A4A)}
+  .dfx-vazio{display:block!important;color:#8E98A3;font:500 12.5px/1.4 Inter,Roboto,Arial,sans-serif}
+
+  /* 3. Atenção */
+  .dfx-atencao{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+  .dfx-alerta{flex:1 1 0;min-height:0;display:flex;align-items:center;gap:10px;width:100%;padding:0 10px;border-radius:10px;cursor:pointer;text-align:left;
+    background:rgba(6,10,14,.45);border:1px solid rgba(178,191,205,.10);color:inherit;font:inherit;transition:border-color .15s,background .15s}
+  .dfx-alerta:hover:not(:disabled){border-color:rgba(255,121,0,.45);background:rgba(255,102,0,.05)}
+  .dfx-alerta:disabled{cursor:default}
+  .dfx-alerta:disabled .dfx-seta{visibility:hidden}
+  .dfx-alerta-ic{display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;border-radius:8px}
+  .dfx-alerta-ic svg{width:15px;height:15px}
+  .dfx-alerta-ic.is-vermelho{color:#F87171;background:rgba(239,68,68,.12)}
+  .dfx-alerta-ic.is-amarelo{color:#FBBF24;background:rgba(251,191,36,.12)}
+  .dfx-alerta-ic.is-azul{color:#60A5FA;background:rgba(96,165,250,.12)}
+  .dfx-alerta-txt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .dfx-alerta-txt b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 12.5px/1.2 Inter,Roboto,Arial,sans-serif;color:#E5E8EA}
+  .dfx-alerta-txt small{font:400 11px/1.2 Inter,Roboto,Arial,sans-serif;color:#8E98A3}
+  .dfx-alerta strong{font:700 18px/1 Inter,Roboto,Arial,sans-serif;color:#F2F4F6}
+  .dfx-seta{width:14px;height:14px;color:#6F7883;flex:0 0 14px}
+}
