@@ -32,7 +32,7 @@
     { sec: 'cadastros', nome: 'Cadastros', icone: 'users', telas: [
       { k: 'colaboradores', nome: 'Colaboradores', icone: 'users', acoes: [C, ['cadastrar', 'Cadastrar'], ['editar', 'Editar'], ['desativar', 'Desativar / Ativar'], ['excluir', 'Excluir']] },
       { k: 'epis', nome: 'EPIs / Itens', icone: 'hard-hat', acoes: [C, ['cadastrar', 'Cadastrar'], ['editar', 'Editar'], ['desativar', 'Desativar / Ativar'], ['excluir', 'Excluir']] },
-      { k: 'ciepi', nome: 'Base CIEPI', icone: 'book-open', acoes: [C, ['cadastrar', 'Cadastrar']] }] },
+      { k: 'ciepi', nome: 'Base CIEPI', icone: 'book-open', acoes: [C, ['cadastrar', 'Cadastrar'], ['editar', 'Editar'], ['excluir', 'Excluir']] }] },
     { sec: 'estoque', nome: 'Estoque', icone: 'layers', telas: [
       { k: 'estoque', nome: 'Estoque de EPI', icone: 'boxes', acoes: [C, ['entrada', 'Dar entrada'], ['ajustar', 'Ajustar saldo']] },
       { k: 'uniformes', nome: 'Uniformes (depósitos)', icone: 'shirt', acoes: [C, ['ajustar', 'Tirar e repor (− e +)'], ['cadastrar', 'Cadastrar peça e depósito'], ['editar', 'Editar e excluir peça']] },

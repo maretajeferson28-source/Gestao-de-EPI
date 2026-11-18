@@ -167,7 +167,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-perfis]')) {
     const perfisScript = document.createElement('script');
-    perfisScript.src = 'js/perfis.js?v=20261118-1';
+    perfisScript.src = 'js/perfis.js?v=20261118-2';
     perfisScript.dataset.perfis = 'true';
     document.body.appendChild(perfisScript);
   }
@@ -265,7 +265,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-ciepi]')) {
     const ciepiScript = document.createElement('script');
-    ciepiScript.src = 'js/ciepi.js?v=20261117-50';
+    ciepiScript.src = 'js/ciepi.js?v=20261118-1';
     ciepiScript.dataset.ciepi = 'true';
     document.body.appendChild(ciepiScript);
   }

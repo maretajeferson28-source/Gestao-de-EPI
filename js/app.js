@@ -40,6 +40,7 @@ function aplicarPermissoes(){
   document.querySelectorAll('.nav button[data-page]').forEach(b=>{ if(b.dataset.page in PAGINA_PERM) b.hidden=!podePagina(b.dataset.page); });
   const novo=document.getElementById('movNovo'); if(novo) novo.hidden=!pode('movimentacoes.lancar');
   const xls=document.getElementById('exportCsv'); if(xls) xls.hidden=!pode('movimentacoes.exportar');
+  const ci=document.getElementById('ciepiNew'); if(ci) ci.hidden=!pode('ciepi.cadastrar');
   document.body.classList.toggle('sem-notas-importar',!pode('notas.importar'));
   const atual=document.querySelector('.page.active')?.dataset?.pageContent;
   if(atual && !podePagina(atual)){

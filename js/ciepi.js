@@ -49,8 +49,8 @@
         <td>${brDate(r.data_validade)}</td>
         <td>${r.boletim_path ? `<button class="btn compact" type="button" data-ciepi-pdf="${escHtml(r.id)}"><i data-lucide="file-text" aria-hidden="true"></i>Abrir</button>` : '<span class="ciepi-muted">—</span>'}</td>
         <td class="ciepi-actions">
-          <button class="btn compact" type="button" data-ciepi-edit="${escHtml(r.id)}" title="Editar" aria-label="Editar ${escHtml(r.ci)}"><i data-lucide="pencil" aria-hidden="true"></i></button>
-          <button class="btn compact danger" type="button" data-ciepi-del="${escHtml(r.id)}" title="Excluir" aria-label="Excluir ${escHtml(r.ci)}"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+          <button class="btn compact" type="button"${P('ciepi.editar') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-ciepi-edit="${escHtml(r.id)}" title="Editar" aria-label="Editar ${escHtml(r.ci)}"><i data-lucide="pencil" aria-hidden="true"></i></button>
+          <button class="btn compact danger" type="button"${P('ciepi.excluir') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-ciepi-del="${escHtml(r.id)}" title="Excluir" aria-label="Excluir ${escHtml(r.ci)}"><i data-lucide="trash-2" aria-hidden="true"></i></button>
         </td>
       </tr>`).join('');
     icons();
@@ -75,7 +75,7 @@
   }
 
   function open(row = null) {
-    if (!P('ciepi.cadastrar')) return;
+    if (!P(row ? 'ciepi.editar' : 'ciepi.cadastrar')) return;
     editing = row;
     pendingFile = null;
     removeFile = false;
@@ -93,7 +93,7 @@
   function close() { $('ciepiModal').classList.add('hidden'); editing = null; pendingFile = null; }
 
   async function save() {
-    if (!P('ciepi.cadastrar')) return;
+    if (!P(editing ? 'ciepi.editar' : 'ciepi.cadastrar')) return;
     const client = db();
     const payload = {};
     for (const [col, id] of Object.entries(FIELDS)) payload[col] = $(id).value.trim() || null;
@@ -150,6 +150,7 @@
   }
 
   async function remove(id) {
+    if (!P('ciepi.excluir')) return;
     const row = rows.find((r) => r.id === id);
     if (!row || !confirm(`Excluir ${row.ci} (${row.nome}) da Base CIEPI?\nOs prontuários que já usaram esse código não mudam.`)) return;
     const { error } = await db().from('ciepi_registros').delete().eq('id', id);
