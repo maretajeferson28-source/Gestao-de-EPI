@@ -4783,8 +4783,8 @@
   .page[data-page-content="ciepi"] .ciepi-head > div{display:grid;grid-template-columns:56px minmax(0,1fr);grid-template-rows:auto auto;column-gap:18px;align-items:center}
   .page[data-page-content="ciepi"] .ciepi-head h2{display:block!important;margin:0;font:700 34px/1.15 Inter,Roboto,Arial,sans-serif;letter-spacing:-1px;color:#F7F7F8}
   .page[data-page-content="ciepi"] .ciepi-head p{display:block!important;margin:2px 0 0;font:400 14px/1.3 Inter,Roboto,Arial,sans-serif;color:#C4C8CE}
-  .ciepi-tab .c-ci{width:96px}.ciepi-tab .c-item{width:22%}.ciepi-tab .c-fab{width:17%}.ciepi-tab .c-ref{width:auto}
-  .ciepi-tab .c-val{width:108px}.ciepi-tab .c-bol{width:80px}.ciepi-tab .c-acao{width:96px}
+  .ciepi-tab .c-ci{width:80px}.ciepi-tab .c-item{width:22%}.ciepi-tab .c-fab{width:17%}.ciepi-tab .c-ref{width:auto}
+  .ciepi-tab .c-val{width:108px}.ciepi-tab .c-bol{width:62px}.ciepi-tab .c-acao{width:96px}
   .ciepi-tab .ciepi-code{color:#FF7A10;font:700 12.5px/1 Inter,Roboto,Arial,sans-serif}
   .ciepi-tab td.ciepi-vencida{color:#FB7373;font-weight:600}
   .ciepi-tab .ciepi-pdf:hover{border-color:rgba(56,180,123,.6)!important;color:#45bd83!important}
