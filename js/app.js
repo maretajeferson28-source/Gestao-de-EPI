@@ -1884,8 +1884,9 @@ function openEpiCatalogEdit(id){
 
   editingCatalogEpiId=novo?'__novo__':id;
   const card=$('epiCatalogEditModal');
+  $('epiCatalogEditTag').textContent=novo?'NOVO ITEM':'CADASTRO DO ITEM';
   $('epiCatalogEditTitle').textContent=novo?'Adicionar EPI / Item':'Editar EPI / Item';
-  $('epiCatalogEditSub').textContent=novo?'Cadastre o nome e a categoria. Os C.A.s e a foto entram depois, na ficha do item.':'Nome, categoria e foto do item.';
+  $('epiCatalogEditSub').textContent=novo?'Cadastre o nome e a categoria. Os C.A.s entram depois, na ficha do item.':'Altere o nome canônico e a categoria do card.';
   mostrarFotoEdicao(novo?null:id,epi);
   card.querySelector('.data-edit-note').hidden=novo;
   $('epiCatalogEditSave').lastChild.textContent=novo?'Adicionar item':'Salvar item';
@@ -1896,43 +1897,46 @@ function openEpiCatalogEdit(id){
   refreshIcons();
 }
 
-// Foto no editor do item: é a mesma da tabela (a do C.A. principal). "Trocar
-// foto" grava a nova nesse C.A. ao salvar. Sem C.A. não tem onde guardar.
+// Foto no editor do item: vai no quadradinho do ícone, sem o fundo branco
+// (a mesma da tabela, do C.A. principal). Clicar no quadradinho troca a foto;
+// a nova é gravada nesse C.A. ao salvar. Sem C.A. fica o ícone.
 let epiEdFotoAlvo=null, epiEdFotoNova=null, epiEdFotoPreview=null;
+function pintarFotoEdicao(src){
+  const b=$('epiEdFoto'); if(!b) return;
+  b.classList.add('tem-foto');
+  b.innerHTML=`<img src="${src}" alt="">${b.disabled?'':'<span class="epi-ed-troca" aria-hidden="true"><i data-lucide="camera"></i></span>'}`;
+  refreshIcons();
+}
 function mostrarFotoEdicao(id,epi){
-  const box=$('epiEdFotoBox'); if(!box) return;
+  const b=$('epiEdFoto'); if(!b) return;
   if(epiEdFotoPreview){ URL.revokeObjectURL(epiEdFotoPreview); epiEdFotoPreview=null; }
   epiEdFotoNova=null; $('epiEdFotoInput').value='';
-  box.hidden=!id;
-  if(!id){ epiEdFotoAlvo=null; return; }
-  const ca=epiCaPrincipal(id);
-  epiEdFotoAlvo=(ca.foto&&epiVariants.find(v=>v.epi_id===id&&v.imagem_path===ca.foto))||ca.v||null;
-  const foto=$('epiEdFoto');
-  foto.className='epi-ed-foto';
-  foto.innerHTML=`<i data-lucide="${epiCardIcon(epi)}" aria-hidden="true"></i>`;
-  const podeTrocar=currentIsAdmin===true&&!!epiEdFotoAlvo;
-  $('epiEdTrocar').hidden=!podeTrocar;
-  $('epiEdFotoInfo').textContent=!epiEdFotoAlvo?'Cadastre um C.A. para pôr foto.':`Foto do C.A. ${epiEdFotoAlvo.ca||''}`;
+  const ca=id?epiCaPrincipal(id):null;
+  epiEdFotoAlvo=ca?((ca.foto&&epiVariants.find(v=>v.epi_id===id&&v.imagem_path===ca.foto))||ca.v||null):null;
+  b.disabled=!(currentIsAdmin===true&&epiEdFotoAlvo);
+  b.title=b.disabled?(id&&!epiEdFotoAlvo?'Cadastre um C.A. para pôr foto':''):`Trocar foto (C.A. ${epiEdFotoAlvo.ca||''})`;
+  b.classList.remove('tem-foto');
+  b.innerHTML=`<i data-lucide="${id?epiCardIcon(epi):'hard-hat'}" aria-hidden="true"></i>${b.disabled?'':'<span class="epi-ed-troca" aria-hidden="true"><i data-lucide="camera"></i></span>'}`;
+  refreshIcons();
   const path=epiEdFotoAlvo?.imagem_path;
   if(path){
     const pedido=id;
     Promise.resolve(epiFotoRecorte.get(path)||variantImageUrl(path).then(u=>u&&recortarFundoBranco(u)).then(r=>{ if(r) epiFotoRecorte.set(path,r); return r; }))
-      .then(src=>{ if(!src||editingCatalogEpiId!==pedido||epiEdFotoNova) return; foto.classList.add('tem-foto'); foto.innerHTML=`<img src="${src}" alt="">`; })
+      .then(src=>{ if(src&&editingCatalogEpiId===pedido&&!epiEdFotoNova) pintarFotoEdicao(src); })
       .catch(()=>{});
   }
-  refreshIcons();
 }
-$('epiEdTrocar')?.addEventListener('click',()=>$('epiEdFotoInput').click());
-$('epiEdFotoInput')?.addEventListener('change',e=>{
+$('epiEdFoto')?.addEventListener('click',()=>{ if(!$('epiEdFoto').disabled) $('epiEdFotoInput').click(); });
+$('epiEdFotoInput')?.addEventListener('change',async e=>{
   const file=e.target.files?.[0]; if(!file) return;
   if(!file.type.startsWith('image/')){ $('epiCatalogEditMsg').textContent='Escolha uma imagem.'; return; }
   if(file.size>8*1024*1024){ $('epiCatalogEditMsg').textContent='A imagem passa de 8 MB.'; return; }
   epiEdFotoNova=file;
   if(epiEdFotoPreview) URL.revokeObjectURL(epiEdFotoPreview);
   epiEdFotoPreview=URL.createObjectURL(file);
-  const foto=$('epiEdFoto'); foto.classList.add('tem-foto'); foto.innerHTML=`<img src="${epiEdFotoPreview}" alt="">`;
-  $('epiEdFotoInfo').textContent='Foto nova: grava ao salvar.';
-  $('epiCatalogEditMsg').textContent='';
+  let src=epiEdFotoPreview; try{ src=(await recortarFundoBranco(epiEdFotoPreview))||epiEdFotoPreview; }catch(_){}
+  pintarFotoEdicao(src);
+  $('epiCatalogEditMsg').textContent='Foto nova escolhida: grava ao salvar.';
 });
 async function gravarFotoEdicao(){
   if(!epiEdFotoNova||!epiEdFotoAlvo) return;
