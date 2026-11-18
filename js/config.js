@@ -299,7 +299,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-colab-painel]')) {
     const colabPainelScript = document.createElement('script');
-    colabPainelScript.src = 'js/colab-painel.js?v=20261118-1';
+    colabPainelScript.src = 'js/colab-painel.js?v=20261118-2';
     colabPainelScript.dataset.colabPainel = 'true';
     document.body.appendChild(colabPainelScript);
   }

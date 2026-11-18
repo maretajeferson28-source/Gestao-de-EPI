@@ -15,6 +15,8 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = (n) => new Intl.NumberFormat('pt-BR').format(Number(n) || 0);
   const dataBR = (iso) => { const [y, m, d] = String(iso || '').slice(0, 10).split('-'); return d ? `${d}/${m}/${y}` : ''; };
+  // Data e hora (timestamptz) no fuso do aparelho: assinatura à noite não vira o dia seguinte.
+  const dataLocal = (ts) => { const d = new Date(ts); return Number.isNaN(d.getTime()) ? dataBR(ts) : d.toLocaleDateString('pt-BR'); };
   // Datas das movimentações vêm em dd/mm/aaaa; para ordenar, vira aaaa-mm-dd.
   const isoDeBR = (br) => { const t = String(br || ''); if (/^\d{4}-/.test(t)) return t.slice(0, 10); const [d, m, y] = t.split('/'); return y ? `${y}-${m}-${d}` : ''; };
   const brDe = (v) => { const t = String(v || ''); return /^\d{4}-/.test(t) ? dataBR(t) : t; };
@@ -112,7 +114,7 @@
 
     const osSub = os ? [os.funcao, os.revisao ? `Rev. ${os.revisao}` : '', os.data_os ? `Emitida em ${dataBR(os.data_os)}` : ''].filter(Boolean).join(' • ')
       : 'Nenhuma O.S. ligada à função';
-    const termoSub = termo ? `Assinado em ${dataBR(termo.assinado_em)} • Vigente` : 'Ainda não assinou no celular';
+    const termoSub = termo ? `Assinado em ${dataLocal(termo.assinado_em)} • Vigente` : 'Ainda não assinou no celular';
     const episSub = ent.epis.length ? `${itensTxt(ent.epis.length)} • ${resumoNomes(ent.epis)}` : 'Nenhum EPI recebido ainda';
     const ultSub = ent.ultima ? `${ent.ultima} • ${itensTxt(ent.qtdUltima)} ${ent.qtdUltima === 1 ? 'entregue' : 'entregues'}` : 'Nenhuma entrega registrada';
 
@@ -276,7 +278,9 @@
 
   function linhaTabela(c, ult) {
     const st = statusDe(c);
-    const termo = temTermoAssinado(c) ? selo('is-good', 'check', 'Assinado') : st === 'desativado' ? falta : selo('is-warning', 'clock-3', 'Pendente');
+    // Selo do termo com a data em que assinou no celular.
+    const t = window.EPI_TERMO?.termoDe?.(c.id);
+    const termo = t ? selo('is-good', 'check', t.assinado_em ? dataLocal(t.assinado_em) : 'Assinado') : st === 'desativado' ? falta : selo('is-warning', 'clock-3', 'Pendente');
     const funcao = c.funcao || c.cargo || '';
     const data = ult.get(c.id);
     return `<tr data-colab-linha="${esc(c.id)}" tabindex="0" aria-label="${esc(c.nome)}">
