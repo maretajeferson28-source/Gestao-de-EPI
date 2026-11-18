@@ -4808,3 +4808,16 @@
   .ciepi-tab th:last-child,.ciepi-tab td:last-child{text-align:center!important}
   .ciepi-tab td.acao .table-action-group{display:flex;width:100%;justify-content:space-evenly;align-items:center;gap:0;margin:0}
 }
+
+/* Novo / Editar C.I.: identidade nova (dep-modal), mesmo layout; código no topo. */
+#ciepiModal .ciepi-card{width:min(720px,calc(100vw - 28px))}
+#ciepiModal .ciepi-linha-codigo{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px}
+#ciepiModal .ciepi-linha-codigo .field{margin:0}
+#ciepiModal #ciepiCodigo{color:#FF7A10!important;font-weight:700;opacity:1;-webkit-text-fill-color:#FF7A10;cursor:default}
+#ciepiModal textarea{background:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;box-shadow:none!important}
+#ciepiModal textarea::placeholder{color:#7F8C99!important}
+#ciepiModal textarea:focus{border-color:rgba(255,121,0,.6)!important;box-shadow:none!important}
+#ciepiModal input[type="date"]{color-scheme:dark}
+#ciepiModal .ciepi-boletim label.btn{background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95))!important;border:1px solid rgba(178,191,205,.16)!important;color:#E5E8EA!important}
+#ciepiModal .ciepi-boletim label.btn:hover{border-color:rgba(255,121,0,.5)!important}
+#ciepiModal .ciepi-boletim span{color:#9FB0C2}

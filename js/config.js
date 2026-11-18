@@ -265,7 +265,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-ciepi]')) {
     const ciepiScript = document.createElement('script');
-    ciepiScript.src = 'js/ciepi.js?v=20261118-3';
+    ciepiScript.src = 'js/ciepi.js?v=20261118-4';
     ciepiScript.dataset.ciepi = 'true';
     document.body.appendChild(ciepiScript);
   }

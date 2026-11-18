@@ -101,12 +101,20 @@
     $('ciepiBoletim').value = '';
     $('ciepiTitle').textContent = row ? `Editar ${row.ci}` : 'Novo C.I.';
     $('ciepiSubtitle').textContent = row ? 'Campos com * são obrigatórios.' : 'O código é gerado sozinho ao salvar. Campos com * são obrigatórios.';
+    $('ciepiCodigo').value = row ? row.ci : proximoCodigo();
     for (const [col, id] of Object.entries(FIELDS)) $(id).value = row?.[col] ? String(row[col]).slice(0, col === 'data_validade' ? 10 : undefined) : '';
     showFileName();
     setMsg('');
     $('ciepiModal').classList.remove('hidden');
     icons();
     setTimeout(() => $('ciepiNome').focus(), 50);
+  }
+
+  // Próximo código previsto (o banco gera na sequência ao salvar; se algum
+  // número foi pulado antes, o salvo pode vir maior — ele aparece na tabela).
+  function proximoCodigo() {
+    const n = rows.reduce((m, r) => Math.max(m, Number(String(r.ci || '').replace(/\D/g, '')) || 0), 0);
+    return 'CI-' + String(n + 1).padStart(4, '0');
   }
 
   function close() { $('ciepiModal').classList.add('hidden'); editing = null; pendingFile = null; }
