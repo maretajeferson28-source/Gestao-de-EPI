@@ -285,7 +285,7 @@
       <td><span class="g-employee-cell-clip" title="${esc(funcao)}">${funcao ? esc(funcao) : falta}</span></td>
       <td>${termo}</td>
       <td>${data ? esc(dataBR(data)) : falta}</td>
-      <td class="g-employee-acoes">${P('colaboradores.editar', 'colaboradores.desativar', 'colaboradores.excluir') ? `<button type="button" class="g-employee-more" data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções de ${esc(c.nome)}"><i data-lucide="ellipsis"></i></button>` : ''}</td>
+      <td class="g-employee-acoes">${true ? `<button type="button" class="g-employee-more"${P('colaboradores.editar', 'colaboradores.desativar', 'colaboradores.excluir') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-colab-menu="${esc(c.id)}" aria-haspopup="menu" aria-expanded="false" title="Opções" aria-label="Opções de ${esc(c.nome)}"><i data-lucide="ellipsis"></i></button>` : ''}</td>
     </tr>`;
   }
 

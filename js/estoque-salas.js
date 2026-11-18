@@ -219,7 +219,7 @@
         <td class="num">${temMov ? num(p.sai) : '<span class="epi-tab-vazio">—</span>'}</td>
         <td class="num"><b class="epi-tab-saldo${p.total <= 0 ? ' is-zero' : ''}">${num(p.total)}</b></td>
         <td><span class="epi-sit epi-sit--${st[0]}">${st[1]}</span></td>
-        <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${P('uniformes.ajustar') ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button>${P('uniformes.editar') ? `<button class="btn movement-action-btn estq-editar" type="button" data-uni-editar="${esc(p.peca)}" title="Editar peça (nome, C.A. e tamanhos)" aria-label="Editar peça"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}</div></td>
+        <td class="acao"><div class="table-action-group"><button class="btn movement-action-btn estq-abrir" type="button" data-uni-peca="${esc(p.peca)}" title="${P('uniformes.ajustar') ? 'Abrir peça (ajustar os tamanhos com − e +)' : 'Ver os tamanhos da peça'}" aria-label="Abrir peça"><i data-lucide="package-open" aria-hidden="true"></i></button>${true ? `<button class="btn movement-action-btn estq-editar" type="button"${P('uniformes.editar') ? '' : ' disabled aria-disabled="true" data-sem-perm'} data-uni-editar="${esc(p.peca)}" title="Editar peça (nome, C.A. e tamanhos)" aria-label="Editar peça"><i data-lucide="pencil" aria-hidden="true"></i></button>` : ''}</div></td>
       </tr>`;
     }).join('') || `<tr><td colspan="7" class="epi-tab-nada">${carregado ? ((q || fSit) ? 'Nenhuma peça encontrada.' : 'Nenhuma peça nesta sala ainda.') : 'Carregando…'}</td></tr>`;
 

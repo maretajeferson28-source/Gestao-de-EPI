@@ -139,7 +139,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-estoque-salas]')) {
     const estoqueSalasScript = document.createElement('script');
-    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261117-50';
+    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261118-1';
     estoqueSalasScript.dataset.estoqueSalas = 'true';
     document.body.appendChild(estoqueSalasScript);
   }
@@ -293,7 +293,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-colab-painel]')) {
     const colabPainelScript = document.createElement('script');
-    colabPainelScript.src = 'js/colab-painel.js?v=20261117-50';
+    colabPainelScript.src = 'js/colab-painel.js?v=20261118-1';
     colabPainelScript.dataset.colabPainel = 'true';
     document.body.appendChild(colabPainelScript);
   }

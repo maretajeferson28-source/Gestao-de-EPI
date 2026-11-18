@@ -28,6 +28,9 @@ let currentPerms = new Set();
 const PERMS_SEM_PERFIL = ['dashboard.consultar','movimentacoes.consultar','caepi.consultar'];
 function pode(...ks){ return currentIsAdmin===true || ks.some(k=>currentPerms.has(k)); }
 window.epiPode = pode;
+// Botão de ação sem permissão: aparece, mas apagado e sem clique.
+function trava(ok){ return ok ? '' : ' disabled aria-disabled="true" data-sem-perm'; }
+window.epiTrava = trava;
 // Tela do menu → permissão para ver. null = só administrador.
 const PAGINA_PERM = {dashboard:'dashboard.consultar',movimentacoes:'movimentacoes.consultar',caepi:'caepi.consultar',
   nova:'entregar.consultar',fila:'entregar.consultar',programar:'programar.consultar',pendencias:'pendencias.consultar',
@@ -1016,12 +1019,10 @@ function renderMovs(){
   $('movBody').innerHTML=daPagina.map(x=>{
     const actions=x.pendente
       ? '<span class="mov-pendente" title="Guardada no aparelho; vai para o banco ao sincronizar">Pendente</span>'
-      : pode('movimentacoes.editar','movimentacoes.excluir')
-      ? `<div class="table-action-group">
-          <button class="btn movement-action-btn movement-edit-btn"${pode('movimentacoes.editar')?'':' hidden'} data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
-          <button class="btn movement-action-btn movement-delete-btn"${pode('movimentacoes.excluir')?'':' hidden'} data-del="${esc(x.id)}" title="Excluir movimentação" aria-label="Excluir movimentação"><i data-lucide="trash-2" aria-hidden="true"></i></button>
-        </div>`
-      : '<span class="action-placeholder">—</span>';
+      : `<div class="table-action-group">
+          <button class="btn movement-action-btn movement-edit-btn"${trava(pode('movimentacoes.editar'))} data-mov-edit="${esc(x.id)}" title="Editar movimentação" aria-label="Editar movimentação"><i data-lucide="pencil" aria-hidden="true"></i></button>
+          <button class="btn movement-action-btn movement-delete-btn"${trava(pode('movimentacoes.excluir'))} data-del="${esc(x.id)}" title="Excluir movimentação" aria-label="Excluir movimentação"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+        </div>`;
 
     return `<tr>
       <td title="${esc(x.data)}">${esc(x.data)}</td>
@@ -1742,8 +1743,8 @@ function renderEpiTabela(){
       <td>${ult?ult.split('-').reverse().join('/'):'<span class="epi-tab-vazio">—</span>'}</td>
       <td class="acao"><div class="table-action-group">
         <button class="btn movement-action-btn epi-tab-prontuario" type="button" title="Abrir prontuário" aria-label="Abrir prontuário"><i data-lucide="file-text" aria-hidden="true"></i></button>
-        <button class="btn movement-action-btn movement-edit-btn" type="button" data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></button>
-        <button class="btn movement-action-btn movement-delete-btn" type="button" data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></button>
+        <button class="btn movement-action-btn movement-edit-btn" type="button"${trava(pode('epis.editar'))} data-epi-edit="${esc(c.id)}" title="Editar item" aria-label="Editar item"><i data-lucide="pencil" aria-hidden="true"></i></button>
+        <button class="btn movement-action-btn movement-delete-btn" type="button"${trava(pode('epis.excluir'))} data-epi-delete="${esc(c.id)}" title="Excluir item" aria-label="Excluir item"><i data-lucide="trash-2" aria-hidden="true"></i></button>
       </div></td></tr>`;
   }).join('')||'<tr><td colspan="9" class="epi-tab-nada">Nenhum EPI encontrado.</td></tr>';
   // Rodapé com páginas (mesmo de Movimentações)

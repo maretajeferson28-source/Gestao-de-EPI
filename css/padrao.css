@@ -4759,3 +4759,6 @@
 /* Cadeado do administrador: sem caixa, laranja como o ⋯ (combina com a coluna Ações). */
 .adm-tela .authz-protected{width:30px;height:28px;border:0!important;background:none!important;color:#FF7A10!important}
 .adm-tela .authz-protected svg{width:17px;height:17px}
+/* Botão de ação sem permissão do perfil: aparece apagado e sem clique. */
+[data-sem-perm]{opacity:.4!important;cursor:not-allowed!important;filter:grayscale(1);box-shadow:none!important}
+[data-sem-perm]:hover{border-color:inherit!important;background:inherit}
