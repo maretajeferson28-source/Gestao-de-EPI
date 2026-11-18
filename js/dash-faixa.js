@@ -125,10 +125,17 @@
     const limIso = `${lim.getFullYear()}-${pad(lim.getMonth() + 1)}-${pad(lim.getDate())}`;
     return vars.filter((v) => v.ativo !== false && ativos.has(v.epi_id) && v.data_validade && String(v.data_validade).slice(0, 10) <= limIso).length;
   }
+  // 0 = tudo certo (✓ verde); com pendência, o número na cor da linha; null = não deu para ler.
+  function mostrar(el, n, tom) {
+    el.className = '';
+    if (n == null) { el.textContent = '–'; return; }
+    if (!n) { el.className = 'is-ok'; el.title = 'Tudo certo'; el.innerHTML = '<i data-lucide="check"></i>'; icons(); return; }
+    el.className = 'is-' + tom; el.title = ''; el.textContent = num(n);
+  }
   let pedido = 0;
   async function desenharAtencao() {
     const caEl = $('[data-dfx-ca]'), estEl = $('[data-dfx-estoque]'), filaEl = $('[data-dfx-fila]');
-    caEl.textContent = num(contarCa());
+    mostrar(caEl, contarCa(), 'vermelho');
     // Cada linha só leva à tela se a pessoa pode ver a tela.
     document.querySelectorAll('#dashFaixa [data-dfx-ir]').forEach((b) => {
       const k = { epis: 'epis.consultar', estoque: 'estoque.consultar', programar: 'programar.consultar' }[b.dataset.dfxIr];
@@ -141,16 +148,15 @@
       cli.from('entregas_programadas').select('id', { count: 'exact', head: true }).eq('status', 'programada').then((r) => r, () => ({ error: true }))
     ]);
     if (meu !== pedido) return;
-    if (est.error || !Array.isArray(est.data)) estEl.textContent = '–';
-    else estEl.textContent = num(est.data.filter((i) => Number(i.saldo) <= 0 || (i.minimo != null && Number(i.saldo) <= Number(i.minimo))).length);
-    filaEl.textContent = fila.error ? '–' : num(fila.count || 0);
+    mostrar(estEl, est.error || !Array.isArray(est.data) ? null : est.data.filter((i) => Number(i.saldo) <= 0 || (i.minimo != null && Number(i.saldo) <= Number(i.minimo))).length, 'amarelo');
+    mostrar(filaEl, fila.error ? null : (fila.count || 0), 'azul');
   }
 
   function atualizar(tudo) {
     if (!montar()) return;
     desenharMeses();
     desenharTop();
-    if (tudo) desenharAtencao(); else $('[data-dfx-ca]').textContent = num(contarCa());
+    if (tudo) desenharAtencao(); else mostrar($('[data-dfx-ca]'), contarCa(), 'vermelho');
   }
 
   let pendente = null, pendenteTudo = false;
