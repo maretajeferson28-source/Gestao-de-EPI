@@ -4793,14 +4793,12 @@
 /* Editar EPI / Item: layout de sempre; a foto do item (sem fundo) fica no
    quadradinho do ícone, que troca a foto ao clicar. */
 #epiCatalogEditModal .epi-catalog-edit-grid{grid-template-columns:1fr}
-#epiCatalogEditModal .epi-ed-icone{position:relative;padding:0;cursor:pointer;overflow:visible}
+#epiCatalogEditModal .epi-ed-icone{position:relative;flex:0 0 auto;padding:0;cursor:pointer;overflow:hidden}
 #epiCatalogEditModal .epi-ed-icone:disabled{cursor:default;opacity:1}
-#epiCatalogEditModal .epi-ed-icone.tem-foto img{width:100%;height:100%;object-fit:contain;padding:4px;border-radius:inherit}
-#epiCatalogEditModal .epi-ed-troca{position:absolute;right:-6px;bottom:-6px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;
-  background:#FF6600;border:2px solid #0D131A;opacity:0;transition:opacity .15s}
-#epiCatalogEditModal .epi-ed-troca svg{width:11px!important;height:11px!important;color:#fff!important;stroke:#fff!important}
-#epiCatalogEditModal .epi-ed-icone:hover .epi-ed-troca,#epiCatalogEditModal .epi-ed-icone:focus-visible .epi-ed-troca{opacity:1}
-#epiCatalogEditModal .epi-ed-icone:not(:disabled):hover{border-color:rgba(255,121,0,.7)!important}
+/* Com foto: fundo cinza neutro da tabela, sem laranja; a foto fica presa no quadrado. */
+#epiCatalogEditModal .epi-ed-icone.tem-foto{background:rgb(26,34,43)!important;border-color:rgba(178,191,205,.18)!important;box-shadow:none!important}
+#epiCatalogEditModal .epi-ed-icone.tem-foto img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;padding:4px;box-sizing:border-box}
+#epiCatalogEditModal .epi-ed-icone:not(:disabled):hover{border-color:rgba(178,191,205,.45)!important}
 /* Base CIEPI: Item, Fabricante e Referência à esquerda; Boletim no centro; botões de Ação distribuídos por igual. */
 @media (min-width:721px){
   .ciepi-tab th:nth-child(2),.ciepi-tab th:nth-child(3),.ciepi-tab th:nth-child(4),.ciepi-tab td:nth-child(2),.ciepi-tab td:nth-child(3),.ciepi-tab td:nth-child(4){text-align:left!important}

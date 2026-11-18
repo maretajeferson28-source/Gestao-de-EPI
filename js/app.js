@@ -1904,7 +1904,7 @@ let epiEdFotoAlvo=null, epiEdFotoNova=null, epiEdFotoPreview=null;
 function pintarFotoEdicao(src){
   const b=$('epiEdFoto'); if(!b) return;
   b.classList.add('tem-foto');
-  b.innerHTML=`<img src="${src}" alt="">${b.disabled?'':'<span class="epi-ed-troca" aria-hidden="true"><i data-lucide="camera"></i></span>'}`;
+  b.innerHTML=`<img src="${src}" alt="">`;
   refreshIcons();
 }
 function mostrarFotoEdicao(id,epi){
@@ -1916,7 +1916,7 @@ function mostrarFotoEdicao(id,epi){
   b.disabled=!(currentIsAdmin===true&&epiEdFotoAlvo);
   b.title=b.disabled?(id&&!epiEdFotoAlvo?'Cadastre um C.A. para pôr foto':''):`Trocar foto (C.A. ${epiEdFotoAlvo.ca||''})`;
   b.classList.remove('tem-foto');
-  b.innerHTML=`<i data-lucide="${id?epiCardIcon(epi):'hard-hat'}" aria-hidden="true"></i>${b.disabled?'':'<span class="epi-ed-troca" aria-hidden="true"><i data-lucide="camera"></i></span>'}`;
+  b.innerHTML=`<i data-lucide="${id?epiCardIcon(epi):'hard-hat'}" aria-hidden="true"></i>`;
   refreshIcons();
   const path=epiEdFotoAlvo?.imagem_path;
   if(path){
