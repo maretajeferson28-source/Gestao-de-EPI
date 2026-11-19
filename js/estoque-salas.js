@@ -260,8 +260,7 @@
     return m;
   }
 
-  // ---- Janela da peça: entrada (quantidade de uma vez, data e observação,
-  // ex.: nota), cada tamanho com − e + para correção rápida, e um tamanho novo ----
+  // ---- Janela da peça: cada tamanho com − e +, e um tamanho novo ----
   document.addEventListener('click', (e) => {
     const b = e.target.closest('#estqUniBody [data-uni-peca]');
     if (b) abrirPeca(b.dataset.uniPeca);
@@ -270,15 +269,7 @@
   function abrirPeca(nome) {
     const s = salas.find((x) => x.id === sala);
     const pode = P('uniformes.ajustar');
-    const hoje = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
     const m = janela('uniPecaModal', nome, iconePeca(nome), `
-      ${pode ? `<div class="uni-entrada">
-        <div class="field"><label for="uniEntTam">Tamanho*</label><select id="uniEntTam"></select></div>
-        <div class="field"><label for="uniEntQtd">Quantidade*</label><div class="stock-qtd-passo"><button class="stock-qtd-btn" type="button" data-uni-ent-passo="-1" aria-label="Diminuir 1"><i data-lucide="minus" aria-hidden="true"></i></button><input id="uniEntQtd" type="number" inputmode="numeric" min="1" step="1" value="1"><button class="stock-qtd-btn" type="button" data-uni-ent-passo="1" aria-label="Aumentar 1"><i data-lucide="plus" aria-hidden="true"></i></button></div></div>
-        <div class="field"><label for="uniEntData">Data*</label><input id="uniEntData" type="date" value="${hoje}" max="${hoje}"></div>
-        <div class="field uni-entrada__obs"><label for="uniEntObs">Observação</label><input id="uniEntObs" maxlength="120" placeholder="Ex.: NF 1234" autocomplete="off"></div>
-        <button class="btn primary" type="button" data-uni-entrada><i data-lucide="save" aria-hidden="true"></i>Salvar entrada</button>
-      </div>` : ''}
       <div class="uni-tams" data-uni-tams></div>
       ${pode ? `<div class="uni-novo-tam">
         <div class="field"><label for="uniTamNovo">Tamanho novo</label><input id="uniTamNovo" maxlength="30" placeholder="Ex.: 46, GG" autocomplete="off"></div>
@@ -296,13 +287,6 @@
         const mais = pode ? `<button type="button" class="dep-qtd__btn" data-uni-somar="1" data-uni-id="${esc(x.id)}" aria-label="Pôr uma peça no tamanho ${esc(x.tamanho)}"><i data-lucide="plus"></i></button>` : '';
         return `<div class="uni-tam${cls}"><span class="uni-tam__nome">${esc(x.tamanho || '—')}</span><span class="dep-qtd">${menos}<strong>${num(x.quantidade)}</strong>${mais}</span></div>`;
       }).join('') || '<p class="uni-vazio">Nenhum tamanho ainda.</p>';
-      const selTam = document.getElementById('uniEntTam');
-      if (selTam) {
-        const atual = selTam.value;
-        selTam.innerHTML = l.length ? l.map((x) => `<option value="${esc(x.id)}">${esc(x.tamanho || '—')}</option>`).join('') : '<option value="">—</option>';
-        if (l.some((x) => x.id === atual)) selTam.value = atual;
-        selTam.disabled = !l.length;
-      }
       icons();
     };
     pinta();
@@ -315,27 +299,6 @@
       const { data, error } = await db().rpc('deposito_item_somar', { p_id: item.id, p_delta: d });
       if (error) { movAdd(item.id, antes - item.quantidade); item.quantidade = antes; pinta(); desenhar(); $('[data-uni-msg]', m).textContent = 'Não foi possível salvar: ' + error.message; return; }
       if (typeof data === 'number' && data !== item.quantidade) { movAdd(item.id, data - item.quantidade); item.quantidade = data; pinta(); desenhar(); }
-    }
-    async function entrada() {
-      const msg = $('[data-uni-msg]', m), btn = $('[data-uni-entrada]', m);
-      const item = itens.find((x) => x.id === document.getElementById('uniEntTam').value);
-      const qtd = Number(document.getElementById('uniEntQtd').value);
-      const dataIso = document.getElementById('uniEntData').value;
-      const obs = document.getElementById('uniEntObs').value.trim();
-      if (!item) { msg.textContent = 'Cadastre o tamanho primeiro (Tamanho novo, abaixo).'; return; }
-      if (!Number.isInteger(qtd) || qtd < 1) { msg.textContent = 'A quantidade tem de ser um número inteiro, 1 ou mais.'; return; }
-      if (!dataIso) { msg.textContent = 'Informe a data.'; return; }
-      btn.disabled = true; msg.textContent = 'Salvando…';
-      const { data, error } = await db().rpc('deposito_item_entrada', { p_id: item.id, p_qtd: qtd, p_data: dataIso, p_obs: obs || null });
-      btn.disabled = false;
-      if (error) { msg.textContent = 'Não foi possível salvar: ' + error.message; return; }
-      const novo = typeof data === 'number' ? data : item.quantidade + qtd;
-      movAdd(item.id, novo - item.quantidade);
-      item.quantidade = novo;
-      msg.textContent = `Entrada de ${num(qtd)} no tamanho ${item.tamanho || '—'} salva.`;
-      document.getElementById('uniEntQtd').value = '1';
-      document.getElementById('uniEntObs').value = '';
-      pinta(); desenhar(); montarSeletor();
     }
     async function addTam() {
       const msg = $('[data-uni-msg]', m);
@@ -360,16 +323,9 @@
       const b = e.target.closest('[data-uni-somar]');
       if (b && !b.disabled) { somar(itens.find((x) => x.id === b.dataset.uniId), Number(b.dataset.uniSomar)); return; }
       if (e.target.closest('[data-uni-add-tam]')) addTam();
-      const passo = e.target.closest('[data-uni-ent-passo]');
-      if (passo) { const q = document.getElementById('uniEntQtd'); q.value = String(Math.max(1, (parseInt(q.value, 10) || 0) + Number(passo.dataset.uniEntPasso))); return; }
-      if (e.target.closest('[data-uni-entrada]')) entrada();
     });
-    m.addEventListener('keydown', (e) => {
-      if (e.key !== 'Enter') return;
-      if (e.target.closest('.uni-novo-tam')) { e.preventDefault(); addTam(); }
-      else if (e.target.closest('.uni-entrada') && e.target.tagName === 'INPUT') { e.preventDefault(); entrada(); }
-    });
-    setTimeout(() => (document.getElementById('uniEntQtd') || m.querySelector('.dep-qtd__btn:not(:disabled)') || m.querySelector('.data-edit-close'))?.focus(), 30);
+    m.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.closest('.uni-novo-tam')) { e.preventDefault(); addTam(); } });
+    setTimeout(() => (m.querySelector('.dep-qtd__btn:not(:disabled)') || m.querySelector('.data-edit-close'))?.focus(), 30);
   }
 
   // ---- Editar peça: nome, C.A., nome de cada tamanho e exclusão ----

@@ -132,14 +132,14 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-stock-nav]')) {
     const stockNavScript = document.createElement('script');
-    stockNavScript.src = 'js/stock-nav.js?v=20261118-1';
+    stockNavScript.src = 'js/stock-nav.js?v=20261119-1';
     stockNavScript.dataset.stockNav = 'true';
     document.body.appendChild(stockNavScript);
   }
 
   if (!document.querySelector('script[data-estoque-salas]')) {
     const estoqueSalasScript = document.createElement('script');
-    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261118-2';
+    estoqueSalasScript.src = 'js/estoque-salas.js?v=20261119-1';
     estoqueSalasScript.dataset.estoqueSalas = 'true';
     document.body.appendChild(estoqueSalasScript);
   }
@@ -195,7 +195,7 @@ window.addEventListener('load', () => {
 
   if (!document.querySelector('script[data-programar]')) {
     const programarScript = document.createElement('script');
-    programarScript.src = 'js/programar.js?v=20261118-1';
+    programarScript.src = 'js/programar.js?v=20261119-1';
     programarScript.dataset.programar = 'true';
     document.body.appendChild(programarScript);
   }

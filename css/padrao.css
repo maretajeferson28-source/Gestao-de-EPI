@@ -4898,19 +4898,3 @@
 
 /* Meses que ainda não chegaram: rótulo mais apagado. */
 @media (min-width:721px){ .dfx-barra.is-futuro .dfx-barra-mes{color:#5E6873} }
-
-/* Sala de uniforme → Abrir peça: entrada (tamanho, quantidade, data, observação). */
-.uni-entrada{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) minmax(0,1.2fr);gap:10px 12px;align-items:end;
-  padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid rgba(178,191,205,.12)}
-.uni-entrada .field{margin:0}
-.uni-entrada__obs{grid-column:span 2}
-.uni-entrada .btn{height:38px;white-space:nowrap;gap:6px;justify-content:center}
-.uni-entrada .btn svg{width:15px;height:15px}
-.uni-entrada .stock-qtd-passo input{height:38px}
-.uni-entrada .stock-qtd-btn{background:linear-gradient(180deg,rgba(28,36,45,.95),rgba(16,22,29,.95));border:1px solid rgba(178,191,205,.16);color:#E5E8EA}
-.uni-entrada .stock-qtd-btn:hover{border-color:rgba(255,121,0,.5);color:#FF9A3F}
-.uni-entrada input[type="date"]{color-scheme:dark}
-@media (max-width:520px){ .uni-entrada{grid-template-columns:1fr 1fr} .uni-entrada__obs{grid-column:1 / -1} .uni-entrada .btn{grid-column:1 / -1} }
-.uni-entrada select{background-color:rgba(6,10,14,.72)!important;border:1px solid rgba(178,191,205,.16)!important;color:#E9EDF1!important;color-scheme:dark}
-.uni-entrada select:focus{border-color:rgba(255,121,0,.6)!important;outline:0}
-.uni-entrada select option{background:#11171E;color:#E9EDF1}
